@@ -63,9 +63,7 @@
 - [x] Enable Email/Password authentication
 - [x] Download service account JSON
 - [x] Place as `backend/firebase-service-account.json`
-- [x] Test authentication flow (Use pgAdmin or Swagger UI)
-
-**Next:** Test the auth flow - See instructions below
+- [ ] Test authentication flow (Use pgAdmin or Swagger UI)
 
 ---
 
