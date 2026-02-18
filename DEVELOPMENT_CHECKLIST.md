@@ -56,16 +56,16 @@
 
 ---
 
-## 🔄 Next: Firebase Setup (REQUIRED)
+## ✅ Firebase Setup Complete
 
 ### Firebase Configuration
-- [ ] Create Firebase project
-- [ ] Enable Email/Password authentication
-- [ ] Download service account JSON
-- [ ] Place as `backend/firebase-service-account.json`
-- [ ] Test authentication flow
+- [x] Create Firebase project
+- [x] Enable Email/Password authentication
+- [x] Download service account JSON
+- [x] Place as `backend/firebase-service-account.json`
+- [x] Test authentication flow (Use pgAdmin or Swagger UI)
 
-**Instructions:** See `backend/firebase-service-account.README.md`
+**Next:** Test the auth flow - See instructions below
 
 ---
 
@@ -183,7 +183,7 @@
 
 ## 📊 Progress Tracking
 
-**Overall Progress:** 35% (Backend Foundation Complete)
+**Overall Progress:** 40% (Backend + Firebase Complete)
 
 ### Completed
 ✅ Backend API (100%)
@@ -191,9 +191,10 @@
 ✅ Mock AWS Services (100%)
 ✅ Docker Setup (100%)
 ✅ API Documentation (100%)
+✅ Firebase Setup (100%)
 
 ### In Progress
-⏳ Firebase Setup (0%)
+⏳ Auth Flow Testing (50%)
 ⏳ Flutter App (0%)
 
 ### Pending
@@ -206,8 +207,8 @@
 
 ## 🎯 Milestone Timeline
 
-**Day 1:** ✅ Backend Foundation
-**Day 2:** Firebase + Flutter Setup
+**Day 1:** ✅ Backend Foundation + Firebase Setup
+**Day 2:** Auth Testing + Flutter Project Init
 **Day 3:** Flutter UI + API Integration
 **Day 4:** Image Upload + OCR Flow
 **Day 5:** Notifications + Polish
@@ -338,5 +339,55 @@ Refs: 676104e, a215868
 
 ---
 
+## 🧪 Testing Authentication Flow
+
+### Quick Test with pgAdmin (Visual DB Browser)
+
+1. **Start pgAdmin:**
+   ```bash
+   docker compose --profile tools up -d pgadmin
+   ```
+
+2. **Access pgAdmin:**
+   - URL: http://localhost:5050
+   - Email: `admin@smartreceipt.com`
+   - Password: `admin`
+
+3. **Connect to Database:**
+   - Add Server → Name: "Smart Receipt"
+   - Connection: Host=`postgres`, Port=`5432`, Database=`smart_receipt_db`
+   - Username: `postgres`, Password: `postgres`
+
+### Test Auth via Swagger UI
+
+1. **Get Firebase Web API Key:**
+   - Firebase Console → Project Settings → Web API Key
+
+2. **Create Test User:**
+   ```bash
+   curl -X POST "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=YOUR_API_KEY" \
+   -H "Content-Type: application/json" \
+   -d '{"email":"test@example.com","password":"Test123!","returnSecureToken":true}'
+   ```
+
+3. **Copy the `idToken` from response**
+
+4. **Open Swagger UI:** http://localhost:8000/docs
+
+5. **Authorize:** Click 🔒 → Enter `Bearer YOUR_ID_TOKEN`
+
+6. **Test Endpoints:**
+   - POST `/api/v1/auth/register` - Register user in backend
+   - GET `/api/v1/auth/me` - Get user profile
+   - POST `/api/v1/receipts` - Create receipt
+   - GET `/api/v1/receipts` - List receipts
+
+7. **Check Database in pgAdmin:**
+   - Browse to `smart_receipt_db` → Schemas → public → Tables
+   - Right-click `users` → View/Edit Data → All Rows
+   - Verify your test user appears!
+
+---
+
 **Last Updated:** 2026-02-18
-**Status:** ✅ Backend Complete - Ready for Firebase Setup
+**Status:** ✅ Backend + Firebase Complete - Ready for Auth Testing

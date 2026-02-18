@@ -311,9 +311,9 @@ Once the backend is running, visit:
 
 | Feature | Status |
 |---------|--------|
-| Backend API Structure | ✅ In Progress |
-| Database Models | ⏳ Pending |
-| Authentication | ⏳ Pending |
+| Backend API Structure | ✅ Complete |
+| Database Models | ✅ Complete |
+| Authentication | ✅ Complete |
 | Receipt Upload | ⏳ Pending |
 | OCR Processing (Mock) | ⏳ Pending |
 | Warranty Tracking | ⏳ Pending |
