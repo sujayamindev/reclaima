@@ -33,6 +33,10 @@ services:
       DEBUG: "true"
       ALLOWED_ORIGINS: http://localhost:8000,http://localhost:3000
       USE_MOCK_AWS: "true"
+      AWS_ACCESS_KEY_ID: mock_access_key
+      AWS_SECRET_ACCESS_KEY: mock_secret_key
+      AWS_REGION: us-east-1
+      AWS_S3_BUCKET: smart-receipt-storage
       FIREBASE_SERVICE_ACCOUNT_PATH: /app/firebase-service-account.json
     ports:
       - "8000:8000"
