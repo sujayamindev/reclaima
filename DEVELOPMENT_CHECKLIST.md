@@ -116,19 +116,19 @@
 
 ### Phase 5: UI Screens ✅
 - [x] Login/Register screen (toggle mode)
-- [x] Home/Receipt list screen (with status indicators)
-- [x] Receipt detail screen (warranty tracking)
-- [x] Add receipt screen
-- [x] Camera/Gallery picker (image_picker)
-- [x] Material Design 3 theme (light/dark)
-- [x] Formatters (date, currency, file size)
+- [ ] Home/Receipt list screen (with status indicators)
+- [ ] Receipt detail screen (warranty tracking)
+- [ ] Add receipt screen
+- [ ] Camera/Gallery picker (image_picker)
+- [ ] Material Design 3 theme (light/dark)
+- [ ] Formatters (date, currency, file size)
 - [ ] Upload progress screen
 - [ ] Warranty list screen
 
 ### Phase 6: Firebase Mobile Setup ⏳
 - [x] Add Firebase to Flutter project (dependencies)
-- [ ] Configure android/app/google-services.json
-- [ ] Configure ios/Runner/GoogleService-Info.plist
+- [x] Configure android/app/google-services.json
+- [x] Configure ios/Runner/GoogleService-Info.plist
 - [ ] Test authentication flow
 - [ ] Test push notifications
 

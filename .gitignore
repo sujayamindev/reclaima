@@ -4,17 +4,18 @@ __pycache__/
 *$py.class
 *.so
 .Python
-build/
+backend/build/
 develop-eggs/
-dist/
+backend/dist/
 downloads/
 eggs/
 .eggs/
-lib/
+# Python lib folders (but not Flutter mobile/lib/)
+backend/lib/
 lib64/
 parts/
 sdist/
-var/
+backend/var/
 wheels/
 *.egg-info/
 .installed.cfg
@@ -31,7 +32,7 @@ env/
 .env
 .env.local
 
-# IDEs
+# IDEs (workspace settings are typically shared, but keeping ignored by default)
 .vscode/
 .idea/
 *.swp
@@ -46,7 +47,7 @@ env/
 
 # Logs
 *.log
-logs/
+backend/logs/
 
 # Testing
 .pytest_cache/

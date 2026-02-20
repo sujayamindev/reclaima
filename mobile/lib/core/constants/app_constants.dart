@@ -1,0 +1,44 @@
+/// API configuration constants
+class ApiConstants {
+  // Base URL - Change this to your backend URL
+  static const String baseUrl = 'http://168.138.170.92:8000/api/v1';
+  
+  // For Android emulator to access host machine
+  static const String androidEmulatorBaseUrl = 'http://10.0.2.2:8000/api/v1';
+  
+  // Endpoints
+  static const String authRegister = '/auth/register';
+  static const String authMe = '/auth/me';
+  static const String receipts = '/receipts';
+  static const String warranties = '/warranties';
+  static const String health = '/health';
+  
+  // Timeouts
+  static const Duration connectTimeout = Duration(seconds: 30);
+  static const Duration receiveTimeout = Duration(seconds: 30);
+}
+
+/// App configuration constants
+class AppConstants {
+  static const String appName = 'Smart Receipt Manager';
+  static const String appVersion = '1.0.0';
+  
+  // File upload limits
+  static const int maxFileSizeMB = 5;
+  static const int maxFileSizeBytes = maxFileSizeMB * 1024 * 1024;
+  
+  // Allowed file types
+  static const List<String> allowedImageTypes = ['jpg', 'jpeg', 'png'];
+  static const List<String> allowedDocTypes = ['pdf'];
+  
+  // Pagination
+  static const int defaultPageSize = 20;
+}
+
+/// Storage keys for shared preferences
+class StorageKeys {
+  static const String firebaseToken = 'firebase_token';
+  static const String userId = 'user_id';
+  static const String userEmail = 'user_email';
+  static const String isFirstLaunch = 'is_first_launch';
+}

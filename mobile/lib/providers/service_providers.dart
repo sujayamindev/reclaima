@@ -1,0 +1,27 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../services/api_service.dart';
+import '../services/auth_service.dart';
+import '../services/receipt_service.dart';
+import '../data/database/app_database.dart';
+
+/// API Service provider
+final apiServiceProvider = Provider<ApiService>((ref) {
+  return ApiService();
+});
+
+/// Database provider
+final databaseProvider = Provider<AppDatabase>((ref) {
+  return AppDatabase();
+});
+
+/// Auth Service provider
+final authServiceProvider = Provider<AuthService>((ref) {
+  final apiService = ref.watch(apiServiceProvider);
+  return AuthService(apiService);
+});
+
+/// Receipt Service provider
+final receiptServiceProvider = Provider<ReceiptService>((ref) {
+  final apiService = ref.watch(apiServiceProvider);
+  return ReceiptService(apiService);
+});

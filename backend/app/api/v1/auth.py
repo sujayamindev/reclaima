@@ -3,7 +3,8 @@ Authentication routes - User registration and profile management.
 """
 
 import logging
-from fastapi import APIRouter, Depends, HTTPException, status
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, status, Body
 from sqlalchemy.orm import Session
 
 from app.core.security import get_current_user, get_current_user_id
@@ -19,7 +20,8 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def register_user(
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    full_name: Optional[str] = Body(None, embed=True)
 ):
     """
     Register or get existing user after Firebase authentication.
@@ -28,13 +30,18 @@ async def register_user(
     Args:
         current_user: Decoded Firebase JWT token
         db: Database session
+        full_name: Full name from signup form (optional)
         
     Returns:
         User information
     """
     firebase_uid = current_user.get("uid")
     email = current_user.get("email")
-    display_name = current_user.get("name")
+    
+    # Extract first name from full name if provided
+    display_name = None
+    if full_name:
+        display_name = full_name.split()[0] if full_name.strip() else None
     
     if not firebase_uid or not email:
         raise HTTPException(

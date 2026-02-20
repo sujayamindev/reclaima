@@ -1,0 +1,116 @@
+import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
+import 'dart:io';
+
+part 'app_database.g.dart';
+
+/// Receipts table
+class Receipts extends Table {
+  TextColumn get id => text()();
+  TextColumn get userId => text()();
+  TextColumn get s3ObjectKey => text().nullable()();
+  TextColumn get storeName => text().nullable()();
+  DateTimeColumn get purchaseDate => dateTime().nullable()();
+  RealColumn get totalAmount => real().nullable()();
+  TextColumn get currency => text().nullable()();
+  TextColumn get productName => text().nullable()();
+  TextColumn get productCategory => text().nullable()();
+  IntColumn get warrantyPeriodMonths => integer().nullable()();
+  DateTimeColumn get warrantyExpiryDate => dateTime().nullable()();
+  IntColumn get returnPeriodDays => integer().nullable()();
+  DateTimeColumn get returnExpiryDate => dateTime().nullable()();
+  TextColumn get status => text()();
+  IntColumn get ocrRetryCount => integer().withDefault(const Constant(0))();
+  DateTimeColumn get lastOcrAttemptAt => dateTime().nullable()();
+  TextColumn get notes => text().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+  DateTimeColumn get syncedAt => dateTime().nullable()();
+  TextColumn get localImagePath => text().nullable()();
+  
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Upload queue for offline support
+class UploadQueue extends Table {
+  TextColumn get id => text()();
+  TextColumn get receiptId => text()();
+  TextColumn get localImagePath => text()();
+  IntColumn get retryCount => integer().withDefault(const Constant(0))();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get lastAttemptAt => dateTime().nullable()();
+  TextColumn get errorMessage => text().nullable()();
+  
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+@DriftDatabase(tables: [Receipts, UploadQueue])
+class AppDatabase extends _$AppDatabase {
+  AppDatabase() : super(_openConnection());
+  
+  @override
+  int get schemaVersion => 1;
+  
+  // Receipt operations
+  
+  /// Get all receipts
+  Future<List<Receipt>> getAllReceipts() => select(receipts).get();
+  
+  /// Get receipt by ID
+  Future<Receipt?> getReceipt(String id) =>
+      (select(receipts)..where((r) => r.id.equals(id))).getSingleOrNull();
+  
+  /// Insert or update receipt
+  Future<int> upsertReceipt(ReceiptsCompanion receipt) =>
+      into(receipts).insertOnConflictUpdate(receipt);
+  
+  /// Delete receipt
+  Future<int> deleteReceipt(String id) =>
+      (delete(receipts)..where((r) => r.id.equals(id))).go();
+  
+  /// Get receipts that need syncing
+  Future<List<Receipt>> getUnsyncedReceipts() =>
+      (select(receipts)..where((r) => r.syncedAt.isNull())).get();
+  
+  /// Mark receipt as synced
+  Future<int> markReceiptSynced(String id) =>
+      (update(receipts)..where((r) => r.id.equals(id)))
+          .write(ReceiptsCompanion(syncedAt: Value(DateTime.now())));
+  
+  // Upload queue operations
+  
+  /// Get all pending uploads
+  Future<List<UploadQueueData>> getPendingUploads() =>
+      select(uploadQueue).get();
+  
+  /// Add to upload queue
+  Future<int> addToUploadQueue(UploadQueueCompanion upload) =>
+      into(uploadQueue).insert(upload);
+  
+  /// Remove from upload queue
+  Future<int> removeFromUploadQueue(String id) =>
+      (delete(uploadQueue)..where((u) => u.id.equals(id))).go();
+  
+  /// Update upload retry count
+  Future<int> incrementUploadRetry(String id, int currentRetryCount, String? errorMsg) =>
+      (update(uploadQueue)..where((u) => u.id.equals(id))).write(
+        UploadQueueCompanion(
+          retryCount: Value(currentRetryCount + 1),
+          lastAttemptAt: Value(DateTime.now()),
+          errorMessage: Value(errorMsg),
+        ),
+      );
+}
+
+/// Open database connection
+LazyDatabase _openConnection() {
+  return LazyDatabase(() async {
+    final dbFolder = await getApplicationDocumentsDirectory();
+    final file = File(p.join(dbFolder.path, 'smart_receipt.db'));
+    return NativeDatabase(file);
+  });
+}
