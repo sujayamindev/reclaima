@@ -30,8 +30,11 @@ class ReceiptService {
       if (data is List) {
         return data.map((json) => ReceiptModel.fromJson(json)).toList();
       } else if (data is Map<String, dynamic>) {
-        // Handle paginated response
-        if (data.containsKey('items')) {
+        // Handle paginated response - backend returns {receipts: [], total: 0, ...}
+        if (data.containsKey('receipts')) {
+          final List<dynamic> items = data['receipts'];
+          return items.map((json) => ReceiptModel.fromJson(json)).toList();
+        } else if (data.containsKey('items')) {
           final List<dynamic> items = data['items'];
           return items.map((json) => ReceiptModel.fromJson(json)).toList();
         } else if (data.containsKey('data')) {

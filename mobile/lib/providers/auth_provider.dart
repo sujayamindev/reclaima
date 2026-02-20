@@ -22,11 +22,21 @@ final userProfileProvider = FutureProvider<UserModel?>((ref) async {
   
   if (user == null) return null;
   
+  // Wait a brief moment for backend registration to complete
+  // (Firebase auth fires before our backend POST /auth/register finishes)
+  await Future.delayed(const Duration(milliseconds: 500));
+  
   final authService = ref.watch(authServiceProvider);
   try {
     return await authService.getCurrentUserProfile();
   } catch (e) {
-    return null;
+    // If user not found in backend (404), auto-register them
+    // This handles returning users whose backend record may be missing
+    try {
+      return await authService.registerInBackend();
+    } catch (_) {
+      return null;
+    }
   }
 });
 
