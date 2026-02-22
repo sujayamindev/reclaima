@@ -26,11 +26,13 @@ class ReceiptService:
         """Initialize receipt service with AWS services."""
         self.s3_service = get_s3_service(
             bucket_name=settings.AWS_S3_BUCKET,
-            use_mock=settings.USE_MOCK_AWS
+            use_mock=settings.USE_MOCK_AWS,
+            region=settings.AWS_REGION
         )
         self.textract_service = get_textract_service(
             s3_bucket=settings.AWS_S3_BUCKET,
-            use_mock=settings.USE_MOCK_AWS
+            use_mock=settings.USE_MOCK_AWS,
+            region=settings.AWS_REGION
         )
     
     def create_receipt(

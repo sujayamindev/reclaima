@@ -129,20 +129,24 @@ class MockS3Service:
 class RealS3Service:
     """Real AWS S3 service using boto3."""
     
-    def __init__(self, bucket_name: str):
+    def __init__(self, bucket_name: str, region: str = 'us-east-1'):
         """
         Initialize real S3 service with boto3.
         
         Args:
             bucket_name: S3 bucket name
+            region: AWS region (default: us-east-1)
         """
         import boto3
         from botocore.exceptions import ClientError
         
         self.bucket_name = bucket_name
-        self.s3_client = boto3.client('s3')
+        self.s3_client = boto3.client(
+            's3',
+            region_name=region
+        )
         self.ClientError = ClientError
-        logger.info(f"RealS3Service initialized for bucket: {bucket_name}")
+        logger.info(f"RealS3Service initialized for bucket: {bucket_name} in region: {region}")
     
     def upload_file(
         self,
@@ -260,13 +264,14 @@ class RealS3Service:
             return False
 
 
-def get_s3_service(bucket_name: str, use_mock: bool = True):
+def get_s3_service(bucket_name: str, use_mock: bool = True, region: str = 'us-east-1'):
     """
     Factory function to get S3 service (mock or real).
     
     Args:
         bucket_name: S3 bucket name
         use_mock: If True, return mock service; if False, return real service
+        region: AWS region (default: us-east-1)
         
     Returns:
         S3 service instance (mock or real)
@@ -274,4 +279,4 @@ def get_s3_service(bucket_name: str, use_mock: bool = True):
     if use_mock:
         return MockS3Service(bucket_name)
     else:
-        return RealS3Service(bucket_name)
+        return RealS3Service(bucket_name, region)

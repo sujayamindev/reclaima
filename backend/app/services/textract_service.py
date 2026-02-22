@@ -83,20 +83,24 @@ Warranty: {random.choice([6, 12, 24])} months
 class RealTextractService:
     """Real AWS Textract service using boto3."""
     
-    def __init__(self, s3_bucket: str):
+    def __init__(self, s3_bucket: str, region: str = 'us-east-1'):
         """
         Initialize real Textract service.
         
         Args:
             s3_bucket: S3 bucket name for document location
+            region: AWS region (default: us-east-1)
         """
         import boto3
         from botocore.exceptions import ClientError
         
         self.s3_bucket = s3_bucket
-        self.textract_client = boto3.client('textract')
+        self.textract_client = boto3.client(
+            'textract',
+            region_name=region
+        )
         self.ClientError = ClientError
-        logger.info(f"RealTextractService initialized for bucket: {s3_bucket}")
+        logger.info(f"RealTextractService initialized for bucket: {s3_bucket} in region: {region}")
     
     def analyze_document(self, s3_object_key: str) -> Dict[str, Any]:
         """
@@ -188,13 +192,14 @@ class RealTextractService:
         return self.analyze_document(s3_object_key)
 
 
-def get_textract_service(s3_bucket: str, use_mock: bool = True):
+def get_textract_service(s3_bucket: str, use_mock: bool = True, region: str = 'us-east-1'):
     """
     Factory function to get Textract service (mock or real).
     
     Args:
         s3_bucket: S3 bucket name
         use_mock: If True, return mock service; if False, return real service
+        region: AWS region (default: us-east-1)
         
     Returns:
         Textract service instance (mock or real)
@@ -202,4 +207,4 @@ def get_textract_service(s3_bucket: str, use_mock: bool = True):
     if use_mock:
         return MockTextractService()
     else:
-        return RealTextractService(s3_bucket)
+        return RealTextractService(s3_bucket, region)

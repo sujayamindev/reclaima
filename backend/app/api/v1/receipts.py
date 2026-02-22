@@ -7,7 +7,8 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Query
 from sqlalchemy.orm import Session
 
-from app.core.security import get_current_user_id
+from app.core.security import get_current_user
+from app.services.user_service import user_service
 from app.core.config import settings
 from app.db.session import get_db
 from app.schemas import (
@@ -24,10 +25,10 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/receipts", tags=["Receipts"])
 
 
-@router.post("", response_model=ReceiptResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=ReceiptResponse, status_code=status.HTTP_201_CREATED, response_model_by_alias=True)
 async def create_receipt(
     receipt_data: ReceiptCreate,
-    user_id: str = Depends(get_current_user_id),
+    current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -35,22 +36,31 @@ async def create_receipt(
     
     Args:
         receipt_data: Receipt creation data
-        user_id: Current user ID
+        current_user: Current authenticated user
         db: Database session
         
     Returns:
         Created receipt
     """
-    receipt = receipt_service.create_receipt(db, user_id, receipt_data)
+    # Get internal database user ID
+    firebase_uid = current_user.get("uid")
+    db_user = user_service.get_user_by_firebase_uid(db, firebase_uid)
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    receipt = receipt_service.create_receipt(db, db_user.id, receipt_data)
     return receipt
 
 
-@router.get("", response_model=ReceiptListResponse)
+@router.get("", response_model=ReceiptListResponse, response_model_by_alias=True)
 async def list_receipts(
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(20, ge=1, le=100, description="Items per page"),
     status: Optional[ReceiptStatusEnum] = Query(None, description="Filter by status"),
-    user_id: str = Depends(get_current_user_id),
+    current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -60,16 +70,25 @@ async def list_receipts(
         page: Page number (1-indexed)
         page_size: Number of items per page
         status: Optional status filter
-        user_id: Current user ID
+        current_user: Current authenticated user
         db: Database session
         
     Returns:
         Paginated list of receipts
     """
+    # Get internal database user ID
+    firebase_uid = current_user.get("uid")
+    db_user = user_service.get_user_by_firebase_uid(db, firebase_uid)
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
     skip = (page - 1) * page_size
     receipts, total = receipt_service.list_receipts(
         db=db,
-        user_id=user_id,
+        user_id=db_user.id,
         skip=skip,
         limit=page_size,
         status=status
@@ -83,10 +102,10 @@ async def list_receipts(
     }
 
 
-@router.get("/{receipt_id}", response_model=ReceiptResponse)
+@router.get("/{receipt_id}", response_model=ReceiptResponse, response_model_by_alias=True)
 async def get_receipt(
     receipt_id: str,
-    user_id: str = Depends(get_current_user_id),
+    current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -94,13 +113,22 @@ async def get_receipt(
     
     Args:
         receipt_id: Receipt ID
-        user_id: Current user ID
+        current_user: Current authenticated user
         db: Database session
         
     Returns:
         Receipt details
     """
-    receipt = receipt_service.get_receipt(db, receipt_id, user_id)
+    # Get internal database user ID
+    firebase_uid = current_user.get("uid")
+    db_user = user_service.get_user_by_firebase_uid(db, firebase_uid)
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    receipt = receipt_service.get_receipt(db, receipt_id, db_user.id)
     
     if not receipt:
         raise HTTPException(
@@ -111,11 +139,11 @@ async def get_receipt(
     return receipt
 
 
-@router.patch("/{receipt_id}", response_model=ReceiptResponse)
+@router.patch("/{receipt_id}", response_model=ReceiptResponse, response_model_by_alias=True)
 async def update_receipt(
     receipt_id: str,
     receipt_data: ReceiptUpdate,
-    user_id: str = Depends(get_current_user_id),
+    current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -124,13 +152,22 @@ async def update_receipt(
     Args:
         receipt_id: Receipt ID
         receipt_data: Update data
-        user_id: Current user ID
+        current_user: Current authenticated user
         db: Database session
         
     Returns:
         Updated receipt
     """
-    receipt = receipt_service.update_receipt(db, receipt_id, user_id, receipt_data)
+    # Get internal database user ID
+    firebase_uid = current_user.get("uid")
+    db_user = user_service.get_user_by_firebase_uid(db, firebase_uid)
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    receipt = receipt_service.update_receipt(db, receipt_id, db_user.id, receipt_data)
     
     if not receipt:
         raise HTTPException(
@@ -144,7 +181,7 @@ async def update_receipt(
 @router.delete("/{receipt_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_receipt(
     receipt_id: str,
-    user_id: str = Depends(get_current_user_id),
+    current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -152,10 +189,19 @@ async def delete_receipt(
     
     Args:
         receipt_id: Receipt ID
-        user_id: Current user ID
+        current_user: Current authenticated user
         db: Database session
     """
-    success = receipt_service.delete_receipt(db, receipt_id, user_id)
+    # Get internal database user ID
+    firebase_uid = current_user.get("uid")
+    db_user = user_service.get_user_by_firebase_uid(db, firebase_uid)
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    success = receipt_service.delete_receipt(db, receipt_id, db_user.id)
     
     if not success:
         raise HTTPException(
@@ -164,11 +210,11 @@ async def delete_receipt(
         )
 
 
-@router.post("/{receipt_id}/upload", response_model=ReceiptResponse)
+@router.post("/{receipt_id}/upload", response_model=ReceiptResponse, response_model_by_alias=True)
 async def upload_receipt_file(
     receipt_id: str,
     file: UploadFile = File(...),
-    user_id: str = Depends(get_current_user_id),
+    current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -177,12 +223,21 @@ async def upload_receipt_file(
     Args:
         receipt_id: Receipt ID
         file: Uploaded file
-        user_id: Current user ID
+        current_user: Current authenticated user
         db: Database session
         
     Returns:
         Updated receipt with processing status
     """
+    # Get internal database user ID
+    firebase_uid = current_user.get("uid")
+    db_user = user_service.get_user_by_firebase_uid(db, firebase_uid)
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
     # Validate file type
     if file.content_type not in settings.allowed_file_types_list:
         raise HTTPException(
@@ -204,7 +259,7 @@ async def upload_receipt_file(
     receipt = receipt_service.upload_receipt_file(
         db=db,
         receipt_id=receipt_id,
-        user_id=user_id,
+        user_id=db_user.id,
         file_content=file_content,
         file_name=file.filename or "receipt",
         content_type=file.content_type
@@ -219,10 +274,10 @@ async def upload_receipt_file(
     return receipt
 
 
-@router.post("/{receipt_id}/retry-ocr", response_model=ReceiptResponse)
+@router.post("/{receipt_id}/retry-ocr", response_model=ReceiptResponse, response_model_by_alias=True)
 async def retry_ocr_processing(
     receipt_id: str,
-    user_id: str = Depends(get_current_user_id),
+    current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -230,13 +285,22 @@ async def retry_ocr_processing(
     
     Args:
         receipt_id: Receipt ID
-        user_id: Current user ID
+        current_user: Current authenticated user
         db: Database session
         
     Returns:
         Updated receipt
     """
-    receipt = receipt_service.retry_ocr(db, receipt_id, user_id)
+    # Get internal database user ID
+    firebase_uid = current_user.get("uid")
+    db_user = user_service.get_user_by_firebase_uid(db, firebase_uid)
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    receipt = receipt_service.retry_ocr(db, receipt_id, db_user.id)
     
     if not receipt:
         raise HTTPException(

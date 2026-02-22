@@ -2,10 +2,16 @@
 Pydantic schemas for API request/response validation.
 """
 
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, Field, EmailStr, ConfigDict
 from typing import Optional
 from datetime import datetime
 from enum import Enum
+
+
+def to_camel(string: str) -> str:
+    """Convert snake_case to camelCase."""
+    components = string.split('_')
+    return components[0] + ''.join(x.title() for x in components[1:])
 
 
 # ============================================
@@ -47,8 +53,11 @@ class UserResponse(UserBase):
     created_at: datetime
     updated_at: datetime
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True,
+        alias_generator=to_camel
+    )
 
 
 # ============================================
@@ -65,6 +74,11 @@ class ReceiptBase(BaseModel):
     warranty_period_months: Optional[int] = None
     return_period_days: Optional[int] = 30
     notes: Optional[str] = None
+    
+    model_config = ConfigDict(
+        populate_by_name=True,
+        alias_generator=to_camel
+    )
 
 
 class ReceiptCreate(ReceiptBase):
@@ -83,6 +97,11 @@ class ReceiptUpdate(BaseModel):
     warranty_period_months: Optional[int] = None
     return_period_days: Optional[int] = None
     notes: Optional[str] = None
+    
+    model_config = ConfigDict(
+        populate_by_name=True,
+        alias_generator=to_camel
+    )
 
 
 class ReceiptResponse(ReceiptBase):
@@ -99,8 +118,11 @@ class ReceiptResponse(ReceiptBase):
     updated_at: datetime
     synced_at: Optional[datetime]
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True,
+        alias_generator=to_camel
+    )
 
 
 class ReceiptListResponse(BaseModel):
@@ -109,6 +131,11 @@ class ReceiptListResponse(BaseModel):
     total: int
     page: int
     page_size: int
+    
+    model_config = ConfigDict(
+        populate_by_name=True,
+        alias_generator=to_camel
+    )
 
 
 # ============================================
@@ -126,6 +153,11 @@ class ReceiptUploadResponse(BaseModel):
     upload_url: str
     s3_object_key: str
     expires_in: int = 900  # 15 minutes
+    
+    model_config = ConfigDict(
+        populate_by_name=True,
+        alias_generator=to_camel
+    )
 
 
 # ============================================
@@ -137,6 +169,11 @@ class OCRResult(BaseModel):
     extracted_data: dict
     confidence: Optional[float] = None
     error: Optional[str] = None
+    
+    model_config = ConfigDict(
+        populate_by_name=True,
+        alias_generator=to_camel
+    )
 
 
 # ============================================
@@ -161,8 +198,11 @@ class ClaimDocumentResponse(ClaimDocumentBase):
     created_at: datetime
     updated_at: datetime
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True,
+        alias_generator=to_camel
+    )
 
 
 # ============================================
