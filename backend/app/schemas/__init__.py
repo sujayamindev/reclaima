@@ -3,7 +3,7 @@ Pydantic schemas for API request/response validation.
 """
 
 from pydantic import BaseModel, Field, EmailStr, ConfigDict
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 from enum import Enum
 
@@ -61,6 +61,28 @@ class UserResponse(UserBase):
 
 
 # ============================================
+# Receipt Line Item Schema
+# ============================================
+class ReceiptLineItemResponse(BaseModel):
+    """Single line item on a receipt."""
+    id: str
+    receipt_id: str
+    row_index: int
+    product_code: Optional[str] = None
+    item_description: Optional[str] = None
+    quantity: Optional[str] = None
+    unit_price: Optional[float] = None
+    amount: Optional[float] = None
+    created_at: datetime
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True,
+        alias_generator=to_camel
+    )
+
+
+# ============================================
 # Receipt Schemas
 # ============================================
 class ReceiptBase(BaseModel):
@@ -74,7 +96,20 @@ class ReceiptBase(BaseModel):
     warranty_period_months: Optional[int] = None
     return_period_days: Optional[int] = 30
     notes: Optional[str] = None
-    
+
+    # Invoice / receipt identification
+    invoice_number: Optional[str] = None
+
+    # Vendor contact details
+    vendor_address: Optional[str] = None
+    vendor_phone: Optional[str] = None
+    vendor_email: Optional[str] = None
+    vendor_url: Optional[str] = None
+
+    # Additional OCR fields
+    remarks: Optional[str] = None        # Remarks / serial number
+    warranty_notes: Optional[str] = None  # Warranty policy text
+
     model_config = ConfigDict(
         populate_by_name=True,
         alias_generator=to_camel
@@ -97,7 +132,14 @@ class ReceiptUpdate(BaseModel):
     warranty_period_months: Optional[int] = None
     return_period_days: Optional[int] = None
     notes: Optional[str] = None
-    
+    invoice_number: Optional[str] = None
+    vendor_address: Optional[str] = None
+    vendor_phone: Optional[str] = None
+    vendor_email: Optional[str] = None
+    vendor_url: Optional[str] = None
+    remarks: Optional[str] = None
+    warranty_notes: Optional[str] = None
+
     model_config = ConfigDict(
         populate_by_name=True,
         alias_generator=to_camel
@@ -117,7 +159,8 @@ class ReceiptResponse(ReceiptBase):
     created_at: datetime
     updated_at: datetime
     synced_at: Optional[datetime]
-    
+    line_items: List[ReceiptLineItemResponse] = []
+
     model_config = ConfigDict(
         from_attributes=True,
         populate_by_name=True,

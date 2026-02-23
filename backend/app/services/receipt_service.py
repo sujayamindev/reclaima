@@ -7,10 +7,12 @@ import logging
 import uuid
 from typing import Optional, List
 from datetime import datetime, timedelta
-from sqlalchemy.orm import Session
+from dateutil import parser as dateutil_parser
+from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import and_
 
 from app.models import Receipt, ReceiptStatus, User
+from app.models.receipt_line_item import ReceiptLineItem
 from app.schemas import ReceiptCreate, ReceiptUpdate
 from app.services.s3_service import get_s3_service
 from app.services.textract_service import get_textract_service
@@ -80,7 +82,9 @@ class ReceiptService:
             product_category=receipt_data.product_category,
             warranty_period_months=receipt_data.warranty_period_months,
             warranty_expiry_date=warranty_expiry,
-            return_period_days=receipt_data.return_period_days or 30,
+            # Do NOT default return_period_days here — only set it when the
+            # user explicitly provides it or OCR finds a return policy.
+            return_period_days=receipt_data.return_period_days,
             return_expiry_date=return_expiry,
             notes=receipt_data.notes,
             status=ReceiptStatus.UPLOADED
@@ -101,17 +105,11 @@ class ReceiptService:
         user_id: str
     ) -> Optional[Receipt]:
         """
-        Get receipt by ID (user-scoped).
-        
-        Args:
-            db: Database session
-            receipt_id: Receipt ID
-            user_id: User ID for authorization
-            
-        Returns:
-            Receipt or None if not found
+        Get receipt by ID (user-scoped), with line items eagerly loaded.
         """
-        return db.query(Receipt).filter(
+        return db.query(Receipt).options(
+            selectinload(Receipt.line_items)
+        ).filter(
             and_(
                 Receipt.id == receipt_id,
                 Receipt.user_id == user_id,
@@ -151,8 +149,10 @@ class ReceiptService:
             query = query.filter(Receipt.status == status)
         
         total = query.count()
-        receipts = query.order_by(Receipt.created_at.desc()).offset(skip).limit(limit).all()
-        
+        receipts = query.options(
+            selectinload(Receipt.line_items)
+        ).order_by(Receipt.created_at.desc()).offset(skip).limit(limit).all()
+
         return receipts, total
     
     def update_receipt(
@@ -277,11 +277,11 @@ class ReceiptService:
         db.commit()
         
         logger.info(f"Uploaded file for receipt: {receipt_id}")
-        
-        # Trigger OCR processing
-        self.process_ocr(db, receipt_id, user_id)
-        
-        return receipt
+
+        # Trigger OCR processing and return its result so the caller receives
+        # the fully-populated receipt (with line items, warranty notes, etc.)
+        # rather than the stale pre-OCR object loaded before processing ran.
+        return self.process_ocr(db, receipt_id, user_id)
     
     def process_ocr(
         self,
@@ -314,54 +314,111 @@ class ReceiptService:
             if ocr_result.get("status") == "success":
                 # Extract data from OCR result
                 extracted = ocr_result.get("extracted_data", {})
-                
-                # Update receipt with extracted data
+
+                # ── store name ──────────────────────────────────────────────
                 if extracted.get("store_name"):
                     receipt.store_name = extracted["store_name"]
-                
+
+                # ── purchase date — use dateutil to handle multiple formats ─
+                # Textract may return "03/05/2023", "03 MAY 2023", ISO 8601…
                 if extracted.get("purchase_date"):
                     try:
-                        receipt.purchase_date = datetime.fromisoformat(extracted["purchase_date"])
-                    except (ValueError, TypeError):
-                        pass
-                
-                if extracted.get("total_amount"):
+                        receipt.purchase_date = dateutil_parser.parse(
+                            extracted["purchase_date"], dayfirst=False
+                        )
+                    except (ValueError, TypeError, OverflowError):
+                        logger.warning(
+                            f"Could not parse purchase_date: {extracted['purchase_date']!r}"
+                        )
+
+                # ── total amount ─────────────────────────────────────────────
+                if extracted.get("total_amount") is not None:
                     receipt.total_amount = float(extracted["total_amount"])
-                
+
                 if extracted.get("currency"):
                     receipt.currency = extracted["currency"]
-                
+
                 if extracted.get("product_name"):
                     receipt.product_name = extracted["product_name"]
-                
+
                 if extracted.get("warranty_period_months"):
                     receipt.warranty_period_months = int(extracted["warranty_period_months"])
-                
-                # Calculate warranty and return dates
+
+                # ── new OCR fields ────────────────────────────────────────────
+                if extracted.get("invoice_number"):
+                    receipt.invoice_number = extracted["invoice_number"]
+
+                if extracted.get("vendor_address"):
+                    receipt.vendor_address = extracted["vendor_address"]
+
+                if extracted.get("vendor_phone"):
+                    receipt.vendor_phone = extracted["vendor_phone"]
+
+                if extracted.get("vendor_email"):
+                    receipt.vendor_email = extracted["vendor_email"]
+
+                if extracted.get("vendor_url"):
+                    receipt.vendor_url = extracted["vendor_url"]
+
+                if extracted.get("remarks"):
+                    receipt.remarks = extracted["remarks"]
+
+                if extracted.get("warranty_notes"):
+                    receipt.warranty_notes = extracted["warranty_notes"]
+
+                # ── calculate warranty / return dates ─────────────────────────
                 if receipt.purchase_date:
                     if receipt.warranty_period_months:
                         receipt.warranty_expiry_date = receipt.purchase_date + timedelta(
                             days=receipt.warranty_period_months * 30
                         )
-                    
-                    receipt.return_expiry_date = receipt.purchase_date + timedelta(
-                        days=receipt.return_period_days or 30
-                    )
-                
+
+                    # Only calculate return expiry when a return period was
+                    # explicitly found (user-provided or OCR-extracted).
+                    # Do NOT default to 30 days — that creates false return
+                    # deadlines on invoices that have no return policy.
+                    if receipt.return_period_days is not None:
+                        receipt.return_expiry_date = receipt.purchase_date + timedelta(
+                            days=receipt.return_period_days
+                        )
+
                 receipt.status = ReceiptStatus.COMPLETED
                 receipt.ocr_raw_response = str(ocr_result)
-                
+
+                # ── line items ────────────────────────────────────────────────
+                # Remove any existing line items (e.g. from a previous retry)
+                db.query(ReceiptLineItem).filter(
+                    ReceiptLineItem.receipt_id == receipt.id
+                ).delete(synchronize_session=False)
+
+                for item_data in extracted.get("line_items", []):
+                    line_item = ReceiptLineItem(
+                        id=str(uuid.uuid4()),
+                        receipt_id=receipt.id,
+                        row_index=item_data.get("row_index", 0),
+                        product_code=item_data.get("product_code"),
+                        item_description=item_data.get("item_description"),
+                        quantity=item_data.get("quantity"),
+                        unit_price=item_data.get("unit_price"),
+                        amount=item_data.get("amount"),
+                    )
+                    db.add(line_item)
+
                 logger.info(f"OCR successful for receipt: {receipt_id}")
             else:
                 # OCR failed
                 receipt.ocr_retry_count += 1
                 receipt.status = ReceiptStatus.OCR_FAILED
                 logger.warning(f"OCR failed for receipt: {receipt_id}")
-            
+
             db.commit()
-            db.refresh(receipt)
-            
-            return receipt
+
+            # Re-fetch via get_receipt so the returned object has all scalar
+            # columns refreshed AND line_items eagerly loaded via selectinload.
+            # A plain db.refresh() after synchronize_session=False delete does
+            # NOT repopulate the relationship cache, causing empty lineItems
+            # in the upload response.
+            return self.get_receipt(db, receipt_id, user_id)
         
         except Exception as e:
             logger.error(f"OCR processing error for receipt {receipt_id}: {e}")

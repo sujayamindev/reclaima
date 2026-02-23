@@ -35,6 +35,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       backgroundColor: backgroundColor,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const AddReceiptScreen(),
+            ),
+          );
+        },
+        backgroundColor: primaryColor,
+        foregroundColor: const Color(0xFF0F172A),
+        shape: const CircleBorder(),
+        child: const Icon(Icons.add, size: 28),
+      ),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -146,8 +160,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
       ),
       // ── Bottom nav pill ───────────────────────────────────────
-      bottomNavigationBar: _buildBottomNavWithFAB(
-        context,
+      bottomNavigationBar: _buildBottomNav(
         navBarColor,
         textSecondaryColor,
       ),
@@ -278,9 +291,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  // ── Bottom nav with centered FAB ─────────────────────────────
-  Widget _buildBottomNavWithFAB(
-    BuildContext context,
+  // ── Bottom nav pill ─────────────────────────────────────────
+  Widget _buildBottomNav(
     Color navBarColor,
     Color inactiveColor,
   ) {
@@ -293,99 +305,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
-      child: SizedBox(
+      child: Container(
         height: 62,
-        child: Stack(
-          clipBehavior: Clip.none,
-          alignment: Alignment.center,
-          children: [
-            // Nav bar background
-            Container(
-              height: 62,
-              decoration: BoxDecoration(
-                color: navBarColor,
-                borderRadius: BorderRadius.circular(31),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  // Left side items (Home, Receipts)
-                  ...List.generate(2, (index) {
-                    final isActive = _selectedIndex == index;
-                    return Expanded(
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () => setState(() => _selectedIndex = index),
-                        child: Icon(
-                          items[index].icon,
-                          size: 24,
-                          color: isActive ? primaryColor : inactiveColor,
-                        ),
-                      ),
-                    );
-                  }),
-                  // Spacer for center FAB
-                  const SizedBox(width: 80),
-                  // Right side items (Warranty, Settings)
-                  ...List.generate(2, (index) {
-                    final actualIndex = index + 2;
-                    final isActive = _selectedIndex == actualIndex;
-                    return Expanded(
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () =>
-                            setState(() => _selectedIndex = actualIndex),
-                        child: Icon(
-                          items[actualIndex].icon,
-                          size: 24,
-                          color: isActive ? primaryColor : inactiveColor,
-                        ),
-                      ),
-                    );
-                  }),
-                ],
-              ),
-            ),
-            // Centered FAB
-            Positioned(
-              top: -8,
-              child: Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: primaryColor,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: primaryColor.withValues(alpha: 0.4),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  shape: const CircleBorder(),
-                  clipBehavior: Clip.antiAlias,
-                  child: InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const AddReceiptScreen(),
-                        ),
-                      );
-                    },
-                    child: const Icon(
-                      Icons.add,
-                      color: Color(0xFF0F172A),
-                      size: 28,
-                    ),
-                  ),
+        decoration: BoxDecoration(
+          color: navBarColor,
+          borderRadius: BorderRadius.circular(31),
+        ),
+        child: Row(
+          children: List.generate(items.length, (index) {
+            final isActive = _selectedIndex == index;
+            return Expanded(
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => setState(() => _selectedIndex = index),
+                child: Icon(
+                  items[index].icon,
+                  size: 24,
+                  color: isActive ? primaryColor : inactiveColor,
                 ),
               ),
-            ),
-          ],
+            );
+          }),
         ),
       ),
     );

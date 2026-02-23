@@ -40,6 +40,19 @@ class Receipt(Base):
     purchase_date = Column(DateTime(timezone=True), nullable=True, index=True)
     total_amount = Column(Float, nullable=True)
     currency = Column(String(3), default="USD", nullable=True)  # ISO 4217 currency code
+
+    # Invoice / receipt identification
+    invoice_number = Column(String(100), nullable=True)
+
+    # Vendor contact details (OCR-extracted)
+    vendor_address = Column(Text, nullable=True)
+    vendor_phone   = Column(String(100), nullable=True)
+    vendor_email   = Column(String(255), nullable=True)
+    vendor_url     = Column(String(255), nullable=True)
+
+    # Additional OCR fields
+    remarks        = Column(Text, nullable=True)   # OTHER/Remarks — serial numbers, etc.
+    warranty_notes = Column(Text, nullable=True)   # OTHER/Note — warranty policy text
     
     # Product information
     product_name = Column(String(512), nullable=True)
@@ -75,6 +88,7 @@ class Receipt(Base):
     # Relationships
     user = relationship("User", back_populates="receipts")
     claim_documents = relationship("ClaimDocument", back_populates="receipt", cascade="all, delete-orphan")
+    line_items = relationship("ReceiptLineItem", back_populates="receipt", cascade="all, delete-orphan", order_by="ReceiptLineItem.row_index")
     
     def __repr__(self):
         return f"<Receipt(id={self.id}, store={self.store_name}, status={self.status})>"

@@ -17,7 +17,7 @@ from app.db.base import Base
 from app.core.config import settings
 
 # Import all models to ensure they're registered with Base
-from app.models import User, Receipt, ClaimDocument  # noqa: F401
+from app.models import User, Receipt, ClaimDocument, ReceiptLineItem  # noqa: F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

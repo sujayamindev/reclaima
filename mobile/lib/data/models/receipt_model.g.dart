@@ -37,6 +37,18 @@ ReceiptModel _$ReceiptModelFromJson(Map<String, dynamic> json) => ReceiptModel(
   syncedAt: json['syncedAt'] == null
       ? null
       : DateTime.parse(json['syncedAt'] as String),
+  invoiceNumber: json['invoiceNumber'] as String?,
+  vendorAddress: json['vendorAddress'] as String?,
+  vendorPhone: json['vendorPhone'] as String?,
+  vendorEmail: json['vendorEmail'] as String?,
+  vendorUrl: json['vendorUrl'] as String?,
+  remarks: json['remarks'] as String?,
+  warrantyNotes: json['warrantyNotes'] as String?,
+  lineItems:
+      (json['lineItems'] as List<dynamic>?)
+          ?.map((e) => ReceiptLineItemModel.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
 );
 
 Map<String, dynamic> _$ReceiptModelToJson(ReceiptModel instance) =>
@@ -61,6 +73,14 @@ Map<String, dynamic> _$ReceiptModelToJson(ReceiptModel instance) =>
       'createdAt': instance.createdAt.toIso8601String(),
       'updatedAt': instance.updatedAt.toIso8601String(),
       'syncedAt': instance.syncedAt?.toIso8601String(),
+      'invoiceNumber': instance.invoiceNumber,
+      'vendorAddress': instance.vendorAddress,
+      'vendorPhone': instance.vendorPhone,
+      'vendorEmail': instance.vendorEmail,
+      'vendorUrl': instance.vendorUrl,
+      'remarks': instance.remarks,
+      'warrantyNotes': instance.warrantyNotes,
+      'lineItems': instance.lineItems,
     };
 
 const _$ReceiptStatusEnumMap = {

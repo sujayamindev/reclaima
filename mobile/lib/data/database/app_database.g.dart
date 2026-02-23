@@ -233,6 +233,83 @@ class $ReceiptsTable extends Receipts with TableInfo<$ReceiptsTable, Receipt> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _invoiceNumberMeta = const VerificationMeta(
+    'invoiceNumber',
+  );
+  @override
+  late final GeneratedColumn<String> invoiceNumber = GeneratedColumn<String>(
+    'invoice_number',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _vendorAddressMeta = const VerificationMeta(
+    'vendorAddress',
+  );
+  @override
+  late final GeneratedColumn<String> vendorAddress = GeneratedColumn<String>(
+    'vendor_address',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _vendorPhoneMeta = const VerificationMeta(
+    'vendorPhone',
+  );
+  @override
+  late final GeneratedColumn<String> vendorPhone = GeneratedColumn<String>(
+    'vendor_phone',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _vendorEmailMeta = const VerificationMeta(
+    'vendorEmail',
+  );
+  @override
+  late final GeneratedColumn<String> vendorEmail = GeneratedColumn<String>(
+    'vendor_email',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _vendorUrlMeta = const VerificationMeta(
+    'vendorUrl',
+  );
+  @override
+  late final GeneratedColumn<String> vendorUrl = GeneratedColumn<String>(
+    'vendor_url',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _remarksMeta = const VerificationMeta(
+    'remarks',
+  );
+  @override
+  late final GeneratedColumn<String> remarks = GeneratedColumn<String>(
+    'remarks',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _warrantyNotesMeta = const VerificationMeta(
+    'warrantyNotes',
+  );
+  @override
+  late final GeneratedColumn<String> warrantyNotes = GeneratedColumn<String>(
+    'warranty_notes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -256,6 +333,13 @@ class $ReceiptsTable extends Receipts with TableInfo<$ReceiptsTable, Receipt> {
     updatedAt,
     syncedAt,
     localImagePath,
+    invoiceNumber,
+    vendorAddress,
+    vendorPhone,
+    vendorEmail,
+    vendorUrl,
+    remarks,
+    warrantyNotes,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -438,6 +522,63 @@ class $ReceiptsTable extends Receipts with TableInfo<$ReceiptsTable, Receipt> {
         ),
       );
     }
+    if (data.containsKey('invoice_number')) {
+      context.handle(
+        _invoiceNumberMeta,
+        invoiceNumber.isAcceptableOrUnknown(
+          data['invoice_number']!,
+          _invoiceNumberMeta,
+        ),
+      );
+    }
+    if (data.containsKey('vendor_address')) {
+      context.handle(
+        _vendorAddressMeta,
+        vendorAddress.isAcceptableOrUnknown(
+          data['vendor_address']!,
+          _vendorAddressMeta,
+        ),
+      );
+    }
+    if (data.containsKey('vendor_phone')) {
+      context.handle(
+        _vendorPhoneMeta,
+        vendorPhone.isAcceptableOrUnknown(
+          data['vendor_phone']!,
+          _vendorPhoneMeta,
+        ),
+      );
+    }
+    if (data.containsKey('vendor_email')) {
+      context.handle(
+        _vendorEmailMeta,
+        vendorEmail.isAcceptableOrUnknown(
+          data['vendor_email']!,
+          _vendorEmailMeta,
+        ),
+      );
+    }
+    if (data.containsKey('vendor_url')) {
+      context.handle(
+        _vendorUrlMeta,
+        vendorUrl.isAcceptableOrUnknown(data['vendor_url']!, _vendorUrlMeta),
+      );
+    }
+    if (data.containsKey('remarks')) {
+      context.handle(
+        _remarksMeta,
+        remarks.isAcceptableOrUnknown(data['remarks']!, _remarksMeta),
+      );
+    }
+    if (data.containsKey('warranty_notes')) {
+      context.handle(
+        _warrantyNotesMeta,
+        warrantyNotes.isAcceptableOrUnknown(
+          data['warranty_notes']!,
+          _warrantyNotesMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -531,6 +672,34 @@ class $ReceiptsTable extends Receipts with TableInfo<$ReceiptsTable, Receipt> {
         DriftSqlType.string,
         data['${effectivePrefix}local_image_path'],
       ),
+      invoiceNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}invoice_number'],
+      ),
+      vendorAddress: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}vendor_address'],
+      ),
+      vendorPhone: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}vendor_phone'],
+      ),
+      vendorEmail: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}vendor_email'],
+      ),
+      vendorUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}vendor_url'],
+      ),
+      remarks: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}remarks'],
+      ),
+      warrantyNotes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}warranty_notes'],
+      ),
     );
   }
 
@@ -562,6 +731,13 @@ class Receipt extends DataClass implements Insertable<Receipt> {
   final DateTime updatedAt;
   final DateTime? syncedAt;
   final String? localImagePath;
+  final String? invoiceNumber;
+  final String? vendorAddress;
+  final String? vendorPhone;
+  final String? vendorEmail;
+  final String? vendorUrl;
+  final String? remarks;
+  final String? warrantyNotes;
   const Receipt({
     required this.id,
     required this.userId,
@@ -584,6 +760,13 @@ class Receipt extends DataClass implements Insertable<Receipt> {
     required this.updatedAt,
     this.syncedAt,
     this.localImagePath,
+    this.invoiceNumber,
+    this.vendorAddress,
+    this.vendorPhone,
+    this.vendorEmail,
+    this.vendorUrl,
+    this.remarks,
+    this.warrantyNotes,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -638,6 +821,27 @@ class Receipt extends DataClass implements Insertable<Receipt> {
     }
     if (!nullToAbsent || localImagePath != null) {
       map['local_image_path'] = Variable<String>(localImagePath);
+    }
+    if (!nullToAbsent || invoiceNumber != null) {
+      map['invoice_number'] = Variable<String>(invoiceNumber);
+    }
+    if (!nullToAbsent || vendorAddress != null) {
+      map['vendor_address'] = Variable<String>(vendorAddress);
+    }
+    if (!nullToAbsent || vendorPhone != null) {
+      map['vendor_phone'] = Variable<String>(vendorPhone);
+    }
+    if (!nullToAbsent || vendorEmail != null) {
+      map['vendor_email'] = Variable<String>(vendorEmail);
+    }
+    if (!nullToAbsent || vendorUrl != null) {
+      map['vendor_url'] = Variable<String>(vendorUrl);
+    }
+    if (!nullToAbsent || remarks != null) {
+      map['remarks'] = Variable<String>(remarks);
+    }
+    if (!nullToAbsent || warrantyNotes != null) {
+      map['warranty_notes'] = Variable<String>(warrantyNotes);
     }
     return map;
   }
@@ -695,6 +899,27 @@ class Receipt extends DataClass implements Insertable<Receipt> {
       localImagePath: localImagePath == null && nullToAbsent
           ? const Value.absent()
           : Value(localImagePath),
+      invoiceNumber: invoiceNumber == null && nullToAbsent
+          ? const Value.absent()
+          : Value(invoiceNumber),
+      vendorAddress: vendorAddress == null && nullToAbsent
+          ? const Value.absent()
+          : Value(vendorAddress),
+      vendorPhone: vendorPhone == null && nullToAbsent
+          ? const Value.absent()
+          : Value(vendorPhone),
+      vendorEmail: vendorEmail == null && nullToAbsent
+          ? const Value.absent()
+          : Value(vendorEmail),
+      vendorUrl: vendorUrl == null && nullToAbsent
+          ? const Value.absent()
+          : Value(vendorUrl),
+      remarks: remarks == null && nullToAbsent
+          ? const Value.absent()
+          : Value(remarks),
+      warrantyNotes: warrantyNotes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(warrantyNotes),
     );
   }
 
@@ -733,6 +958,13 @@ class Receipt extends DataClass implements Insertable<Receipt> {
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       syncedAt: serializer.fromJson<DateTime?>(json['syncedAt']),
       localImagePath: serializer.fromJson<String?>(json['localImagePath']),
+      invoiceNumber: serializer.fromJson<String?>(json['invoiceNumber']),
+      vendorAddress: serializer.fromJson<String?>(json['vendorAddress']),
+      vendorPhone: serializer.fromJson<String?>(json['vendorPhone']),
+      vendorEmail: serializer.fromJson<String?>(json['vendorEmail']),
+      vendorUrl: serializer.fromJson<String?>(json['vendorUrl']),
+      remarks: serializer.fromJson<String?>(json['remarks']),
+      warrantyNotes: serializer.fromJson<String?>(json['warrantyNotes']),
     );
   }
   @override
@@ -760,6 +992,13 @@ class Receipt extends DataClass implements Insertable<Receipt> {
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'syncedAt': serializer.toJson<DateTime?>(syncedAt),
       'localImagePath': serializer.toJson<String?>(localImagePath),
+      'invoiceNumber': serializer.toJson<String?>(invoiceNumber),
+      'vendorAddress': serializer.toJson<String?>(vendorAddress),
+      'vendorPhone': serializer.toJson<String?>(vendorPhone),
+      'vendorEmail': serializer.toJson<String?>(vendorEmail),
+      'vendorUrl': serializer.toJson<String?>(vendorUrl),
+      'remarks': serializer.toJson<String?>(remarks),
+      'warrantyNotes': serializer.toJson<String?>(warrantyNotes),
     };
   }
 
@@ -785,6 +1024,13 @@ class Receipt extends DataClass implements Insertable<Receipt> {
     DateTime? updatedAt,
     Value<DateTime?> syncedAt = const Value.absent(),
     Value<String?> localImagePath = const Value.absent(),
+    Value<String?> invoiceNumber = const Value.absent(),
+    Value<String?> vendorAddress = const Value.absent(),
+    Value<String?> vendorPhone = const Value.absent(),
+    Value<String?> vendorEmail = const Value.absent(),
+    Value<String?> vendorUrl = const Value.absent(),
+    Value<String?> remarks = const Value.absent(),
+    Value<String?> warrantyNotes = const Value.absent(),
   }) => Receipt(
     id: id ?? this.id,
     userId: userId ?? this.userId,
@@ -821,6 +1067,19 @@ class Receipt extends DataClass implements Insertable<Receipt> {
     localImagePath: localImagePath.present
         ? localImagePath.value
         : this.localImagePath,
+    invoiceNumber: invoiceNumber.present
+        ? invoiceNumber.value
+        : this.invoiceNumber,
+    vendorAddress: vendorAddress.present
+        ? vendorAddress.value
+        : this.vendorAddress,
+    vendorPhone: vendorPhone.present ? vendorPhone.value : this.vendorPhone,
+    vendorEmail: vendorEmail.present ? vendorEmail.value : this.vendorEmail,
+    vendorUrl: vendorUrl.present ? vendorUrl.value : this.vendorUrl,
+    remarks: remarks.present ? remarks.value : this.remarks,
+    warrantyNotes: warrantyNotes.present
+        ? warrantyNotes.value
+        : this.warrantyNotes,
   );
   Receipt copyWithCompanion(ReceiptsCompanion data) {
     return Receipt(
@@ -869,6 +1128,23 @@ class Receipt extends DataClass implements Insertable<Receipt> {
       localImagePath: data.localImagePath.present
           ? data.localImagePath.value
           : this.localImagePath,
+      invoiceNumber: data.invoiceNumber.present
+          ? data.invoiceNumber.value
+          : this.invoiceNumber,
+      vendorAddress: data.vendorAddress.present
+          ? data.vendorAddress.value
+          : this.vendorAddress,
+      vendorPhone: data.vendorPhone.present
+          ? data.vendorPhone.value
+          : this.vendorPhone,
+      vendorEmail: data.vendorEmail.present
+          ? data.vendorEmail.value
+          : this.vendorEmail,
+      vendorUrl: data.vendorUrl.present ? data.vendorUrl.value : this.vendorUrl,
+      remarks: data.remarks.present ? data.remarks.value : this.remarks,
+      warrantyNotes: data.warrantyNotes.present
+          ? data.warrantyNotes.value
+          : this.warrantyNotes,
     );
   }
 
@@ -895,7 +1171,14 @@ class Receipt extends DataClass implements Insertable<Receipt> {
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncedAt: $syncedAt, ')
-          ..write('localImagePath: $localImagePath')
+          ..write('localImagePath: $localImagePath, ')
+          ..write('invoiceNumber: $invoiceNumber, ')
+          ..write('vendorAddress: $vendorAddress, ')
+          ..write('vendorPhone: $vendorPhone, ')
+          ..write('vendorEmail: $vendorEmail, ')
+          ..write('vendorUrl: $vendorUrl, ')
+          ..write('remarks: $remarks, ')
+          ..write('warrantyNotes: $warrantyNotes')
           ..write(')'))
         .toString();
   }
@@ -923,6 +1206,13 @@ class Receipt extends DataClass implements Insertable<Receipt> {
     updatedAt,
     syncedAt,
     localImagePath,
+    invoiceNumber,
+    vendorAddress,
+    vendorPhone,
+    vendorEmail,
+    vendorUrl,
+    remarks,
+    warrantyNotes,
   ]);
   @override
   bool operator ==(Object other) =>
@@ -948,7 +1238,14 @@ class Receipt extends DataClass implements Insertable<Receipt> {
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.syncedAt == this.syncedAt &&
-          other.localImagePath == this.localImagePath);
+          other.localImagePath == this.localImagePath &&
+          other.invoiceNumber == this.invoiceNumber &&
+          other.vendorAddress == this.vendorAddress &&
+          other.vendorPhone == this.vendorPhone &&
+          other.vendorEmail == this.vendorEmail &&
+          other.vendorUrl == this.vendorUrl &&
+          other.remarks == this.remarks &&
+          other.warrantyNotes == this.warrantyNotes);
 }
 
 class ReceiptsCompanion extends UpdateCompanion<Receipt> {
@@ -973,6 +1270,13 @@ class ReceiptsCompanion extends UpdateCompanion<Receipt> {
   final Value<DateTime> updatedAt;
   final Value<DateTime?> syncedAt;
   final Value<String?> localImagePath;
+  final Value<String?> invoiceNumber;
+  final Value<String?> vendorAddress;
+  final Value<String?> vendorPhone;
+  final Value<String?> vendorEmail;
+  final Value<String?> vendorUrl;
+  final Value<String?> remarks;
+  final Value<String?> warrantyNotes;
   final Value<int> rowid;
   const ReceiptsCompanion({
     this.id = const Value.absent(),
@@ -996,6 +1300,13 @@ class ReceiptsCompanion extends UpdateCompanion<Receipt> {
     this.updatedAt = const Value.absent(),
     this.syncedAt = const Value.absent(),
     this.localImagePath = const Value.absent(),
+    this.invoiceNumber = const Value.absent(),
+    this.vendorAddress = const Value.absent(),
+    this.vendorPhone = const Value.absent(),
+    this.vendorEmail = const Value.absent(),
+    this.vendorUrl = const Value.absent(),
+    this.remarks = const Value.absent(),
+    this.warrantyNotes = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   ReceiptsCompanion.insert({
@@ -1020,6 +1331,13 @@ class ReceiptsCompanion extends UpdateCompanion<Receipt> {
     required DateTime updatedAt,
     this.syncedAt = const Value.absent(),
     this.localImagePath = const Value.absent(),
+    this.invoiceNumber = const Value.absent(),
+    this.vendorAddress = const Value.absent(),
+    this.vendorPhone = const Value.absent(),
+    this.vendorEmail = const Value.absent(),
+    this.vendorUrl = const Value.absent(),
+    this.remarks = const Value.absent(),
+    this.warrantyNotes = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        userId = Value(userId),
@@ -1048,6 +1366,13 @@ class ReceiptsCompanion extends UpdateCompanion<Receipt> {
     Expression<DateTime>? updatedAt,
     Expression<DateTime>? syncedAt,
     Expression<String>? localImagePath,
+    Expression<String>? invoiceNumber,
+    Expression<String>? vendorAddress,
+    Expression<String>? vendorPhone,
+    Expression<String>? vendorEmail,
+    Expression<String>? vendorUrl,
+    Expression<String>? remarks,
+    Expression<String>? warrantyNotes,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1074,6 +1399,13 @@ class ReceiptsCompanion extends UpdateCompanion<Receipt> {
       if (updatedAt != null) 'updated_at': updatedAt,
       if (syncedAt != null) 'synced_at': syncedAt,
       if (localImagePath != null) 'local_image_path': localImagePath,
+      if (invoiceNumber != null) 'invoice_number': invoiceNumber,
+      if (vendorAddress != null) 'vendor_address': vendorAddress,
+      if (vendorPhone != null) 'vendor_phone': vendorPhone,
+      if (vendorEmail != null) 'vendor_email': vendorEmail,
+      if (vendorUrl != null) 'vendor_url': vendorUrl,
+      if (remarks != null) 'remarks': remarks,
+      if (warrantyNotes != null) 'warranty_notes': warrantyNotes,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1100,6 +1432,13 @@ class ReceiptsCompanion extends UpdateCompanion<Receipt> {
     Value<DateTime>? updatedAt,
     Value<DateTime?>? syncedAt,
     Value<String?>? localImagePath,
+    Value<String?>? invoiceNumber,
+    Value<String?>? vendorAddress,
+    Value<String?>? vendorPhone,
+    Value<String?>? vendorEmail,
+    Value<String?>? vendorUrl,
+    Value<String?>? remarks,
+    Value<String?>? warrantyNotes,
     Value<int>? rowid,
   }) {
     return ReceiptsCompanion(
@@ -1124,6 +1463,13 @@ class ReceiptsCompanion extends UpdateCompanion<Receipt> {
       updatedAt: updatedAt ?? this.updatedAt,
       syncedAt: syncedAt ?? this.syncedAt,
       localImagePath: localImagePath ?? this.localImagePath,
+      invoiceNumber: invoiceNumber ?? this.invoiceNumber,
+      vendorAddress: vendorAddress ?? this.vendorAddress,
+      vendorPhone: vendorPhone ?? this.vendorPhone,
+      vendorEmail: vendorEmail ?? this.vendorEmail,
+      vendorUrl: vendorUrl ?? this.vendorUrl,
+      remarks: remarks ?? this.remarks,
+      warrantyNotes: warrantyNotes ?? this.warrantyNotes,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1196,6 +1542,27 @@ class ReceiptsCompanion extends UpdateCompanion<Receipt> {
     if (localImagePath.present) {
       map['local_image_path'] = Variable<String>(localImagePath.value);
     }
+    if (invoiceNumber.present) {
+      map['invoice_number'] = Variable<String>(invoiceNumber.value);
+    }
+    if (vendorAddress.present) {
+      map['vendor_address'] = Variable<String>(vendorAddress.value);
+    }
+    if (vendorPhone.present) {
+      map['vendor_phone'] = Variable<String>(vendorPhone.value);
+    }
+    if (vendorEmail.present) {
+      map['vendor_email'] = Variable<String>(vendorEmail.value);
+    }
+    if (vendorUrl.present) {
+      map['vendor_url'] = Variable<String>(vendorUrl.value);
+    }
+    if (remarks.present) {
+      map['remarks'] = Variable<String>(remarks.value);
+    }
+    if (warrantyNotes.present) {
+      map['warranty_notes'] = Variable<String>(warrantyNotes.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1226,6 +1593,13 @@ class ReceiptsCompanion extends UpdateCompanion<Receipt> {
           ..write('updatedAt: $updatedAt, ')
           ..write('syncedAt: $syncedAt, ')
           ..write('localImagePath: $localImagePath, ')
+          ..write('invoiceNumber: $invoiceNumber, ')
+          ..write('vendorAddress: $vendorAddress, ')
+          ..write('vendorPhone: $vendorPhone, ')
+          ..write('vendorEmail: $vendorEmail, ')
+          ..write('vendorUrl: $vendorUrl, ')
+          ..write('remarks: $remarks, ')
+          ..write('warrantyNotes: $warrantyNotes, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1751,6 +2125,13 @@ typedef $$ReceiptsTableCreateCompanionBuilder =
       required DateTime updatedAt,
       Value<DateTime?> syncedAt,
       Value<String?> localImagePath,
+      Value<String?> invoiceNumber,
+      Value<String?> vendorAddress,
+      Value<String?> vendorPhone,
+      Value<String?> vendorEmail,
+      Value<String?> vendorUrl,
+      Value<String?> remarks,
+      Value<String?> warrantyNotes,
       Value<int> rowid,
     });
 typedef $$ReceiptsTableUpdateCompanionBuilder =
@@ -1776,6 +2157,13 @@ typedef $$ReceiptsTableUpdateCompanionBuilder =
       Value<DateTime> updatedAt,
       Value<DateTime?> syncedAt,
       Value<String?> localImagePath,
+      Value<String?> invoiceNumber,
+      Value<String?> vendorAddress,
+      Value<String?> vendorPhone,
+      Value<String?> vendorEmail,
+      Value<String?> vendorUrl,
+      Value<String?> remarks,
+      Value<String?> warrantyNotes,
       Value<int> rowid,
     });
 
@@ -1890,6 +2278,41 @@ class $$ReceiptsTableFilterComposer
 
   ColumnFilters<String> get localImagePath => $composableBuilder(
     column: $table.localImagePath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get invoiceNumber => $composableBuilder(
+    column: $table.invoiceNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get vendorAddress => $composableBuilder(
+    column: $table.vendorAddress,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get vendorPhone => $composableBuilder(
+    column: $table.vendorPhone,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get vendorEmail => $composableBuilder(
+    column: $table.vendorEmail,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get vendorUrl => $composableBuilder(
+    column: $table.vendorUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get remarks => $composableBuilder(
+    column: $table.remarks,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get warrantyNotes => $composableBuilder(
+    column: $table.warrantyNotes,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -2007,6 +2430,41 @@ class $$ReceiptsTableOrderingComposer
     column: $table.localImagePath,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get invoiceNumber => $composableBuilder(
+    column: $table.invoiceNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get vendorAddress => $composableBuilder(
+    column: $table.vendorAddress,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get vendorPhone => $composableBuilder(
+    column: $table.vendorPhone,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get vendorEmail => $composableBuilder(
+    column: $table.vendorEmail,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get vendorUrl => $composableBuilder(
+    column: $table.vendorUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get remarks => $composableBuilder(
+    column: $table.remarks,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get warrantyNotes => $composableBuilder(
+    column: $table.warrantyNotes,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$ReceiptsTableAnnotationComposer
@@ -2104,6 +2562,37 @@ class $$ReceiptsTableAnnotationComposer
     column: $table.localImagePath,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get invoiceNumber => $composableBuilder(
+    column: $table.invoiceNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get vendorAddress => $composableBuilder(
+    column: $table.vendorAddress,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get vendorPhone => $composableBuilder(
+    column: $table.vendorPhone,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get vendorEmail => $composableBuilder(
+    column: $table.vendorEmail,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get vendorUrl =>
+      $composableBuilder(column: $table.vendorUrl, builder: (column) => column);
+
+  GeneratedColumn<String> get remarks =>
+      $composableBuilder(column: $table.remarks, builder: (column) => column);
+
+  GeneratedColumn<String> get warrantyNotes => $composableBuilder(
+    column: $table.warrantyNotes,
+    builder: (column) => column,
+  );
 }
 
 class $$ReceiptsTableTableManager
@@ -2155,6 +2644,13 @@ class $$ReceiptsTableTableManager
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<DateTime?> syncedAt = const Value.absent(),
                 Value<String?> localImagePath = const Value.absent(),
+                Value<String?> invoiceNumber = const Value.absent(),
+                Value<String?> vendorAddress = const Value.absent(),
+                Value<String?> vendorPhone = const Value.absent(),
+                Value<String?> vendorEmail = const Value.absent(),
+                Value<String?> vendorUrl = const Value.absent(),
+                Value<String?> remarks = const Value.absent(),
+                Value<String?> warrantyNotes = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ReceiptsCompanion(
                 id: id,
@@ -2178,6 +2674,13 @@ class $$ReceiptsTableTableManager
                 updatedAt: updatedAt,
                 syncedAt: syncedAt,
                 localImagePath: localImagePath,
+                invoiceNumber: invoiceNumber,
+                vendorAddress: vendorAddress,
+                vendorPhone: vendorPhone,
+                vendorEmail: vendorEmail,
+                vendorUrl: vendorUrl,
+                remarks: remarks,
+                warrantyNotes: warrantyNotes,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -2203,6 +2706,13 @@ class $$ReceiptsTableTableManager
                 required DateTime updatedAt,
                 Value<DateTime?> syncedAt = const Value.absent(),
                 Value<String?> localImagePath = const Value.absent(),
+                Value<String?> invoiceNumber = const Value.absent(),
+                Value<String?> vendorAddress = const Value.absent(),
+                Value<String?> vendorPhone = const Value.absent(),
+                Value<String?> vendorEmail = const Value.absent(),
+                Value<String?> vendorUrl = const Value.absent(),
+                Value<String?> remarks = const Value.absent(),
+                Value<String?> warrantyNotes = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ReceiptsCompanion.insert(
                 id: id,
@@ -2226,6 +2736,13 @@ class $$ReceiptsTableTableManager
                 updatedAt: updatedAt,
                 syncedAt: syncedAt,
                 localImagePath: localImagePath,
+                invoiceNumber: invoiceNumber,
+                vendorAddress: vendorAddress,
+                vendorPhone: vendorPhone,
+                vendorEmail: vendorEmail,
+                vendorUrl: vendorUrl,
+                remarks: remarks,
+                warrantyNotes: warrantyNotes,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'receipt_line_item_model.dart';
 
 part 'receipt_model.g.dart';
 
@@ -39,7 +40,19 @@ class ReceiptModel {
   final DateTime createdAt;
   final DateTime updatedAt;
   final DateTime? syncedAt;
-  
+
+  // ── Extended OCR fields ──────────────────────────────────────────────────
+  final String? invoiceNumber;
+  final String? vendorAddress;
+  final String? vendorPhone;
+  final String? vendorEmail;
+  final String? vendorUrl;
+  final String? remarks;        // OCR OTHER/Remarks — serial numbers, etc.
+  final String? warrantyNotes;  // OCR OTHER/Note — warranty policy text
+
+  // ── Line items (multi-product receipts) ─────────────────────────────────
+  final List<ReceiptLineItemModel> lineItems;
+
   ReceiptModel({
     required this.id,
     required this.userId,
@@ -61,6 +74,14 @@ class ReceiptModel {
     required this.createdAt,
     required this.updatedAt,
     this.syncedAt,
+    this.invoiceNumber,
+    this.vendorAddress,
+    this.vendorPhone,
+    this.vendorEmail,
+    this.vendorUrl,
+    this.remarks,
+    this.warrantyNotes,
+    this.lineItems = const [],
   });
   
   factory ReceiptModel.fromJson(Map<String, dynamic> json) =>
