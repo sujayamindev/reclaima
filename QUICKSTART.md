@@ -150,9 +150,11 @@ taskkill /PID <PID> /F
 ## 📚 Next Steps
 
 1. ✅ Backend is running with mock AWS services
-2. ⏳ Set up Flutter mobile app (coming next)
-3. ⏳ Configure real AWS S3 & Textract (when ready)
-4. ⏳ Deploy to production environment
+2. ✅ Flutter mobile app is implemented (core feature-complete)
+3. ⏳ Add Firebase config files (`google-services.json` / `GoogleService-Info.plist`) and test auth end-to-end
+4. ⏳ Configure real AWS S3 & Textract (set `USE_MOCK_AWS=false`)
+5. ⏳ Implement push notifications via Firebase Cloud Messaging
+6. ⏳ Deploy to production environment
 
 ---
 
@@ -162,6 +164,33 @@ taskkill /PID <PID> /F
 - **Firebase:** Required for authentication to work
 - **Debug Mode:** Enabled by default (DEBUG=true)
 - **Secret Key:** Change in production!
+
+---
+
+## 📱 Mobile App Quick Start
+
+### 1. Install Flutter Dependencies
+```bash
+cd mobile
+flutter pub get
+```
+
+### 2. Add Firebase Config Files
+- **Android:** `mobile/android/app/google-services.json`
+- **iOS:** `mobile/ios/Runner/GoogleService-Info.plist`
+
+Download both from your Firebase Console → Project Settings → Your apps.
+
+### 3. Update API Endpoint (if needed)
+Edit `mobile/lib/core/constants/app_constants.dart`:
+- Android emulator: `http://10.0.2.2:8000/api/v1` (default)
+- iOS simulator: `http://localhost:8000/api/v1`
+- Physical device: Use your computer's LAN IP (e.g. `http://192.168.1.x:8000/api/v1`)
+
+### 4. Run the App
+```bash
+flutter run
+```
 
 ---
 

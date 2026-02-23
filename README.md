@@ -69,26 +69,36 @@ smart-receipt-and-warranty-manager/
 │   │   ├── core/            # Core configuration & security
 │   │   ├── db/              # Database session & base
 │   │   ├── models/          # SQLAlchemy models
-│   │   ├── schemas/         # Pydantic schemas
+│   │   │   ├── user.py
+│   │   │   ├── receipt.py
+│   │   │   ├── receipt_line_item.py
+│   │   │   └── claim_document.py
+│   │   ├── schemas/         # Pydantic schemas (__init__.py)
 │   │   ├── services/        # Business logic layer
-│   │   ├── api/             # API routes (versioned)
-│   │   │   └── v1/
-│   │   └── modules/         # Feature modules
+│   │   └── api/v1/          # Versioned API routes
+│   │       ├── auth.py
+│   │       ├── receipts.py
+│   │       ├── warranties.py
+│   │       └── health.py
 │   ├── alembic/             # Database migrations
 │   ├── tests/               # Pytest tests
 │   ├── requirements.txt
-│   ├── Dockerfile
-│   └── .env.example
+│   └── Dockerfile
 │
 ├── mobile/                   # Flutter mobile app
 │   ├── lib/
 │   │   ├── main.dart
+│   │   ├── core/            # Constants, theme, utils
+│   │   ├── data/
+│   │   │   ├── models/      # Dart data models
+│   │   │   └── database/    # Drift local database
 │   │   ├── providers/       # Riverpod providers
-│   │   ├── services/        # API & local services
-│   │   ├── models/          # Data models
+│   │   ├── services/        # API & auth services
 │   │   ├── screens/         # UI screens
-│   │   ├── widgets/         # Reusable widgets
-│   │   └── database/        # Drift local database
+│   │   │   ├── auth/        # Login screen
+│   │   │   ├── home/        # Receipt list
+│   │   │   └── receipt/     # Add / Review / Confirm / Detail
+│   │   └── widgets/         # Reusable widgets
 │   ├── test/
 │   └── pubspec.yaml
 │
@@ -314,37 +324,41 @@ Once the backend is running, visit:
 | Backend API Structure | ✅ Complete |
 | Database Models | ✅ Complete |
 | Authentication | ✅ Complete |
-| Receipt Upload | ⏳ Pending |
-| OCR Processing (Mock) | ⏳ Pending |
-| Warranty Tracking | ⏳ Pending |
-| Reminder System | ⏳ Pending |
-| Flutter App | ⏳ Pending |
+| Receipt Upload & OCR (Mock) | ✅ Complete |
+| Extended OCR Fields (vendor, line items) | ✅ Complete |
+| Warranty & Return Tracking | ✅ Complete |
+| Flutter App (Core) | ✅ Complete |
+| Flutter Multi-Step Add Flow | ✅ Complete |
+| OCR Polling & Review Screen | ✅ Complete |
+| Reminder System (APScheduler) | ⏳ Pending |
+| Push Notifications (FCM) | ⏳ Pending |
+| Real AWS Integration | ⏳ Pending |
 | PDF Generation | ⏳ Pending |
-| Push Notifications | ⏳ Pending |
 
 ---
 
 ## 🗓️ Roadmap
 
-### Phase 1: Core Backend (Current)
+### Phase 1: Core Backend ✅
 - [x] Project structure setup
-- [ ] Database models and migrations
-- [ ] Authentication with Firebase
-- [ ] Receipt CRUD operations
-- [ ] Mock AWS services (S3 + Textract)
+- [x] Database models and migrations
+- [x] Authentication with Firebase
+- [x] Receipt CRUD operations
+- [x] Mock AWS services (S3 + Textract)
 
-### Phase 2: OCR & Processing
-- [ ] Real AWS Textract integration
-- [ ] S3 file upload with pre-signed URLs
-- [ ] OCR result parsing
-- [ ] Warranty/return date calculation
+### Phase 2: OCR & Processing ✅
+- [x] Extended OCR field extraction (invoice no., vendor details, line items)
+- [x] S3 file upload
+- [x] OCR result parsing and structured field storage
+- [x] Warranty/return date calculation
 
-### Phase 3: Mobile App
-- [ ] Flutter project initialization
-- [ ] Offline-first architecture (Drift)
-- [ ] Upload queue management
-- [ ] Receipt list & detail screens
-- [ ] Image capture & compression
+### Phase 3: Mobile App ✅
+- [x] Flutter project initialization
+- [x] Offline-first architecture (Drift)
+- [x] Receipt list & detail screens
+- [x] Multi-step add receipt flow (upload → review → confirm)
+- [x] OCR result polling & review/edit form
+- [x] Image capture & compression
 
 ### Phase 4: Reminders & Notifications
 - [ ] APScheduler background jobs
@@ -353,7 +367,8 @@ Once the backend is running, visit:
 - [ ] Return deadline reminders
 
 ### Phase 5: Production
-- [ ] Comprehensive testing
+- [ ] Real AWS Textract & S3 integration
+- [ ] Comprehensive testing (coverage ≥ 70%)
 - [ ] Error tracking (Sentry)
 - [ ] Monitoring & logging
 - [ ] Deployment configuration
@@ -382,3 +397,8 @@ For questions or issues, please contact the development team.
 ---
 
 **Built with ❤️ using FastAPI, Flutter, Firebase, and AWS**
+
+---
+
+**Last Updated:** 2026-02-23  
+**Status:** ✅ Backend + Flutter Core Complete — Next: Notifications & Real AWS Integration

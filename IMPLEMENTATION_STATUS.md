@@ -21,9 +21,10 @@ smart-receipt-and-warranty-manager/
 │   │   │   └── session.py         # DB session factory
 │   │   ├── models/                # Database models
 │   │   │   ├── user.py            # User model
-│   │   │   ├── receipt.py         # Receipt model
+│   │   │   ├── receipt.py         # Receipt model (extended)
+│   │   │   ├── receipt_line_item.py  # Line item model
 │   │   │   └── claim_document.py  # Claim document model
-│   │   ├── schemas/               # Pydantic schemas
+│   │   ├── schemas/               # Pydantic schemas (__init__.py)
 │   │   ├── services/              # Business logic
 │   │   │   ├── s3_service.py      # S3 (mock + real)
 │   │   │   ├── textract_service.py # OCR (mock + real)
@@ -35,7 +36,21 @@ smart-receipt-and-warranty-manager/
 │   ├── .env                       # Environment variables
 │   ├── Dockerfile                 # Container definition
 │   └── requirements.txt           # Python dependencies
-├── mobile/                        # Flutter app (placeholder)
+├── mobile/                        # Flutter app
+│   ├── lib/
+│   │   ├── core/                  # Constants, theme, utils
+│   │   ├── data/
+│   │   │   ├── models/            # Dart data models (+ .g.dart)
+│   │   │   └── database/          # Drift/SQLite database
+│   │   ├── providers/             # Riverpod providers
+│   │   ├── services/              # API & auth services
+│   │   ├── screens/               # UI screens
+│   │   │   ├── auth/              # Login/register screen
+│   │   │   ├── home/              # Receipt list screen
+│   │   │   └── receipt/           # Add/Review/Confirm/Detail screens
+│   │   ├── widgets/               # Reusable widgets
+│   │   └── main.dart
+│   └── pubspec.yaml
 ├── docker-compose.yml             # Multi-container orchestration
 ├── README.md                      # Project documentation
 ├── QUICKSTART.md                  # Setup instructions
@@ -62,7 +77,10 @@ smart-receipt-and-warranty-manager/
 ### ✅ OCR Processing
 - Mock AWS Textract service (for development)
 - Real AWS Textract integration (ready to activate)
-- Automatic data extraction from receipts
+- Extended field extraction: store name, purchase date, invoice number, vendor address/phone/email/URL, remarks, warranty notes
+- Line item extraction: multi-row `receipt_line_items` table (product code, description, quantity, unit price, amount)
+- Confidence-based best-match selection across duplicate Textract fields
+- Vendor URL cross-check to resolve mis-read vendor names
 - OCR retry mechanism (up to 3 attempts)
 - Manual entry fallback
 
@@ -81,7 +99,9 @@ smart-receipt-and-warranty-manager/
 ### ✅ Database Layer
 - PostgreSQL database
 - SQLAlchemy ORM
-- Alembic migrations
+- Alembic migrations (2 migrations applied)
+- `receipts` table with 25+ columns incl. extended OCR fields
+- `receipt_line_items` table for multi-item receipt support
 - Proper indexing for performance
 - Soft delete support
 - Timezone-aware timestamps
@@ -112,7 +132,44 @@ smart-receipt-and-warranty-manager/
 
 ---
 
-## 🚀 Ready to Use
+## � Flutter Mobile App ✅
+
+### Core Infrastructure
+- `core/constants/app_constants.dart` — API endpoints, file limits, timeouts
+- `core/constants/app_theme.dart` — Material Design 3, light/dark themes
+- `core/utils/formatters.dart` — date, currency, file size formatters
+- `core/utils/logger.dart` — structured logger configuration
+
+### Data Layer
+- `data/models/user_model.dart` (+ `.g.dart`)
+- `data/models/receipt_model.dart` (+ `.g.dart`) — includes extended OCR fields
+- `data/models/receipt_line_item_model.dart` (+ `.g.dart`)
+- `data/database/app_database.dart` (+ `.g.dart`) — Drift/SQLite
+
+### Services
+- `services/api_service.dart` — Dio HTTP client with Firebase token interceptor
+- `services/auth_service.dart` — Firebase Authentication
+- `services/receipt_service.dart` — Receipt CRUD + file upload
+
+### State Management (Riverpod)
+- `providers/service_providers.dart` — DI for services
+- `providers/auth_provider.dart` — auth state stream + controller
+- `providers/receipt_provider.dart` — receipts list + single receipt + controller
+
+### UI Screens (6 screens)
+- `screens/auth/login_screen.dart` — email/password sign in + sign up toggle
+- `screens/home/home_screen.dart` — receipt list with status indicators
+- `screens/receipt/add_receipt_screen.dart` — image picker (step 1 of 3)
+- `screens/receipt/review_receipt_screen.dart` — OCR polling + full editable form (step 2 of 3)
+- `screens/receipt/receipt_confirmation_screen.dart` — summary + warranty/return banners + save (step 3 of 3)
+- `screens/receipt/receipt_detail_screen.dart` — full receipt view
+
+### Widgets
+- `widgets/step_progress_bar.dart` — 3-step progress indicator used in add flow
+
+---
+
+## �🚀 Ready to Use
 
 ### Start the Backend
 ```bash
@@ -210,27 +267,27 @@ ALLOWED_ORIGINS=http://localhost:8000,http://localhost:3000
    uvicorn app.main:app --reload
    ```
 
-### Short Term (Flutter App)
-- [ ] Initialize Flutter project in `mobile/`
-- [ ] Configure Firebase for mobile
-- [ ] Implement Riverpod state management
-- [ ] Set up Drift local database
-- [ ] Build UI screens
+### Short Term (Integration Testing)
+- [ ] Verify Firebase auth end-to-end (mobile → backend)
+- [ ] Test receipt upload + OCR flow on device
+- [ ] Test warranty/return date calculation on real receipts
+- [ ] Test receipt confirmation save flow
 
 ### Medium Term (Features)
 - [ ] Implement APScheduler for reminders
-- [ ] Add Firebase Cloud Messaging
+- [ ] Add Firebase Cloud Messaging (FCM) push notifications
+- [ ] Store FCM device tokens per user
+- [ ] Implement background upload queue service
 - [ ] Implement PDF generation for claims
-- [ ] Add comprehensive tests
+- [ ] Add comprehensive unit + integration tests
 - [ ] Set up CI/CD pipeline
 
 ### Long Term (Production)
-- [ ] Switch to real AWS services
+- [ ] Switch to real AWS Textract + S3 (`USE_MOCK_AWS=false`)
 - [ ] Deploy to cloud (AWS/GCP/Azure)
 - [ ] Set up monitoring (Sentry, CloudWatch)
-- [ ] Implement rate limiting
-- [ ] Security audit
-- [ ] Load testing
+- [ ] Implement rate limiting (slowapi)
+- [ ] Security audit + load testing
 
 ---
 
@@ -332,12 +389,12 @@ pytest tests/test_api.py -v
 
 ## 🚧 Current Status
 
-**Phase:** ✅ **Backend + Firebase Complete**
-**Timeline:** Day 1-2 of 7-day prototype
-**Next Focus:** Auth flow testing → Flutter mobile app initialization
+**Phase:** ✅ **Backend + Flutter Feature-Complete**
+**Date:** 2026-02-23 (Day 6 of 7-day prototype)
+**Next Focus:** Integration testing → Push notifications → Demo preparation
 
 ---
 
-**Ready to build the mobile app! 📱**
+**Ready to test the full end-to-end flow! 📱➡️☁️**
 
-See [QUICKSTART.md](QUICKSTART.md) for running the backend now.
+See [QUICKSTART.md](QUICKSTART.md) for running the backend and mobile app.

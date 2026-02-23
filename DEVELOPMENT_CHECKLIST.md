@@ -106,6 +106,10 @@
 - [x] Sync tracking (syncedAt field)
 - [x] Run code generation (build_runner)
 
+### Phase 3b: Extended Models ✅
+- [x] `receipt_line_item_model.dart` (multi-item receipt support)
+- [x] JSON serializable with `.g.dart` code generation
+
 ### Phase 4: Services ✅
 - [x] AuthService (Firebase + API integration)
 - [x] ReceiptService (API communication)
@@ -116,21 +120,25 @@
 
 ### Phase 5: UI Screens ✅
 - [x] Login/Register screen (toggle mode)
-- [ ] Home/Receipt list screen (with status indicators)
-- [ ] Receipt detail screen (warranty tracking)
-- [ ] Add receipt screen
-- [ ] Camera/Gallery picker (image_picker)
-- [ ] Material Design 3 theme (light/dark)
-- [ ] Formatters (date, currency, file size)
-- [ ] Upload progress screen
-- [ ] Warranty list screen
+- [x] Home/Receipt list screen (with status indicators)
+- [x] Receipt detail screen (warranty & return tracking)
+- [x] Add receipt screen (image picker + multi-select thumbnails)
+- [x] Review receipt screen (OCR polling + editable form, all extended fields)
+- [x] Receipt confirmation screen (3-step save flow with warranty/return banners)
+- [x] Camera/Gallery picker (image_picker)
+- [x] Material Design 3 theme (light/dark)
+- [x] Formatters (date, currency, file size)
+- [x] Step progress bar widget (StepProgressBar)
+- [ ] Background upload service screen
+- [ ] Warranty list / calendar view screen
 
 ### Phase 6: Firebase Mobile Setup ⏳
 - [x] Add Firebase to Flutter project (dependencies)
 - [x] Configure android/app/google-services.json
 - [x] Configure ios/Runner/GoogleService-Info.plist
-- [ ] Test authentication flow
+- [ ] Test authentication flow end-to-end
 - [ ] Test push notifications
+- [ ] Store FCM device tokens in backend
 
 ---
 
@@ -201,11 +209,11 @@
 
 ## 📊 Progress Tracking
 
-**Overall Progress:** 75% (Backend + Firebase + Flutter Core Complete)
+**Overall Progress:** 85% (Backend + Flutter Feature-Complete)
 
 ### Completed
 ✅ Backend API (100%)
-✅ Database Models (100%)
+✅ Database Models (100%) — incl. `receipt_line_items` table
 ✅ Mock AWS Services (100%)
 ✅ Docker Setup (100%)
 ✅ API Documentation (100%)
@@ -214,16 +222,17 @@
 ✅ Flutter State Management (100%)
 ✅ Flutter Local Database (100%)
 ✅ Flutter Core Services (100%)
-✅ Flutter Core UI Screens (100%)
+✅ Flutter UI Screens — 6 screens incl. multi-step add flow (100%)
+✅ Extended OCR Fields — vendor details, line items, invoice no. (100%)
 
-### In Progress
-⏳ Flutter - Firebase Mobile Config (20%)
-⏳ Flutter - Background Services (0%)
+### In Progress / Partial
+⏳ Flutter - Firebase Mobile Config (firebase files present; auth E2E not verified)
+⏳ Flutter - Background Upload Service (0%)
 ⏳ Flutter - Push Notifications (0%)
 
 ### Pending
 ⏳ Real AWS Integration (0%)
-⏳ Background Jobs (0%)
+⏳ APScheduler Background Jobs (0%)
 ⏳ Production Deployment (0%)
 
 ---
@@ -232,20 +241,20 @@
 
 **Day 1:** ✅ Backend Foundation + Firebase Setup
 **Day 2:** ✅ Flutter App Complete Structure + Core Features
-**Day 3:** Firebase Mobile Config + Full Integration Testing
-**Day 4:** Image Upload + OCR Flow Testing
-**Day 5:** Notifications + Polish
-**Day 6:** Testing + Bug Fixes
-**Day 7:** Demo Preparation
+**Day 3:** ✅ Firebase Mobile Config + Image Upload + OCR Flow
+**Day 4:** ✅ Multi-Step Add Flow (Review + Confirmation screens)
+**Day 5:** ✅ Extended OCR Fields (line items, vendor, invoice no.) + DB migration
+**Day 6 (Today):** Testing + Bug Fixes + Documentation Update
+**Day 7:** Notifications + Polish + Demo Preparation
 
 ---
 
 ## 🐛 Known Issues / TODOs
 
 ### Immediate - Flutter
-- [ ] Add google-services.json for Android
-- [ ] Add GoogleService-Info.plist for iOS
-- [ ] Test authentication flow end-to-end
+- [x] Add google-services.json for Android
+- [x] Add GoogleService-Info.plist for iOS
+- [ ] Test authentication flow end-to-end (Firebase config present, not verified)
 - [ ] Implement image display (S3 signed URLs)
 - [ ] Add receipt image caching
 - [ ] Implement background upload service
@@ -255,6 +264,7 @@
 - [ ] Test without Firebase service account (graceful degradation)
 - [ ] Add more comprehensive error messages
 - [ ] Create postman/curl examples
+- [ ] Add `DELETE /api/v1/receipts/{id}/line-items` for manual line-item edits
 
 ### Nice to Have
 - [ ] Add API versioning header
@@ -412,40 +422,6 @@ Refs: 676104e, a215868
 5. **Authorize:** Click 🔒 → Enter `Bearer YOUR_ID_TOKEN`
 
 6. **Test Endpoints:**
-## 📱 Flutter App Summary
-
-### Created Files (20+)
-- **Core:** app_constants.dart, app_theme.dart, formatters.dart, logger.dart
-- **Models:** user_model.dart, receipt_model.dart (+ generated .g.dart files)
-- **Database:** app_database.dart (+ generated .g.dart)
-- **Services:** api_service.dart, auth_service.dart, receipt_service.dart
-- **Providers:** service_providers.dart, auth_provider.dart, receipt_provider.dart
-- **Screens:** login_screen.dart, home_screen.dart, receipt_detail_screen.dart, add_receipt_screen.dart
-- **Config:** main.dart, pubspec.yaml, README.md
-
-### Key Features Implemented
-- ✅ Firebase Authentication (Email/Password)
-- ✅ Offline-first architecture with Drift/SQLite
-- ✅ Riverpod state management
-- ✅ Dio HTTP client with token interceptors
-- ✅ Material Design 3 theming
-- ✅ Image picker (camera/gallery)
-- ✅ Warranty expiry tracking
-- ✅ Receipt CRUD operations
-- ✅ Form validation
-- ✅ Error handling
-
-### Next Steps
-1. Add Firebase config files (google-services.json)
-2. Test authentication with backend
-3. Test receipt creation and OCR
-4. Implement background upload queue
-5. Add push notifications for warranty expiry
-
----
-
-**Last Updated:** 2026-02-19
-**Status:** ✅ Backend + Firebase + Flutter Core Complete - Ready for Firebase Mobile Confi
    - POST `/api/v1/receipts` - Create receipt
    - GET `/api/v1/receipts` - List receipts
 
@@ -456,5 +432,47 @@ Refs: 676104e, a215868
 
 ---
 
-**Last Updated:** 2026-02-18
-**Status:** ✅ Backend + Firebase Complete - Ready for Auth Testing
+## 📱 Flutter App Summary
+
+### Created Files (25+)
+- **Core:** app_constants.dart, app_theme.dart, formatters.dart, logger.dart
+- **Models:** user_model.dart, receipt_model.dart, receipt_line_item_model.dart (+ generated .g.dart files)
+- **Database:** app_database.dart (+ generated .g.dart)
+- **Services:** api_service.dart, auth_service.dart, receipt_service.dart
+- **Providers:** service_providers.dart, auth_provider.dart, receipt_provider.dart
+- **Screens:**
+  - login_screen.dart, signup_screen.dart
+  - home_screen.dart
+  - add_receipt_screen.dart (step 1 of 3)
+  - review_receipt_screen.dart (step 2 of 3 — OCR review + edit)
+  - receipt_confirmation_screen.dart (step 3 of 3 — save confirmation)
+  - receipt_detail_screen.dart
+- **Widgets:** step_progress_bar.dart
+- **Config:** main.dart, pubspec.yaml, README.md
+
+### Key Features Implemented
+- ✅ Firebase Authentication (Email/Password)
+- ✅ Offline-first architecture with Drift/SQLite
+- ✅ Riverpod state management
+- ✅ Dio HTTP client with token interceptors
+- ✅ Material Design 3 theming (light/dark)
+- ✅ Image picker (camera/gallery)
+- ✅ Warranty expiry & return deadline tracking
+- ✅ Receipt CRUD operations
+- ✅ Multi-step add flow (image → OCR review → confirm save)
+- ✅ Extended OCR fields (invoice no., vendor details, line items, remarks)
+- ✅ Form validation
+- ✅ Error handling
+- ✅ Firebase config files (google-services.json, GoogleService-Info.plist)
+
+### Next Steps
+1. Verify Firebase auth end-to-end (mobile ↔ backend)
+2. Test receipt upload + OCR flow on a physical device
+3. Implement background upload queue service
+4. Add push notifications (FCM) for warranty/return reminders
+5. Store FCM device tokens in backend
+
+---
+
+**Last Updated:** 2026-02-23
+**Status:** ✅ Backend + Flutter Feature-Complete — Ready for Integration Testing & Notifications

@@ -21,7 +21,8 @@
 ### ✅ Data Layer
 - **Models** (`lib/data/models/`)
   - `user_model.dart` - User data with JSON serialization
-  - `receipt_model.dart` - Receipt with status, warranty tracking
+  - `receipt_model.dart` - Receipt with status, warranty/return tracking, extended OCR fields
+  - `receipt_line_item_model.dart` - Single line item from a multi-item receipt
   
 - **Database** (`lib/data/database/app_database.dart`)
   - Drift/SQLite setup
@@ -73,15 +74,33 @@
   - Pull to refresh
   - Profile menu
   
+- **Add Receipt Screen** (`lib/screens/receipt/add_receipt_screen.dart`) — Step 1 of 3
+  - Image picker (camera / gallery)
+  - Multi-image thumbnail preview with remove
+  - Manual entry shortcut
+  
+- **Review Receipt Screen** (`lib/screens/receipt/review_receipt_screen.dart`) — Step 2 of 3
+  - OCR polling with 60-second timeout
+  - Timeout + error fallback states with Retry / Fill Manually buttons
+  - Full editable form: invoice no., store, date, amount, currency
+  - Store contact section: address, phone, email
+  - Product info, OCR-extracted line items table (read-only)
+  - Warranty & return period inputs with auto-computed expiry dates
+  - Remarks & warranty notes sections
+
+- **Receipt Confirmation Screen** (`lib/screens/receipt/receipt_confirmation_screen.dart`) — Step 3 of 3
+  - Summary cards: purchase details, warranty coverage, return window
+  - Animated countdown banners (days-left / expired) for warranty & return
+  - Save Receipt button (creates or updates receipt + navigates to detail)
+  
 - **Receipt Detail** (`lib/screens/receipt/receipt_detail_screen.dart`)
   - Full receipt information
   - Warranty and return window tracking
   - Edit and delete actions
-  
-- **Add Receipt** (`lib/screens/receipt/add_receipt_screen.dart`)
-  - Manual entry form
-  - Image picker (camera/gallery)
-  - OCR upload
+
+### ✅ Widgets
+- **StepProgressBar** (`lib/widgets/step_progress_bar.dart`)
+  - 3-step progress indicator used in the add receipt flow
 
 ### ✅ Main App
 - **main.dart** - Configured with:
@@ -94,35 +113,27 @@
 
 ### Generated Files ✅
 Build runner has generated:
-- `*.g.dart` files for JSON serialization
+- `*.g.dart` files for JSON serialization (user, receipt, receipt_line_item)
 - `app_database.g.dart` for Drift database
 
-### Dependencies Installed ✅
-- flutter_riverpod (state management)
-- drift (local database)
-- firebase_auth (authentication)
-- firebase_messaging (notifications)
-- dio (HTTP client)
-- image_picker (camera/gallery)
-- flutter_image_compress (optimization)
-- json_annotation (serialization)
-- And 100+ transitive dependencies
+### Known Considerations
+
+1. **Firebase Setup Required**: App will show auth errors until Firebase config files are added
+2. **Backend Must Be Running**: API calls will fail if the FastAPI backend is not up
+3. **OCR is Mocked**: Using mock Textract in development (`USE_MOCK_AWS=true`)
+4. **No Push Notifications Yet**: Firebase Messaging dependency installed but notification handlers not implemented
+5. **Image Display**: Receipt images use a placeholder (S3 signed URL fetching not yet implemented)
+6. **Background Upload Queue**: Not yet implemented; uploads are synchronous in the add flow
 
 ## Next Steps to Run the App
 
 ### 1. Add Firebase Configuration
 
-**For Android:**
-```bash
-# Download google-services.json from Firebase Console
-# Place in: mobile/android/app/google-services.json
-```
+**For Android:** Place `google-services.json` in `mobile/android/app/`
 
-**For iOS:**
-```bash
-# Download GoogleService-Info.plist from Firebase Console
-# Place in: mobile/ios/Runner/GoogleService-Info.plist
-```
+**For iOS:** Place `GoogleService-Info.plist` in `mobile/ios/Runner/`
+
+Download both from Firebase Console → Project Settings → Your apps.
 
 ### 2. Start Backend Server
 ```bash
@@ -135,7 +146,7 @@ docker-compose up -d
 Edit `mobile/lib/core/constants/app_constants.dart`:
 - Android emulator: `http://10.0.2.2:8000/api/v1` (already set)
 - iOS simulator: `http://localhost:8000/api/v1`
-- Physical device: Use your computer's IP address
+- Physical device: use your computer’s LAN IP (e.g. `http://192.168.1.x:8000/api/v1`)
 
 ### 4. Run the App
 ```bash
@@ -163,7 +174,9 @@ flutter run
 ### Material Design 3
 - Modern UI components
 - Light and dark theme support
-- Responsive layouts
+- Custom green accent color scheme (`#12E28C`)
+
+---
 
 ## File Structure Summary
 
@@ -171,99 +184,83 @@ flutter run
 mobile/lib/
 ├── core/
 │   ├── constants/
-│   │   ├── app_constants.dart      ✅ API config
-│   │   └── app_theme.dart          ✅ Material 3 theme
+│   │   ├── app_constants.dart            ✅ API config
+│   │   └── app_theme.dart                ✅ Material 3 theme
 │   └── utils/
-│       ├── formatters.dart         ✅ Date/currency formatters
-│       └── logger.dart             ✅ Logger config
+│       ├── formatters.dart               ✅ Date/currency formatters
+│       └── logger.dart                   ✅ Logger config
 ├── data/
 │   ├── models/
-│   │   ├── user_model.dart         ✅ User model + .g.dart
-│   │   └── receipt_model.dart      ✅ Receipt model + .g.dart
+│   │   ├── user_model.dart               ✅ User model + .g.dart
+│   │   ├── receipt_model.dart            ✅ Receipt model + .g.dart
+│   │   └── receipt_line_item_model.dart  ✅ Line item model + .g.dart
 │   └── database/
-│       └── app_database.dart       ✅ Drift database + .g.dart
+│       └── app_database.dart             ✅ Drift database + .g.dart
 ├── services/
-│   ├── api_service.dart            ✅ Dio HTTP client
-│   ├── auth_service.dart           ✅ Firebase auth
-│   └── receipt_service.dart        ✅ Receipt CRUD
+│   ├── api_service.dart                  ✅ Dio HTTP client
+│   ├── auth_service.dart                 ✅ Firebase auth
+│   └── receipt_service.dart              ✅ Receipt CRUD + upload
 ├── providers/
-│   ├── service_providers.dart      ✅ Service DI
-│   ├── auth_provider.dart          ✅ Auth state
-│   └── receipt_provider.dart       ✅ Receipt state
+│   ├── service_providers.dart            ✅ Service DI
+│   ├── auth_provider.dart                ✅ Auth state
+│   └── receipt_provider.dart             ✅ Receipt state
 ├── screens/
 │   ├── auth/
-│   │   └── login_screen.dart       ✅ Login/signup
+│   │   └── login_screen.dart             ✅ Login/signup
 │   ├── home/
-│   │   └── home_screen.dart        ✅ Receipt list
+│   │   └── home_screen.dart              ✅ Receipt list
 │   └── receipt/
-│       ├── receipt_detail_screen.dart  ✅ Detail view
-│       └── add_receipt_screen.dart     ✅ Add receipt
-└── main.dart                       ✅ App entry point
+│       ├── add_receipt_screen.dart       ✅ Step 1: image upload
+│       ├── review_receipt_screen.dart    ✅ Step 2: OCR review + edit
+│       ├── receipt_confirmation_screen.dart ✅ Step 3: confirm & save
+│       └── receipt_detail_screen.dart    ✅ Full receipt detail view
+├── widgets/
+│   └── step_progress_bar.dart            ✅ 3-step progress indicator
+└── main.dart                             ✅ App entry point
 ```
+
+---
 
 ## Testing the App
 
 ### 1. Create a User
-- Tap "Don't have an account? Sign Up"
+- Tap “Don’t have an account? Sign Up”
 - Enter email and password (min 6 chars)
-- Tap "Sign Up"
+- Tap “Sign Up”
 
-### 2. Add a Receipt
-- Tap the + button
-- Optionally add an image
-- Fill in store name and product
-- Tap "Add Receipt"
+### 2. Add a Receipt (Scan Flow)
+- Tap the **+** button
+- Snap or select a receipt image → tap **Upload**
+- Wait for OCR (mock takes ~0.5 s) → form auto-populates
+- Review / correct the extracted data → tap **Continue**
+- Confirm the summary → tap **Save Receipt**
 
-### 3. View Receipt Details
+### 3. Add a Receipt (Manual Flow)
+- Tap the **+** button
+- Tap **Enter manually**
+- Fill in all fields → tap **Continue** → **Save Receipt**
+
+### 4. View Receipt Details
 - Tap on any receipt in the list
-- View warranty and return expiry
+- View warranty and return expiry countdown
 - Edit or delete receipt
-
-## Known Considerations
-
-1. **Firebase Setup Required**: App will show errors until Firebase is configured
-2. **Backend Must Be Running**: API calls will fail if backend is down
-3. **OCR is Mocked**: Using mock Textract service in development
-4. **No Push Notifications Yet**: Firebase Messaging configured but not implemented
-5. **Image Display**: Uses placeholder for S3 images (needs signed URL implementation)
-
-## What's Working Out of the Box
-
-✅ Complete folder structure
-✅ All dependencies installed
-✅ Code generation complete
-✅ Authentication flow UI
-✅ Receipt CRUD operations
-✅ State management setup
-✅ API service configuration
-✅ Local database schema
-✅ Theme and styling
-✅ Navigation between screens
-
-## Recommended Testing Flow
-
-1. **Without Firebase** (will show errors but structure is visible):
-   ```bash
-   flutter run
-   ```
-
-2. **With Firebase + Backend**:
-   - Add Firebase config files
-   - Start backend: `cd backend && docker-compose up`
-   - Run app: `cd mobile && flutter run`
-   - Create account, add receipts, test features
 
 ## Additional Features to Implement
 
+- [ ] Background upload service / offline queue
+- [ ] Push notifications (Firebase Messaging) for warranty expiry
+- [ ] S3 signed URL image display in receipt detail
+- [ ] Receipt image caching
 - [ ] Biometric authentication
-- [ ] Push notifications for warranty expiry
-- [ ] Background sync service
 - [ ] Search and filter receipts
-- [ ] Export to PDF
+- [ ] Export to PDF / claim document
 - [ ] Warranty calendar view
 - [ ] Claims tracking
 - [ ] Receipt categories
 - [ ] Multi-currency support
 - [ ] Receipt sharing
 
-Your Flutter app is ready to run! 🚀
+---
+
+**Last Updated:** 2026-02-23  
+**Status:** ✅ Flutter Feature-Complete (6 screens, 3-step add flow, extended OCR fields)
