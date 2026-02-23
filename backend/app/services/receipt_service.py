@@ -184,14 +184,17 @@ class ReceiptService:
         for field, value in update_data.items():
             setattr(receipt, field, value)
         
-        # Recalculate warranty and return dates if relevant fields changed
-        if receipt_data.purchase_date or receipt_data.warranty_period_months:
+        # Recalculate warranty expiry only if not explicitly provided
+        if receipt_data.warranty_expiry_date is None and \
+                (receipt_data.purchase_date or receipt_data.warranty_period_months):
             if receipt.purchase_date and receipt.warranty_period_months:
                 receipt.warranty_expiry_date = receipt.purchase_date + timedelta(
                     days=receipt.warranty_period_months * 30
                 )
-        
-        if receipt_data.purchase_date or receipt_data.return_period_days:
+
+        # Recalculate return expiry only if not explicitly provided
+        if receipt_data.return_expiry_date is None and \
+                (receipt_data.purchase_date or receipt_data.return_period_days):
             if receipt.purchase_date and receipt.return_period_days:
                 receipt.return_expiry_date = receipt.purchase_date + timedelta(
                     days=receipt.return_period_days

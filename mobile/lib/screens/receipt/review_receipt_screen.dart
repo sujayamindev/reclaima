@@ -6,6 +6,7 @@ import '../../data/models/receipt_model.dart';
 import '../../data/models/receipt_line_item_model.dart';
 import '../../providers/receipt_provider.dart';
 import '../../widgets/step_progress_bar.dart';
+import 'receipt_confirmation_screen.dart';
 
 class ReviewReceiptScreen extends ConsumerStatefulWidget {
   final String? receiptId;
@@ -130,7 +131,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
   }
 
   String _formatDate(DateTime date) =>
-      '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}T00:00:00';
 
   String _displayDate(DateTime date) {
     const months = [
@@ -177,7 +178,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     }
   }
 
-  Future<void> _save() async {
+  void _goToConfirmation() {
     final isValid = _formKey.currentState?.validate() ?? true;
     if (!isValid) return;
 
@@ -188,7 +189,6 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
       return;
     }
 
-    final controller = ref.read(receiptControllerProvider.notifier);
     final data = <String, dynamic>{};
 
     if (_invoiceNumberCtrl.text.isNotEmpty) {
@@ -225,16 +225,14 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     if (_warrantyPeriodCtrl.text.isNotEmpty) {
       final months = int.tryParse(_warrantyPeriodCtrl.text);
       if (months != null) data['warrantyPeriodMonths'] = months;
-    }
-    if (_warrantyExpiryDate != null) {
-      data['warrantyExpiryDate'] = _formatDate(_warrantyExpiryDate!);
+    } else {
+      data['warrantyPeriodMonths'] = null; // explicitly clear
     }
     if (_returnPeriodCtrl.text.isNotEmpty) {
       final days = int.tryParse(_returnPeriodCtrl.text);
       if (days != null) data['returnPeriodDays'] = days;
-    }
-    if (_returnExpiryDate != null) {
-      data['returnExpiryDate'] = _formatDate(_returnExpiryDate!);
+    } else {
+      data['returnPeriodDays'] = null; // explicitly clear
     }
     if (_remarksCtrl.text.isNotEmpty) {
       data['remarks'] = _remarksCtrl.text;
@@ -243,28 +241,18 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
       data['warrantyNotes'] = _warrantyNotesCtrl.text;
     }
 
-    final ReceiptModel? result;
-    if (widget.receiptId == null) {
-      // Manual entry: create new receipt
-      result = await controller.createReceipt(data);
-    } else {
-      // Update existing receipt
-      result = await controller.updateReceipt(widget.receiptId!, data);
-    }
-
-    if (!mounted) return;
-
-    if (result == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to save. Please try again.')),
-      );
-    } else {
-      ref.invalidate(receiptsProvider);
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Receipt saved successfully!')),
-      );
-    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ReceiptConfirmationScreen(
+          receiptId: widget.receiptId,
+          isManualEntry: widget.isManualEntry,
+          formData: data,
+          warrantyExpiryDate: _warrantyPeriodCtrl.text.isNotEmpty ? _warrantyExpiryDate : null,
+          returnExpiryDate: _returnPeriodCtrl.text.isNotEmpty ? _returnExpiryDate : null,
+        ),
+      ),
+    );
   }
 
   // ─── Build ────────────────────────────────────────────────────────────────
@@ -572,15 +560,13 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
   // ─── Form body ────────────────────────────────────────────────────────────
 
   Widget _buildFormBody(bool isDark, Color textPrimary, Color primaryGreen) {
-    final controllerState = ref.watch(receiptControllerProvider);
-
     return Column(
       children: [
         // Hero - Fixed at top
         Padding(
           padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
                 'Review Details',
@@ -771,17 +757,6 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                       ],
                       onChanged: (_) => _autoComputeWarrantyExpiry(),
                     ),
-                    const SizedBox(height: 14),
-                    _buildDateField(
-                      isDark: isDark,
-                      label: 'Warranty Expiry Date',
-                      value: _warrantyExpiryDate,
-                      hint: 'Auto-computed or select manually',
-                      onTap: () => _pickDate(
-                        current: _warrantyExpiryDate,
-                        onPicked: (d) => _warrantyExpiryDate = d,
-                      ),
-                    ),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -804,17 +779,6 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                         FilteringTextInputFormatter.digitsOnly,
                       ],
                       onChanged: (_) => _autoComputeReturnExpiry(),
-                    ),
-                    const SizedBox(height: 14),
-                    _buildDateField(
-                      isDark: isDark,
-                      label: 'Return Expiry Date',
-                      value: _returnExpiryDate,
-                      hint: 'Auto-computed or select manually',
-                      onTap: () => _pickDate(
-                        current: _returnExpiryDate,
-                        onPicked: (d) => _returnExpiryDate = d,
-                      ),
                     ),
                   ],
                 ),
@@ -852,7 +816,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
         ),
 
         // ── Footer ────────────────────────────────────────────────────────
-        _buildSaveFooter(isDark, primaryGreen, controllerState),
+        _buildSaveFooter(isDark, primaryGreen),
       ],
     );
   }
@@ -1083,6 +1047,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     required DateTime? value,
     required String hint,
     required VoidCallback onTap,
+    VoidCallback? onClear,
   }) {
     final textPrimary =
         isDark ? const Color(0xFFF1F5F9) : const Color(0xFF0F172A);
@@ -1131,8 +1096,14 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                     ),
                   ),
                 ),
-                Icon(Icons.calendar_today_outlined,
-                    size: 16, color: labelColor),
+                if (value != null && onClear != null)
+                  GestureDetector(
+                    onTap: onClear,
+                    child: Icon(Icons.close, size: 16, color: labelColor),
+                  )
+                else
+                  Icon(Icons.calendar_today_outlined,
+                      size: 16, color: labelColor),
               ],
             ),
           ),
@@ -1143,8 +1114,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
 
   // ─── Save footer ──────────────────────────────────────────────────────────
 
-  Widget _buildSaveFooter(
-      bool isDark, Color primaryGreen, AsyncValue<void> controllerState) {
+  Widget _buildSaveFooter(bool isDark, Color primaryGreen) {
     final backgroundColor =
         isDark ? const Color(0xFF10221B) : const Color(0xFFF6F8F7);
     final footerBorder =
@@ -1159,32 +1129,23 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
       child: SizedBox(
         width: double.infinity,
         child: ElevatedButton(
-          onPressed: controllerState.isLoading ? null : _save,
+          onPressed: _goToConfirmation,
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF0F172A),
             foregroundColor: Colors.white,
-            disabledBackgroundColor:
-                const Color(0xFF0F172A).withValues(alpha: 0.35),
             padding: const EdgeInsets.symmetric(vertical: 17),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24),
             ),
             elevation: 0,
           ),
-          child: controllerState.isLoading
-              ? const SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(
-                      strokeWidth: 2, color: Colors.white),
-                )
-              : const Text(
-                  'Save & Continue',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+          child: const Text(
+            'Continue',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
       ),
     );

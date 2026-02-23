@@ -52,13 +52,13 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                 leading: Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF12E28C).withValues(alpha: 0.12),
+                    color: const Color.fromARGB(255, 0, 0, 0).withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(Icons.camera_alt,
                       color: Color(0xFF12E28C), size: 20),
                 ),
-                title: Text('Take a Photo',
+                title: Text('Snap a Photo',
                     style: TextStyle(
                         fontWeight: FontWeight.w600, color: textPrimary)),
                 onTap: () => Navigator.pop(context, ImageSource.camera),
@@ -67,7 +67,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                 leading: Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF12E28C).withValues(alpha: 0.12),
+                    color: const Color.fromARGB(255, 0, 0, 0).withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(Icons.photo_library,
@@ -348,7 +348,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                               'Add More',
                               style: TextStyle(
                                 fontSize: 12,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w500,
                                 color: mutedText,
                               ),
                             ),
@@ -451,11 +451,10 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                     'Enter manually',
                     style: TextStyle(
                       fontSize: 14,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w800,
                       color: isDark
                           ? const Color(0xFF64748B)
                           : const Color(0xFF94A3B8),
-                      decoration: TextDecoration.underline,
                       decorationColor: isDark
                           ? const Color(0xFF64748B)
                           : const Color(0xFF94A3B8),

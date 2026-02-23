@@ -139,6 +139,8 @@ class ReceiptUpdate(BaseModel):
     vendor_url: Optional[str] = None
     remarks: Optional[str] = None
     warranty_notes: Optional[str] = None
+    warranty_expiry_date: Optional[datetime] = None
+    return_expiry_date: Optional[datetime] = None
 
     model_config = ConfigDict(
         populate_by_name=True,
