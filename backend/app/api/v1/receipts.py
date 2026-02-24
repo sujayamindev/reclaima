@@ -59,20 +59,20 @@ async def create_receipt(
 async def list_receipts(
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(20, ge=1, le=100, description="Items per page"),
-    status: Optional[ReceiptStatusEnum] = Query(None, description="Filter by status"),
+    status_filter: Optional[ReceiptStatusEnum] = Query(None, alias="status", description="Filter by status"),
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
     List receipts for current user with pagination.
-    
+
     Args:
         page: Page number (1-indexed)
         page_size: Number of items per page
-        status: Optional status filter
+        status_filter: Optional status filter
         current_user: Current authenticated user
         db: Database session
-        
+
     Returns:
         Paginated list of receipts
     """
@@ -80,25 +80,30 @@ async def list_receipts(
     firebase_uid = current_user.get("uid")
     db_user = user_service.get_user_by_firebase_uid(db, firebase_uid)
     if not db_user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
-    
+        # New user whose backend registration hasn't completed yet — return
+        # an empty list rather than crashing. The mobile app will register the
+        # user via POST /auth/register and then retry.
+        return {
+            "receipts": [],
+            "total": 0,
+            "page": page,
+            "page_size": page_size,
+        }
+
     skip = (page - 1) * page_size
     receipts, total = receipt_service.list_receipts(
         db=db,
         user_id=db_user.id,
         skip=skip,
         limit=page_size,
-        status=status
+        status=status_filter,
     )
-    
+
     return {
         "receipts": receipts,
         "total": total,
         "page": page,
-        "page_size": page_size
+        "page_size": page_size,
     }
 
 

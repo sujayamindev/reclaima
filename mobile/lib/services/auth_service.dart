@@ -31,9 +31,15 @@ class AuthService {
         password: password,
       );
       
-      // Register user in backend with full name
-      await registerInBackend(fullName: fullName);
-      
+      // Register user in backend with full name.
+      // Non-fatal: Firebase auth is the primary auth source.
+      // userProfileProvider will retry registration if this fails.
+      try {
+        await registerInBackend(fullName: fullName);
+      } catch (e) {
+        logger.w('Backend registration failed during signup (will retry via profile provider): $e');
+      }
+
       return userCredential;
     } on FirebaseAuthException catch (e) {
       logger.e('Firebase signup error: ${e.code}');

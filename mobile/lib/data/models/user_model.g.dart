@@ -8,18 +8,18 @@ part of 'user_model.dart';
 
 UserModel _$UserModelFromJson(Map<String, dynamic> json) => UserModel(
   id: json['id'] as String,
-  firebaseUid: json['firebase_uid'] as String,
+  firebaseUid: json['firebaseUid'] as String,
   email: json['email'] as String,
-  displayName: json['display_name'] as String?,
-  createdAt: DateTime.parse(json['created_at'] as String),
-  updatedAt: DateTime.parse(json['updated_at'] as String),
+  displayName: json['displayName'] as String?,
+  createdAt: DateTime.parse(json['createdAt'] as String),
+  updatedAt: DateTime.parse(json['updatedAt'] as String),
 );
 
 Map<String, dynamic> _$UserModelToJson(UserModel instance) => <String, dynamic>{
   'id': instance.id,
-  'firebase_uid': instance.firebaseUid,
+  'firebaseUid': instance.firebaseUid,
   'email': instance.email,
-  'display_name': instance.displayName,
-  'created_at': instance.createdAt.toIso8601String(),
-  'updated_at': instance.updatedAt.toIso8601String(),
+  'displayName': instance.displayName,
+  'createdAt': instance.createdAt.toIso8601String(),
+  'updatedAt': instance.updatedAt.toIso8601String(),
 };

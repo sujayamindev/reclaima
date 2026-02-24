@@ -1,10 +1,20 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/receipt_model.dart';
 import '../services/receipt_service.dart';
+import 'auth_provider.dart';
 import 'service_providers.dart';
 
 /// Receipts list provider
+///
+/// Waits for [userProfileProvider] to resolve first so that the backend user
+/// record is guaranteed to exist before we query /receipts. This prevents a
+/// 500 race-condition where the HomeScreen loads and hits GET /receipts before
+/// POST /auth/register has finished creating the user row.
 final receiptsProvider = FutureProvider<List<ReceiptModel>>((ref) async {
+  // Block until the user profile is confirmed (or confirmed absent).
+  // userProfileProvider already handles auto-registration internally.
+  await ref.watch(userProfileProvider.future);
+
   final receiptService = ref.watch(receiptServiceProvider);
   return await receiptService.getReceipts();
 });

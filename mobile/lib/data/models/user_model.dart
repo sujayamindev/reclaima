@@ -5,14 +5,14 @@ part 'user_model.g.dart';
 @JsonSerializable()
 class UserModel {
   final String id;
-  @JsonKey(name: 'firebase_uid')
+  @JsonKey(name: 'firebaseUid')
   final String firebaseUid;
   final String email;
-  @JsonKey(name: 'display_name')
+  @JsonKey(name: 'displayName')
   final String? displayName;
-  @JsonKey(name: 'created_at')
+  @JsonKey(name: 'createdAt')
   final DateTime createdAt;
-  @JsonKey(name: 'updated_at')
+  @JsonKey(name: 'updatedAt')
   final DateTime updatedAt;
   
   UserModel({
