@@ -47,8 +47,26 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
 
   // 📦 Product Info
   final _productNameCtrl = TextEditingController();
-  final _productCategoryCtrl = TextEditingController();
+  String _selectedCategory = 'Electronics';
   List<ReceiptLineItemModel> _lineItems = [];
+
+  static const List<String> _categories = [
+    'Electronics',
+    'Appliances',
+    'Clothing & Apparel',
+    'Furniture & Home',
+    'Automotive',
+    'Groceries & Food',
+    'Health & Beauty',
+    'Sports & Outdoors',
+    'Books & Media',
+    'Tools & Hardware',
+    'Toys & Games',
+    'Jewelry & Watches',
+    'Office Supplies',
+    'Software & Games',
+    'Other',
+  ];
 
   // 🛡️ Warranty Info
   final _warrantyPeriodCtrl = TextEditingController();
@@ -100,7 +118,8 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     _vendorPhoneCtrl.text = receipt.vendorPhone ?? '';
     _vendorEmailCtrl.text = receipt.vendorEmail ?? '';
     _productNameCtrl.text = receipt.productName ?? '';
-    _productCategoryCtrl.text = receipt.productCategory ?? '';
+    final ocrCategory = receipt.productCategory ?? '';
+    _selectedCategory = _categories.contains(ocrCategory) ? ocrCategory : 'Electronics';
     _lineItems = receipt.lineItems;
     _warrantyPeriodCtrl.text =
         receipt.warrantyPeriodMonths?.toString() ?? '';
@@ -122,7 +141,6 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     _vendorPhoneCtrl.dispose();
     _vendorEmailCtrl.dispose();
     _productNameCtrl.dispose();
-    _productCategoryCtrl.dispose();
     _warrantyPeriodCtrl.dispose();
     _returnPeriodCtrl.dispose();
     _remarksCtrl.dispose();
@@ -219,8 +237,8 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     if (_productNameCtrl.text.isNotEmpty) {
       data['productName'] = _productNameCtrl.text;
     }
-    if (_productCategoryCtrl.text.isNotEmpty) {
-      data['productCategory'] = _productCategoryCtrl.text;
+    if (_selectedCategory.isNotEmpty) {
+      data['productCategory'] = _selectedCategory;
     }
     if (_warrantyPeriodCtrl.text.isNotEmpty) {
       final months = int.tryParse(_warrantyPeriodCtrl.text);
@@ -723,12 +741,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                       hint: 'e.g. MacBook Pro 14"',
                     ),
                     const SizedBox(height: 14),
-                    _buildTextField(
-                      isDark: isDark,
-                      label: 'Category',
-                      controller: _productCategoryCtrl,
-                      hint: 'e.g. Electronics',
-                    ),
+                    _buildCategoryDropdown(isDark: isDark),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -938,6 +951,68 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                   const BorderSide(color: Color(0xFFEF4444), width: 2),
             ),
           ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCategoryDropdown({required bool isDark}) {
+    final labelColor =
+        isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    final borderColor =
+        isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+    final fillColor = isDark ? const Color(0xFF1E3A32) : Colors.white;
+    final textPrimary =
+        isDark ? const Color(0xFFF1F5F9) : const Color(0xFF0F172A);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Category',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: labelColor,
+          ),
+        ),
+        const SizedBox(height: 6),
+        DropdownButtonFormField<String>(
+          value: _selectedCategory,
+          dropdownColor: isDark ? const Color(0xFF1E3A32) : Colors.white,
+          style: TextStyle(color: textPrimary, fontSize: 15),
+          icon: Icon(Icons.keyboard_arrow_down_rounded,
+              color: labelColor, size: 20),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: fillColor,
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(24),
+              borderSide: BorderSide(color: borderColor),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(24),
+              borderSide: BorderSide(color: borderColor),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(24),
+              borderSide:
+                  const BorderSide(color: Color(0xFF12E28C), width: 2),
+            ),
+          ),
+          items: _categories
+              .map(
+                (c) => DropdownMenuItem(
+                  value: c,
+                  child: Text(c),
+                ),
+              )
+              .toList(),
+          onChanged: (value) {
+            if (value != null) setState(() => _selectedCategory = value);
+          },
         ),
       ],
     );
