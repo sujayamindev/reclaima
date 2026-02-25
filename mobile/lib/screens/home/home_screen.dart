@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../providers/auth_provider.dart';
+import '../../core/constants/app_constants.dart';
 import '../../providers/receipt_provider.dart';
 import '../receipt/receipt_detail_screen.dart';
 import '../receipt/add_receipt_screen.dart';
@@ -15,23 +15,16 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _selectedIndex = 0;
 
-  static const primaryColor = Color(0xFF12E28C);
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final backgroundColor =
-        isDark ? const Color(0xFF10221B) : const Color(0xFFF6F8F7);
-    final textPrimaryColor =
-        isDark ? const Color(0xFFF1F5F9) : const Color(0xFF0F172A);
-    final textSecondaryColor =
-        isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
-    final cardColor = isDark ? const Color(0xFF1E3A32) : Colors.white;
-    final borderColor =
-        isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
-    final navBarColor =
-        isDark ? const Color(0xFF1E293B) : const Color(0xFF0F172A);
+    final backgroundColor = AppColors.background(isDark);
+    final textPrimaryColor = AppColors.textPrimary(isDark);
+    final textSecondaryColor = AppColors.textSecondary(isDark);
+    final cardColor = AppColors.card(isDark);
+    final borderColor = AppColors.border(isDark);
+    final navBarColor = AppColors.navBar(isDark);
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -44,8 +37,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           );
         },
-        backgroundColor: primaryColor,
-        foregroundColor: const Color(0xFF0F172A),
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.onPrimary,
         shape: const CircleBorder(),
         child: const Icon(Icons.add, size: 28),
       ),
@@ -61,11 +54,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 children: [
                   Text(
                     'Recepta.',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
+                    style: AppTextStyles.appName.copyWith(
                       color: textPrimaryColor,
-                      letterSpacing: -0.5,
                     ),
                   ),
                   Row(
@@ -97,7 +87,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               width: 8,
                               height: 8,
                               decoration: const BoxDecoration(
-                                color: Colors.red,
+                                color: AppColors.error,
                                 shape: BoxShape.circle,
                               ),
                             ),
@@ -118,18 +108,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 children: [
                   RichText(
                     text: TextSpan(
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
+                      style: AppTextStyles.headingLarge.copyWith(
                         color: textPrimaryColor,
-                        height: 1.2,
-                        letterSpacing: -0.5,
                       ),
                       children: [
                         const TextSpan(text: 'Focus on what '),
                         const TextSpan(
                           text: 'matters',
-                          style: TextStyle(color: primaryColor),
+                          style: TextStyle(color: AppColors.primary),
                         ),
                         TextSpan(
                           text: '.',
@@ -200,17 +186,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 const SizedBox(height: 20),
                 Text(
                   'No receipts yet',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                  style: AppTextStyles.titleLarge.copyWith(
                     color: textPrimaryColor,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Tap the + button to add your first receipt',
-                  style: TextStyle(
-                    fontSize: 14,
+                  style: AppTextStyles.bodySmall.copyWith(
                     color: textSecondaryColor,
                   ),
                 ),
@@ -220,7 +203,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         }
 
         return RefreshIndicator(
-          color: primaryColor,
+          color: AppColors.primary,
           onRefresh: () async => ref.invalidate(receiptsProvider),
           child: ListView.builder(
             padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
@@ -248,7 +231,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         );
       },
       loading: () => const Center(
-        child: CircularProgressIndicator(color: primaryColor),
+        child: CircularProgressIndicator(color: AppColors.primary),
       ),
       error: (error, _) => Center(
         child: Padding(
@@ -256,12 +239,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, size: 48, color: Colors.red),
+              const Icon(Icons.error_outline, size: 48, color: AppColors.error),
               const SizedBox(height: 16),
               Text(
                 'Error loading receipts',
-                style: TextStyle(
-                  fontSize: 16,
+                style: AppTextStyles.bodyLarge.copyWith(
                   fontWeight: FontWeight.bold,
                   color: textPrimaryColor,
                 ),
@@ -270,16 +252,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               Text(
                 '$error',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: textSecondaryColor, fontSize: 13),
+                style: AppTextStyles.bodyXSmall.copyWith(color: textSecondaryColor),
               ),
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () => ref.invalidate(receiptsProvider),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryColor,
-                  foregroundColor: const Color(0xFF0F172A),
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.onPrimary,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
                   ),
                 ),
                 child: const Text('Retry'),
@@ -306,10 +288,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
       child: Container(
-        height: 62,
+        height: AppDimensions.navBarHeight,
         decoration: BoxDecoration(
           color: navBarColor,
-          borderRadius: BorderRadius.circular(31),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusNavBar),
         ),
         child: Row(
           children: List.generate(items.length, (index) {
@@ -321,7 +303,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: Icon(
                   items[index].icon,
                   size: 24,
-                  color: isActive ? primaryColor : inactiveColor,
+                  color: isActive ? AppColors.primary : inactiveColor,
                 ),
               ),
             );
@@ -356,7 +338,7 @@ class _AttentionSubtitle extends ConsumerWidget {
 
     return Text(
       text,
-      style: TextStyle(
+      style: AppTextStyles.bodyMedium.copyWith(
         fontSize: 15,
         color: textSecondaryColor,
         height: 1.4,
@@ -384,8 +366,8 @@ class _CircleIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 39,
-      height: 39,
+      width: AppDimensions.circleButtonSize,
+      height: AppDimensions.circleButtonSize,
       decoration: BoxDecoration(
         color: cardColor,
         shape: BoxShape.circle,
@@ -422,16 +404,14 @@ class _ReceiptCard extends StatelessWidget {
   final Color textSecondaryColor;
   final VoidCallback onTap;
 
-  static const primaryColor = Color(0xFF12E28C);
-
   Color get _statusColor {
     switch (receipt.status.toString()) {
       case 'ReceiptStatus.completed':
-        return const Color(0xFF12E28C);
+        return AppColors.primary;
       case 'ReceiptStatus.processing':
-        return Colors.orange;
+        return AppColors.warning;
       case 'ReceiptStatus.ocrFailed':
-        return Colors.red;
+        return AppColors.error;
       default:
         return Colors.grey;
     }
@@ -475,7 +455,7 @@ class _ReceiptCard extends StatelessWidget {
                   height: 44,
                   decoration: BoxDecoration(
                     color: _statusColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
                   ),
                   child: Icon(_statusIcon, color: _statusColor, size: 22),
                 ),
@@ -513,8 +493,8 @@ class _ReceiptCard extends StatelessWidget {
                               Icons.shield_outlined,
                               size: 12,
                               color: receipt.isWarrantyExpired
-                                  ? Colors.red
-                                  : primaryColor,
+                                  ? AppColors.error
+                                  : AppColors.primary,
                             ),
                             const SizedBox(width: 4),
                             Text(
@@ -525,8 +505,8 @@ class _ReceiptCard extends StatelessWidget {
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
                                 color: receipt.isWarrantyExpired
-                                    ? Colors.red
-                                    : primaryColor,
+                                    ? AppColors.error
+                                    : AppColors.primary,
                               ),
                             ),
                           ],

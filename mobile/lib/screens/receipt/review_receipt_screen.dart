@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/constants/app_constants.dart';
 import '../../data/models/receipt_model.dart';
 import '../../data/models/receipt_line_item_model.dart';
 import '../../providers/receipt_provider.dart';
@@ -278,11 +279,8 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor =
-        isDark ? const Color(0xFF10221B) : const Color(0xFFF6F8F7);
-    final textPrimary =
-        isDark ? const Color(0xFFF1F5F9) : const Color(0xFF0F172A);
-    const primaryGreen = Color(0xFF12E28C);
+    final backgroundColor = AppColors.background(isDark);
+    final textPrimary = AppColors.textPrimary(isDark);
 
     final receiptAsync = widget.receiptId != null
         ? ref.watch(receiptProvider(widget.receiptId!))
@@ -313,7 +311,6 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                       child: StepProgressBar(
                         currentStep: 2,
                         totalSteps: 3,
-                        isDark: isDark,
                       ),
                     ),
                   ),
@@ -325,15 +322,15 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
             // ── Body ────────────────────────────────────────────────────────
             Expanded(
               child: widget.receiptId == null
-                  ? _buildFormBody(isDark, textPrimary, primaryGreen)
+                  ? _buildFormBody(isDark, textPrimary)
                   : widget.isManualEntry
                       ? _buildFormFromProvider(
-                          isDark, textPrimary, primaryGreen, receiptAsync)
+                          isDark, textPrimary, receiptAsync)
                       : receiptAsync.when(
                       loading: () =>
-                          _buildRiverpodLoadingBody(textPrimary, primaryGreen),
+                          _buildRiverpodLoadingBody(textPrimary),
                       error: (e, _) =>
-                          _buildErrorBody(textPrimary, primaryGreen),
+                          _buildErrorBody(textPrimary),
                       data: (receipt) {
                         final isProcessing =
                             receipt.status == ReceiptStatus.uploaded ||
@@ -343,17 +340,17 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                             isProcessing &&
                             !_timedOut) {
                           return _buildOcrLoadingBody(
-                              textPrimary, primaryGreen);
+                              textPrimary);
                         }
 
                         if (!_forceShowForm && _timedOut && isProcessing) {
                           return _buildTimedOutBody(
-                              isDark, textPrimary, primaryGreen);
+                              isDark, textPrimary);
                         }
 
                         _populateFields(receipt);
                         return _buildFormBody(
-                            isDark, textPrimary, primaryGreen);
+                            isDark, textPrimary);
                       },
                     ),
             ),
@@ -367,27 +364,26 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
   Widget _buildFormFromProvider(
     bool isDark,
     Color textPrimary,
-    Color primaryGreen,
     AsyncValue<ReceiptModel> receiptAsync,
   ) {
     return receiptAsync.when(
-      loading: () => _buildRiverpodLoadingBody(textPrimary, primaryGreen),
-      error: (e, _) => _buildErrorBody(textPrimary, primaryGreen),
+      loading: () => _buildRiverpodLoadingBody(textPrimary),
+      error: (e, _) => _buildErrorBody(textPrimary),
       data: (receipt) {
         _populateFields(receipt);
-        return _buildFormBody(isDark, textPrimary, primaryGreen);
+        return _buildFormBody(isDark, textPrimary);
       },
     );
   }
 
   // ─── State bodies ─────────────────────────────────────────────────────────
 
-  Widget _buildRiverpodLoadingBody(Color textPrimary, Color primaryGreen) {
+  Widget _buildRiverpodLoadingBody(Color textPrimary) {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          CircularProgressIndicator(color: primaryGreen, strokeWidth: 3),
+          CircularProgressIndicator(color: AppColors.primary, strokeWidth: 3),
           const SizedBox(height: 20),
           Text(
             'Loading…',
@@ -398,7 +394,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     );
   }
 
-  Widget _buildOcrLoadingBody(Color textPrimary, Color primaryGreen) {
+  Widget _buildOcrLoadingBody(Color textPrimary) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -409,7 +405,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
               width: 72,
               height: 72,
               child: CircularProgressIndicator(
-                  color: primaryGreen, strokeWidth: 4),
+                  color: AppColors.primary, strokeWidth: 4),
             ),
             const SizedBox(height: 28),
             Text(
@@ -443,7 +439,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
               },
               icon: const Icon(Icons.refresh, size: 16),
               label: const Text('Refresh'),
-              style: TextButton.styleFrom(foregroundColor: primaryGreen),
+              style: TextButton.styleFrom(foregroundColor: AppColors.primary),
             ),
           ],
         ),
@@ -452,8 +448,8 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
   }
 
   Widget _buildTimedOutBody(
-      bool isDark, Color textPrimary, Color primaryGreen) {
-    final cardColor = isDark ? const Color(0xFF1E3A32) : Colors.white;
+      bool isDark, Color textPrimary) {
+    final cardColor = AppColors.card(isDark);
 
     return Center(
       child: Padding(
@@ -468,7 +464,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Icon(Icons.timer_off_outlined,
-                  size: 48, color: Color(0xFFF59E0B)),
+                  size: 48, color: AppColors.warning),
               const SizedBox(height: 16),
               Text(
                 'Taking longer than expected',
@@ -504,11 +500,11 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                   icon: const Icon(Icons.refresh, size: 18),
                   label: const Text('Refresh'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryGreen,
-                    foregroundColor: const Color(0xFF0F172A),
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: AppColors.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
                     ),
                     elevation: 0,
                   ),
@@ -535,7 +531,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     );
   }
 
-  Widget _buildErrorBody(Color textPrimary, Color primaryGreen) {
+  Widget _buildErrorBody(Color textPrimary) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -543,7 +539,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(Icons.error_outline,
-                size: 48, color: Color(0xFFEF4444)),
+                size: 48, color: AppColors.error),
             const SizedBox(height: 16),
             Text(
               'Something went wrong',
@@ -567,7 +563,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                   ref.invalidate(receiptProvider(widget.receiptId!)),
               icon: const Icon(Icons.refresh, size: 16),
               label: const Text('Retry'),
-              style: TextButton.styleFrom(foregroundColor: primaryGreen),
+              style: TextButton.styleFrom(foregroundColor: AppColors.primary),
             ),
           ],
         ),
@@ -577,7 +573,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
 
   // ─── Form body ────────────────────────────────────────────────────────────
 
-  Widget _buildFormBody(bool isDark, Color textPrimary, Color primaryGreen) {
+  Widget _buildFormBody(bool isDark, Color textPrimary) {
     return Column(
       children: [
         // Hero - Fixed at top
@@ -588,11 +584,8 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
             children: [
               Text(
                 'Review Details',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
+                style: AppTextStyles.headingSmall.copyWith(
                   color: textPrimary,
-                  height: 1.25,
                 ),
               ),
               const SizedBox(height: 6),
@@ -600,10 +593,8 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                 widget.isManualEntry || _forceShowForm
                     ? 'Enter your receipt details below.'
                     : 'Check and correct any extracted data.',
-                style: TextStyle(
-                  fontSize: 15,
+                style: AppTextStyles.bodyMedium.copyWith(
                   color: textPrimary.withValues(alpha: 0.6),
-                  height: 1.5,
                 ),
               ),
             ],
@@ -624,7 +615,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                   textPrimary: textPrimary,
                   title: 'Purchase Details',
                   icon: Icons.receipt_long_outlined,
-                  iconColor: const Color(0xFF12E28C),
+                  iconColor: AppColors.primary,
                   children: [
                     _buildTextField(
                       isDark: isDark,
@@ -697,7 +688,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                   textPrimary: textPrimary,
                   title: 'Store Contact',
                   icon: Icons.store_outlined,
-                  iconColor: const Color(0xFF12E28C),
+                  iconColor: AppColors.primary,
                   children: [
                     _buildTextField(
                       isDark: isDark,
@@ -732,7 +723,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                   textPrimary: textPrimary,
                   title: 'Product Info',
                   icon: Icons.inventory_2_outlined,
-                  iconColor: const Color(0xFF12E28C),
+                  iconColor: AppColors.primary,
                   children: [
                     _buildTextField(
                       isDark: isDark,
@@ -757,7 +748,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                   textPrimary: textPrimary,
                   title: 'Warranty Info',
                   icon: Icons.verified_outlined,
-                  iconColor: const Color(0xFF12E28C),
+                  iconColor: AppColors.primary,
                   children: [
                     _buildTextField(
                       isDark: isDark,
@@ -780,7 +771,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                   textPrimary: textPrimary,
                   title: 'Return Policy',
                   icon: Icons.assignment_return_outlined,
-                  iconColor: const Color(0xFF12E28C),
+                  iconColor: AppColors.primary,
                   children: [
                     _buildTextField(
                       isDark: isDark,
@@ -803,7 +794,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                   textPrimary: textPrimary,
                   title: 'Remarks & Notes',
                   icon: Icons.notes_outlined,
-                  iconColor: const Color(0xFF12E28C),
+                  iconColor: AppColors.primary,
                   children: [
                     _buildTextField(
                       isDark: isDark,
@@ -829,7 +820,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
         ),
 
         // ── Footer ────────────────────────────────────────────────────────
-        _buildSaveFooter(isDark, primaryGreen),
+        _buildSaveFooter(isDark),
       ],
     );
   }
@@ -844,14 +835,13 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     required Color iconColor,
     required List<Widget> children,
   }) {
-    final cardColor = isDark ? const Color(0xFF1E3A32) : Colors.white;
-    final borderColor =
-        isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+    final cardColor = AppColors.card(isDark);
+    final borderColor = AppColors.border(isDark);
 
     return Container(
       decoration: BoxDecoration(
         color: cardColor,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
         border: Border.all(color: borderColor),
       ),
       padding: const EdgeInsets.all(20),
@@ -864,9 +854,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
               const SizedBox(width: 10),
               Text(
                 title,
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
+                style: AppTextStyles.sectionTitle.copyWith(
                   color: textPrimary,
                 ),
               ),
@@ -892,25 +880,17 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     String? Function(String?)? validator,
     int maxLines = 1,
   }) {
-    final textPrimary =
-        isDark ? const Color(0xFFF1F5F9) : const Color(0xFF0F172A);
-    final labelColor =
-        isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
-    final borderColor =
-        isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
-    final fillColor =
-        isDark ? const Color(0xFF1E3A32) : Colors.white;
+    final textPrimary = AppColors.textPrimary(isDark);
+    final labelColor = AppColors.label(isDark);
+    final borderColor = AppColors.border(isDark);
+    final fillColor = AppColors.card(isDark);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: labelColor,
-          ),
+          style: AppTextStyles.formLabel.copyWith(color: labelColor),
         ),
         const SizedBox(height: 6),
         TextFormField(
@@ -939,16 +919,16 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(maxLines > 1 ? 12 : 24),
               borderSide:
-                  const BorderSide(color: Color(0xFF12E28C), width: 2),
+                  const BorderSide(color: AppColors.primary, width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(maxLines > 1 ? 12 : 24),
-              borderSide: const BorderSide(color: Color(0xFFEF4444)),
+              borderSide: const BorderSide(color: AppColors.error),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(maxLines > 1 ? 12 : 24),
               borderSide:
-                  const BorderSide(color: Color(0xFFEF4444), width: 2),
+                  const BorderSide(color: AppColors.error, width: 2),
             ),
           ),
         ),
@@ -957,29 +937,22 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
   }
 
   Widget _buildCategoryDropdown({required bool isDark}) {
-    final labelColor =
-        isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
-    final borderColor =
-        isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
-    final fillColor = isDark ? const Color(0xFF1E3A32) : Colors.white;
-    final textPrimary =
-        isDark ? const Color(0xFFF1F5F9) : const Color(0xFF0F172A);
+    final labelColor = AppColors.label(isDark);
+    final borderColor = AppColors.border(isDark);
+    final fillColor = AppColors.card(isDark);
+    final textPrimary = AppColors.textPrimary(isDark);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Category',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: labelColor,
-          ),
+          style: AppTextStyles.formLabel.copyWith(color: labelColor),
         ),
         const SizedBox(height: 6),
         DropdownButtonFormField<String>(
           value: _selectedCategory,
-          dropdownColor: isDark ? const Color(0xFF1E3A32) : Colors.white,
+          dropdownColor: AppColors.card(isDark),
           style: TextStyle(color: textPrimary, fontSize: 15),
           icon: Icon(Icons.keyboard_arrow_down_rounded,
               color: labelColor, size: 20),
@@ -997,9 +970,9 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
               borderSide: BorderSide(color: borderColor),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
               borderSide:
-                  const BorderSide(color: Color(0xFF12E28C), width: 2),
+                  const BorderSide(color: AppColors.primary, width: 2),
             ),
           ),
           items: _categories
@@ -1020,18 +993,16 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
 
   /// Read-only card showing OCR-extracted line items (product code, qty, etc.)
   Widget _buildLineItemsCard(bool isDark, Color textPrimary) {
-    final cardColor = isDark ? const Color(0xFF1E3A32) : Colors.white;
-    final borderColor =
-        isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
-    final labelColor =
-        isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
-    final headerStyle = TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: labelColor);
+    final cardColor = AppColors.card(isDark);
+    final borderColor = AppColors.border(isDark);
+    final labelColor = AppColors.label(isDark);
+    final headerStyle = AppTextStyles.tableHeader.copyWith(color: labelColor);
     const cellStyle = TextStyle(fontSize: 13);
 
     return Container(
       decoration: BoxDecoration(
         color: cardColor,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
         border: Border.all(color: borderColor),
       ),
       padding: const EdgeInsets.all(20),
@@ -1040,7 +1011,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.shopping_cart_outlined, size: 20, color: Color(0xFF12E28C)),
+              const Icon(Icons.shopping_cart_outlined, size: 20, color: AppColors.primary),
               const SizedBox(width: 10),
               Text(
                 'Items Purchased',
@@ -1050,12 +1021,12 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF12E28C).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
+                  color: AppColors.primary.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
                 ),
                 child: Text(
                   '${_lineItems.length} item${_lineItems.length == 1 ? '' : 's'}',
-                  style: const TextStyle(fontSize: 11, color: Color(0xFF12E28C), fontWeight: FontWeight.w600),
+                  style: const TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.w600),
                 ),
               ),
             ],
@@ -1124,14 +1095,10 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     required VoidCallback onTap,
     VoidCallback? onClear,
   }) {
-    final textPrimary =
-        isDark ? const Color(0xFFF1F5F9) : const Color(0xFF0F172A);
-    final labelColor =
-        isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
-    final borderColor =
-        isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
-    final fillColor =
-        isDark ? const Color(0xFF1E3A32) : Colors.white;
+    final textPrimary = AppColors.textPrimary(isDark);
+    final labelColor = AppColors.label(isDark);
+    final borderColor = AppColors.border(isDark);
+    final fillColor = AppColors.card(isDark);
 
     final displayText = value != null ? _displayDate(value) : null;
 
@@ -1140,11 +1107,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
       children: [
         Text(
           label,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: labelColor,
-          ),
+          style: AppTextStyles.formLabel.copyWith(color: labelColor),
         ),
         const SizedBox(height: 6),
         GestureDetector(
@@ -1189,11 +1152,9 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
 
   // ─── Save footer ──────────────────────────────────────────────────────────
 
-  Widget _buildSaveFooter(bool isDark, Color primaryGreen) {
-    final backgroundColor =
-        isDark ? const Color(0xFF10221B) : const Color(0xFFF6F8F7);
-    final footerBorder =
-        isDark ? const Color(0xFF1E3A32) : const Color(0xFFF1F5F9);
+  Widget _buildSaveFooter(bool isDark) {
+    final backgroundColor = AppColors.background(isDark);
+    final footerBorder = AppColors.footerBorder(isDark);
 
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
@@ -1206,11 +1167,11 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
         child: ElevatedButton(
           onPressed: _goToConfirmation,
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF0F172A),
+            backgroundColor: AppColors.onPrimary,
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(vertical: 17),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
             ),
             elevation: 0,
           ),

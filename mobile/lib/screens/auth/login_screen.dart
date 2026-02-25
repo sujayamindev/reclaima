@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/constants/app_constants.dart';
 import '../../providers/auth_provider.dart';
 import '../home/home_screen.dart';
 import 'signup_screen.dart';
@@ -61,14 +62,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       });
     });
     
-    // Custom colors matching the design
-    const primaryColor = Color(0xFF12E28C);
-    final backgroundColor = isDark ? const Color(0xFF10221B) : const Color(0xFFF6F8F7);
-    final cardColor = isDark ? const Color(0xFF1E3A32) : Colors.white;
-    final borderColor = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
-    final textPrimaryColor = isDark ? const Color(0xFFF1F5F9) : const Color(0xFF0F172A);
-    final textSecondaryColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569);
-    final labelColor = isDark ? const Color(0xFFCBD5E1) : const Color(0xFF334155);
+    final backgroundColor = AppColors.background(isDark);
+    final cardColor = AppColors.card(isDark);
+    final borderColor = AppColors.border(isDark);
+    final textPrimaryColor = AppColors.textPrimary(isDark);
+    final textSecondaryColor = AppColors.textSecondary(isDark);
+    final labelColor = AppColors.label(isDark);
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -100,20 +99,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 children: [
                   Text(
                     'Log In',
-                    style: TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
+                    style: AppTextStyles.displayLarge.copyWith(
                       color: textPrimaryColor,
-                      letterSpacing: -0.5,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Welcome back! Sign in to continue managing your receipts and warranties.',
-                    style: TextStyle(
-                      fontSize: 16,
+                    style: AppTextStyles.bodyLarge.copyWith(
                       color: textSecondaryColor,
-                      height: 1.5,
                     ),
                   ),
                 ],
@@ -190,10 +184,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         child: ElevatedButton(
                           onPressed: authState.isLoading ? null : _submit,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: primaryColor,
+                            backgroundColor: AppColors.primary,
                             foregroundColor: const Color(0xFF0F172A),
                             elevation: 8,
-                            shadowColor: primaryColor.withValues(alpha: 0.3),
+                            shadowColor: AppColors.primary.withValues(alpha: 0.3),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(24),
                             ),
@@ -223,9 +217,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           children: [
                             Text(
                               'Don\'t have an account?',
-                              style: TextStyle(
+                              style: AppTextStyles.bodySmall.copyWith(
                                 color: textSecondaryColor,
-                                fontSize: 14,
                               ),
                             ),
                             TextButton(
@@ -237,15 +230,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 );
                               },
                               style: TextButton.styleFrom(
-                                foregroundColor: primaryColor,
+                                foregroundColor: AppColors.primary,
                                 padding: const EdgeInsets.symmetric(horizontal: 8),
                               ),
                               child: const Text(
                                 'Sign Up',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                ),
+                                style: AppTextStyles.buttonSmall,
                               ),
                             ),
                           ],
@@ -267,9 +257,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               padding: const EdgeInsets.symmetric(horizontal: 16),
                               child: Text(
                                 'OR',
-                                style: TextStyle(
+                                style: AppTextStyles.bodySmall.copyWith(
                                   color: textSecondaryColor,
-                                  fontSize: 14,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -305,7 +294,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               label: 'Apple',
                               icon: Icon(
                                 Icons.apple,
-                                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                color: isDark ? Colors.white : AppColors.onPrimary,
                                 size: 20,
                               ),
                               onPressed: () {
@@ -351,18 +340,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           padding: const EdgeInsets.only(left: 4, bottom: 6),
           child: Text(
             label,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: labelColor,
-            ),
+            style: AppTextStyles.formLabel.copyWith(color: labelColor),
           ),
         ),
         TextFormField(
           controller: controller,
           obscureText: obscureText,
           keyboardType: keyboardType,
-          style: TextStyle(color: textColor, fontSize: 15),
+          style: AppTextStyles.bodyMedium.copyWith(color: textColor),
           decoration: InputDecoration(
             hintText: placeholder,
             hintStyle: TextStyle(color: labelColor.withValues(alpha: 0.5)),
@@ -374,24 +359,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
             suffixIcon: suffixIcon,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
               borderSide: BorderSide(color: borderColor),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
               borderSide: BorderSide(color: borderColor),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(24),
-              borderSide: const BorderSide(color: Color(0xFF12E28C), width: 2),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
+              borderSide: const BorderSide(color: AppColors.primary, width: 2),
             ),
             errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(24),
-              borderSide: const BorderSide(color: Colors.red),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
+              borderSide: const BorderSide(color: AppColors.error),
             ),
             focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(24),
-              borderSide: const BorderSide(color: Colors.red, width: 2),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
+              borderSide: const BorderSide(color: AppColors.error, width: 2),
             ),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           ),
@@ -410,14 +395,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     required Color textColor,
   }) {
     return SizedBox(
-      height: 48,
+      height: AppDimensions.buttonHeight,
       child: OutlinedButton(
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(
           backgroundColor: cardColor,
           side: BorderSide(color: borderColor),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 12),
         ),
@@ -428,11 +413,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             const SizedBox(width: 12),
             Text(
               label,
-              style: TextStyle(
-                color: textColor,
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-              ),
+              style: AppTextStyles.formLabel.copyWith(color: textColor),
             ),
           ],
         ),
@@ -457,7 +438,7 @@ class GoogleIconPainter extends CustomPainter {
     final paint = Paint()..style = PaintingStyle.fill;
     
     // Blue
-    paint.color = const Color(0xFF4285F4);
+    paint.color = AppColors.googleBlue;
     canvas.drawPath(
       Path()
         ..moveTo(size.width * 0.94, size.height * 0.51)
@@ -473,7 +454,7 @@ class GoogleIconPainter extends CustomPainter {
     );
     
     // Green
-    paint.color = const Color(0xFF34A853);
+    paint.color = AppColors.googleGreen;
     canvas.drawPath(
       Path()
         ..moveTo(size.width * 0.5, size.height * 0.96)
@@ -487,7 +468,7 @@ class GoogleIconPainter extends CustomPainter {
     );
     
     // Yellow
-    paint.color = const Color(0xFFFBBC05);
+    paint.color = AppColors.googleYellow;
     canvas.drawPath(
       Path()
         ..moveTo(size.width * 0.26, size.height * 0.59)
@@ -502,7 +483,7 @@ class GoogleIconPainter extends CustomPainter {
     );
     
     // Red
-    paint.color = const Color(0xFFEA4335);
+    paint.color = AppColors.googleRed;
     canvas.drawPath(
       Path()
         ..moveTo(size.width * 0.5, size.height * 0.22)

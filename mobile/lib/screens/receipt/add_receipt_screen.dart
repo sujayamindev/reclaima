@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../core/constants/app_constants.dart';
 import '../../providers/receipt_provider.dart';
 import '../../widgets/step_progress_bar.dart';
 import 'review_receipt_screen.dart';
@@ -19,11 +20,9 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
 
   Future<void> _pickImage() async {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final sheetBg = isDark ? const Color(0xFF1E3A32) : Colors.white;
-    final textPrimary =
-        isDark ? const Color(0xFFF1F5F9) : const Color(0xFF0F172A);
-    final borderColor =
-        isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+    final sheetBg = AppColors.card(isDark);
+    final textPrimary = AppColors.textPrimary(isDark);
+    final borderColor = AppColors.border(isDark);
 
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
@@ -56,7 +55,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(Icons.camera_alt,
-                      color: Color(0xFF12E28C), size: 20),
+                      color: AppColors.primary, size: 20),
                 ),
                 title: Text('Snap a Photo',
                     style: TextStyle(
@@ -71,7 +70,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(Icons.photo_library,
-                      color: Color(0xFF12E28C), size: 20),
+                      color: AppColors.primary, size: 20),
                 ),
                 title: Text('Choose from Gallery',
                     style: TextStyle(
@@ -148,19 +147,12 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final backgroundColor =
-        isDark ? const Color(0xFF10221B) : const Color(0xFFF6F8F7);
-    final textPrimary =
-        isDark ? const Color(0xFFF1F5F9) : const Color(0xFF0F172A);
-    final textSecondary =
-        isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569);
-
-    final borderColor =
-        isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
-    final cardColor = isDark ? const Color(0xFF1E3A32) : Colors.white;
-    final mutedText =
-        isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8);
-    const primaryGreen = Color(0xFF12E28C);
+    final backgroundColor = AppColors.background(isDark);
+    final textPrimary = AppColors.textPrimary(isDark);
+    final textSecondary = AppColors.textSecondary(isDark);
+    final borderColor = AppColors.border(isDark);
+    final cardColor = AppColors.card(isDark);
+    final mutedText = AppColors.muted(isDark);
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -187,7 +179,6 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                       child: StepProgressBar(
                         currentStep: 1,
                         totalSteps: 3,
-                        isDark: isDark,
                       ),
                     ),
                   ),
@@ -212,21 +203,16 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                   Text(
                     'Smart Upload',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
+                    style: AppTextStyles.headingMedium.copyWith(
                       color: textPrimary,
-                      height: 1.25,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Snap a photo or pick from your gallery \n AI does the rest.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
+                    style: AppTextStyles.bodyLarge.copyWith(
                       color: textSecondary,
-                      height: 1.6,
                     ),
                   ),
                 ],
@@ -242,11 +228,11 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 28),
                   decoration: BoxDecoration(
-                    color: primaryGreen,
-                    borderRadius: BorderRadius.circular(32),
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusXXL),
                     boxShadow: [
                       BoxShadow(
-                        color: primaryGreen.withValues(alpha: 0.35),
+                        color: AppColors.primary.withValues(alpha: 0.35),
                         blurRadius: 20,
                         offset: const Offset(0, 8),
                       ),
@@ -258,12 +244,12 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                       Container(
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF0F172A).withValues(alpha: 0.12),
+                          color: AppColors.onPrimary.withValues(alpha: 0.12),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
                           Icons.add_a_photo_outlined,
-                          color: Color(0xFF0F172A),
+                          color: AppColors.onPrimary,
                           size: 28,
                         ),
                       ),
@@ -273,7 +259,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF0F172A),
+                          color: AppColors.onPrimary,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -281,7 +267,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                         'Receipt, warranty card, or invoice',
                         style: TextStyle(
                           fontSize: 13,
-                          color: const Color(0xFF0F172A).withValues(alpha: 0.6),
+                          color: AppColors.onPrimary.withValues(alpha: 0.6),
                         ),
                       ),
                     ],
@@ -299,11 +285,8 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                 children: [
                   Text(
                     'SELECTED FILES',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
+                    style: AppTextStyles.capsLabel.copyWith(
                       color: mutedText,
-                      letterSpacing: 0.7,
                     ),
                   ),
                   Text(
@@ -312,7 +295,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      color: primaryGreen,
+                      color: AppColors.primary,
                     ),
                   ),
                 ],
@@ -384,7 +367,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                               width: 24,
                               height: 24,
                               decoration: BoxDecoration(
-                                color: const Color(0xFF0F172A),
+                                color: AppColors.onPrimary,
                                 shape: BoxShape.circle,
                                 border: Border.all(
                                     color: backgroundColor, width: 2),
@@ -407,18 +390,17 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
             ),
 
             // -- Footer
-            _buildFooter(backgroundColor, primaryGreen),
+            _buildFooter(backgroundColor),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildFooter(Color backgroundColor, Color primaryGreen) {
+  Widget _buildFooter(Color backgroundColor) {
     final controllerState = ref.watch(receiptControllerProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final footerBorder =
-        isDark ? const Color(0xFF1E3A32) : const Color(0xFFF1F5F9);
+    final footerBorder = AppColors.footerBorder(isDark);
 
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
@@ -439,34 +421,23 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                 children: [
                   Text(
                     "Can't scan? ",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: isDark
-                          ? const Color(0xFF64748B)
-                          : const Color(0xFF94A3B8),
+                    style: AppTextStyles.formLabel.copyWith(
+                      color: AppColors.muted(isDark),
                     ),
                   ),
                   Text(
                     'Enter manually',
-                    style: TextStyle(
-                      fontSize: 14,
+                    style: AppTextStyles.formLabel.copyWith(
                       fontWeight: FontWeight.w800,
-                      color: isDark
-                          ? const Color(0xFF64748B)
-                          : const Color(0xFF94A3B8),
-                      decorationColor: isDark
-                          ? const Color(0xFF64748B)
-                          : const Color(0xFF94A3B8),
+                      color: AppColors.muted(isDark),
+                      decorationColor: AppColors.muted(isDark),
                     ),
                   ),
                   const SizedBox(width: 4),
                   Icon(
                     Icons.arrow_forward,
                     size: 14,
-                    color: isDark
-                        ? const Color(0xFF64748B)
-                        : const Color(0xFF94A3B8),
+                    color: AppColors.muted(isDark),
                   ),
                 ],
               ),
@@ -479,13 +450,13 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                   ? null
                   : _upload,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0F172A),
+                backgroundColor: AppColors.onPrimary,
                 foregroundColor: Colors.white,
                 disabledBackgroundColor:
-                    const Color(0xFF0F172A).withValues(alpha: 0.35),
+                    AppColors.onPrimary.withValues(alpha: 0.35),
                 padding: const EdgeInsets.symmetric(vertical: 17),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
                 ),
                 elevation: 0,
               ),

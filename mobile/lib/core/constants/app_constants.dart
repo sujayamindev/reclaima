@@ -1,3 +1,9 @@
+// Theme & design system — single import for all screens:
+export 'app_colors.dart';
+export 'app_text_styles.dart';
+export 'app_dimensions.dart';
+export 'app_theme.dart';
+
 /// API configuration constants
 class ApiConstants {
   // Base URL - Change this to your backend URL

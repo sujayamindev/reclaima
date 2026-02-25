@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/constants/app_constants.dart';
 import '../../providers/receipt_provider.dart';
 import '../../widgets/step_progress_bar.dart';
 import 'receipt_detail_screen.dart';
@@ -88,11 +89,8 @@ class _ReceiptConfirmationScreenState
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor =
-        isDark ? const Color(0xFF10221B) : const Color(0xFFF6F8F7);
-    final textPrimary =
-        isDark ? const Color(0xFFF1F5F9) : const Color(0xFF0F172A);
-    const primaryGreen = Color(0xFF12E28C);
+    final backgroundColor = AppColors.background(isDark);
+    final textPrimary = AppColors.textPrimary(isDark);
     final controllerState = ref.watch(receiptControllerProvider);
 
     // Parse display values from formData
@@ -132,7 +130,6 @@ class _ReceiptConfirmationScreenState
                       child: StepProgressBar(
                         currentStep: 3,
                         totalSteps: 3,
-                        isDark: isDark,
                       ),
                     ),
                   ),
@@ -151,20 +148,15 @@ class _ReceiptConfirmationScreenState
                     // Title
                     Text(
                       'Confirm & Save',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
+                      style: AppTextStyles.headingSmall.copyWith(
                         color: textPrimary,
-                        height: 1.25,
                       ),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       'Review your receipt summary before saving',
-                      style: TextStyle(
-                        fontSize: 15,
+                      style: AppTextStyles.bodyMedium.copyWith(
                         color: textPrimary.withValues(alpha: 0.6),
-                        height: 1.5,
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -179,14 +171,12 @@ class _ReceiptConfirmationScreenState
                             const Icon(
                               Icons.receipt_long_outlined,
                               size: 20,
-                              color: Color(0xFF12E28C),
+                              color: AppColors.primary,
                             ),
                             const SizedBox(width: 10),
                             Text(
                               'Purchase Summary',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
+                              style: AppTextStyles.sectionTitle.copyWith(
                                 color: textPrimary,
                               ),
                             ),
@@ -235,14 +225,12 @@ class _ReceiptConfirmationScreenState
                             const Icon(
                               Icons.verified_outlined,
                               size: 20,
-                              color: Color(0xFF12E28C),
+                              color: AppColors.primary,
                             ),
                             const SizedBox(width: 10),
                             Text(
                               'Warranty Coverage',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
+                              style: AppTextStyles.sectionTitle.copyWith(
                                 color: textPrimary,
                               ),
                             ),
@@ -261,7 +249,7 @@ class _ReceiptConfirmationScreenState
                             soonLabel: 'Expiring Soon',
                             expiredLabel: 'Expired',
                             activeLabel: 'Active',
-                            activeColor: const Color(0xFF12E28C),
+                            activeColor: AppColors.primary,
                           )
                         else
                           _buildNoInfoRow(
@@ -282,14 +270,12 @@ class _ReceiptConfirmationScreenState
                             const Icon(
                               Icons.assignment_return_outlined,
                               size: 20,
-                              color: Color(0xFF12E28C),
+                              color: AppColors.primary,
                             ),
                             const SizedBox(width: 10),
                             Text(
                               'Return Window',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
+                              style: AppTextStyles.sectionTitle.copyWith(
                                 color: textPrimary,
                               ),
                             ),
@@ -308,7 +294,7 @@ class _ReceiptConfirmationScreenState
                             soonLabel: 'Closing Soon',
                             expiredLabel: 'Closed',
                             activeLabel: 'Open',
-                            activeColor: const Color(0xFF3B82F6),
+                            activeColor: AppColors.info,
                           )
                         else
                           _buildNoInfoRow(
@@ -323,7 +309,7 @@ class _ReceiptConfirmationScreenState
             ),
 
             // ── Footer ────────────────────────────────────────────────────
-            _buildSaveFooter(isDark, primaryGreen, controllerState),
+            _buildSaveFooter(isDark, controllerState),
           ],
         ),
       ),
@@ -332,17 +318,15 @@ class _ReceiptConfirmationScreenState
 
   // ─── Card wrapper ──────────────────────────────────────────────────────────
 
-  Widget _buildCard(
-      bool isDark, Color textPrimary, List<Widget> children) {
-    final cardColor = isDark ? const Color(0xFF1E3A32) : Colors.white;
-    final borderColor =
-        isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+  Widget _buildCard(bool isDark, Color textPrimary, List<Widget> children) {
+    final cardColor = AppColors.card(isDark);
+    final borderColor = AppColors.border(isDark);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: cardColor,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
         border: Border.all(color: borderColor),
       ),
       child: Column(
@@ -361,8 +345,7 @@ class _ReceiptConfirmationScreenState
     Color textPrimary, {
     bool valueBold = false,
   }) {
-    final labelColor =
-        isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    final labelColor = AppColors.textSecondary(isDark);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -388,8 +371,7 @@ class _ReceiptConfirmationScreenState
   }
 
   Widget _buildNoInfoRow(bool isDark, Color textPrimary, String message) {
-    final labelColor =
-        isDark ? const Color(0xFF94A3B8) : const Color(0xFF94A3B8);
+    final labelColor = AppColors.muted(isDark);
     return Row(
       children: [
         Icon(Icons.info_outline, size: 15, color: labelColor),
@@ -427,18 +409,17 @@ class _ReceiptConfirmationScreenState
     final Color statusColor;
     final String statusLabel;
     if (isExpired) {
-      statusColor = const Color(0xFFEF4444);
+      statusColor = AppColors.error;
       statusLabel = expiredLabel;
     } else if (isSoon) {
-      statusColor = const Color(0xFFF59E0B);
+      statusColor = AppColors.warning;
       statusLabel = soonLabel;
     } else {
       statusColor = activeColor;
       statusLabel = activeLabel;
     }
 
-    final labelColor =
-        isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    final labelColor = AppColors.label(isDark);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -449,11 +430,8 @@ class _ReceiptConfirmationScreenState
           children: [
             Text(
               isExpired ? '${daysLeft.abs()}' : '$daysLeft',
-              style: TextStyle(
-                fontSize: 56,
-                fontWeight: FontWeight.bold,
+              style: AppTextStyles.countdownHero.copyWith(
                 color: statusColor,
-                height: 1.0,
               ),
             ),
             const SizedBox(width: 10),
@@ -464,8 +442,7 @@ class _ReceiptConfirmationScreenState
                 children: [
                   Text(
                     isExpired ? 'days ago' : 'days left',
-                    style: TextStyle(
-                      fontSize: 14,
+                    style: AppTextStyles.bodySmall.copyWith(
                       color: labelColor,
                       fontWeight: FontWeight.w500,
                     ),
@@ -527,11 +504,9 @@ class _ReceiptConfirmationScreenState
   // ─── Save footer ───────────────────────────────────────────────────────────
 
   Widget _buildSaveFooter(
-      bool isDark, Color primaryGreen, AsyncValue<void> controllerState) {
-    final backgroundColor =
-        isDark ? const Color(0xFF10221B) : const Color(0xFFF6F8F7);
-    final footerBorder =
-        isDark ? const Color(0xFF1E3A32) : const Color(0xFFF1F5F9);
+      bool isDark, AsyncValue<void> controllerState) {
+    final backgroundColor = AppColors.background(isDark);
+    final footerBorder = AppColors.footerBorder(isDark);
 
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
@@ -549,25 +524,25 @@ class _ReceiptConfirmationScreenState
                   width: 18,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: Color(0xFF0F172A),
+                    color: AppColors.onPrimary,
                   ),
                 )
               : const Icon(Icons.check_circle_outline,
-                  size: 20, color: Color(0xFF0F172A)),
+                  size: 20, color: AppColors.onPrimary),
           label: const Text(
             'Save Receipt',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF0F172A),
+              color: AppColors.onPrimary,
             ),
           ),
           style: ElevatedButton.styleFrom(
-            backgroundColor: primaryGreen,
-            disabledBackgroundColor: primaryGreen.withValues(alpha: 0.4),
+            backgroundColor: AppColors.primary,
+            disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.4),
             padding: const EdgeInsets.symmetric(vertical: 17),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
             ),
             elevation: 0,
           ),

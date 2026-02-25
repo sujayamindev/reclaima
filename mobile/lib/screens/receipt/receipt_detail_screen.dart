@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/constants/app_constants.dart';
 import '../../data/models/receipt_model.dart';
 import '../../data/models/receipt_line_item_model.dart';
 import '../../providers/receipt_provider.dart';
@@ -52,8 +53,8 @@ class ReceiptDetailScreen extends ConsumerWidget {
                   height: 200,
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(8),
+                    color: AppColors.border(isDark),
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusSmall),
                   ),
                   child: const Center(
                     child: Icon(Icons.image, size: 48),
@@ -147,15 +148,15 @@ class ReceiptDetailScreen extends ConsumerWidget {
                       'Warranty Expires',
                       DateFormatter.formatDate(receipt.warrantyExpiryDate!),
                       valueColor: receipt.isWarrantyExpired
-                          ? Colors.red
-                          : Colors.green,
+                          ? AppColors.error
+                          : AppColors.success,
                     ),
                     _buildInfoRow(
                       'Days Remaining',
                       '${receipt.warrantyDaysRemaining} days',
                       valueColor: receipt.isWarrantyExpired
-                          ? Colors.red
-                          : Colors.green,
+                          ? AppColors.error
+                          : AppColors.success,
                     ),
                   ] else
                     _buildInfoRow('Warranty', 'No warranty information'),
@@ -165,15 +166,15 @@ class ReceiptDetailScreen extends ConsumerWidget {
                       'Return Expires',
                       DateFormatter.formatDate(receipt.returnExpiryDate!),
                       valueColor: receipt.isReturnExpired
-                          ? Colors.red
-                          : Colors.green,
+                          ? AppColors.error
+                          : AppColors.success,
                     ),
                     _buildInfoRow(
                       'Days Remaining',
                       '${receipt.returnDaysRemaining} days',
                       valueColor: receipt.isReturnExpired
-                          ? Colors.red
-                          : Colors.green,
+                          ? AppColors.error
+                          : AppColors.success,
                     ),
                   ] else
                     _buildInfoRow('Return Window', 'No return information'),
@@ -239,7 +240,7 @@ class ReceiptDetailScreen extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, size: 48, color: Colors.red),
+              const Icon(Icons.error_outline, size: 48, color: AppColors.error),
               const SizedBox(height: 16),
               Text('Error loading receipt: $error'),
             ],
@@ -268,12 +269,10 @@ class ReceiptDetailScreen extends ConsumerWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E3A32) : Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.card(isDark),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
         border: Border.all(
-          color: isDark
-              ? const Color(0xFF334155)
-              : const Color(0xFFE2E8F0),
+          color: AppColors.border(isDark),
         ),
       ),
       child: Column(
@@ -281,14 +280,14 @@ class ReceiptDetailScreen extends ConsumerWidget {
         children: [
           Row(
             children: [
-              Icon(icon, size: 18, color: const Color(0xFF12E28C)),
+              Icon(icon, size: 18, color: AppColors.primary),
               const SizedBox(width: 8),
               Text(
                 title,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(fontWeight: FontWeight.bold),
+                style: AppTextStyles.sectionTitle.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary(isDark),
+                ),
               ),
             ],
           ),
@@ -305,24 +304,19 @@ class ReceiptDetailScreen extends ConsumerWidget {
     bool isDark,
     List<ReceiptLineItemModel> items,
   ) {
-    final headerStyle = TextStyle(
-      fontSize: 11,
-      fontWeight: FontWeight.w600,
-      color: Colors.grey[600],
+    final headerStyle = AppTextStyles.tableHeader.copyWith(
+      color: AppColors.textSecondary(isDark),
     );
-    final cellStyle =
-        const TextStyle(fontSize: 13);
+    final cellStyle = AppTextStyles.bodyXSmall;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E3A32) : Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.card(isDark),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
         border: Border.all(
-          color: isDark
-              ? const Color(0xFF334155)
-              : const Color(0xFFE2E8F0),
+          color: AppColors.border(isDark),
         ),
       ),
       child: Column(
@@ -331,19 +325,21 @@ class ReceiptDetailScreen extends ConsumerWidget {
           Row(
             children: [
               const Icon(Icons.shopping_cart_outlined,
-                  size: 18, color: Color(0xFF12E28C)),
+                  size: 18, color: AppColors.primary),
               const SizedBox(width: 8),
               Text(
                 'Items Purchased',
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(fontWeight: FontWeight.bold),
+                style: AppTextStyles.sectionTitle.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary(isDark),
+                ),
               ),
               const Spacer(),
               Text(
                 '${items.length} item${items.length == 1 ? '' : 's'}',
-                style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                style: AppTextStyles.caption.copyWith(
+                  color: AppColors.muted(isDark),
+                ),
               ),
             ],
           ),
@@ -371,9 +367,8 @@ class ReceiptDetailScreen extends ConsumerWidget {
                 if (item.productCode != null)
                   Text(
                     item.productCode!,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey[500],
+                    style: AppTextStyles.caption.copyWith(
+                      color: AppColors.muted(isDark),
                       fontFamily: 'monospace',
                     ),
                   ),
@@ -429,6 +424,7 @@ class ReceiptDetailScreen extends ConsumerWidget {
     String label,
     String value, {
     Color? valueColor,
+    bool isDark = false,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -439,17 +435,16 @@ class ReceiptDetailScreen extends ConsumerWidget {
             width: 130,
             child: Text(
               label,
-              style: const TextStyle(
+              style: AppTextStyles.bodyXSmall.copyWith(
                 fontWeight: FontWeight.w500,
-                color: Colors.grey,
-                fontSize: 13,
+                color: AppColors.textSecondary(isDark),
               ),
             ),
           ),
           Expanded(
             child: Text(
               value,
-              style: TextStyle(color: valueColor, fontSize: 13),
+              style: AppTextStyles.bodyXSmall.copyWith(color: valueColor),
             ),
           ),
         ],
@@ -471,7 +466,7 @@ class ReceiptDetailScreen extends ConsumerWidget {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
             child: const Text('Delete'),
           ),
         ],

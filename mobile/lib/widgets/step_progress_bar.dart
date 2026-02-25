@@ -1,31 +1,29 @@
 import 'package:flutter/material.dart';
+import '../core/constants/app_constants.dart';
 
 class StepProgressBar extends StatelessWidget {
   final int currentStep;
   final int totalSteps;
-  final bool isDark;
 
   const StepProgressBar({
     super.key,
     required this.currentStep,
     required this.totalSteps,
-    required this.isDark,
   });
 
   @override
   Widget build(BuildContext context) {
-    const primaryGreen = Color(0xFF12E28C);
-    final inactiveColor =
-        isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
-    final inactiveTextColor =
-        isDark ? const Color(0xFF64748B) : const Color(0xFFCBD5E1);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    const activeColor = AppColors.primary;
+    final inactiveColor = AppColors.border(isDark);
+    final inactiveTextColor = AppColors.muted(isDark);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         for (int i = 1; i <= totalSteps; i++) ...[
-          _buildDot(i, primaryGreen, inactiveColor, inactiveTextColor),
-          if (i < totalSteps) _buildLine(i, primaryGreen, inactiveColor),
+          _buildDot(i, activeColor, inactiveColor, inactiveTextColor),
+          if (i < totalSteps) _buildLine(i, activeColor, inactiveColor),
         ],
       ],
     );
@@ -54,14 +52,14 @@ class StepProgressBar extends StatelessWidget {
       ),
       child: Center(
         child: isCompleted
-            ? const Icon(Icons.check, size: 14, color: Color(0xFF0F172A))
+            ? const Icon(Icons.check, size: 14, color: AppColors.onPrimary)
             : Text(
                 '$step',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
                   color: isActive
-                      ? const Color(0xFF0F172A)
+                      ? AppColors.onPrimary
                       : inactiveTextColor,
                 ),
               ),
