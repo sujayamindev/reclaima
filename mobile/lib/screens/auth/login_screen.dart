@@ -233,7 +233,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 foregroundColor: AppColors.primary,
                                 padding: const EdgeInsets.symmetric(horizontal: 8),
                               ),
-                              child: const Text(
+                              child: Text(
                                 'Sign Up',
                                 style: AppTextStyles.buttonSmall,
                               ),

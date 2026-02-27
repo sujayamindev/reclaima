@@ -6,6 +6,7 @@ import '../../core/constants/app_constants.dart';
 import '../../providers/receipt_provider.dart';
 import '../../widgets/step_progress_bar.dart';
 import 'review_receipt_screen.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 class AddReceiptScreen extends ConsumerStatefulWidget {
   const AddReceiptScreen({super.key});
@@ -151,7 +152,6 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
     final textPrimary = AppColors.textPrimary(isDark);
     final textSecondary = AppColors.textSecondary(isDark);
     final borderColor = AppColors.border(isDark);
-    final cardColor = AppColors.card(isDark);
     final mutedText = AppColors.muted(isDark);
 
     return Scaffold(
@@ -201,7 +201,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
-                    'Smart Upload',
+                    'Add a Receipt',
                     textAlign: TextAlign.center,
                     style: AppTextStyles.headingMedium.copyWith(
                       color: textPrimary,
@@ -209,9 +209,9 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Snap a photo or pick from your gallery \n AI does the rest.',
+                    'Take a photo or upload from your gallery\nour AI will extract the details for you.',
                     textAlign: TextAlign.center,
-                    style: AppTextStyles.bodyLarge.copyWith(
+                    style: AppTextStyles.bodySmall.copyWith(
                       color: textSecondary,
                     ),
                   ),
@@ -234,7 +234,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                       BoxShadow(
                         color: AppColors.primary.withValues(alpha: 0.35),
                         blurRadius: 20,
-                        offset: const Offset(0, 8),
+                        offset: const Offset(0, 0),
                       ),
                     ],
                   ),
@@ -247,16 +247,18 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                           color: AppColors.onPrimary.withValues(alpha: 0.12),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
-                          Icons.add_a_photo_outlined,
+                        child: Icon(
+                          Symbols.add_a_photo,
                           color: AppColors.onPrimary,
                           size: 28,
+                          fill: 0,
+                          weight: 700,
                         ),
                       ),
                       const SizedBox(height: 12),
-                      const Text(
-                        'Snap or Select',
-                        style: TextStyle(
+                      Text(
+                        'Snap or Upload',
+                        style: AppTextStyles.button.copyWith(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: AppColors.onPrimary,
@@ -264,7 +266,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Receipt, warranty card, or invoice',
+                        'Any receipt, warranty card, or invoice',
                         style: TextStyle(
                           fontSize: 13,
                           color: AppColors.onPrimary.withValues(alpha: 0.6),
@@ -284,14 +286,14 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'SELECTED FILES',
+                    'SELECTED IMAGES',
                     style: AppTextStyles.capsLabel.copyWith(
                       color: mutedText,
                     ),
                   ),
                   Text(
                     '${_selectedImagePaths.length} '
-                    '${_selectedImagePaths.length == 1 ? "item" : "items"}',
+                    '${_selectedImagePaths.length == 1 ? "image" : "images"}',
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
@@ -307,39 +309,8 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 24),
-                itemCount: _selectedImagePaths.length + 1,
+                itemCount: _selectedImagePaths.length,
                 itemBuilder: (context, index) {
-                  if (index == _selectedImagePaths.length) {
-                    // Add more card
-                    return GestureDetector(
-                      onTap: _pickImage,
-                      child: Container(
-                        width: 108,
-                        height: 130,
-                        margin: const EdgeInsets.only(right: 10),
-                        decoration: BoxDecoration(
-                          color: cardColor,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: borderColor, width: 1),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.add, color: mutedText, size: 28),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Add More',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: mutedText,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }
                   return Padding(
                     padding: const EdgeInsets.only(right: 10),
                     child: Stack(
@@ -420,7 +391,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "Can't scan? ",
+                    'Prefer to type? ',
                     style: AppTextStyles.formLabel.copyWith(
                       color: AppColors.muted(isDark),
                     ),
@@ -429,7 +400,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                     'Enter manually',
                     style: AppTextStyles.formLabel.copyWith(
                       fontWeight: FontWeight.w800,
-                      color: AppColors.muted(isDark),
+                      color: AppColors.primary,
                       decorationColor: AppColors.muted(isDark),
                     ),
                   ),
@@ -437,7 +408,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                   Icon(
                     Icons.arrow_forward,
                     size: 14,
-                    color: AppColors.muted(isDark),
+                    color: AppColors.primary,
                   ),
                 ],
               ),
@@ -450,13 +421,13 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                   ? null
                   : _upload,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.onPrimary,
-                foregroundColor: Colors.white,
-                disabledBackgroundColor:
-                    AppColors.onPrimary.withValues(alpha: 0.35),
+                backgroundColor: Colors.white,
+                foregroundColor: AppColors.primary,
+                disabledBackgroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 17),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
+                  side: BorderSide(color: AppColors.border(isDark), width: 1),
                 ),
                 elevation: 0,
               ),
@@ -465,13 +436,13 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                       height: 20,
                       width: 20,
                       child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white),
+                          strokeWidth: 2, color: AppColors.primary),
                     )
                   : Text(
                       _selectedImagePaths.isEmpty
-                          ? 'Select images to continue'
+                          ? 'Add a photo to continue'
                           : 'Upload ${_selectedImagePaths.length} '
-                            '${_selectedImagePaths.length == 1 ? "file" : "files"}',
+                            '${_selectedImagePaths.length == 1 ? "image" : "images"}',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,

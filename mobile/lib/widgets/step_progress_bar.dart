@@ -44,7 +44,7 @@ class StepProgressBar extends StatelessWidget {
       height: 28,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: filled ? activeColor : Colors.transparent,
+        color: filled ? activeColor : Colors.white,
         border: Border.all(
           color: filled ? activeColor : inactiveColor,
           width: 2,
