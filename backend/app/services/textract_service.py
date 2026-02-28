@@ -50,6 +50,8 @@ class MockTextractService:
                 "currency": "USD",
                 "product_name": random.choice(mock_products),
                 "warranty_period_months": random.choice([6, 12, 24, 36]),
+                "warranty_notes": "Warranty valid for 1 year from date of purchase. Does not cover physical damage or damage caused by natural disaster.",
+                "remarks": f"Serial No: SN{random.randint(100000, 999999)}",
             },
             "confidence": round(random.uniform(0.85, 0.99), 2),
             "raw_text": f"""
@@ -145,7 +147,104 @@ class RealTextractService:
                 "error": str(e),
                 "extracted_data": {}
             }
-    
+
+    # ──────────────────────────────────────────────────────────────────────
+    # Geometry helpers for multi-column text reconstruction
+    # ──────────────────────────────────────────────────────────────────────
+
+    @staticmethod
+    def _boxes_overlap(
+        region: Dict[str, float],
+        block_bbox: Dict[str, float],
+        threshold: float = 0.1,
+    ) -> bool:
+        """
+        Return True if block_bbox overlaps with region by at least
+        `threshold` fraction of block_bbox's area (catches partial overlaps).
+        """
+        rl = region.get('Left', 0.0)
+        rt = region.get('Top', 0.0)
+        rr = rl + region.get('Width', 0.0)
+        rb = rt + region.get('Height', 0.0)
+
+        bl = block_bbox.get('Left', 0.0)
+        bt = block_bbox.get('Top', 0.0)
+        br = bl + block_bbox.get('Width', 0.0)
+        bb = bt + block_bbox.get('Height', 0.0)
+
+        inter_w = max(0.0, min(rr, br) - max(rl, bl))
+        inter_h = max(0.0, min(rb, bb) - max(rt, bt))
+        inter_area = inter_w * inter_h
+        block_area = block_bbox.get('Width', 0.0) * block_bbox.get('Height', 0.0)
+        return block_area > 0 and (inter_area / block_area) >= threshold
+
+    @staticmethod
+    def _reconstruct_column_text(
+        blocks: List[Dict[str, Any]],
+        region_bbox: Dict[str, float],
+    ) -> str:
+        """
+        Reconstruct text from LINE blocks inside `region_bbox` using spatial
+        column ordering to fix multi-column word interleaving.
+
+        Algorithm:
+          1. Collect LINE blocks whose bounding boxes overlap with region_bbox.
+          2. Find the largest horizontal gap in the distribution of block
+             left-edge x-coordinates.
+          3. If that gap exceeds TWO_COLUMN_GAP_THRESHOLD (15 % of page width),
+             treat as two columns: sort each column top-to-bottom, then
+             concatenate the left column followed by the right column.
+          4. Otherwise sort all lines top-to-bottom (single column).
+        """
+        lines = []
+        for block in blocks:
+            if block.get('BlockType') != 'LINE':
+                continue
+            geom = block.get('Geometry') or {}
+            bbox = geom.get('BoundingBox') or {}
+            if not bbox:
+                continue
+            if RealTextractService._boxes_overlap(region_bbox, bbox, threshold=0.1):
+                lines.append({
+                    'text': (block.get('Text') or '').strip(),
+                    'left': bbox.get('Left', 0.0),
+                    'top':  bbox.get('Top',  0.0),
+                })
+
+        if not lines:
+            return ''
+
+        # Detect two-column layout via the largest gap between sorted left edges
+        left_vals = sorted(set(round(ln['left'], 3) for ln in lines))
+        if len(left_vals) > 1:
+            gaps = [
+                (
+                    left_vals[i + 1] - left_vals[i],
+                    (left_vals[i] + left_vals[i + 1]) / 2.0,
+                )
+                for i in range(len(left_vals) - 1)
+            ]
+            max_gap, split_x = max(gaps, key=lambda g: g[0])
+        else:
+            max_gap, split_x = 0.0, 0.5
+
+        TWO_COLUMN_GAP_THRESHOLD = 0.15  # 15 % of normalised page width
+
+        if max_gap >= TWO_COLUMN_GAP_THRESHOLD:
+            left_col = sorted(
+                [ln for ln in lines if ln['left'] <  split_x],
+                key=lambda ln: ln['top'],
+            )
+            right_col = sorted(
+                [ln for ln in lines if ln['left'] >= split_x],
+                key=lambda ln: ln['top'],
+            )
+            ordered = left_col + right_col
+        else:
+            ordered = sorted(lines, key=lambda ln: ln['top'])
+
+        return '\n'.join(ln['text'] for ln in ordered if ln['text'])
+
     def _parse_textract_response(self, response: Dict[str, Any]) -> Dict[str, Any]:
         """
         Parse Textract AnalyzeExpense response to extract all structured fields.
@@ -195,6 +294,12 @@ class RealTextractService:
             # Collect all VENDOR_NAME candidates for URL cross-check later
             _vendor_name_candidates: List[tuple] = []  # (value, confidence)
 
+            # Track the BoundingBox of the winning OTHER/note and
+            # OTHER/remarks detections so we can reconstruct the text from
+            # raw LINE blocks later (fixes two-column interleaving).
+            _note_bboxes: Dict[str, Dict] = {}
+            _note_best_conf: Dict[str, float] = {}
+
             for field in doc.get('SummaryFields', []):
                 field_type  = field.get('Type', {}).get('Text', '') or ''
                 value_det   = field.get('ValueDetection', {}) or {}
@@ -228,15 +333,48 @@ class RealTextractService:
 
                 elif field_type == 'OTHER':
                     label_lower = label_text.lower()
+                    value_bbox = (
+                        (value_det.get('Geometry') or {}).get('BoundingBox') or {}
+                    )
                     if 'remark' in label_lower:
                         _keep_best('remarks', value, confidence)
+                        # Track bbox for geometry reconstruction
+                        if value and value.strip() and value_bbox and (
+                            confidence > _note_best_conf.get('remarks', -1)
+                        ):
+                            _note_bboxes['remarks'] = value_bbox
+                            _note_best_conf['remarks'] = confidence
                     elif 'note' in label_lower:
                         _keep_best('warranty_notes', value, confidence)
+                        if value and value.strip() and value_bbox and (
+                            confidence > _note_best_conf.get('warranty_notes', -1)
+                        ):
+                            _note_bboxes['warranty_notes'] = value_bbox
+                            _note_best_conf['warranty_notes'] = confidence
 
             # ── flush best candidates into extracted ────────────────────────
             for key, (val, _conf) in _best.items():
                 extracted[key] = val
             _best.clear()
+
+            # ── geometry-based reconstruction for multi-column notes ──────────
+            # AnalyzeExpense puts Blocks inside each ExpenseDocument (NOT at the
+            # top-level response).  Re-order overlapping blocks column-first to
+            # undo word interleaving from two-column layouts.
+            _all_blocks = doc.get('Blocks', [])
+            if _all_blocks:
+                for _nf_key in ('warranty_notes', 'remarks'):
+                    _nf_bbox = _note_bboxes.get(_nf_key)
+                    if _nf_bbox and extracted.get(_nf_key):
+                        _reconstructed = self._reconstruct_column_text(
+                            _all_blocks, _nf_bbox
+                        )
+                        if _reconstructed:
+                            extracted[_nf_key] = _reconstructed
+                            logger.debug(
+                                f"Geometry-reconstructed {_nf_key}: "
+                                f"{_reconstructed[:80]!r}"
+                            )
 
             # ── VENDOR_NAME: prefer URL-corroborated candidate ────────────────
             # Textract sometimes assigns higher confidence to a logo mis-read
@@ -276,7 +414,7 @@ class RealTextractService:
             #    the email only appears as a raw LINE block in the response.
             # ────────────────────────────────────────────────────────────────
             best_email_conf = 0.0
-            for block in response.get('Blocks', []):
+            for block in doc.get('Blocks', []):
                 if block.get('BlockType') != 'LINE':
                     continue
                 text = (block.get('Text') or '').strip()

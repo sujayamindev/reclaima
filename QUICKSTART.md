@@ -153,8 +153,34 @@ taskkill /PID <PID> /F
 2. ✅ Flutter mobile app is implemented (core feature-complete)
 3. ⏳ Add Firebase config files (`google-services.json` / `GoogleService-Info.plist`) and test auth end-to-end
 4. ⏳ Configure real AWS S3 & Textract (set `USE_MOCK_AWS=false`)
-5. ⏳ Implement push notifications via Firebase Cloud Messaging
-6. ⏳ Deploy to production environment
+5. ⏳ **Enable AWS Bedrock for AI warranty-text cleanup** (see below)
+6. ⏳ Implement push notifications via Firebase Cloud Messaging
+7. ⏳ Deploy to production environment
+
+### Enabling AWS Bedrock (Claude Haiku OCR text cleanup)
+
+When `USE_MOCK_AWS=false`, the backend uses AWS Bedrock to clean up
+garbled warranty/notes text extracted from multi-column receipt layouts.
+
+**One-time AWS setup:**
+1. Open the [AWS Bedrock console](https://console.aws.amazon.com/bedrock/home)
+   → **Model access** → request access to **Anthropic Claude 3 Haiku**
+   (`anthropic.claude-3-haiku-20240307-v1:0`).
+2. Add the following permissions to your IAM user/role policy:
+   ```json
+   {
+     "Effect": "Allow",
+     "Action": ["bedrock:InvokeModel"],
+     "Resource": "arn:aws:bedrock:*::foundation-model/anthropic.claude-3-haiku-20240307-v1:0"
+   }
+   ```
+3. *(Optional)* Override the model or disable cleanup in `.env`:
+   ```
+   BEDROCK_MODEL_ID=anthropic.claude-3-haiku-20240307-v1:0
+   LLM_CLEANUP_ENABLED=true
+   ```
+   Set `LLM_CLEANUP_ENABLED=false` to skip Bedrock if access is not yet
+   provisioned — geometric column reconstruction still runs.
 
 ---
 

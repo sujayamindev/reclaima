@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     AWS_SECRET_ACCESS_KEY: str
     AWS_REGION: str = "us-east-1"
     AWS_S3_BUCKET: str = "smart-receipt-storage"
-    USE_MOCK_AWS: bool = True
+    USE_MOCK_AWS: bool = False
     
     # File Upload
     MAX_FILE_SIZE_MB: int = 5
@@ -65,7 +65,11 @@ class Settings(BaseSettings):
     # OCR Settings
     OCR_MAX_RETRIES: int = 3
     OCR_RETRY_DELAY_SECONDS: int = 5
-    
+
+    # LLM / AWS Bedrock — AI text cleanup for garbled multi-column OCR notes
+    BEDROCK_MODEL_ID: str = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
+    LLM_CLEANUP_ENABLED: bool = True
+
     # Scheduler
     ENABLE_SCHEDULER: bool = True
     REMINDER_CHECK_HOUR: int = 9

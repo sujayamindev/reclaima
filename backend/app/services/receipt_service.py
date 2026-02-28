@@ -16,6 +16,7 @@ from app.models.receipt_line_item import ReceiptLineItem
 from app.schemas import ReceiptCreate, ReceiptUpdate
 from app.services.s3_service import get_s3_service
 from app.services.textract_service import get_textract_service
+from app.services.llm_service import create_llm_service
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
@@ -35,6 +36,11 @@ class ReceiptService:
             s3_bucket=settings.AWS_S3_BUCKET,
             use_mock=settings.USE_MOCK_AWS,
             region=settings.AWS_REGION
+        )
+        self.llm_service = create_llm_service(
+            use_mock=settings.USE_MOCK_AWS,
+            region=settings.AWS_REGION,
+            model_id=settings.BEDROCK_MODEL_ID,
         )
     
     def create_receipt(
@@ -317,7 +323,19 @@ class ReceiptService:
             if ocr_result.get("status") == "success":
                 # Extract data from OCR result
                 extracted = ocr_result.get("extracted_data", {})
-
+                # ── LLM text cleanup for notes and warranty fields ─────────────
+                # After the geometric column-reconstruction pass in
+                # TextractService, pass partially-cleaned text through
+                # Bedrock Claude to fix word duplication from bilingual
+                # columns and restore sentence coherence.
+                if settings.LLM_CLEANUP_ENABLED:
+                    for _notes_field in ('warranty_notes', 'remarks'):
+                        if extracted.get(_notes_field):
+                            extracted[_notes_field] = (
+                                self.llm_service.clean_receipt_notes(
+                                    extracted[_notes_field]
+                                )
+                            )
                 # ── store name ──────────────────────────────────────────────
                 if extracted.get("store_name"):
                     receipt.store_name = extracted["store_name"]
