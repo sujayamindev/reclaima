@@ -120,10 +120,11 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     _vendorEmailCtrl.text = receipt.vendorEmail ?? '';
     _productNameCtrl.text = receipt.productName ?? '';
     final ocrCategory = receipt.productCategory ?? '';
-    _selectedCategory = _categories.contains(ocrCategory) ? ocrCategory : 'Electronics';
+    _selectedCategory = _categories.contains(ocrCategory)
+        ? ocrCategory
+        : 'Electronics';
     _lineItems = receipt.lineItems;
-    _warrantyPeriodCtrl.text =
-        receipt.warrantyPeriodMonths?.toString() ?? '';
+    _warrantyPeriodCtrl.text = receipt.warrantyPeriodMonths?.toString() ?? '';
     _warrantyExpiryDate = receipt.warrantyExpiryDate;
     _returnPeriodCtrl.text = receipt.returnPeriodDays?.toString() ?? '';
     _returnExpiryDate = receipt.returnExpiryDate;
@@ -154,8 +155,18 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
 
   String _displayDate(DateTime date) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
@@ -267,8 +278,12 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
           receiptId: widget.receiptId,
           isManualEntry: widget.isManualEntry,
           formData: data,
-          warrantyExpiryDate: _warrantyPeriodCtrl.text.isNotEmpty ? _warrantyExpiryDate : null,
-          returnExpiryDate: _returnPeriodCtrl.text.isNotEmpty ? _returnExpiryDate : null,
+          warrantyExpiryDate: _warrantyPeriodCtrl.text.isNotEmpty
+              ? _warrantyExpiryDate
+              : null,
+          returnExpiryDate: _returnPeriodCtrl.text.isNotEmpty
+              ? _returnExpiryDate
+              : null,
         ),
       ),
     );
@@ -308,10 +323,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 32),
-                      child: StepProgressBar(
-                        currentStep: 2,
-                        totalSteps: 3,
-                      ),
+                      child: StepProgressBar(currentStep: 2, totalSteps: 3),
                     ),
                   ),
                   const SizedBox(width: 48),
@@ -324,33 +336,25 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
               child: widget.receiptId == null
                   ? _buildFormBody(isDark, textPrimary)
                   : widget.isManualEntry
-                      ? _buildFormFromProvider(
-                          isDark, textPrimary, receiptAsync)
-                      : receiptAsync.when(
-                      loading: () =>
-                          _buildRiverpodLoadingBody(textPrimary),
-                      error: (e, _) =>
-                          _buildErrorBody(textPrimary),
+                  ? _buildFormFromProvider(isDark, textPrimary, receiptAsync)
+                  : receiptAsync.when(
+                      loading: () => _buildRiverpodLoadingBody(textPrimary),
+                      error: (e, _) => _buildErrorBody(textPrimary),
                       data: (receipt) {
                         final isProcessing =
                             receipt.status == ReceiptStatus.uploaded ||
-                                receipt.status == ReceiptStatus.processing;
+                            receipt.status == ReceiptStatus.processing;
 
-                        if (!_forceShowForm &&
-                            isProcessing &&
-                            !_timedOut) {
-                          return _buildOcrLoadingBody(
-                              textPrimary);
+                        if (!_forceShowForm && isProcessing && !_timedOut) {
+                          return _buildOcrLoadingBody(textPrimary);
                         }
 
                         if (!_forceShowForm && _timedOut && isProcessing) {
-                          return _buildTimedOutBody(
-                              isDark, textPrimary);
+                          return _buildTimedOutBody(isDark, textPrimary);
                         }
 
                         _populateFields(receipt);
-                        return _buildFormBody(
-                            isDark, textPrimary);
+                        return _buildFormBody(isDark, textPrimary);
                       },
                     ),
             ),
@@ -385,10 +389,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
         children: [
           CircularProgressIndicator(color: AppColors.primary, strokeWidth: 3),
           const SizedBox(height: 20),
-          Text(
-            'Loading…',
-            style: TextStyle(color: textPrimary, fontSize: 16),
-          ),
+          Text('Loading…', style: TextStyle(color: textPrimary, fontSize: 16)),
         ],
       ),
     );
@@ -405,7 +406,9 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
               width: 72,
               height: 72,
               child: CircularProgressIndicator(
-                  color: AppColors.primary, strokeWidth: 4),
+                color: AppColors.primary,
+                strokeWidth: 4,
+              ),
             ),
             const SizedBox(height: 28),
             Text(
@@ -447,8 +450,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     );
   }
 
-  Widget _buildTimedOutBody(
-      bool isDark, Color textPrimary) {
+  Widget _buildTimedOutBody(bool isDark, Color textPrimary) {
     final cardColor = AppColors.card(isDark);
 
     return Center(
@@ -463,8 +465,11 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.timer_off_outlined,
-                  size: 48, color: AppColors.warning),
+              const Icon(
+                Icons.timer_off_outlined,
+                size: 48,
+                color: AppColors.warning,
+              ),
               const SizedBox(height: 16),
               Text(
                 'Taking longer than expected',
@@ -504,7 +509,9 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                     foregroundColor: AppColors.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.radiusLarge,
+                      ),
                     ),
                     elevation: 0,
                   ),
@@ -538,8 +545,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline,
-                size: 48, color: AppColors.error),
+            const Icon(Icons.error_outline, size: 48, color: AppColors.error),
             const SizedBox(height: 16),
             Text(
               'Something went wrong',
@@ -584,9 +590,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
             children: [
               Text(
                 'Review Details',
-                style: AppTextStyles.headingSmall.copyWith(
-                  color: textPrimary,
-                ),
+                style: AppTextStyles.headingSmall.copyWith(color: textPrimary),
               ),
               const SizedBox(height: 6),
               Text(
@@ -605,217 +609,220 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
           child: Form(
             key: _formKey,
             child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Purchase Details
-                _buildSection(
-                  isDark: isDark,
-                  textPrimary: textPrimary,
-                  title: 'Purchase Details',
-                  icon: Icons.receipt_long_outlined,
-                  iconColor: AppColors.primary,
-                  children: [
-                    _buildTextField(
-                      isDark: isDark,
-                      label: 'Invoice No.',
-                      controller: _invoiceNumberCtrl,
-                      hint: 'e.g. INV-00123',
-                    ),
-                    const SizedBox(height: 14),
-                    _buildTextField(
-                      isDark: isDark,
-                      label: 'Store Name',
-                      controller: _storeNameCtrl,
-                      hint: 'e.g. Best Buy',
-                      validator: (v) =>
-                          (v == null || v.trim().isEmpty) ? 'Store name is required' : null,
-                    ),
-                    const SizedBox(height: 14),
-                    _buildDateField(
-                      isDark: isDark,
-                      label: 'Purchase Date',
-                      value: _purchaseDate,
-                      hint: 'Select date',
-                      onTap: () => _pickDate(
-                        current: _purchaseDate,
-                        onPicked: (d) {
-                          _purchaseDate = d;
-                          _autoComputeWarrantyExpiry();
-                          _autoComputeReturnExpiry();
-                        },
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Purchase Details
+                  _buildSection(
+                    isDark: isDark,
+                    textPrimary: textPrimary,
+                    title: 'Purchase Details',
+                    icon: Icons.receipt_long_outlined,
+                    iconColor: AppColors.primary,
+                    children: [
+                      _buildTextField(
+                        isDark: isDark,
+                        label: 'Invoice No.',
+                        controller: _invoiceNumberCtrl,
+                        hint: 'e.g. INV-00123',
                       ),
-                    ),
-                    const SizedBox(height: 14),
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: _buildTextField(
-                            isDark: isDark,
-                            label: 'Total Amount',
-                            controller: _totalAmountCtrl,
-                            hint: '0.00',
-                            keyboardType:
-                                const TextInputType.numberWithOptions(
-                                    decimal: true),
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                  RegExp(r'[0-9.]')),
-                            ],
-                          ),
+                      const SizedBox(height: 14),
+                      _buildTextField(
+                        isDark: isDark,
+                        label: 'Store Name',
+                        controller: _storeNameCtrl,
+                        hint: 'e.g. Best Buy',
+                        validator: (v) => (v == null || v.trim().isEmpty)
+                            ? 'Store name is required'
+                            : null,
+                      ),
+                      const SizedBox(height: 14),
+                      _buildDateField(
+                        isDark: isDark,
+                        label: 'Purchase Date',
+                        value: _purchaseDate,
+                        hint: 'Select date',
+                        onTap: () => _pickDate(
+                          current: _purchaseDate,
+                          onPicked: (d) {
+                            _purchaseDate = d;
+                            _autoComputeWarrantyExpiry();
+                            _autoComputeReturnExpiry();
+                          },
                         ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          flex: 2,
-                          child: _buildTextField(
-                            isDark: isDark,
-                            label: 'Currency',
-                            controller: _currencyCtrl,
-                            hint: 'USD',
+                      ),
+                      const SizedBox(height: 14),
+                      Row(
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: _buildTextField(
+                              isDark: isDark,
+                              label: 'Total Amount',
+                              controller: _totalAmountCtrl,
+                              hint: '0.00',
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                    decimal: true,
+                                  ),
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(
+                                  RegExp(r'[0-9.]'),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            flex: 2,
+                            child: _buildTextField(
+                              isDark: isDark,
+                              label: 'Currency',
+                              controller: _currencyCtrl,
+                              hint: 'USD',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
 
-                // Store Contact
-                _buildSection(
-                  isDark: isDark,
-                  textPrimary: textPrimary,
-                  title: 'Store Contact',
-                  icon: Icons.store_outlined,
-                  iconColor: AppColors.primary,
-                  children: [
-                    _buildTextField(
-                      isDark: isDark,
-                      label: 'Address',
-                      controller: _vendorAddressCtrl,
-                      hint: 'e.g. 123 Main St, City',
-                      maxLines: 3,
-                    ),
-                    const SizedBox(height: 14),
-                    _buildTextField(
-                      isDark: isDark,
-                      label: 'Phone',
-                      controller: _vendorPhoneCtrl,
-                      hint: 'e.g. +94 77 123 4567',
-                      keyboardType: TextInputType.phone,
-                    ),
-                    const SizedBox(height: 14),
-                    _buildTextField(
-                      isDark: isDark,
-                      label: 'Email',
-                      controller: _vendorEmailCtrl,
-                      hint: 'e.g. info@store.com',
-                      keyboardType: TextInputType.emailAddress,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
+                  // Store Contact
+                  _buildSection(
+                    isDark: isDark,
+                    textPrimary: textPrimary,
+                    title: 'Store Contact',
+                    icon: Icons.store_outlined,
+                    iconColor: AppColors.primary,
+                    children: [
+                      _buildTextField(
+                        isDark: isDark,
+                        label: 'Address',
+                        controller: _vendorAddressCtrl,
+                        hint: 'e.g. 123 Main St, City',
+                        maxLines: 3,
+                      ),
+                      const SizedBox(height: 14),
+                      _buildTextField(
+                        isDark: isDark,
+                        label: 'Phone',
+                        controller: _vendorPhoneCtrl,
+                        hint: 'e.g. +94 77 123 4567',
+                        keyboardType: TextInputType.phone,
+                      ),
+                      const SizedBox(height: 14),
+                      _buildTextField(
+                        isDark: isDark,
+                        label: 'Email',
+                        controller: _vendorEmailCtrl,
+                        hint: 'e.g. info@store.com',
+                        keyboardType: TextInputType.emailAddress,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
 
-                // Product Info
-                _buildSection(
-                  isDark: isDark,
-                  textPrimary: textPrimary,
-                  title: 'Product Info',
-                  icon: Icons.inventory_2_outlined,
-                  iconColor: AppColors.primary,
-                  children: [
-                    _buildTextField(
-                      isDark: isDark,
-                      label: 'Product Name',
-                      controller: _productNameCtrl,
-                      hint: 'e.g. MacBook Pro 14"',
-                    ),
-                    const SizedBox(height: 14),
-                    _buildCategoryDropdown(isDark: isDark),
-                  ],
-                ),
-                const SizedBox(height: 16),
+                  // Product Info
+                  _buildSection(
+                    isDark: isDark,
+                    textPrimary: textPrimary,
+                    title: 'Product Info',
+                    icon: Icons.inventory_2_outlined,
+                    iconColor: AppColors.primary,
+                    children: [
+                      _buildTextField(
+                        isDark: isDark,
+                        label: 'Product Name',
+                        controller: _productNameCtrl,
+                        hint: 'e.g. MacBook Pro 14"',
+                      ),
+                      const SizedBox(height: 14),
+                      _buildCategoryDropdown(isDark: isDark),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
 
-                // Items (read-only, from OCR line items)
-                if (_lineItems.isNotEmpty)
-                  _buildLineItemsCard(isDark, textPrimary),
-                if (_lineItems.isNotEmpty) const SizedBox(height: 16),
+                  // Items (read-only, from OCR line items)
+                  if (_lineItems.isNotEmpty)
+                    _buildLineItemsCard(isDark, textPrimary),
+                  if (_lineItems.isNotEmpty) const SizedBox(height: 16),
 
-                // Warranty Info
-                _buildSection(
-                  isDark: isDark,
-                  textPrimary: textPrimary,
-                  title: 'Warranty Info',
-                  icon: Icons.verified_outlined,
-                  iconColor: AppColors.primary,
-                  children: [
-                    _buildTextField(
-                      isDark: isDark,
-                      label: 'Warranty Period (months)',
-                      controller: _warrantyPeriodCtrl,
-                      hint: 'e.g. 12',
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                      ],
-                      onChanged: (_) => _autoComputeWarrantyExpiry(),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
+                  // Warranty Info
+                  _buildSection(
+                    isDark: isDark,
+                    textPrimary: textPrimary,
+                    title: 'Warranty Info',
+                    icon: Icons.verified_outlined,
+                    iconColor: AppColors.primary,
+                    children: [
+                      _buildTextField(
+                        isDark: isDark,
+                        label: 'Warranty Period (months)',
+                        controller: _warrantyPeriodCtrl,
+                        hint: 'e.g. 12',
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                        onChanged: (_) => _autoComputeWarrantyExpiry(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
 
-                // Return Policy
-                _buildSection(
-                  isDark: isDark,
-                  textPrimary: textPrimary,
-                  title: 'Return Policy',
-                  icon: Icons.assignment_return_outlined,
-                  iconColor: AppColors.primary,
-                  children: [
-                    _buildTextField(
-                      isDark: isDark,
-                      label: 'Return Period (days)',
-                      controller: _returnPeriodCtrl,
-                      hint: 'e.g. 30',
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                      ],
-                      onChanged: (_) => _autoComputeReturnExpiry(),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
+                  // Return Policy
+                  _buildSection(
+                    isDark: isDark,
+                    textPrimary: textPrimary,
+                    title: 'Return Policy',
+                    icon: Icons.assignment_return_outlined,
+                    iconColor: AppColors.primary,
+                    children: [
+                      _buildTextField(
+                        isDark: isDark,
+                        label: 'Return Period (days)',
+                        controller: _returnPeriodCtrl,
+                        hint: 'e.g. 30',
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                        onChanged: (_) => _autoComputeReturnExpiry(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
 
-                // Remarks & Notes
-                _buildSection(
-                  isDark: isDark,
-                  textPrimary: textPrimary,
-                  title: 'Remarks & Notes',
-                  icon: Icons.notes_outlined,
-                  iconColor: AppColors.primary,
-                  children: [
-                    _buildTextField(
-                      isDark: isDark,
-                      label: 'Remarks',
-                      controller: _remarksCtrl,
-                      hint: 'Any additional remarks from the receipt',
-                      maxLines: 3,
-                    ),
-                    const SizedBox(height: 14),
-                    _buildTextField(
-                      isDark: isDark,
-                      label: 'Warranty Notes',
-                      controller: _warrantyNotesCtrl,
-                      hint: 'Warranty terms and conditions',
-                      maxLines: 5,
-                    ),
-                  ],
-                ),
-              ],
+                  // Remarks & Notes
+                  _buildSection(
+                    isDark: isDark,
+                    textPrimary: textPrimary,
+                    title: 'Remarks & Notes',
+                    icon: Icons.notes_outlined,
+                    iconColor: AppColors.primary,
+                    children: [
+                      _buildTextField(
+                        isDark: isDark,
+                        label: 'Remarks',
+                        controller: _remarksCtrl,
+                        hint: 'Any additional remarks from the receipt',
+                        maxLines: 3,
+                      ),
+                      const SizedBox(height: 14),
+                      _buildTextField(
+                        isDark: isDark,
+                        label: 'Warranty Notes',
+                        controller: _warrantyNotesCtrl,
+                        hint: 'Warranty terms and conditions',
+                        maxLines: 5,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
           ),
         ),
 
@@ -854,9 +861,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
               const SizedBox(width: 10),
               Text(
                 title,
-                style: AppTextStyles.sectionTitle.copyWith(
-                  color: textPrimary,
-                ),
+                style: AppTextStyles.sectionTitle.copyWith(color: textPrimary),
               ),
             ],
           ),
@@ -890,7 +895,9 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
       children: [
         Text(
           label,
-          style: AppTextStyles.formLabel.copyWith(color: labelColor),
+          style: AppTextStyles.formLabel.copyWith(
+            color: labelColor.withValues(alpha: 0.6),
+          ),
         ),
         const SizedBox(height: 6),
         TextFormField(
@@ -900,14 +907,19 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
           onChanged: onChanged,
           validator: validator,
           maxLines: maxLines,
-          style: TextStyle(color: textPrimary, fontSize: 15),
+          style: TextStyle(
+            color: textPrimary,
+            fontSize: 15,
+          ),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: TextStyle(color: labelColor.withValues(alpha: 0.5)),
             filled: true,
             fillColor: fillColor,
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(maxLines > 1 ? 12 : 24),
               borderSide: BorderSide(color: borderColor),
@@ -918,8 +930,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(maxLines > 1 ? 12 : 24),
-              borderSide:
-                  const BorderSide(color: AppColors.primary, width: 2),
+              borderSide: const BorderSide(color: AppColors.primary, width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(maxLines > 1 ? 12 : 24),
@@ -927,8 +938,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(maxLines > 1 ? 12 : 24),
-              borderSide:
-                  const BorderSide(color: AppColors.error, width: 2),
+              borderSide: const BorderSide(color: AppColors.error, width: 2),
             ),
           ),
         ),
@@ -947,20 +957,27 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
       children: [
         Text(
           'Category',
-          style: AppTextStyles.formLabel.copyWith(color: labelColor),
+          style: AppTextStyles.formLabel.copyWith(
+            color: labelColor.withValues(alpha: 0.6),
+          ),
         ),
         const SizedBox(height: 6),
         DropdownButtonFormField<String>(
           value: _selectedCategory,
           dropdownColor: AppColors.card(isDark),
           style: TextStyle(color: textPrimary, fontSize: 15),
-          icon: Icon(Icons.keyboard_arrow_down_rounded,
-              color: labelColor, size: 20),
+          icon: Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: labelColor,
+            size: 20,
+          ),
           decoration: InputDecoration(
             filled: true,
             fillColor: fillColor,
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(24),
               borderSide: BorderSide(color: borderColor),
@@ -971,17 +988,11 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
-              borderSide:
-                  const BorderSide(color: AppColors.primary, width: 2),
+              borderSide: const BorderSide(color: AppColors.primary, width: 2),
             ),
           ),
           items: _categories
-              .map(
-                (c) => DropdownMenuItem(
-                  value: c,
-                  child: Text(c),
-                ),
-              )
+              .map((c) => DropdownMenuItem(value: c, child: Text(c)))
               .toList(),
           onChanged: (value) {
             if (value != null) setState(() => _selectedCategory = value);
@@ -1011,22 +1022,36 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.shopping_cart_outlined, size: 20, color: AppColors.primary),
+              const Icon(
+                Icons.shopping_cart_outlined,
+                size: 20,
+                color: AppColors.primary,
+              ),
               const SizedBox(width: 10),
               Text(
                 'Items Purchased',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: textPrimary),
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: textPrimary,
+                ),
               ),
               const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.radiusMedium,
+                  ),
                 ),
                 child: Text(
                   '${_lineItems.length} item${_lineItems.length == 1 ? '' : 's'}',
-                  style: const TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
@@ -1034,7 +1059,11 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
           const SizedBox(height: 4),
           Text(
             'Extracted from receipt — edit via Receipt Details if needed.',
-            style: TextStyle(fontSize: 11, color: labelColor, fontStyle: FontStyle.italic),
+            style: TextStyle(
+              fontSize: 11,
+              color: labelColor,
+              fontStyle: FontStyle.italic,
+            ),
           ),
           const SizedBox(height: 12),
           // Table header
@@ -1042,46 +1071,75 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
             padding: const EdgeInsets.symmetric(vertical: 4),
             child: Row(
               children: [
-                Expanded(flex: 3, child: Text('Description', style: headerStyle)),
-                SizedBox(width: 52, child: Text('Code', style: headerStyle)),
-                SizedBox(width: 36, child: Text('Qty', style: headerStyle, textAlign: TextAlign.center)),
-                SizedBox(width: 72, child: Text('Amount', style: headerStyle, textAlign: TextAlign.right)),
-              ],
-            ),
-          ),
-          Divider(height: 8, color: borderColor),
-          // Item rows
-          ..._lineItems.map((item) => Padding(
-            padding: const EdgeInsets.symmetric(vertical: 6),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
                 Expanded(
                   flex: 3,
-                  child: Text(item.itemDescription ?? '—', style: cellStyle),
+                  child: Text('Description', style: headerStyle),
                 ),
-                SizedBox(
-                  width: 52,
-                  child: Text(
-                    item.productCode ?? '—',
-                    style: TextStyle(fontSize: 11, color: labelColor, fontFamily: 'monospace'),
-                  ),
-                ),
+                SizedBox(width: 52, child: Text('Code', style: headerStyle)),
                 SizedBox(
                   width: 36,
-                  child: Text(item.quantity ?? '—', style: cellStyle, textAlign: TextAlign.center),
+                  child: Text(
+                    'Qty',
+                    style: headerStyle,
+                    textAlign: TextAlign.center,
+                  ),
                 ),
                 SizedBox(
                   width: 72,
                   child: Text(
-                    item.amount != null ? item.amount!.toStringAsFixed(2) : '—',
-                    style: cellStyle.copyWith(fontWeight: FontWeight.w600),
+                    'Amount',
+                    style: headerStyle,
                     textAlign: TextAlign.right,
                   ),
                 ),
               ],
             ),
-          )),
+          ),
+          Divider(height: 8, color: borderColor),
+          // Item rows
+          ..._lineItems.map(
+            (item) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: Text(item.itemDescription ?? '—', style: cellStyle),
+                  ),
+                  SizedBox(
+                    width: 52,
+                    child: Text(
+                      item.productCode ?? '—',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: labelColor,
+                        fontFamily: 'monospace',
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 36,
+                    child: Text(
+                      item.quantity ?? '—',
+                      style: cellStyle,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  SizedBox(
+                    width: 72,
+                    child: Text(
+                      item.amount != null
+                          ? item.amount!.toStringAsFixed(2)
+                          : '—',
+                      style: cellStyle.copyWith(fontWeight: FontWeight.w600),
+                      textAlign: TextAlign.right,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -1107,15 +1165,16 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
       children: [
         Text(
           label,
-          style: AppTextStyles.formLabel.copyWith(color: labelColor),
+          style: AppTextStyles.formLabel.copyWith(
+            color: labelColor.withValues(alpha: 0.6),
+          ),
         ),
         const SizedBox(height: 6),
         GestureDetector(
           onTap: onTap,
           child: Container(
             width: double.infinity,
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
             decoration: BoxDecoration(
               color: fillColor,
               borderRadius: BorderRadius.circular(24),
@@ -1140,8 +1199,11 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                     child: Icon(Icons.close, size: 16, color: labelColor),
                   )
                 else
-                  Icon(Icons.calendar_today_outlined,
-                      size: 16, color: labelColor),
+                  Icon(
+                    Icons.calendar_today_outlined,
+                    size: 16,
+                    color: labelColor,
+                  ),
               ],
             ),
           ),
@@ -1154,14 +1216,10 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
 
   Widget _buildSaveFooter(bool isDark) {
     final backgroundColor = AppColors.background(isDark);
-    final footerBorder = AppColors.footerBorder(isDark);
 
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        border: Border(top: BorderSide(color: footerBorder)),
-      ),
+      decoration: BoxDecoration(color: backgroundColor),
       child: SizedBox(
         width: double.infinity,
         child: ElevatedButton(
@@ -1177,10 +1235,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
           ),
           child: const Text(
             'Continue',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ),
       ),
