@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/receipt_service.dart';
+import '../services/product_image_service.dart';
 import '../data/database/app_database.dart';
 
 /// API Service provider
@@ -24,4 +25,10 @@ final authServiceProvider = Provider<AuthService>((ref) {
 final receiptServiceProvider = Provider<ReceiptService>((ref) {
   final apiService = ref.watch(apiServiceProvider);
   return ReceiptService(apiService);
+});
+
+/// Product Image Service provider
+final productImageServiceProvider = Provider<ProductImageService>((ref) {
+  final apiService = ref.watch(apiServiceProvider);
+  return ProductImageService(apiService);
 });

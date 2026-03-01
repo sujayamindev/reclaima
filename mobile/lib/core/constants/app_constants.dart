@@ -17,6 +17,7 @@ class ApiConstants {
   static const String authMe = '/auth/me';
   static const String receipts = '/receipts';
   static const String warranties = '/warranties';
+  static const String productImageSearch = '/products/image-search';
   static const String health = '/health';
   
   // Timeouts
