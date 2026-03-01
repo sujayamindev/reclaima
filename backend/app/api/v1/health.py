@@ -2,7 +2,7 @@
 Health check and system status routes.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import text
@@ -36,7 +36,7 @@ async def health_check(db: Session = Depends(get_db)):
     return HealthCheckResponse(
         status="healthy" if db_status == "healthy" else "degraded",
         version=settings.VERSION,
-        timestamp=datetime.utcnow(),
+        timestamp=datetime.now(timezone.utc),
         database=db_status,
         firebase=firebase_status,
         aws_mock=settings.USE_MOCK_AWS

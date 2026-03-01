@@ -5,6 +5,7 @@ User service - Business logic for user operations.
 import logging
 import uuid
 from typing import Optional
+from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 
 from app.models import User
@@ -144,20 +145,29 @@ class UserService:
         Returns:
             True if deleted, False if not found
         """
-        from datetime import datetime
-        
         user = self.get_user_by_id(db, user_id)
         
         if not user:
             return False
         
-        user.deleted_at = datetime.utcnow()
+        user.deleted_at = datetime.now(timezone.utc)
         
         # Soft delete all user's receipts
         from app.models import Receipt
         db.query(Receipt).filter(Receipt.user_id == user_id).update({
-            Receipt.deleted_at: datetime.utcnow()
+            Receipt.deleted_at: datetime.now(timezone.utc)
         })
+
+        # Soft delete all claim documents belonging to this user's receipts
+        from app.models.claim_document import ClaimDocument
+        db.query(ClaimDocument).filter(
+            ClaimDocument.receipt_id.in_(
+                db.query(Receipt.id).filter(Receipt.user_id == user_id)
+            )
+        ).update(
+            {ClaimDocument.deleted_at: datetime.now(timezone.utc)},
+            synchronize_session=False,
+        )
         
         db.commit()
         

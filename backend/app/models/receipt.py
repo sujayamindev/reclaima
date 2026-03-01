@@ -3,7 +3,7 @@ Receipt model for database.
 Represents digitized receipts with OCR data and warranty information.
 """
 
-from sqlalchemy import Column, String, DateTime, Float, ForeignKey, Integer, Text, Enum as SQLEnum
+from sqlalchemy import Column, String, DateTime, ForeignKey, Integer, Text, Numeric, Index, Enum as SQLEnum
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 import enum
@@ -38,7 +38,7 @@ class Receipt(Base):
     # Receipt information (from OCR or manual entry)
     store_name = Column(String(255), nullable=True)
     purchase_date = Column(DateTime(timezone=True), nullable=True, index=True)
-    total_amount = Column(Float, nullable=True)
+    total_amount = Column(Numeric(precision=12, scale=2), nullable=True)
     currency = Column(String(3), default="USD", nullable=True)  # ISO 4217 currency code
 
     # Invoice / receipt identification
@@ -89,6 +89,11 @@ class Receipt(Base):
     user = relationship("User", back_populates="receipts")
     claim_documents = relationship("ClaimDocument", back_populates="receipt", cascade="all, delete-orphan")
     line_items = relationship("ReceiptLineItem", back_populates="receipt", cascade="all, delete-orphan", order_by="ReceiptLineItem.row_index")
-    
+
+    # Composite index for pagination queries (user_id + created_at)
+    __table_args__ = (
+        Index('ix_receipts_user_id_created_at', 'user_id', 'created_at'),
+    )
+
     def __repr__(self):
         return f"<Receipt(id={self.id}, store={self.store_name}, status={self.status})>"

@@ -4,7 +4,7 @@ Represents a single product / service line on a receipt or invoice.
 Supports multi-item receipts and invoices.
 """
 
-from sqlalchemy import Column, String, DateTime, Float, ForeignKey, Integer
+from sqlalchemy import Column, String, DateTime, Numeric, ForeignKey, Integer
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 
@@ -38,13 +38,17 @@ class ReceiptLineItem(Base):
     quantity = Column(String(50), nullable=True)
 
     # Pricing
-    unit_price = Column(Float, nullable=True)   # Price per unit
-    amount     = Column(Float, nullable=True)   # Row total (quantity × unit_price)
+    unit_price = Column(Numeric(precision=12, scale=2), nullable=True)  # Price per unit
+    amount     = Column(Numeric(precision=12, scale=2), nullable=True)  # Row total (quantity × unit_price)
 
     # Metadata
     created_at = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
+    updated_at = Column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+    deleted_at = Column(DateTime(timezone=True), nullable=True)
 
     # Relationship
     receipt = relationship("Receipt", back_populates="line_items")

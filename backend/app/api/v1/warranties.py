@@ -4,7 +4,7 @@ Warranty routes - Track warranty and return deadlines.
 
 import logging
 from typing import List
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
@@ -45,7 +45,7 @@ async def list_active_warranties(
     )
     
     if not include_expired:
-        query = query.filter(Receipt.warranty_expiry_date >= datetime.utcnow())
+        query = query.filter(Receipt.warranty_expiry_date >= datetime.now(timezone.utc))
     
     receipts = query.order_by(Receipt.warranty_expiry_date.asc()).all()
     
@@ -55,7 +55,7 @@ async def list_active_warranties(
         is_expired = False
         
         if receipt.warranty_expiry_date:
-            delta = (receipt.warranty_expiry_date - datetime.utcnow()).days
+            delta = (receipt.warranty_expiry_date - datetime.now(timezone.utc)).days
             days_remaining = max(0, delta)
             is_expired = delta < 0
         
@@ -100,7 +100,7 @@ async def list_return_deadlines(
     )
     
     if not include_expired:
-        query = query.filter(Receipt.return_expiry_date >= datetime.utcnow())
+        query = query.filter(Receipt.return_expiry_date >= datetime.now(timezone.utc))
     
     receipts = query.order_by(Receipt.return_expiry_date.asc()).all()
     
@@ -110,7 +110,7 @@ async def list_return_deadlines(
         is_expired = False
         
         if receipt.return_expiry_date:
-            delta = (receipt.return_expiry_date - datetime.utcnow()).days
+            delta = (receipt.return_expiry_date - datetime.now(timezone.utc)).days
             days_remaining = max(0, delta)
             is_expired = delta < 0
         

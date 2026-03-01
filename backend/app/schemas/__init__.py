@@ -5,6 +5,7 @@ Pydantic schemas for API request/response validation.
 from pydantic import BaseModel, Field, EmailStr, ConfigDict
 from typing import Optional, List
 from datetime import datetime
+from decimal import Decimal
 from enum import Enum
 
 
@@ -71,8 +72,8 @@ class ReceiptLineItemResponse(BaseModel):
     product_code: Optional[str] = None
     item_description: Optional[str] = None
     quantity: Optional[str] = None
-    unit_price: Optional[float] = None
-    amount: Optional[float] = None
+    unit_price: Optional[Decimal] = None
+    amount: Optional[Decimal] = None
     created_at: datetime
 
     model_config = ConfigDict(
@@ -89,7 +90,7 @@ class ReceiptBase(BaseModel):
     """Base receipt schema."""
     store_name: Optional[str] = None
     purchase_date: Optional[datetime] = None
-    total_amount: Optional[float] = None
+    total_amount: Optional[Decimal] = None
     currency: Optional[str] = "USD"
     product_name: Optional[str] = None
     product_category: Optional[str] = None
@@ -273,6 +274,46 @@ class ReturnInfo(BaseModel):
     return_expiry_date: Optional[datetime]
     days_remaining: Optional[int]
     is_expired: bool
+
+
+# ============================================
+# Notification Preference Schemas
+# ============================================
+class UserNotificationPreferencesBase(BaseModel):
+    """Base notification preferences schema."""
+    warranty_reminders_enabled: bool = True
+    return_reminders_enabled: bool = True
+    ocr_notifications_enabled: bool = True
+    quiet_hours_start: Optional[int] = None  # 0-23
+    quiet_hours_end: Optional[int] = None    # 0-23
+
+
+class UserNotificationPreferencesUpdate(BaseModel):
+    """Partial update schema for notification preferences."""
+    warranty_reminders_enabled: Optional[bool] = None
+    return_reminders_enabled: Optional[bool] = None
+    ocr_notifications_enabled: Optional[bool] = None
+    quiet_hours_start: Optional[int] = None
+    quiet_hours_end: Optional[int] = None
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+        alias_generator=to_camel
+    )
+
+
+class UserNotificationPreferencesResponse(UserNotificationPreferencesBase):
+    """Notification preferences response schema."""
+    id: str
+    user_id: str
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True,
+        alias_generator=to_camel
+    )
 
 
 # ============================================

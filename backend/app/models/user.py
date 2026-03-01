@@ -10,6 +10,7 @@ from sqlalchemy.orm import relationship
 from app.db.base import Base
 
 
+
 class User(Base):
     """User model - stores Firebase authenticated users."""
     
@@ -24,6 +25,9 @@ class User(Base):
     # User information
     email = Column(String(255), unique=True, nullable=False, index=True)
     display_name = Column(String(255), nullable=True)
+
+    # Push notifications
+    fcm_token = Column(String(512), nullable=True)
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -34,6 +38,10 @@ class User(Base):
     
     # Relationships
     receipts = relationship("Receipt", back_populates="user", cascade="all, delete-orphan")
+    notification_preferences = relationship(
+        "UserNotificationPreferences", back_populates="user",
+        uselist=False, cascade="all, delete-orphan"
+    )
     
     def __repr__(self):
         return f"<User(id={self.id}, email={self.email})>"

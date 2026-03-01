@@ -4,10 +4,12 @@ Handles CRUD operations, file upload, OCR processing, and warranty calculations.
 """
 
 import logging
+import json
 import uuid
 from typing import Optional, List
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from dateutil import parser as dateutil_parser
+from dateutil.relativedelta import relativedelta
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import and_
 
@@ -68,8 +70,8 @@ class ReceiptService:
         
         if receipt_data.purchase_date:
             if receipt_data.warranty_period_months:
-                warranty_expiry = receipt_data.purchase_date + timedelta(
-                    days=receipt_data.warranty_period_months * 30
+                warranty_expiry = receipt_data.purchase_date + relativedelta(
+                    months=receipt_data.warranty_period_months
                 )
             
             if receipt_data.return_period_days:
@@ -194,8 +196,8 @@ class ReceiptService:
         if receipt_data.warranty_expiry_date is None and \
                 (receipt_data.purchase_date or receipt_data.warranty_period_months):
             if receipt.purchase_date and receipt.warranty_period_months:
-                receipt.warranty_expiry_date = receipt.purchase_date + timedelta(
-                    days=receipt.warranty_period_months * 30
+                receipt.warranty_expiry_date = receipt.purchase_date + relativedelta(
+                    months=receipt.warranty_period_months
                 )
 
         # Recalculate return expiry only if not explicitly provided
@@ -235,7 +237,7 @@ class ReceiptService:
         if not receipt:
             return False
         
-        receipt.deleted_at = datetime.utcnow()
+        receipt.deleted_at = datetime.now(timezone.utc)
         db.commit()
         
         logger.info(f"Soft deleted receipt: {receipt_id}")
@@ -318,7 +320,7 @@ class ReceiptService:
             # Call Textract service
             ocr_result = self.textract_service.analyze_document(receipt.s3_object_key)
             
-            receipt.last_ocr_attempt_at = datetime.utcnow()
+            receipt.last_ocr_attempt_at = datetime.now(timezone.utc)
             
             if ocr_result.get("status") == "success":
                 # Extract data from OCR result
@@ -390,8 +392,8 @@ class ReceiptService:
                 # ── calculate warranty / return dates ─────────────────────────
                 if receipt.purchase_date:
                     if receipt.warranty_period_months:
-                        receipt.warranty_expiry_date = receipt.purchase_date + timedelta(
-                            days=receipt.warranty_period_months * 30
+                        receipt.warranty_expiry_date = receipt.purchase_date + relativedelta(
+                            months=receipt.warranty_period_months
                         )
 
                     # Only calculate return expiry when a return period was
@@ -404,7 +406,7 @@ class ReceiptService:
                         )
 
                 receipt.status = ReceiptStatus.COMPLETED
-                receipt.ocr_raw_response = str(ocr_result)
+                receipt.ocr_raw_response = json.dumps(ocr_result, default=str)
 
                 # ── line items ────────────────────────────────────────────────
                 # Remove any existing line items (e.g. from a previous retry)
@@ -445,7 +447,7 @@ class ReceiptService:
             logger.error(f"OCR processing error for receipt {receipt_id}: {e}")
             receipt.ocr_retry_count += 1
             receipt.status = ReceiptStatus.OCR_FAILED
-            receipt.last_ocr_attempt_at = datetime.utcnow()
+            receipt.last_ocr_attempt_at = datetime.now(timezone.utc)
             db.commit()
             return receipt
     
