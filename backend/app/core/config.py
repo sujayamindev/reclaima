@@ -70,6 +70,9 @@ class Settings(BaseSettings):
     BEDROCK_MODEL_ID: str = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
     LLM_CLEANUP_ENABLED: bool = True
 
+    # Brave Search API — product image lookup
+    BRAVE_SEARCH_API_KEY: str = ""
+
     # Scheduler
     ENABLE_SCHEDULER: bool = True
     REMINDER_CHECK_HOUR: int = 9
