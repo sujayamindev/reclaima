@@ -5,7 +5,7 @@ import '../../providers/receipt_provider.dart';
 import '../../providers/service_providers.dart';
 import '../../widgets/step_progress_bar.dart';
 import '../../widgets/product_image_card.dart';
-import 'receipt_detail_screen.dart';
+import 'product_detail_screen.dart';
 
 class ReceiptConfirmationScreen extends ConsumerStatefulWidget {
   final String? receiptId;
@@ -140,7 +140,7 @@ class _ReceiptConfirmationScreenState
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
-        builder: (_) => ReceiptDetailScreen(receiptId: result.id),
+        builder: (_) => ProductDetailScreen(receiptId: result.id),
       ),
       (route) => route.isFirst,
     );

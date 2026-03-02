@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/app_constants.dart';
-import '../../providers/receipt_provider.dart';
-import '../receipt/receipt_detail_screen.dart';
+import '../../core/utils/formatters.dart';
+import '../../data/models/product_view_model.dart';
+import '../../providers/product_provider.dart';
 import '../receipt/add_receipt_screen.dart';
+import '../receipt/product_detail_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -153,7 +155,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  // ── Receipts content ────────────────────────────────────────────
+  // ── Products content ────────────────────────────────────────────
   Widget _buildContent(
     BuildContext context,
     Color cardColor,
@@ -161,11 +163,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     Color textPrimaryColor,
     Color textSecondaryColor,
   ) {
-    final receiptsAsync = ref.watch(receiptsProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final productsAsync = ref.watch(productsProvider);
 
-    return receiptsAsync.when(
-      data: (receipts) {
-        if (receipts.isEmpty) {
+    return productsAsync.when(
+      data: (products) {
+        if (products.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -178,21 +181,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    Icons.receipt_long_outlined,
+                    Icons.inventory_2_outlined,
                     size: 44,
                     color: textSecondaryColor,
                   ),
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  'No receipts yet',
+                  'No products yet',
                   style: AppTextStyles.titleLarge.copyWith(
                     color: textPrimaryColor,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Tap the + button to add your first receipt',
+                  'Tap the + button to scan your first receipt',
                   style: AppTextStyles.bodySmall.copyWith(
                     color: textSecondaryColor,
                   ),
@@ -204,14 +207,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
         return RefreshIndicator(
           color: AppColors.primary,
-          onRefresh: () async => ref.invalidate(receiptsProvider),
+          onRefresh: () async => ref.invalidate(productsProvider),
           child: ListView.builder(
             padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-            itemCount: receipts.length,
+            itemCount: products.length,
             itemBuilder: (context, index) {
-              final receipt = receipts[index];
-              return _ReceiptCard(
-                receipt: receipt,
+              final product = products[index];
+              return _ProductCard(
+                product: product,
+                isDark: isDark,
                 cardColor: cardColor,
                 borderColor: borderColor,
                 textPrimaryColor: textPrimaryColor,
@@ -220,8 +224,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) =>
-                          ReceiptDetailScreen(receiptId: receipt.id),
+                      builder: (_) => ProductDetailScreen(
+                        receiptId: product.receiptId,
+                        lineItemId: product.lineItemId,
+                      ),
                     ),
                   );
                 },
@@ -242,7 +248,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const Icon(Icons.error_outline, size: 48, color: AppColors.error),
               const SizedBox(height: 16),
               Text(
-                'Error loading receipts',
+                'Error loading products',
                 style: AppTextStyles.bodyLarge.copyWith(
                   fontWeight: FontWeight.bold,
                   color: textPrimaryColor,
@@ -252,16 +258,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               Text(
                 '$error',
                 textAlign: TextAlign.center,
-                style: AppTextStyles.bodyXSmall.copyWith(color: textSecondaryColor),
+                style: AppTextStyles.bodyXSmall
+                    .copyWith(color: textSecondaryColor),
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () => ref.invalidate(receiptsProvider),
+                onPressed: () => ref.invalidate(productsProvider),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: AppColors.onPrimary,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
+                    borderRadius:
+                        BorderRadius.circular(AppDimensions.radiusPill),
                   ),
                 ),
                 child: const Text('Retry'),
@@ -321,20 +329,18 @@ class _AttentionSubtitle extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final receiptsAsync = ref.watch(receiptsProvider);
+    final productsAsync = ref.watch(productsProvider);
 
-    final attentionCount = receiptsAsync.when(
-      data: (receipts) => receipts.where((r) {
-        final days = r.warrantyDaysRemaining;
-        return days != null && days <= 30 && !(r.isWarrantyExpired);
-      }).length,
+    final attentionCount = productsAsync.when(
+      data: (products) =>
+          products.where((p) => p.warrantyExpiresSoon).length,
       loading: () => 0,
       error: (_, __) => 0,
     );
 
     final text = attentionCount > 0
         ? '$attentionCount ${attentionCount == 1 ? 'warranty expires' : 'warranties expire'} within 30 days.'
-        : 'All your receipts and warranties are up to date.';
+        : 'All your products and warranties are up to date.';
 
     return Text(
       text,
@@ -386,10 +392,11 @@ class _CircleIconButton extends StatelessWidget {
   }
 }
 
-// ── Receipt card ──────────────────────────────────────────────────
-class _ReceiptCard extends StatelessWidget {
-  const _ReceiptCard({
-    required this.receipt,
+// ── Product card ──────────────────────────────────────────────────
+class _ProductCard extends StatelessWidget {
+  const _ProductCard({
+    required this.product,
+    required this.isDark,
     required this.cardColor,
     required this.borderColor,
     required this.textPrimaryColor,
@@ -397,51 +404,44 @@ class _ReceiptCard extends StatelessWidget {
     required this.onTap,
   });
 
-  final dynamic receipt;
+  final ProductViewModel product;
+  final bool isDark;
   final Color cardColor;
   final Color borderColor;
   final Color textPrimaryColor;
   final Color textSecondaryColor;
   final VoidCallback onTap;
 
-  Color get _statusColor {
-    switch (receipt.status.toString()) {
-      case 'ReceiptStatus.completed':
-        return AppColors.primary;
-      case 'ReceiptStatus.processing':
-        return AppColors.warning;
-      case 'ReceiptStatus.ocrFailed':
-        return AppColors.error;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  IconData get _statusIcon {
-    switch (receipt.status.toString()) {
-      case 'ReceiptStatus.completed':
-        return Icons.check_circle_outline;
-      case 'ReceiptStatus.processing':
-        return Icons.sync;
-      case 'ReceiptStatus.ocrFailed':
-        return Icons.error_outline;
-      default:
-        return Icons.receipt_outlined;
-    }
+  /// Deterministic avatar background color from the product name.
+  Color get _avatarColor {
+    const palette = [
+      Color(0xFF12E28C), // primary
+      Color(0xFF3B82F6), // info
+      Color(0xFFF59E0B), // warning
+      Color(0xFF8B5CF6), // purple
+      Color(0xFFEC4899), // pink
+      Color(0xFF14B8A6), // teal
+    ];
+    final code = product.displayName.isNotEmpty
+        ? product.displayName.codeUnitAt(0)
+        : 0;
+    return palette[code % palette.length];
   }
 
   @override
   Widget build(BuildContext context) {
+    final avatarColor = product.isPending ? AppColors.warning : _avatarColor;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: cardColor,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
         border: Border.all(color: borderColor),
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
@@ -449,98 +449,148 @@ class _ReceiptCard extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                // Status indicator
+                // ── Avatar ──────────────────────────────────────────────
                 Container(
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: _statusColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+                    color: avatarColor.withValues(alpha: 0.14),
+                    borderRadius:
+                        BorderRadius.circular(AppDimensions.radiusMedium),
                   ),
-                  child: Icon(_statusIcon, color: _statusColor, size: 22),
+                  child: Center(
+                    child: product.isPending
+                        ? Icon(Icons.sync,
+                            size: 22,
+                            color: AppColors.warning.withValues(alpha: 0.9))
+                        : Text(
+                            product.displayName.isNotEmpty
+                                ? product.displayName[0].toUpperCase()
+                                : '?',
+                            style: AppTextStyles.listTitle.copyWith(
+                              fontSize: 18,
+                              color: avatarColor,
+                              height: 1.0,
+                            ),
+                          ),
+                  ),
                 ),
                 const SizedBox(width: 14),
-                // Info
+
+                // ── Info ────────────────────────────────────────────────
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        receipt.storeName ?? 'Unknown Store',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
+                        product.displayName,
+                        style: AppTextStyles.listTitle.copyWith(
                           fontSize: 15,
                           color: textPrimaryColor,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      if (receipt.productName != null) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          receipt.productName!,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: textSecondaryColor,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                      const SizedBox(height: 3),
+                      Text(
+                        product.isPending
+                            ? 'Processing…'
+                            : _buildSubtitle(),
+                        style: AppTextStyles.caption.copyWith(
+                          color: textSecondaryColor,
                         ),
-                      ],
-                      if (receipt.warrantyExpiryDate != null) ...[
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.shield_outlined,
-                              size: 12,
-                              color: receipt.isWarrantyExpired
-                                  ? AppColors.error
-                                  : AppColors.primary,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              receipt.isWarrantyExpired
-                                  ? 'Warranty expired'
-                                  : '${receipt.warrantyDaysRemaining} days left',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: receipt.isWarrantyExpired
-                                    ? AppColors.error
-                                    : AppColors.primary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      _buildWarrantyChip(),
                     ],
                   ),
                 ),
                 const SizedBox(width: 8),
-                // Amount + chevron
+
+                // ── Amount + chevron ────────────────────────────────────
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    if (receipt.totalAmount != null)
+                    if (product.itemAmount != null)
                       Text(
-                        '${receipt.currency ?? 'USD'} ${receipt.totalAmount!.toStringAsFixed(2)}',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
+                        CurrencyFormatter.format(
+                          product.itemAmount!,
+                          currency: product.currency ?? 'USD',
+                        ),
+                        style: AppTextStyles.listTitle.copyWith(
                           fontSize: 14,
                           color: textPrimaryColor,
                         ),
                       ),
                     const SizedBox(height: 4),
-                    Icon(
-                      Icons.chevron_right,
-                      color: textSecondaryColor,
-                      size: 18,
-                    ),
+                    Icon(Icons.chevron_right,
+                        color: textSecondaryColor, size: 18),
                   ],
                 ),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  String _buildSubtitle() {
+    final parts = <String>[];
+    if (product.receipt.storeName != null) {
+      parts.add(product.receipt.storeName!);
+    }
+    if (product.receipt.purchaseDate != null) {
+      parts.add(DateFormatter.formatDate(product.receipt.purchaseDate!));
+    }
+    return parts.join(' · ');
+  }
+
+  Widget _buildWarrantyChip() {
+    if (product.isPending) return const SizedBox.shrink();
+
+    if (!product.hasWarranty) {
+      return const SizedBox.shrink();
+    }
+
+    final isExpired = product.isWarrantyExpired;
+    final days = product.warrantyDaysRemaining;
+    final expiresSoon =
+        !isExpired && days != null && days <= 30;
+
+    Color chipColor;
+    String chipText;
+    IconData chipIcon;
+
+    if (isExpired) {
+      chipColor = AppColors.error;
+      chipText = 'Warranty expired';
+      chipIcon = Icons.shield_outlined;
+    } else if (expiresSoon) {
+      chipColor = AppColors.warning;
+      chipText = '$days days left';
+      chipIcon = Icons.shield_outlined;
+    } else {
+      chipColor = AppColors.success;
+      chipText = '$days days left';
+      chipIcon = Icons.shield_outlined;
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 5),
+      child: Row(
+        children: [
+          Icon(chipIcon, size: 12, color: chipColor),
+          const SizedBox(width: 4),
+          Text(
+            chipText,
+            style: AppTextStyles.caption.copyWith(
+              fontWeight: FontWeight.w600,
+              color: chipColor,
+            ),
+          ),
+        ],
       ),
     );
   }

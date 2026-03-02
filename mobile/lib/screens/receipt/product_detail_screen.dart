@@ -2,16 +2,30 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/app_constants.dart';
+import '../../data/models/product_view_model.dart';
 import '../../data/models/receipt_model.dart';
 import '../../data/models/receipt_line_item_model.dart';
 import '../../providers/receipt_provider.dart';
 import '../../core/utils/formatters.dart';
 import '../../widgets/product_image_card.dart';
 
-class ReceiptDetailScreen extends ConsumerWidget {
+/// Full-screen product detail view.
+///
+/// The product ([ProductViewModel]) is resolved here from the receipt +
+/// optional line item rather than passed as a constructor argument so that
+/// this screen re-renders when the provider data updates (e.g. after edit).
+class ProductDetailScreen extends ConsumerWidget {
   final String receiptId;
 
-  const ReceiptDetailScreen({super.key, required this.receiptId});
+  /// The id of the specific [ReceiptLineItemModel] to display.
+  /// Null means the receipt is still pending (no line items yet).
+  final String? lineItemId;
+
+  const ProductDetailScreen({
+    super.key,
+    required this.receiptId,
+    this.lineItemId,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -23,11 +37,24 @@ class ReceiptDetailScreen extends ConsumerWidget {
       backgroundColor: AppColors.background(isDark),
       body: SafeArea(
         child: receiptAsync.when(
-          data: (receipt) =>
-              _buildScrollBody(context, ref, receipt, imageUrlAsync, isDark),
+          data: (receipt) {
+            // Resolve the specific line item (null for pending receipts).
+            ReceiptLineItemModel? item;
+            if (lineItemId != null) {
+              try {
+                item = receipt.lineItems
+                    .firstWhere((li) => li.id == lineItemId);
+              } catch (_) {
+                item = null;
+              }
+            }
+            final product =
+                ProductViewModel(receipt: receipt, lineItem: item);
+            return _buildBody(context, ref, product, imageUrlAsync, isDark);
+          },
           loading: () => Column(
             children: [
-              _buildTopBar(context, ref, isDark, null),
+              _buildTopBar(context, isDark),
               const Expanded(
                 child: Center(
                   child: CircularProgressIndicator(color: AppColors.primary),
@@ -35,9 +62,9 @@ class ReceiptDetailScreen extends ConsumerWidget {
               ),
             ],
           ),
-          error: (error, _) => Column(
+          error: (err, _) => Column(
             children: [
-              _buildTopBar(context, ref, isDark, null),
+              _buildTopBar(context, isDark),
               Expanded(
                 child: Center(
                   child: Padding(
@@ -52,22 +79,18 @@ class ReceiptDetailScreen extends ConsumerWidget {
                             color: AppColors.error.withValues(alpha: 0.12),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
-                            Icons.error_outline,
-                            size: 32,
-                            color: AppColors.error,
-                          ),
+                          child: const Icon(Icons.error_outline,
+                              size: 32, color: AppColors.error),
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'Failed to load receipt',
-                          style: AppTextStyles.titleLarge.copyWith(
-                            color: AppColors.textPrimary(isDark),
-                          ),
+                          'Failed to load product',
+                          style: AppTextStyles.titleLarge
+                              .copyWith(color: AppColors.textPrimary(isDark)),
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          '$error',
+                          '$err',
                           textAlign: TextAlign.center,
                           style: AppTextStyles.bodyXSmall.copyWith(
                             color: AppColors.textSecondary(isDark),
@@ -85,12 +108,12 @@ class ReceiptDetailScreen extends ConsumerWidget {
     );
   }
 
-  // ── Scrollable body ───────────────────────────────────────────────────────
+  // ── Scroll body ──────────────────────────────────────────────────────────
 
-  Widget _buildScrollBody(
+  Widget _buildBody(
     BuildContext context,
     WidgetRef ref,
-    ReceiptModel receipt,
+    ProductViewModel product,
     AsyncValue<String?> imageUrlAsync,
     bool isDark,
   ) {
@@ -98,90 +121,74 @@ class ReceiptDetailScreen extends ConsumerWidget {
 
     return CustomScrollView(
       slivers: [
-        SliverToBoxAdapter(
-          child: _buildTopBar(context, ref, isDark, receipt),
-        ),
+        SliverToBoxAdapter(child: _buildTopBar(context, isDark)),
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(p, 4, p, 36),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
-              // ── Hero card ────────────────────────────────────────────
-              _buildHeroCard(context, ref, receipt, isDark),
+              // ── Hero card ───────────────────────────────────────────
+              _buildHeroCard(context, ref, product, isDark),
               const SizedBox(height: 12),
 
-              // ── Receipt image ─────────────────────────────────────
-              if (receipt.s3ObjectKey != null) ...[
-                _buildReceiptImageWidget(context, imageUrlAsync, isDark),
-                const SizedBox(height: 12),
-              ],
-
-              // ── Warranty & Return countdown ───────────────────────
-              _buildWarrantyReturnSection(receipt, isDark),
+              // ── Warranty & Return countdown ──────────────────────────
+              _buildWarrantySection(product, isDark),
               const SizedBox(height: 12),
 
-              // ── Items Purchased ───────────────────────────────────
-              if (receipt.lineItems.isNotEmpty) ...[
-                _buildLineItemsSection(isDark, receipt.lineItems),
-                const SizedBox(height: 12),
-              ],
-
-              // ── Product Information (fallback when no line items) ──
-              if (receipt.lineItems.isEmpty &&
-                  (receipt.productName != null ||
-                      receipt.productCategory != null)) ...[
-                _buildSection(
-                  isDark,
-                  'Product Information',
-                  Icons.inventory_2_outlined,
-                  [
-                    _buildInfoRow(
-                        'Product', receipt.productName ?? 'N/A', isDark),
-                    _buildInfoRow(
-                        'Category', receipt.productCategory ?? 'N/A', isDark),
-                  ],
-                ),
-                const SizedBox(height: 12),
-              ],
-
-              // ── Product Image (Brave Search) ──────────────────────
-              if (receipt.productName != null) ...[
+              // ── Product Image (Brave / web search) ───────────────────
+              if (product.productImageUrl != null) ...[
                 ProductImageCard(
-                  productName: receipt.productName!,
-                  imageUrlFuture: Future.value(receipt.productImageUrl),
+                  productName: product.displayName,
+                  imageUrlFuture: Future.value(product.productImageUrl),
                   isDark: isDark,
                 ),
                 const SizedBox(height: 12),
               ],
 
-              // ── Vendor Contact ────────────────────────────────────
-              if (_hasVendorContact(receipt)) ...[
+              // ── Purchase Details ─────────────────────────────────────
+              _buildPurchaseDetails(
+                  context, product.receipt, imageUrlAsync, isDark),
+              const SizedBox(height: 12),
+
+              // ── All line items table (multi-product context) ──────────
+              if (product.receipt.lineItems.length > 1) ...[
+                _buildLineItemsSection(isDark, product.receipt.lineItems,
+                    highlightId: lineItemId),
+                const SizedBox(height: 12),
+              ],
+
+              // ── Vendor Contact ───────────────────────────────────────
+              if (_hasVendorContact(product.receipt)) ...[
                 _buildSection(
                   isDark,
                   'Vendor Contact',
                   Icons.store_outlined,
                   [
-                    if (receipt.vendorAddress != null)
-                      _buildInfoRow('Address', receipt.vendorAddress!, isDark),
-                    if (receipt.vendorPhone != null)
-                      _buildInfoRow('Phone', receipt.vendorPhone!, isDark),
-                    if (receipt.vendorEmail != null)
-                      _buildInfoRow('Email', receipt.vendorEmail!, isDark),
-                    if (receipt.vendorUrl != null)
-                      _buildInfoRow('Website', receipt.vendorUrl!, isDark),
+                    if (product.receipt.vendorAddress != null)
+                      _buildInfoRow(
+                          'Address', product.receipt.vendorAddress!, isDark),
+                    if (product.receipt.vendorPhone != null)
+                      _buildInfoRow(
+                          'Phone', product.receipt.vendorPhone!, isDark),
+                    if (product.receipt.vendorEmail != null)
+                      _buildInfoRow(
+                          'Email', product.receipt.vendorEmail!, isDark),
+                    if (product.receipt.vendorUrl != null)
+                      _buildInfoRow(
+                          'Website', product.receipt.vendorUrl!, isDark),
                   ],
                 ),
                 const SizedBox(height: 12),
               ],
 
-              // ── Warranty Terms ────────────────────────────────────
-              if (receipt.warrantyNotes != null) ...[
+              // ── Warranty Terms ───────────────────────────────────────
+              if (product.receipt.warrantyNotes != null) ...[
                 _buildSection(
                   isDark,
                   'Warranty Terms',
                   Icons.policy_outlined,
                   [
                     Text(
-                      receipt.warrantyNotes!,
+                      product.receipt.warrantyNotes!,
                       style: AppTextStyles.bodyXSmall.copyWith(
                         color: AppColors.textSecondary(isDark),
                         height: 1.6,
@@ -192,15 +199,15 @@ class ReceiptDetailScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
               ],
 
-              // ── Remarks ───────────────────────────────────────────
-              if (receipt.remarks != null) ...[
+              // ── Additional Details ───────────────────────────────────
+              if (product.receipt.remarks != null) ...[
                 _buildSection(
                   isDark,
                   'Additional Details',
                   Icons.info_outline,
                   [
                     Text(
-                      receipt.remarks!,
+                      product.receipt.remarks!,
                       style: AppTextStyles.bodyXSmall.copyWith(
                         color: AppColors.textSecondary(isDark),
                         height: 1.5,
@@ -211,15 +218,15 @@ class ReceiptDetailScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
               ],
 
-              // ── Notes ─────────────────────────────────────────────
-              if (receipt.notes != null) ...[
+              // ── Notes ────────────────────────────────────────────────
+              if (product.receipt.notes != null) ...[
                 _buildSection(
                   isDark,
                   'Notes',
                   Icons.notes_outlined,
                   [
                     Text(
-                      receipt.notes!,
+                      product.receipt.notes!,
                       style: AppTextStyles.bodyXSmall.copyWith(
                         color: AppColors.textSecondary(isDark),
                         height: 1.5,
@@ -230,19 +237,22 @@ class ReceiptDetailScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
               ],
 
-              // ── Processing Status ─────────────────────────────────
+              // ── Processing Status ────────────────────────────────────
               _buildSection(
                 isDark,
                 'Processing Status',
                 Icons.cloud_done_outlined,
                 [
-                  _buildInfoRow('OCR Status', receipt.status.name, isDark),
                   _buildInfoRow(
-                      'Retry Count', '${receipt.ocrRetryCount}', isDark),
-                  if (receipt.lastOcrAttemptAt != null)
+                      'OCR Status', product.receipt.status.name, isDark),
+                  _buildInfoRow(
+                      'Retry Count', '${product.receipt.ocrRetryCount}',
+                      isDark),
+                  if (product.receipt.lastOcrAttemptAt != null)
                     _buildInfoRow(
                       'Last Attempt',
-                      DateFormatter.formatDateTime(receipt.lastOcrAttemptAt!),
+                      DateFormatter.formatDateTime(
+                          product.receipt.lastOcrAttemptAt!),
                       isDark,
                     ),
                 ],
@@ -254,21 +264,17 @@ class ReceiptDetailScreen extends ConsumerWidget {
     );
   }
 
-  // ── Top bar (back + title + actions) ─────────────────────────────────────
+  // ── Top bar ──────────────────────────────────────────────────────────────
 
-  Widget _buildTopBar(
-    BuildContext context,
-    WidgetRef ref,
-    bool isDark,
-    ReceiptModel? receipt,
-  ) {
+  Widget _buildTopBar(BuildContext context, bool isDark) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Row(
         children: [
           IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: Icon(Icons.arrow_back, color: AppColors.textPrimary(isDark)),
+            icon: Icon(Icons.arrow_back,
+                color: AppColors.textPrimary(isDark)),
             padding: const EdgeInsets.all(8),
             style: IconButton.styleFrom(
               backgroundColor: Colors.transparent,
@@ -277,7 +283,7 @@ class ReceiptDetailScreen extends ConsumerWidget {
           ),
           Expanded(
             child: Text(
-              'Receipt Details',
+              'Product Details',
               textAlign: TextAlign.center,
               style: AppTextStyles.listTitle.copyWith(
                 fontSize: 17,
@@ -285,22 +291,22 @@ class ReceiptDetailScreen extends ConsumerWidget {
               ),
             ),
           ),
-          // Balance the back button width
+          // Balance the back button width.
           const SizedBox(width: 48),
         ],
       ),
     );
   }
 
-  // ── Hero card ─────────────────────────────────────────────────────────────
+  // ── Hero card ────────────────────────────────────────────────────────────
 
   Widget _buildHeroCard(
     BuildContext context,
     WidgetRef ref,
-    ReceiptModel receipt,
+    ProductViewModel product,
     bool isDark,
   ) {
-    final statusColor = _receiptStatusColor(receipt, isDark);
+    final statusColor = _statusColor(product.receipt, isDark);
 
     return Container(
       width: double.infinity,
@@ -313,22 +319,30 @@ class ReceiptDetailScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Store icon + name + amount
+          // ── Product name + category ─────────────────────────────────
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Large letter avatar
               Container(
-                width: 48,
-                height: 48,
+                width: 52,
+                height: 52,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.12),
+                  color: AppColors.primary.withValues(alpha: 0.14),
                   borderRadius:
                       BorderRadius.circular(AppDimensions.radiusMedium),
                 ),
-                child: const Icon(
-                  Icons.store_outlined,
-                  color: AppColors.primary,
-                  size: 24,
+                child: Center(
+                  child: Text(
+                    product.displayName.isNotEmpty
+                        ? product.displayName[0].toUpperCase()
+                        : '?',
+                    style: AppTextStyles.headingSmall.copyWith(
+                      color: AppColors.primary,
+                      fontSize: 24,
+                      height: 1.0,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(width: 14),
@@ -337,32 +351,34 @@ class ReceiptDetailScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      receipt.storeName ?? 'Unknown Store',
+                      product.displayName,
                       style: AppTextStyles.listTitle.copyWith(
-                        fontSize: 17,
+                        fontSize: 18,
                         color: AppColors.textPrimary(isDark),
+                        height: 1.3,
                       ),
                     ),
-                    if (receipt.purchaseDate != null) ...[
-                      const SizedBox(height: 3),
+                    if (product.productCategory != null) ...[
+                      const SizedBox(height: 4),
                       Text(
-                        DateFormatter.formatDate(receipt.purchaseDate!),
-                        style: AppTextStyles.caption
-                            .copyWith(color: AppColors.textSecondary(isDark)),
+                        product.productCategory!,
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.textSecondary(isDark),
+                        ),
                       ),
                     ],
                   ],
                 ),
               ),
-              if (receipt.totalAmount != null) ...[
+              if (product.itemAmount != null) ...[
                 const SizedBox(width: 8),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
                       CurrencyFormatter.format(
-                        receipt.totalAmount!,
-                        currency: receipt.currency ?? 'USD',
+                        product.itemAmount!,
+                        currency: product.currency ?? 'USD',
                       ),
                       style: AppTextStyles.listTitle.copyWith(
                         fontSize: 16,
@@ -371,7 +387,7 @@ class ReceiptDetailScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      receipt.currency ?? 'USD',
+                      product.currency ?? 'USD',
                       style: AppTextStyles.caption
                           .copyWith(color: AppColors.textSecondary(isDark)),
                     ),
@@ -381,53 +397,33 @@ class ReceiptDetailScreen extends ConsumerWidget {
             ],
           ),
 
-          // Product name + invoice number
-          if (receipt.productName != null || receipt.invoiceNumber != null) ...[
-            const SizedBox(height: 14),
-            Divider(color: AppColors.border(isDark), height: 1),
-            const SizedBox(height: 14),
-            if (receipt.productName != null)
-              Text(
-                receipt.productName!,
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textSecondary(isDark),
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            if (receipt.invoiceNumber != null) ...[
-              const SizedBox(height: 4),
-              Text(
-                'Invoice # ${receipt.invoiceNumber}',
-                style: AppTextStyles.caption.copyWith(
-                  color: AppColors.muted(isDark),
-                  fontFamily: 'monospace',
-                ),
-              ),
-            ],
-          ],
-
-          // Status + category badges
+          // ── Status + category badges ────────────────────────────────
           const SizedBox(height: 14),
           Wrap(
             spacing: 8,
             runSpacing: 6,
             children: [
-              _StatusBadge(
-                color: statusColor,
-                label: _receiptStatusLabel(receipt),
-              ),
-              if (receipt.productCategory != null)
+              if (product.isPending)
+                _StatusBadge(
+                  color: AppColors.warning,
+                  label: 'Processing',
+                )
+              else
+                _StatusBadge(
+                  color: statusColor,
+                  label: _statusLabel(product.receipt),
+                ),
+              if (product.receipt.invoiceNumber != null)
                 _StatusBadge(
                   color: AppColors.textSecondary(isDark),
-                  label: receipt.productCategory!,
+                  label: '# ${product.receipt.invoiceNumber!}',
                   filled: false,
                   isDark: isDark,
                 ),
             ],
           ),
 
-          // Action buttons
+          // ── Action buttons ──────────────────────────────────────────
           const SizedBox(height: 14),
           Divider(color: AppColors.border(isDark), height: 1),
           const SizedBox(height: 10),
@@ -451,16 +447,12 @@ class ReceiptDetailScreen extends ConsumerWidget {
                   isDark: isDark,
                   color: AppColors.error,
                   onPressed: () async {
-                    final confirmed =
-                        await _showDeleteConfirmation(context);
+                    final confirmed = await _showDeleteDialog(context);
                     if (confirmed == true && context.mounted) {
-                      final controller =
-                          ref.read(receiptControllerProvider.notifier);
-                      final success =
-                          await controller.deleteReceipt(receipt.id);
-                      if (success && context.mounted) {
-                        Navigator.pop(context);
-                      }
+                      final ok = await ref
+                          .read(receiptControllerProvider.notifier)
+                          .deleteReceipt(product.receiptId);
+                      if (ok && context.mounted) Navigator.pop(context);
                     }
                   },
                 ),
@@ -472,16 +464,9 @@ class ReceiptDetailScreen extends ConsumerWidget {
     );
   }
 
-  // ── Warranty & Return countdown tiles ─────────────────────────────────────
+  // ── Warranty & Return section ─────────────────────────────────────────────
 
-  Widget _buildWarrantyReturnSection(ReceiptModel receipt, bool isDark) {
-    // Only show tiles for line items that have warranty or return data.
-    final trackedItems = receipt.lineItems
-        .where(
-          (li) => li.warrantyExpiryDate != null || li.returnExpiryDate != null,
-        )
-        .toList();
-
+  Widget _buildWarrantySection(ProductViewModel product, bool isDark) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.paddingCard),
@@ -499,63 +484,102 @@ class ReceiptDetailScreen extends ConsumerWidget {
             isDark: isDark,
           ),
           const SizedBox(height: 16),
-          if (trackedItems.isEmpty)
+          if (product.isPending)
+            _buildPendingWarrantyPlaceholder(isDark)
+          else if (!product.hasWarranty && !product.hasReturn)
             _buildNoWarrantyPlaceholder(isDark)
           else
-            ...trackedItems.asMap().entries.map((entry) {
-              final index = entry.key;
-              final item = entry.value;
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Divider + item name header for multi-item receipts.
-                  if (trackedItems.length > 1) ...[
-                    if (index > 0) ...[
-                      const SizedBox(height: 4),
-                      Divider(color: AppColors.border(isDark), height: 20),
-                    ],
-                    Text(
-                      item.displayName,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textSecondary(isDark),
-                        fontWeight: FontWeight.w500,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 10),
-                  ],
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _CountdownTile(
-                          label: 'WARRANTY',
-                          icon: Icons.shield_outlined,
-                          expiryDate: item.warrantyExpiryDate,
-                          daysRemaining: item.warrantyDaysRemaining,
-                          isExpired: item.isWarrantyExpired,
-                          noInfoText: 'Not set',
-                          isDark: isDark,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _CountdownTile(
-                          label: 'RETURN',
-                          icon: Icons.assignment_return_outlined,
-                          expiryDate: item.returnExpiryDate,
-                          daysRemaining: item.returnDaysRemaining,
-                          isExpired: item.isReturnExpired,
-                          noInfoText: 'Not set',
-                          isDark: isDark,
-                        ),
-                      ),
-                    ],
+            Row(
+              children: [
+                Expanded(
+                  child: _CountdownTile(
+                    label: 'WARRANTY',
+                    icon: Icons.shield_outlined,
+                    expiryDate: product.warrantyExpiryDate,
+                    daysRemaining: product.warrantyDaysRemaining,
+                    isExpired: product.isWarrantyExpired,
+                    noInfoText: 'Not set',
+                    isDark: isDark,
                   ),
-                ],
-              );
-            }),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _CountdownTile(
+                    label: 'RETURN',
+                    icon: Icons.assignment_return_outlined,
+                    expiryDate: product.returnExpiryDate,
+                    daysRemaining: product.returnDaysRemaining,
+                    isExpired: product.isReturnExpired,
+                    noInfoText: 'Not set',
+                    isDark: isDark,
+                  ),
+                ),
+              ],
+            ),
+          // Period details if set
+          if (!product.isPending &&
+              (product.warrantyPeriodMonths != null ||
+                  product.returnPeriodDays != null)) ...[
+            const SizedBox(height: 12),
+            Divider(color: AppColors.border(isDark), height: 1),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                if (product.warrantyPeriodMonths != null)
+                  Expanded(
+                    child: _buildInfoRow(
+                      'Warranty period',
+                      '${product.warrantyPeriodMonths} months',
+                      isDark,
+                    ),
+                  ),
+                if (product.returnPeriodDays != null)
+                  Expanded(
+                    child: _buildInfoRow(
+                      'Return window',
+                      '${product.returnPeriodDays} days',
+                      isDark,
+                    ),
+                  ),
+              ],
+            ),
+          ],
         ],
+      ),
+    );
+  }
+
+  Widget _buildPendingWarrantyPlaceholder(bool isDark) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Column(
+          children: [
+            SizedBox(
+              width: 28,
+              height: 28,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.5,
+                color: AppColors.warning.withValues(alpha: 0.8),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Processing receipt…',
+              style: AppTextStyles.bodySmall
+                  .copyWith(color: AppColors.muted(isDark)),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Warranty details will appear once OCR is complete.',
+              textAlign: TextAlign.center,
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.muted(isDark),
+                height: 1.4,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -566,17 +590,13 @@ class ReceiptDetailScreen extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(vertical: 12),
         child: Column(
           children: [
-            Icon(
-              Icons.verified_user_outlined,
-              size: 36,
-              color: AppColors.muted(isDark),
-            ),
+            Icon(Icons.verified_user_outlined,
+                size: 36, color: AppColors.muted(isDark)),
             const SizedBox(height: 10),
             Text(
               'No warranty information tracked',
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.muted(isDark),
-              ),
+              style: AppTextStyles.bodySmall
+                  .copyWith(color: AppColors.muted(isDark)),
             ),
           ],
         ),
@@ -584,23 +604,102 @@ class ReceiptDetailScreen extends ConsumerWidget {
     );
   }
 
-  // ── Receipt image with tap-to-fullscreen ─────────────────────────────────
+  // ── Purchase Details card ─────────────────────────────────────────────────
 
-  Widget _buildReceiptImageWidget(
+  Widget _buildPurchaseDetails(
+    BuildContext context,
+    ReceiptModel receipt,
+    AsyncValue<String?> imageUrlAsync,
+    bool isDark,
+  ) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppDimensions.paddingCard),
+      decoration: BoxDecoration(
+        color: AppColors.card(isDark),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+        border: Border.all(color: AppColors.border(isDark)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header row: icon + "Purchase Details"
+          Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.radiusIconContainer),
+                ),
+                child: const Icon(Icons.store_outlined,
+                    size: 16, color: AppColors.primary),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                'Purchase Details',
+                style: AppTextStyles.sectionTitle
+                    .copyWith(color: AppColors.textPrimary(isDark)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+
+          // Store name + date
+          _buildInfoRow(
+            'Store',
+            receipt.storeName ?? 'Unknown Store',
+            isDark,
+          ),
+          if (receipt.purchaseDate != null)
+            _buildInfoRow(
+              'Purchase Date',
+              DateFormatter.formatDate(receipt.purchaseDate!),
+              isDark,
+            ),
+          if (receipt.totalAmount != null)
+            _buildInfoRow(
+              'Total',
+              CurrencyFormatter.format(
+                receipt.totalAmount!,
+                currency: receipt.currency ?? 'USD',
+              ),
+              isDark,
+            ),
+          if (receipt.invoiceNumber != null)
+            _buildInfoRow('Invoice #', receipt.invoiceNumber!, isDark),
+
+          // Receipt image thumbnail
+          if (receipt.s3ObjectKey != null) ...[
+            const SizedBox(height: 14),
+            Divider(color: AppColors.border(isDark), height: 1),
+            const SizedBox(height: 14),
+            _buildReceiptThumbnail(context, imageUrlAsync, isDark),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReceiptThumbnail(
     BuildContext context,
     AsyncValue<String?> imageUrlAsync,
     bool isDark,
   ) {
     return GestureDetector(
-      onTap: () => imageUrlAsync.whenData((url) {
-        if (url != null) _openFullscreenImage(context, url);
-      }),
+      onTap: () => imageUrlAsync.whenData(
+        (url) {
+          if (url != null) _openFullscreenImage(context, url);
+        },
+      ),
       child: Container(
-        height: 240,
+        height: 200,
         width: double.infinity,
         decoration: BoxDecoration(
           color: AppColors.card(isDark),
-          borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
           border: Border.all(color: AppColors.border(isDark)),
         ),
         clipBehavior: Clip.antiAlias,
@@ -618,7 +717,7 @@ class ReceiptDetailScreen extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(Icons.broken_image_outlined,
-                    size: 36, color: AppColors.muted(isDark)),
+                    size: 32, color: AppColors.muted(isDark)),
                 const SizedBox(height: 8),
                 Text('Image unavailable',
                     style: AppTextStyles.caption
@@ -660,8 +759,8 @@ class ReceiptDetailScreen extends ConsumerWidget {
                       ),
                     ),
                     Positioned(
-                      right: 12,
-                      bottom: 12,
+                      right: 10,
+                      bottom: 10,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 6),
@@ -674,7 +773,7 @@ class ReceiptDetailScreen extends ConsumerWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             const Icon(Icons.fullscreen,
-                                color: Colors.white, size: 16),
+                                color: Colors.white, size: 15),
                             const SizedBox(width: 4),
                             Text(
                               'View',
@@ -732,43 +831,17 @@ class ReceiptDetailScreen extends ConsumerWidget {
     );
   }
 
-  // ── Generic section card ──────────────────────────────────────────────────
-
-  Widget _buildSection(
-    bool isDark,
-    String title,
-    IconData icon,
-    List<Widget> children,
-  ) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.paddingCard),
-      decoration: BoxDecoration(
-        color: AppColors.card(isDark),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
-        border: Border.all(color: AppColors.border(isDark)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _SectionHeader(title: title, icon: icon, isDark: isDark),
-          const SizedBox(height: 14),
-          ...children,
-        ],
-      ),
-    );
-  }
-
-  // ── Line items table ──────────────────────────────────────────────────────
+  // ── Line items table (multi-product receipts) ────────────────────────────
 
   Widget _buildLineItemsSection(
     bool isDark,
-    List<ReceiptLineItemModel> items,
-  ) {
+    List<ReceiptLineItemModel> items, {
+    String? highlightId,
+  }) {
     final headerStyle = AppTextStyles.tableHeader
         .copyWith(color: AppColors.textSecondary(isDark));
-    final cellStyle =
-        AppTextStyles.bodyXSmall.copyWith(color: AppColors.textPrimary(isDark));
+    final cellStyle = AppTextStyles.bodyXSmall
+        .copyWith(color: AppColors.textPrimary(isDark));
 
     return Container(
       width: double.infinity,
@@ -785,7 +858,7 @@ class ReceiptDetailScreen extends ConsumerWidget {
             children: [
               Expanded(
                 child: _SectionHeader(
-                  title: 'Items Purchased',
+                  title: 'Items on This Receipt',
                   icon: Icons.shopping_cart_outlined,
                   isDark: isDark,
                 ),
@@ -799,7 +872,7 @@ class ReceiptDetailScreen extends ConsumerWidget {
                       BorderRadius.circular(AppDimensions.radiusPill),
                 ),
                 child: Text(
-                  '${items.length} item${items.length == 1 ? '' : 's'}',
+                  '${items.length} items',
                   style: AppTextStyles.badgeText
                       .copyWith(color: AppColors.primary),
                 ),
@@ -830,59 +903,99 @@ class ReceiptDetailScreen extends ConsumerWidget {
           ),
           Divider(color: AppColors.border(isDark), height: 8),
           ...items.map(
-            (item) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 6),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (item.productCode != null)
-                    Text(
-                      item.productCode!,
-                      style: AppTextStyles.caption.copyWith(
-                        color: AppColors.muted(isDark),
-                        fontFamily: 'monospace',
+            (item) => Container(
+              margin: const EdgeInsets.symmetric(vertical: 2),
+              padding: item.id == highlightId
+                  ? const EdgeInsets.symmetric(vertical: 4, horizontal: 6)
+                  : EdgeInsets.zero,
+              decoration: item.id == highlightId
+                  ? BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.07),
+                      borderRadius:
+                          BorderRadius.circular(AppDimensions.radiusSmall),
+                    )
+                  : null,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 5),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (item.productCode != null)
+                      Text(
+                        item.productCode!,
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.muted(isDark),
+                          fontFamily: 'monospace',
+                        ),
                       ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: Text(item.itemDescription ?? '—',
+                              style: cellStyle),
+                        ),
+                        SizedBox(
+                          width: 48,
+                          child: Text(item.quantity ?? '—',
+                              style: cellStyle, textAlign: TextAlign.center),
+                        ),
+                        SizedBox(
+                          width: 64,
+                          child: Text(
+                            item.unitPrice != null
+                                ? item.unitPrice!.toStringAsFixed(2)
+                                : '—',
+                            style: cellStyle,
+                            textAlign: TextAlign.right,
+                          ),
+                        ),
+                        SizedBox(
+                          width: 72,
+                          child: Text(
+                            item.amount != null
+                                ? item.amount!.toStringAsFixed(2)
+                                : '—',
+                            style: cellStyle
+                                .copyWith(fontWeight: FontWeight.w600),
+                            textAlign: TextAlign.right,
+                          ),
+                        ),
+                      ],
                     ),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        flex: 3,
-                        child:
-                            Text(item.itemDescription ?? '—', style: cellStyle),
-                      ),
-                      SizedBox(
-                        width: 48,
-                        child: Text(item.quantity ?? '—',
-                            style: cellStyle, textAlign: TextAlign.center),
-                      ),
-                      SizedBox(
-                        width: 64,
-                        child: Text(
-                          item.unitPrice != null
-                              ? item.unitPrice!.toStringAsFixed(2)
-                              : '—',
-                          style: cellStyle,
-                          textAlign: TextAlign.right,
-                        ),
-                      ),
-                      SizedBox(
-                        width: 72,
-                        child: Text(
-                          item.amount != null
-                              ? item.amount!.toStringAsFixed(2)
-                              : '—',
-                          style:
-                              cellStyle.copyWith(fontWeight: FontWeight.w600),
-                          textAlign: TextAlign.right,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  // ── Shared card builder ───────────────────────────────────────────────────
+
+  Widget _buildSection(
+    bool isDark,
+    String title,
+    IconData icon,
+    List<Widget> children,
+  ) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppDimensions.paddingCard),
+      decoration: BoxDecoration(
+        color: AppColors.card(isDark),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+        border: Border.all(color: AppColors.border(isDark)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _SectionHeader(title: title, icon: icon, isDark: isDark),
+          const SizedBox(height: 14),
+          ...children,
         ],
       ),
     );
@@ -928,7 +1041,7 @@ class ReceiptDetailScreen extends ConsumerWidget {
       receipt.vendorEmail != null ||
       receipt.vendorUrl != null;
 
-  Color _receiptStatusColor(ReceiptModel receipt, bool isDark) {
+  Color _statusColor(ReceiptModel receipt, bool isDark) {
     switch (receipt.status) {
       case ReceiptStatus.completed:
         return AppColors.primary;
@@ -944,7 +1057,7 @@ class ReceiptDetailScreen extends ConsumerWidget {
     }
   }
 
-  String _receiptStatusLabel(ReceiptModel receipt) {
+  String _statusLabel(ReceiptModel receipt) {
     switch (receipt.status) {
       case ReceiptStatus.completed:
         return 'Completed';
@@ -961,19 +1074,21 @@ class ReceiptDetailScreen extends ConsumerWidget {
     }
   }
 
-  Future<bool?> _showDeleteConfirmation(BuildContext context) {
+  Future<bool?> _showDeleteDialog(BuildContext context) {
     return showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Receipt'),
-        content: const Text('Are you sure you want to delete this receipt?'),
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Product'),
+        content: const Text(
+          'This will delete the receipt and all its items. This cannot be undone.',
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => Navigator.pop(ctx, false),
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(foregroundColor: AppColors.error),
             child: const Text('Delete'),
           ),
@@ -983,48 +1098,7 @@ class ReceiptDetailScreen extends ConsumerWidget {
   }
 }
 
-// ── Private helper widgets ─────────────────────────────────────────────────
-
-/// Circular icon button — mirrors the home screen's _CircleIconButton style.
-class _NavButton extends StatelessWidget {
-  const _NavButton({
-    required this.icon,
-    required this.isDark,
-    required this.onPressed,
-    this.iconColor,
-  });
-
-  final IconData icon;
-  final bool isDark;
-  final VoidCallback onPressed;
-  final Color? iconColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: AppDimensions.circleButtonSize,
-      height: AppDimensions.circleButtonSize,
-      decoration: BoxDecoration(
-        color: AppColors.card(isDark),
-        shape: BoxShape.circle,
-        border: Border.all(color: AppColors.border(isDark)),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        shape: const CircleBorder(),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onPressed,
-          child: Icon(
-            icon,
-            size: 20,
-            color: iconColor ?? AppColors.textSecondary(isDark),
-          ),
-        ),
-      ),
-    );
-  }
-}
+// ── Private helper widgets ────────────────────────────────────────────────
 
 /// Colored icon container + title — used at the top of every card section.
 class _SectionHeader extends StatelessWidget {
@@ -1082,7 +1156,9 @@ class _StatusBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: filled ? color.withValues(alpha: 0.12) : AppColors.border(isDark),
+        color: filled
+            ? color.withValues(alpha: 0.12)
+            : AppColors.border(isDark),
         borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
       ),
       child: Row(
@@ -1092,7 +1168,8 @@ class _StatusBadge extends StatelessWidget {
             Container(
               width: 6,
               height: 6,
-              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+              decoration:
+                  BoxDecoration(color: color, shape: BoxShape.circle),
             ),
             const SizedBox(width: 6),
           ],
@@ -1108,7 +1185,7 @@ class _StatusBadge extends StatelessWidget {
   }
 }
 
-/// Outlined action button used inside the hero card.
+/// Outlined action button inside the hero card.
 class _HeroActionButton extends StatelessWidget {
   const _HeroActionButton({
     required this.icon,
