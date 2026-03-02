@@ -15,7 +15,7 @@ from sqlalchemy import and_
 
 from app.models import Receipt, ReceiptStatus, User
 from app.models.receipt_line_item import ReceiptLineItem
-from app.schemas import ReceiptCreate, ReceiptUpdate
+from app.schemas import ReceiptCreate, ReceiptUpdate, ReceiptLineItemUpdate
 from app.services.s3_service import get_s3_service
 from app.services.textract_service import get_textract_service
 from app.services.llm_service import create_llm_service
@@ -44,7 +44,12 @@ class ReceiptService:
             region=settings.AWS_REGION,
             model_id=settings.BEDROCK_MODEL_ID,
         )
-    
+        from app.services.product_image_service import create_product_image_service
+        self.product_image_service = create_product_image_service(
+            use_mock=settings.USE_MOCK_AWS,
+            api_key=settings.BRAVE_SEARCH_API_KEY,
+        )
+
     def create_receipt(
         self,
         db: Session,
@@ -64,21 +69,6 @@ class ReceiptService:
         """
         receipt_id = str(uuid.uuid4())
         
-        # Calculate warranty and return expiry dates if purchase date provided
-        warranty_expiry = None
-        return_expiry = None
-        
-        if receipt_data.purchase_date:
-            if receipt_data.warranty_period_months:
-                warranty_expiry = receipt_data.purchase_date + relativedelta(
-                    months=receipt_data.warranty_period_months
-                )
-            
-            if receipt_data.return_period_days:
-                return_expiry = receipt_data.purchase_date + timedelta(
-                    days=receipt_data.return_period_days
-                )
-        
         receipt = Receipt(
             id=receipt_id,
             user_id=user_id,
@@ -86,14 +76,6 @@ class ReceiptService:
             purchase_date=receipt_data.purchase_date,
             total_amount=receipt_data.total_amount,
             currency=receipt_data.currency,
-            product_name=receipt_data.product_name,
-            product_category=receipt_data.product_category,
-            warranty_period_months=receipt_data.warranty_period_months,
-            warranty_expiry_date=warranty_expiry,
-            # Do NOT default return_period_days here — only set it when the
-            # user explicitly provides it or OCR finds a return policy.
-            return_period_days=receipt_data.return_period_days,
-            return_expiry_date=return_expiry,
             notes=receipt_data.notes,
             status=ReceiptStatus.UPLOADED
         )
@@ -192,22 +174,6 @@ class ReceiptService:
         for field, value in update_data.items():
             setattr(receipt, field, value)
         
-        # Recalculate warranty expiry only if not explicitly provided
-        if receipt_data.warranty_expiry_date is None and \
-                (receipt_data.purchase_date or receipt_data.warranty_period_months):
-            if receipt.purchase_date and receipt.warranty_period_months:
-                receipt.warranty_expiry_date = receipt.purchase_date + relativedelta(
-                    months=receipt.warranty_period_months
-                )
-
-        # Recalculate return expiry only if not explicitly provided
-        if receipt_data.return_expiry_date is None and \
-                (receipt_data.purchase_date or receipt_data.return_period_days):
-            if receipt.purchase_date and receipt.return_period_days:
-                receipt.return_expiry_date = receipt.purchase_date + timedelta(
-                    days=receipt.return_period_days
-                )
-        
         db.commit()
         db.refresh(receipt)
         
@@ -243,7 +209,40 @@ class ReceiptService:
         logger.info(f"Soft deleted receipt: {receipt_id}")
         
         return True
-    
+
+    def get_receipt_image_url(
+        self,
+        db: Session,
+        receipt_id: str,
+        user_id: str,
+        expiration: int = 3600
+    ) -> Optional[str]:
+        """
+        Generate a pre-signed S3 URL for viewing the receipt image.
+
+        Args:
+            db: Database session
+            receipt_id: Receipt ID
+            user_id: User ID for authorization
+            expiration: URL validity in seconds (default 1 hour)
+
+        Returns:
+            Pre-signed URL string, or None if receipt not found / no image uploaded
+        """
+        receipt = self.get_receipt(db, receipt_id, user_id)
+        if not receipt:
+            return None
+        if not receipt.s3_object_key:
+            return None
+
+        url = self.s3_service.generate_presigned_url(
+            receipt.s3_object_key,
+            expiration=expiration,
+            operation="get_object"
+        )
+        logger.info(f"Generated pre-signed image URL for receipt: {receipt_id}")
+        return url
+
     def upload_receipt_file(
         self,
         db: Session,
@@ -361,12 +360,6 @@ class ReceiptService:
                 if extracted.get("currency"):
                     receipt.currency = extracted["currency"]
 
-                if extracted.get("product_name"):
-                    receipt.product_name = extracted["product_name"]
-
-                if extracted.get("warranty_period_months"):
-                    receipt.warranty_period_months = int(extracted["warranty_period_months"])
-
                 # ── new OCR fields ────────────────────────────────────────────
                 if extracted.get("invoice_number"):
                     receipt.invoice_number = extracted["invoice_number"]
@@ -389,22 +382,6 @@ class ReceiptService:
                 if extracted.get("warranty_notes"):
                     receipt.warranty_notes = extracted["warranty_notes"]
 
-                # ── calculate warranty / return dates ─────────────────────────
-                if receipt.purchase_date:
-                    if receipt.warranty_period_months:
-                        receipt.warranty_expiry_date = receipt.purchase_date + relativedelta(
-                            months=receipt.warranty_period_months
-                        )
-
-                    # Only calculate return expiry when a return period was
-                    # explicitly found (user-provided or OCR-extracted).
-                    # Do NOT default to 30 days — that creates false return
-                    # deadlines on invoices that have no return policy.
-                    if receipt.return_period_days is not None:
-                        receipt.return_expiry_date = receipt.purchase_date + timedelta(
-                            days=receipt.return_period_days
-                        )
-
                 receipt.status = ReceiptStatus.COMPLETED
                 receipt.ocr_raw_response = json.dumps(ocr_result, default=str)
 
@@ -414,7 +391,10 @@ class ReceiptService:
                     ReceiptLineItem.receipt_id == receipt.id
                 ).delete(synchronize_session=False)
 
-                for item_data in extracted.get("line_items", []):
+                ocr_line_items_data = extracted.get("line_items", [])
+                created_line_items: List[ReceiptLineItem] = []
+
+                for item_data in ocr_line_items_data:
                     line_item = ReceiptLineItem(
                         id=str(uuid.uuid4()),
                         receipt_id=receipt.id,
@@ -424,8 +404,69 @@ class ReceiptService:
                         quantity=item_data.get("quantity"),
                         unit_price=item_data.get("unit_price"),
                         amount=item_data.get("amount"),
+                        warranty_period_months=item_data.get("warranty_period_months"),
                     )
                     db.add(line_item)
+                    created_line_items.append(line_item)
+
+                # OCR may emit a receipt-level product_name / warranty hint
+                # (e.g. single-product receipts, mock data, legacy format).
+                _product_name_hint = extracted.get("product_name")
+                _warranty_hint = extracted.get("warranty_period_months")
+
+                if not created_line_items and (_product_name_hint or _warranty_hint):
+                    # No line items found — auto-create a synthetic "Primary Item"
+                    synthetic = ReceiptLineItem(
+                        id=str(uuid.uuid4()),
+                        receipt_id=receipt.id,
+                        row_index=0,
+                        item_description=_product_name_hint,
+                        product_name=_product_name_hint,
+                        warranty_period_months=_warranty_hint,
+                    )
+                    db.add(synthetic)
+                    created_line_items.append(synthetic)
+                elif created_line_items and _warranty_hint:
+                    # Assign receipt-level warranty hint to first item if it
+                    # doesn't already have its own warranty period.
+                    first_li = created_line_items[0]
+                    if not first_li.warranty_period_months:
+                        first_li.warranty_period_months = _warranty_hint
+
+                # Compute warranty_expiry_date for items that now have a
+                # warranty_period_months but no expiry date yet.
+                if receipt.purchase_date:
+                    for li in created_line_items:
+                        if li.warranty_period_months and not li.warranty_expiry_date:
+                            li.warranty_expiry_date = receipt.purchase_date + relativedelta(
+                                months=li.warranty_period_months
+                            )
+
+                # ── product image lookup ─────────────────────────────────────
+                # Best-effort: fetch from Brave for the first line item that
+                # has a product name / description and no image yet.
+                # Failure here must never block or fail OCR processing.
+                _image_target = next(
+                    (li for li in created_line_items
+                     if (li.product_name or li.item_description) and not li.product_image_url),
+                    None,
+                )
+                if _image_target:
+                    _query_name = _image_target.product_name or _image_target.item_description
+                    try:
+                        img_result = self.product_image_service.search_product_image_sync(
+                            _query_name
+                        )
+                        if img_result:
+                            _image_target.product_image_url = img_result.get("imageUrl")
+                            logger.info(
+                                f"Product image stored for line item {_image_target.id}: "
+                                f"{(_image_target.product_image_url or '')[:80]}"
+                            )
+                    except Exception as img_exc:
+                        logger.warning(
+                            f"Product image lookup failed for receipt {receipt_id}: {img_exc}"
+                        )
 
                 logger.info(f"OCR successful for receipt: {receipt_id}")
             else:
@@ -480,7 +521,128 @@ class ReceiptService:
         receipt.status = ReceiptStatus.PROCESSING
         db.commit()
         
-        return self.process_ocr(db, receipt_id, user_id)
+    def create_line_item(
+        self,
+        db: Session,
+        receipt_id: str,
+        user_id: str,
+        item_data: ReceiptLineItemUpdate,
+    ) -> Optional[ReceiptLineItem]:
+        """
+        Create a new line item on a receipt.
+
+        Used for manual-entry receipts where no OCR line items exist yet.
+        Expiry dates are computed from the parent receipt's purchase_date.
+
+        Returns the new ReceiptLineItem, or None if receipt not found.
+        """
+        receipt = self.get_receipt(db, receipt_id, user_id)
+        if not receipt:
+            return None
+
+        # Determine next row_index
+        existing_count = (
+            db.query(ReceiptLineItem)
+            .filter(
+                ReceiptLineItem.receipt_id == receipt_id,
+                ReceiptLineItem.deleted_at.is_(None),
+            )
+            .count()
+        )
+
+        fields = item_data.model_dump(exclude_unset=True)
+        warranty_months = fields.get("warranty_period_months")
+        return_days = fields.get("return_period_days")
+
+        warranty_expiry = None
+        return_expiry = None
+        if receipt.purchase_date:
+            if warranty_months:
+                warranty_expiry = receipt.purchase_date + relativedelta(
+                    months=warranty_months
+                )
+            if return_days:
+                return_expiry = receipt.purchase_date + timedelta(days=return_days)
+
+        line_item = ReceiptLineItem(
+            id=str(uuid.uuid4()),
+            receipt_id=receipt_id,
+            row_index=existing_count,
+            item_description=fields.get("item_description"),
+            product_name=fields.get("product_name"),
+            product_category=fields.get("product_category"),
+            warranty_period_months=warranty_months,
+            warranty_expiry_date=warranty_expiry,
+            return_period_days=return_days,
+            return_expiry_date=return_expiry,
+        )
+        db.add(line_item)
+        db.commit()
+        db.refresh(line_item)
+        logger.info(
+            f"Created line item {line_item.id} on receipt {receipt_id} for user {user_id}"
+        )
+        return line_item
+
+    def update_line_item(
+        self,
+        db: Session,
+        receipt_id: str,
+        item_id: str,
+        user_id: str,
+        item_data: ReceiptLineItemUpdate,
+    ) -> Optional[ReceiptLineItem]:
+        """
+        Partially update a single line item (product name, category, warranty).
+
+        Recalculates warranty_expiry_date / return_expiry_date whenever the
+        period fields change, using the parent receipt's purchase_date as anchor.
+
+        Returns updated ReceiptLineItem, or None if not found / unauthorised.
+        """
+        receipt = self.get_receipt(db, receipt_id, user_id)
+        if not receipt:
+            return None
+
+        line_item = (
+            db.query(ReceiptLineItem)
+            .filter(
+                ReceiptLineItem.id == item_id,
+                ReceiptLineItem.receipt_id == receipt_id,
+                ReceiptLineItem.deleted_at.is_(None),
+            )
+            .first()
+        )
+        if not line_item:
+            return None
+
+        update_fields = item_data.model_dump(exclude_unset=True)
+        for field, value in update_fields.items():
+            setattr(line_item, field, value)
+
+        # Recompute expiry dates using the receipt's purchase_date as anchor
+        purchase_date = receipt.purchase_date
+        if purchase_date:
+            if line_item.warranty_period_months is not None:
+                line_item.warranty_expiry_date = purchase_date + relativedelta(
+                    months=line_item.warranty_period_months
+                )
+            else:
+                line_item.warranty_expiry_date = None
+
+            if line_item.return_period_days is not None:
+                line_item.return_expiry_date = purchase_date + timedelta(
+                    days=line_item.return_period_days
+                )
+            else:
+                line_item.return_expiry_date = None
+
+        db.commit()
+        db.refresh(line_item)
+        logger.info(
+            f"Updated line item {item_id} on receipt {receipt_id} for user {user_id}"
+        )
+        return line_item
 
 
 # Global service instance

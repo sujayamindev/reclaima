@@ -16,16 +16,6 @@ ReceiptModel _$ReceiptModelFromJson(Map<String, dynamic> json) => ReceiptModel(
       : DateTime.parse(json['purchaseDate'] as String),
   totalAmount: (json['totalAmount'] as num?)?.toDouble(),
   currency: json['currency'] as String?,
-  productName: json['productName'] as String?,
-  productCategory: json['productCategory'] as String?,
-  warrantyPeriodMonths: (json['warrantyPeriodMonths'] as num?)?.toInt(),
-  warrantyExpiryDate: json['warrantyExpiryDate'] == null
-      ? null
-      : DateTime.parse(json['warrantyExpiryDate'] as String),
-  returnPeriodDays: (json['returnPeriodDays'] as num?)?.toInt(),
-  returnExpiryDate: json['returnExpiryDate'] == null
-      ? null
-      : DateTime.parse(json['returnExpiryDate'] as String),
   status: $enumDecode(_$ReceiptStatusEnumMap, json['status']),
   ocrRetryCount: (json['ocrRetryCount'] as num).toInt(),
   lastOcrAttemptAt: json['lastOcrAttemptAt'] == null
@@ -60,12 +50,6 @@ Map<String, dynamic> _$ReceiptModelToJson(ReceiptModel instance) =>
       'purchaseDate': instance.purchaseDate?.toIso8601String(),
       'totalAmount': instance.totalAmount,
       'currency': instance.currency,
-      'productName': instance.productName,
-      'productCategory': instance.productCategory,
-      'warrantyPeriodMonths': instance.warrantyPeriodMonths,
-      'warrantyExpiryDate': instance.warrantyExpiryDate?.toIso8601String(),
-      'returnPeriodDays': instance.returnPeriodDays,
-      'returnExpiryDate': instance.returnExpiryDate?.toIso8601String(),
       'status': _$ReceiptStatusEnumMap[instance.status]!,
       'ocrRetryCount': instance.ocrRetryCount,
       'lastOcrAttemptAt': instance.lastOcrAttemptAt?.toIso8601String(),

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/receipt_model.dart';
+import '../data/models/receipt_line_item_model.dart';
 import '../services/receipt_service.dart';
 import 'auth_provider.dart';
 import 'service_providers.dart';
@@ -23,6 +24,13 @@ final receiptsProvider = FutureProvider<List<ReceiptModel>>((ref) async {
 final receiptProvider = FutureProvider.family<ReceiptModel, String>((ref, id) async {
   final receiptService = ref.watch(receiptServiceProvider);
   return await receiptService.getReceipt(id);
+});
+
+/// Pre-signed S3 URL provider for the receipt image.
+/// Returns null if the receipt has no uploaded image.
+final receiptImageUrlProvider = FutureProvider.family<String?, String>((ref, receiptId) async {
+  final receiptService = ref.watch(receiptServiceProvider);
+  return await receiptService.getReceiptImageUrl(receiptId);
 });
 
 /// Receipt Controller
@@ -104,6 +112,43 @@ class ReceiptController extends StateNotifier<AsyncValue<void>> {
       final receipt = await _receiptService.retryOcr(receiptId);
       state = const AsyncValue.data(null);
       return receipt;
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+      return null;
+    }
+  }
+
+  /// Create a new line item on a receipt (for manual-entry receipts).
+  Future<ReceiptLineItemModel?> createLineItem(
+    String receiptId,
+    Map<String, dynamic> data,
+  ) async {
+    state = const AsyncValue.loading();
+
+    try {
+      final lineItem =
+          await _receiptService.createLineItem(receiptId, data);
+      state = const AsyncValue.data(null);
+      return lineItem;
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+      return null;
+    }
+  }
+
+  /// Update a single line item's product / warranty fields.
+  Future<ReceiptLineItemModel?> updateLineItem(
+    String receiptId,
+    String itemId,
+    Map<String, dynamic> data,
+  ) async {
+    state = const AsyncValue.loading();
+
+    try {
+      final lineItem =
+          await _receiptService.updateLineItem(receiptId, itemId, data);
+      state = const AsyncValue.data(null);
+      return lineItem;
     } catch (e, st) {
       state = AsyncValue.error(e, st);
       return null;

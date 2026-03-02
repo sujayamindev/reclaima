@@ -1,17 +1,21 @@
 """
 Warranty routes - Track warranty and return deadlines.
+
+Warranty / return tracking has moved to the line-item level so that receipts
+with multiple products display one entry per product rather than one per receipt.
 """
 
 import logging
 from typing import List
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_
 
 from app.core.security import get_current_user_id
 from app.db.session import get_db
 from app.models import Receipt
+from app.models.receipt_line_item import ReceiptLineItem
 from app.schemas import WarrantyInfo, ReturnInfo
 
 logger = logging.getLogger(__name__)
@@ -26,51 +30,56 @@ async def list_active_warranties(
     db: Session = Depends(get_db)
 ):
     """
-    List active warranties for current user.
-    
-    Args:
-        include_expired: Whether to include expired warranties
-        user_id: Current user ID
-        db: Database session
-        
-    Returns:
-        List of warranty information
+    List active warranties for current user (one entry per line item).
     """
-    query = db.query(Receipt).filter(
-        and_(
-            Receipt.user_id == user_id,
-            Receipt.deleted_at.is_(None),
-            Receipt.warranty_expiry_date.isnot(None)
+    query = (
+        db.query(ReceiptLineItem)
+        .join(Receipt, Receipt.id == ReceiptLineItem.receipt_id)
+        .filter(
+            and_(
+                Receipt.user_id == user_id,
+                Receipt.deleted_at.is_(None),
+                ReceiptLineItem.deleted_at.is_(None),
+                ReceiptLineItem.warranty_expiry_date.isnot(None),
+            )
         )
+        .options(joinedload(ReceiptLineItem.receipt))
     )
-    
+
     if not include_expired:
-        query = query.filter(Receipt.warranty_expiry_date >= datetime.now(timezone.utc))
-    
-    receipts = query.order_by(Receipt.warranty_expiry_date.asc()).all()
-    
+        query = query.filter(
+            ReceiptLineItem.warranty_expiry_date >= datetime.now(timezone.utc)
+        )
+
+    line_items = query.order_by(ReceiptLineItem.warranty_expiry_date.asc()).all()
+
     warranties = []
-    for receipt in receipts:
+    for li in line_items:
+        receipt = li.receipt
+        delta = None
         days_remaining = None
         is_expired = False
-        
-        if receipt.warranty_expiry_date:
-            delta = (receipt.warranty_expiry_date - datetime.now(timezone.utc)).days
+
+        if li.warranty_expiry_date:
+            delta = (li.warranty_expiry_date - datetime.now(timezone.utc)).days
             days_remaining = max(0, delta)
             is_expired = delta < 0
-        
+
         warranties.append(
             WarrantyInfo(
                 receipt_id=receipt.id,
+                line_item_id=li.id,
                 store_name=receipt.store_name,
-                product_name=receipt.product_name,
+                item_description=li.item_description,
+                product_name=li.product_name,
                 purchase_date=receipt.purchase_date,
-                warranty_expiry_date=receipt.warranty_expiry_date,
+                warranty_period_months=li.warranty_period_months,
+                warranty_expiry_date=li.warranty_expiry_date,
                 days_remaining=days_remaining,
-                is_expired=is_expired
+                is_expired=is_expired,
             )
         )
-    
+
     return warranties
 
 
@@ -81,49 +90,54 @@ async def list_return_deadlines(
     db: Session = Depends(get_db)
 ):
     """
-    List return deadlines for current user.
-    
-    Args:
-        include_expired: Whether to include expired return windows
-        user_id: Current user ID
-        db: Database session
-        
-    Returns:
-        List of return deadline information
+    List return deadlines for current user (one entry per line item).
     """
-    query = db.query(Receipt).filter(
-        and_(
-            Receipt.user_id == user_id,
-            Receipt.deleted_at.is_(None),
-            Receipt.return_expiry_date.isnot(None)
+    query = (
+        db.query(ReceiptLineItem)
+        .join(Receipt, Receipt.id == ReceiptLineItem.receipt_id)
+        .filter(
+            and_(
+                Receipt.user_id == user_id,
+                Receipt.deleted_at.is_(None),
+                ReceiptLineItem.deleted_at.is_(None),
+                ReceiptLineItem.return_expiry_date.isnot(None),
+            )
         )
+        .options(joinedload(ReceiptLineItem.receipt))
     )
-    
+
     if not include_expired:
-        query = query.filter(Receipt.return_expiry_date >= datetime.now(timezone.utc))
-    
-    receipts = query.order_by(Receipt.return_expiry_date.asc()).all()
-    
+        query = query.filter(
+            ReceiptLineItem.return_expiry_date >= datetime.now(timezone.utc)
+        )
+
+    line_items = query.order_by(ReceiptLineItem.return_expiry_date.asc()).all()
+
     returns = []
-    for receipt in receipts:
+    for li in line_items:
+        receipt = li.receipt
+        delta = None
         days_remaining = None
         is_expired = False
-        
-        if receipt.return_expiry_date:
-            delta = (receipt.return_expiry_date - datetime.now(timezone.utc)).days
+
+        if li.return_expiry_date:
+            delta = (li.return_expiry_date - datetime.now(timezone.utc)).days
             days_remaining = max(0, delta)
             is_expired = delta < 0
-        
+
         returns.append(
             ReturnInfo(
                 receipt_id=receipt.id,
+                line_item_id=li.id,
                 store_name=receipt.store_name,
-                product_name=receipt.product_name,
+                item_description=li.item_description,
+                product_name=li.product_name,
                 purchase_date=receipt.purchase_date,
-                return_expiry_date=receipt.return_expiry_date,
+                return_period_days=li.return_period_days,
+                return_expiry_date=li.return_expiry_date,
                 days_remaining=days_remaining,
-                is_expired=is_expired
+                is_expired=is_expired,
             )
         )
-    
+
     return returns

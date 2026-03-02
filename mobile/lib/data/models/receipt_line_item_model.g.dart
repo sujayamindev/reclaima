@@ -18,6 +18,18 @@ ReceiptLineItemModel _$ReceiptLineItemModelFromJson(
   unitPrice: (json['unitPrice'] as num?)?.toDouble(),
   amount: (json['amount'] as num?)?.toDouble(),
   createdAt: DateTime.parse(json['createdAt'] as String),
+  updatedAt: DateTime.parse(json['updatedAt'] as String),
+  productName: json['productName'] as String?,
+  productCategory: json['productCategory'] as String?,
+  productImageUrl: json['productImageUrl'] as String?,
+  warrantyPeriodMonths: (json['warrantyPeriodMonths'] as num?)?.toInt(),
+  warrantyExpiryDate: json['warrantyExpiryDate'] == null
+      ? null
+      : DateTime.parse(json['warrantyExpiryDate'] as String),
+  returnPeriodDays: (json['returnPeriodDays'] as num?)?.toInt(),
+  returnExpiryDate: json['returnExpiryDate'] == null
+      ? null
+      : DateTime.parse(json['returnExpiryDate'] as String),
 );
 
 Map<String, dynamic> _$ReceiptLineItemModelToJson(
@@ -32,4 +44,12 @@ Map<String, dynamic> _$ReceiptLineItemModelToJson(
   'unitPrice': instance.unitPrice,
   'amount': instance.amount,
   'createdAt': instance.createdAt.toIso8601String(),
+  'updatedAt': instance.updatedAt.toIso8601String(),
+  'productName': instance.productName,
+  'productCategory': instance.productCategory,
+  'productImageUrl': instance.productImageUrl,
+  'warrantyPeriodMonths': instance.warrantyPeriodMonths,
+  'warrantyExpiryDate': instance.warrantyExpiryDate?.toIso8601String(),
+  'returnPeriodDays': instance.returnPeriodDays,
+  'returnExpiryDate': instance.returnExpiryDate?.toIso8601String(),
 };

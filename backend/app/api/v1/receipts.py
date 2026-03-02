@@ -16,7 +16,10 @@ from app.schemas import (
     ReceiptCreate,
     ReceiptUpdate,
     ReceiptListResponse,
-    ReceiptStatusEnum
+    ReceiptStatusEnum,
+    ReceiptImageUrlResponse,
+    ReceiptLineItemResponse,
+    ReceiptLineItemUpdate,
 )
 from app.services.receipt_service import receipt_service
 
@@ -277,6 +280,120 @@ async def upload_receipt_file(
         )
     
     return receipt
+
+
+@router.get("/{receipt_id}/image-url", response_model=ReceiptImageUrlResponse, response_model_by_alias=True)
+async def get_receipt_image_url(
+    receipt_id: str,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get a pre-signed S3 URL for viewing the receipt image.
+    URL is valid for 1 hour.
+    """
+    firebase_uid = current_user.get("uid")
+    db_user = user_service.get_user_by_firebase_uid(db, firebase_uid)
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+
+    url = receipt_service.get_receipt_image_url(db, receipt_id, db_user.id)
+
+    if url is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Receipt not found or no image uploaded"
+        )
+
+    return {"url": url}
+
+
+@router.post(
+    "/{receipt_id}/items",
+    response_model=ReceiptLineItemResponse,
+    status_code=status.HTTP_201_CREATED,
+    response_model_by_alias=True,
+)
+async def create_line_item(
+    receipt_id: str,
+    item_data: ReceiptLineItemUpdate,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Create a new line item on a receipt.
+
+    Used for manual-entry receipts that have no OCR-generated line items.
+    Warranty / return expiry dates are computed server-side from the parent
+    receipt's purchase_date.
+    """
+    firebase_uid = current_user.get("uid")
+    db_user = user_service.get_user_by_firebase_uid(db, firebase_uid)
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+
+    line_item = receipt_service.create_line_item(
+        db=db,
+        receipt_id=receipt_id,
+        user_id=db_user.id,
+        item_data=item_data,
+    )
+
+    if not line_item:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Receipt not found",
+        )
+
+    return line_item
+
+
+@router.patch(
+    "/{receipt_id}/items/{item_id}",
+    response_model=ReceiptLineItemResponse,
+    response_model_by_alias=True,
+)
+async def update_line_item(
+    receipt_id: str,
+    item_id: str,
+    item_data: ReceiptLineItemUpdate,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Partially update a single line item — product name, category, warranty period
+    and/or return period. Expiry dates are computed server-side from the parent
+    receipt's purchase_date.
+    """
+    firebase_uid = current_user.get("uid")
+    db_user = user_service.get_user_by_firebase_uid(db, firebase_uid)
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+
+    line_item = receipt_service.update_line_item(
+        db=db,
+        receipt_id=receipt_id,
+        item_id=item_id,
+        user_id=db_user.id,
+        item_data=item_data,
+    )
+
+    if not line_item:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Receipt or line item not found",
+        )
+
+    return line_item
 
 
 @router.post("/{receipt_id}/retry-ocr", response_model=ReceiptResponse, response_model_by_alias=True)

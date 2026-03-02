@@ -50,6 +50,9 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
   final _productNameCtrl = TextEditingController();
   String _selectedCategory = 'Electronics';
   List<ReceiptLineItemModel> _lineItems = [];
+  /// ID of the primary (first) OCR-generated line item, if one exists.
+  /// Used to PATCH the line item rather than the receipt for warranty data.
+  String? _primaryLineItemId;
 
   static const List<String> _categories = [
     'Electronics',
@@ -118,18 +121,31 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     _vendorAddressCtrl.text = receipt.vendorAddress ?? '';
     _vendorPhoneCtrl.text = receipt.vendorPhone ?? '';
     _vendorEmailCtrl.text = receipt.vendorEmail ?? '';
-    _productNameCtrl.text = receipt.productName ?? '';
-    final ocrCategory = receipt.productCategory ?? '';
-    _selectedCategory = _categories.contains(ocrCategory)
-        ? ocrCategory
-        : 'Electronics';
-    _lineItems = receipt.lineItems;
-    _warrantyPeriodCtrl.text = receipt.warrantyPeriodMonths?.toString() ?? '';
-    _warrantyExpiryDate = receipt.warrantyExpiryDate;
-    _returnPeriodCtrl.text = receipt.returnPeriodDays?.toString() ?? '';
-    _returnExpiryDate = receipt.returnExpiryDate;
     _remarksCtrl.text = receipt.remarks ?? '';
     _warrantyNotesCtrl.text = receipt.warrantyNotes ?? '';
+    _lineItems = receipt.lineItems;
+
+    // Product / warranty fields come from the primary line item
+    if (receipt.lineItems.isNotEmpty) {
+      final primary = receipt.lineItems.first;
+      _primaryLineItemId = primary.id;
+      _productNameCtrl.text = primary.productName ?? primary.itemDescription ?? '';
+      final ocrCategory = primary.productCategory ?? '';
+      _selectedCategory =
+          _categories.contains(ocrCategory) ? ocrCategory : 'Electronics';
+      _warrantyPeriodCtrl.text = primary.warrantyPeriodMonths?.toString() ?? '';
+      _warrantyExpiryDate = primary.warrantyExpiryDate;
+      _returnPeriodCtrl.text = primary.returnPeriodDays?.toString() ?? '';
+      _returnExpiryDate = primary.returnExpiryDate;
+    } else {
+      _primaryLineItemId = null;
+      _productNameCtrl.text = '';
+      _selectedCategory = 'Electronics';
+      _warrantyPeriodCtrl.text = '';
+      _returnPeriodCtrl.text = '';
+      _warrantyExpiryDate = null;
+      _returnExpiryDate = null;
+    }
   }
 
   @override
@@ -219,56 +235,68 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
       return;
     }
 
-    final data = <String, dynamic>{};
-
+    // ── Receipt-level fields (go to PATCH /receipts/{id}) ────────────────
+    final receiptData = <String, dynamic>{};
     if (_invoiceNumberCtrl.text.isNotEmpty) {
-      data['invoiceNumber'] = _invoiceNumberCtrl.text;
+      receiptData['invoiceNumber'] = _invoiceNumberCtrl.text;
     }
     if (_storeNameCtrl.text.isNotEmpty) {
-      data['storeName'] = _storeNameCtrl.text;
+      receiptData['storeName'] = _storeNameCtrl.text;
     }
     if (_purchaseDate != null) {
-      data['purchaseDate'] = _formatDate(_purchaseDate!);
+      receiptData['purchaseDate'] = _formatDate(_purchaseDate!);
     }
     if (_totalAmountCtrl.text.isNotEmpty) {
       final amount = double.tryParse(_totalAmountCtrl.text);
-      if (amount != null) data['totalAmount'] = amount;
+      if (amount != null) receiptData['totalAmount'] = amount;
     }
     if (_currencyCtrl.text.isNotEmpty) {
-      data['currency'] = _currencyCtrl.text;
+      receiptData['currency'] = _currencyCtrl.text;
     }
     if (_vendorAddressCtrl.text.isNotEmpty) {
-      data['vendorAddress'] = _vendorAddressCtrl.text;
+      receiptData['vendorAddress'] = _vendorAddressCtrl.text;
     }
     if (_vendorPhoneCtrl.text.isNotEmpty) {
-      data['vendorPhone'] = _vendorPhoneCtrl.text;
+      receiptData['vendorPhone'] = _vendorPhoneCtrl.text;
     }
     if (_vendorEmailCtrl.text.isNotEmpty) {
-      data['vendorEmail'] = _vendorEmailCtrl.text;
+      receiptData['vendorEmail'] = _vendorEmailCtrl.text;
     }
+    if (_remarksCtrl.text.isNotEmpty) {
+      receiptData['remarks'] = _remarksCtrl.text;
+    }
+    if (_warrantyNotesCtrl.text.isNotEmpty) {
+      receiptData['warrantyNotes'] = _warrantyNotesCtrl.text;
+    }
+
+    // ── Line-item fields (go to PATCH/POST /receipts/{id}/items/{itemId}) ─
+    final lineItemData = <String, dynamic>{};
     if (_productNameCtrl.text.isNotEmpty) {
-      data['productName'] = _productNameCtrl.text;
+      lineItemData['productName'] = _productNameCtrl.text;
+      // Also keep in receiptData purely for confirmation screen display
+      receiptData['productName'] = _productNameCtrl.text;
     }
     if (_selectedCategory.isNotEmpty) {
-      data['productCategory'] = _selectedCategory;
+      lineItemData['productCategory'] = _selectedCategory;
+      receiptData['productCategory'] = _selectedCategory;
     }
     if (_warrantyPeriodCtrl.text.isNotEmpty) {
       final months = int.tryParse(_warrantyPeriodCtrl.text);
-      if (months != null) data['warrantyPeriodMonths'] = months;
+      if (months != null) {
+        lineItemData['warrantyPeriodMonths'] = months;
+        receiptData['warrantyPeriodMonths'] = months;
+      }
     } else {
-      data['warrantyPeriodMonths'] = null; // explicitly clear
+      lineItemData['warrantyPeriodMonths'] = null;
     }
     if (_returnPeriodCtrl.text.isNotEmpty) {
       final days = int.tryParse(_returnPeriodCtrl.text);
-      if (days != null) data['returnPeriodDays'] = days;
+      if (days != null) {
+        lineItemData['returnPeriodDays'] = days;
+        receiptData['returnPeriodDays'] = days;
+      }
     } else {
-      data['returnPeriodDays'] = null; // explicitly clear
-    }
-    if (_remarksCtrl.text.isNotEmpty) {
-      data['remarks'] = _remarksCtrl.text;
-    }
-    if (_warrantyNotesCtrl.text.isNotEmpty) {
-      data['warrantyNotes'] = _warrantyNotesCtrl.text;
+      lineItemData['returnPeriodDays'] = null;
     }
 
     Navigator.push(
@@ -277,7 +305,9 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
         builder: (_) => ReceiptConfirmationScreen(
           receiptId: widget.receiptId,
           isManualEntry: widget.isManualEntry,
-          formData: data,
+          formData: receiptData,
+          primaryLineItemId: _primaryLineItemId,
+          lineItemData: lineItemData,
           warrantyExpiryDate: _warrantyPeriodCtrl.text.isNotEmpty
               ? _warrantyExpiryDate
               : null,

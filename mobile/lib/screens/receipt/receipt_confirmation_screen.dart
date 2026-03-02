@@ -13,6 +13,11 @@ class ReceiptConfirmationScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic> formData;
   final DateTime? warrantyExpiryDate;
   final DateTime? returnExpiryDate;
+  /// ID of the existing primary line item to PATCH with product/warranty data.
+  /// Null for new manual-entry receipts (a new line item is created instead).
+  final String? primaryLineItemId;
+  /// Product / warranty fields destined for the line-item PATCH/POST.
+  final Map<String, dynamic> lineItemData;
 
   const ReceiptConfirmationScreen({
     super.key,
@@ -21,6 +26,8 @@ class ReceiptConfirmationScreen extends ConsumerStatefulWidget {
     required this.formData,
     this.warrantyExpiryDate,
     this.returnExpiryDate,
+    this.primaryLineItemId,
+    this.lineItemData = const {},
   });
 
   @override
@@ -83,18 +90,23 @@ class _ReceiptConfirmationScreenState
 
   Future<void> _save() async {
     final controller = ref.read(receiptControllerProvider.notifier);
-    final data = Map<String, dynamic>.from(widget.formData);
 
-    data['warrantyExpiryDate'] = widget.warrantyExpiryDate != null
-        ? _formatDate(widget.warrantyExpiryDate!)
-        : null;
-    data['returnExpiryDate'] = widget.returnExpiryDate != null
-        ? _formatDate(widget.returnExpiryDate!)
-        : null;
+    // ── 1. Build receipt-level data (strip product/warranty fields) ─────────
+    const _lineItemKeys = {
+      'productName', 'productCategory',
+      'warrantyPeriodMonths', 'returnPeriodDays',
+    };
+    final recData = Map<String, dynamic>.from(widget.formData)
+      ..removeWhere((k, _) => _lineItemKeys.contains(k));
+    // Remove server-side computed fields from the old schema (backend ignores
+    // them now, but guard against a stale call being sent accidentally).
+    recData.remove('warrantyExpiryDate');
+    recData.remove('returnExpiryDate');
 
+    // ── 2. Create / update the receipt ───────────────────────────────
     final result = widget.receiptId == null
-        ? await controller.createReceipt(data)
-        : await controller.updateReceipt(widget.receiptId!, data);
+        ? await controller.createReceipt(recData)
+        : await controller.updateReceipt(widget.receiptId!, recData);
 
     if (!mounted) return;
 
@@ -104,6 +116,24 @@ class _ReceiptConfirmationScreenState
       );
       return;
     }
+
+    // ── 3. Save product / warranty data to the line item ────────────────
+    final liData = Map<String, dynamic>.from(widget.lineItemData)
+      ..removeWhere((_, v) => v == null);  // drop explicit nulls for create
+    if (liData.isNotEmpty) {
+      // Prefer the line item ID we already know; fall back to first on result.
+      final itemId = widget.primaryLineItemId
+          ?? (result.lineItems.isNotEmpty ? result.lineItems.first.id : null);
+
+      if (itemId != null) {
+        await controller.updateLineItem(result.id, itemId, liData);
+      } else {
+        // Manual entry: no OCR line items yet — create a new one.
+        await controller.createLineItem(result.id, liData);
+      }
+    }
+
+    if (!mounted) return;
 
     ref.invalidate(receiptsProvider);
     ref.invalidate(receiptProvider(result.id));

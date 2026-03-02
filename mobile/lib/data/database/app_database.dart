@@ -6,7 +6,7 @@ import 'dart:io';
 
 part 'app_database.g.dart';
 
-/// Receipts table
+/// Receipts table (product/warranty fields have moved to ReceiptLineItems)
 class Receipts extends Table {
   TextColumn get id => text()();
   TextColumn get userId => text()();
@@ -15,21 +15,50 @@ class Receipts extends Table {
   DateTimeColumn get purchaseDate => dateTime().nullable()();
   RealColumn get totalAmount => real().nullable()();
   TextColumn get currency => text().nullable()();
-  TextColumn get productName => text().nullable()();
-  TextColumn get productCategory => text().nullable()();
-  IntColumn get warrantyPeriodMonths => integer().nullable()();
-  DateTimeColumn get warrantyExpiryDate => dateTime().nullable()();
-  IntColumn get returnPeriodDays => integer().nullable()();
-  DateTimeColumn get returnExpiryDate => dateTime().nullable()();
   TextColumn get status => text()();
   IntColumn get ocrRetryCount => integer().withDefault(const Constant(0))();
   DateTimeColumn get lastOcrAttemptAt => dateTime().nullable()();
   TextColumn get notes => text().nullable()();
+  // Invoice / vendor fields
+  TextColumn get invoiceNumber => text().nullable()();
+  TextColumn get vendorAddress => text().nullable()();
+  TextColumn get vendorPhone => text().nullable()();
+  TextColumn get vendorEmail => text().nullable()();
+  TextColumn get vendorUrl => text().nullable()();
+  // Document-level OCR text
+  TextColumn get warrantyNotes => text().nullable()();
+  TextColumn get remarks => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
   DateTimeColumn get syncedAt => dateTime().nullable()();
   TextColumn get localImagePath => text().nullable()();
-  
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Receipt line items table (warranty & product info lives here)
+class ReceiptLineItems extends Table {
+  TextColumn get id => text()();
+  TextColumn get receiptId =>
+      text().references(Receipts, #id, onDelete: KeyAction.cascade)();
+  IntColumn get rowIndex => integer().withDefault(const Constant(0))();
+  TextColumn get productCode => text().nullable()();
+  TextColumn get itemDescription => text().nullable()();
+  TextColumn get quantity => text().nullable()();
+  RealColumn get unitPrice => real().nullable()();
+  RealColumn get amount => real().nullable()();
+  // Per-item product & warranty fields
+  TextColumn get productName => text().nullable()();
+  TextColumn get productCategory => text().nullable()();
+  TextColumn get productImageUrl => text().nullable()();
+  IntColumn get warrantyPeriodMonths => integer().nullable()();
+  DateTimeColumn get warrantyExpiryDate => dateTime().nullable()();
+  IntColumn get returnPeriodDays => integer().nullable()();
+  DateTimeColumn get returnExpiryDate => dateTime().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+
   @override
   Set<Column> get primaryKey => {id};
 }
@@ -48,12 +77,35 @@ class UploadQueue extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-@DriftDatabase(tables: [Receipts, UploadQueue])
+@DriftDatabase(tables: [Receipts, ReceiptLineItems, UploadQueue])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
-  
+
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onCreate: (m) => m.createAll(),
+        onUpgrade: (m, from, to) async {
+          if (from < 2) {
+            // v1 → v2: ReceiptLineItems table added;
+            // product/warranty columns dropped from Receipts.
+            await m.createTable(receiptLineItems);
+            await m.addColumn(receipts, receipts.invoiceNumber);
+            await m.addColumn(receipts, receipts.vendorAddress);
+            await m.addColumn(receipts, receipts.vendorPhone);
+            await m.addColumn(receipts, receipts.vendorEmail);
+            await m.addColumn(receipts, receipts.vendorUrl);
+            await m.addColumn(receipts, receipts.warrantyNotes);
+            await m.addColumn(receipts, receipts.remarks);
+            // Note: Drift cannot drop columns on SQLite — the old
+            // productName, productCategory, warrantyPeriodMonths,
+            // warrantyExpiryDate, returnPeriodDays, returnExpiryDate columns
+            // will remain in the physical table but are no longer mapped.
+          }
+        },
+      );
   
   // Receipt operations
   

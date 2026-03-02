@@ -3,6 +3,9 @@ import 'package:json_annotation/json_annotation.dart';
 part 'receipt_line_item_model.g.dart';
 
 /// A single product / service line item on a receipt or invoice.
+///
+/// Warranty and return tracking lives here (not on [ReceiptModel]) so that
+/// multi-product receipts can track each item's warranty independently.
 @JsonSerializable()
 class ReceiptLineItemModel {
   final String id;
@@ -14,6 +17,18 @@ class ReceiptLineItemModel {
   final double? unitPrice;
   final double? amount;
   final DateTime createdAt;
+  final DateTime updatedAt;
+
+  // ── Per-item product fields ────────────────────────────────────────────
+  final String? productName;
+  final String? productCategory;
+  final String? productImageUrl;
+
+  // ── Per-item warranty & return fields ─────────────────────────────────
+  final int? warrantyPeriodMonths;
+  final DateTime? warrantyExpiryDate;
+  final int? returnPeriodDays;
+  final DateTime? returnExpiryDate;
 
   const ReceiptLineItemModel({
     required this.id,
@@ -25,10 +40,50 @@ class ReceiptLineItemModel {
     this.unitPrice,
     this.amount,
     required this.createdAt,
+    required this.updatedAt,
+    this.productName,
+    this.productCategory,
+    this.productImageUrl,
+    this.warrantyPeriodMonths,
+    this.warrantyExpiryDate,
+    this.returnPeriodDays,
+    this.returnExpiryDate,
   });
 
   factory ReceiptLineItemModel.fromJson(Map<String, dynamic> json) =>
       _$ReceiptLineItemModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$ReceiptLineItemModelToJson(this);
+
+  // ── Computed helpers ───────────────────────────────────────────────────
+
+  /// Human-readable name — productName first, then itemDescription, else 'Item'.
+  String get displayName => productName ?? itemDescription ?? 'Item';
+
+  /// Whether this item's warranty has expired.
+  bool get isWarrantyExpired {
+    if (warrantyExpiryDate == null) return false;
+    return DateTime.now().isAfter(warrantyExpiryDate!);
+  }
+
+  /// Whether this item's return window has closed.
+  bool get isReturnExpired {
+    if (returnExpiryDate == null) return false;
+    return DateTime.now().isAfter(returnExpiryDate!);
+  }
+
+  /// Days remaining until warranty expires (0 if already expired).
+  int? get warrantyDaysRemaining {
+    if (warrantyExpiryDate == null) return null;
+    final days = warrantyExpiryDate!.difference(DateTime.now()).inDays;
+    return days < 0 ? 0 : days;
+  }
+
+  /// Days remaining until return window closes (0 if already closed).
+  int? get returnDaysRemaining {
+    if (returnExpiryDate == null) return null;
+    final days = returnExpiryDate!.difference(DateTime.now()).inDays;
+    return days < 0 ? 0 : days;
+  }
 }
+

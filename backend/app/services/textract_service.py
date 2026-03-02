@@ -469,11 +469,15 @@ class RealTextractService:
 
                     # Search the full row text for a warranty period pattern,
                     # e.g. "3YEARS" or "12 months" embedded in EXPENSE_ROW.
+                    # Per-item: each matching row gets its own value.
                     match = _WARRANTY_PATTERN.search(row_text)
-                    if match and warranty_from_rows is None:
+                    if match:
                         num  = int(match.group(1))
                         unit = match.group(2).lower()
-                        warranty_from_rows = num * 12 if unit.startswith('y') else num
+                        _period = num * 12 if unit.startswith('y') else num
+                        item['warranty_period_months'] = _period
+                        if warranty_from_rows is None:
+                            warranty_from_rows = _period
 
                     # Only append rows that have at least one useful field
                     if any(k in item for k in (

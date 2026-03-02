@@ -54,16 +54,6 @@ class Receipt(Base):
     remarks        = Column(Text, nullable=True)   # OTHER/Remarks — serial numbers, etc.
     warranty_notes = Column(Text, nullable=True)   # OTHER/Note — warranty policy text
     
-    # Product information
-    product_name = Column(String(512), nullable=True)
-    product_category = Column(String(128), nullable=True)
-    
-    # Warranty and return information
-    warranty_period_months = Column(Integer, nullable=True)  # Duration in months
-    warranty_expiry_date = Column(DateTime(timezone=True), nullable=True, index=True)
-    return_period_days = Column(Integer, default=30, nullable=True)  # Return window in days
-    return_expiry_date = Column(DateTime(timezone=True), nullable=True, index=True)
-    
     # Processing status
     status = Column(SQLEnum(ReceiptStatus), default=ReceiptStatus.UPLOADED, nullable=False, index=True)
     
@@ -93,6 +83,7 @@ class Receipt(Base):
     # Composite index for pagination queries (user_id + created_at)
     __table_args__ = (
         Index('ix_receipts_user_id_created_at', 'user_id', 'created_at'),
+        Index('ix_receipts_status', 'status'),
     )
 
     def __repr__(self):

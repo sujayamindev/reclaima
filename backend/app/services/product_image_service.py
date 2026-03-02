@@ -91,6 +91,10 @@ class BaseProductImageService(ABC):
         Returns a dict with keys: imageUrl, title, source — or None.
         """
 
+    def search_product_image_sync(self, query: str) -> Optional[Dict[str, str]]:
+        """Synchronous wrapper for use in non-async contexts (e.g. receipt_service)."""
+        return None
+
 
 # ---------------------------------------------------------------------------
 # Mock implementation (dev / USE_MOCK_AWS=True)
@@ -104,6 +108,14 @@ class MockProductImageService(BaseProductImageService):
 
     async def search_product_image(self, query: str) -> Optional[Dict[str, str]]:
         logger.debug(f"[MOCK] Product image search for: {query}")
+        return {
+            "imageUrl": "https://via.placeholder.com/300x300.png?text=Product",
+            "title": query,
+            "source": "placeholder",
+        }
+
+    def search_product_image_sync(self, query: str) -> Optional[Dict[str, str]]:
+        logger.debug(f"[MOCK] Sync product image search for: {query}")
         return {
             "imageUrl": "https://via.placeholder.com/300x300.png?text=Product",
             "title": query,
@@ -206,6 +218,82 @@ class BraveProductImageService(BaseProductImageService):
         except Exception as exc:
             logger.error(
                 f"Brave Search failed: {type(exc).__name__}: {exc}",
+                exc_info=True,
+            )
+            return None
+
+    def search_product_image_sync(self, query: str) -> Optional[Dict[str, str]]:
+        """
+        Synchronous version using httpx.Client.
+        Called from synchronous service methods (e.g. receipt_service.process_ocr).
+        """
+        if not query or not query.strip():
+            return None
+
+        search_query = _clean_query(query)
+        if not search_query:
+            return None
+
+        logger.info(f"Brave image search (sync): {search_query!r}")
+
+        try:
+            headers = {
+                "Accept": "application/json",
+                "Accept-Encoding": "gzip",
+                "X-Subscription-Token": self._api_key,
+            }
+            params = {
+                "q": search_query,
+                "count": 8,
+                "safesearch": "strict",
+            }
+
+            with httpx.Client(timeout=10.0) as client:
+                response = client.get(
+                    _BRAVE_IMAGE_ENDPOINT,
+                    headers=headers,
+                    params=params,
+                )
+                response.raise_for_status()
+                data = response.json()
+
+            results = data.get("results", [])
+            if not results:
+                return None
+
+            for item in results:
+                image_url = self._extract_image_url(item)
+                if not image_url:
+                    continue
+                source_url = item.get("url", image_url)
+                if _is_blocked(source_url) or _is_blocked(image_url):
+                    logger.debug(f"Skipping blocked source: {source_url[:80]}")
+                    continue
+                return {
+                    "imageUrl": image_url,
+                    "title": item.get("title", query),
+                    "source": item.get("source", ""),
+                }
+
+            # Fallback: use first result regardless of domain
+            fallback_url = self._extract_image_url(results[0])
+            if fallback_url:
+                return {
+                    "imageUrl": fallback_url,
+                    "title": results[0].get("title", query),
+                    "source": results[0].get("source", ""),
+                }
+            return None
+
+        except httpx.HTTPStatusError as exc:
+            logger.error(
+                f"Brave Search (sync) HTTP error: {exc.response.status_code} — "
+                f"{exc.response.text[:200]}"
+            )
+            return None
+        except Exception as exc:
+            logger.error(
+                f"Brave Search (sync) failed: {type(exc).__name__}: {exc}",
                 exc_info=True,
             )
             return None

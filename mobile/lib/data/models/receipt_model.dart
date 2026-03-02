@@ -27,12 +27,6 @@ class ReceiptModel {
   final DateTime? purchaseDate;
   final double? totalAmount;
   final String? currency;
-  final String? productName;
-  final String? productCategory;
-  final int? warrantyPeriodMonths;
-  final DateTime? warrantyExpiryDate;
-  final int? returnPeriodDays;
-  final DateTime? returnExpiryDate;
   final ReceiptStatus status;
   final int ocrRetryCount;
   final DateTime? lastOcrAttemptAt;
@@ -51,6 +45,7 @@ class ReceiptModel {
   final String? warrantyNotes;  // OCR OTHER/Note — warranty policy text
 
   // ── Line items (multi-product receipts) ─────────────────────────────────
+  // Product images, warranty & return data all live on individual line items.
   final List<ReceiptLineItemModel> lineItems;
 
   ReceiptModel({
@@ -61,12 +56,6 @@ class ReceiptModel {
     this.purchaseDate,
     this.totalAmount,
     this.currency,
-    this.productName,
-    this.productCategory,
-    this.warrantyPeriodMonths,
-    this.warrantyExpiryDate,
-    this.returnPeriodDays,
-    this.returnExpiryDate,
     required this.status,
     required this.ocrRetryCount,
     this.lastOcrAttemptAt,
@@ -89,29 +78,96 @@ class ReceiptModel {
   
   Map<String, dynamic> toJson() => _$ReceiptModelToJson(this);
   
-  /// Check if warranty is expired
+  // ── Convenience delegation getters ──────────────────────────────────────
+  // These read from line items so that screens written before the per-item
+  // model migration continue to compile without changes.
+
+  /// Product image URL from the first line item that has one.
+  String? get productImageUrl {
+    for (final li in lineItems) {
+      if (li.productImageUrl != null) return li.productImageUrl;
+    }
+    return null;
+  }
+
+  /// Primary product name — first item with a warranty, or first item overall.
+  String? get productName {
+    if (lineItems.isEmpty) return null;
+    for (final li in lineItems) {
+      if (li.warrantyPeriodMonths != null) {
+        return li.productName ?? li.itemDescription;
+      }
+    }
+    return lineItems.first.productName ?? lineItems.first.itemDescription;
+  }
+
+  /// Primary product category from the first line item that has one.
+  String? get productCategory {
+    for (final li in lineItems) {
+      if (li.productCategory != null) return li.productCategory;
+    }
+    return null;
+  }
+
+  /// Primary warranty period (months) from the first line item that has one.
+  int? get warrantyPeriodMonths {
+    for (final li in lineItems) {
+      if (li.warrantyPeriodMonths != null) return li.warrantyPeriodMonths;
+    }
+    return null;
+  }
+
+  /// Primary return period (days) from the first line item that has one.
+  int? get returnPeriodDays {
+    for (final li in lineItems) {
+      if (li.returnPeriodDays != null) return li.returnPeriodDays;
+    }
+    return null;
+  }
+
+  /// Earliest warranty expiry date across all line items.
+  DateTime? get warrantyExpiryDate {
+    for (final li in lineItems) {
+      if (li.warrantyExpiryDate != null) return li.warrantyExpiryDate;
+    }
+    return null;
+  }
+
+  /// Earliest return expiry date across all line items.
+  DateTime? get returnExpiryDate {
+    for (final li in lineItems) {
+      if (li.returnExpiryDate != null) return li.returnExpiryDate;
+    }
+    return null;
+  }
+
+  /// Whether the primary warranty has expired.
   bool get isWarrantyExpired {
-    if (warrantyExpiryDate == null) return false;
-    return DateTime.now().isAfter(warrantyExpiryDate!);
+    final expiry = warrantyExpiryDate;
+    if (expiry == null) return false;
+    return DateTime.now().isAfter(expiry);
   }
-  
-  /// Check if return window is expired
+
+  /// Whether the primary return window has closed.
   bool get isReturnExpired {
-    if (returnExpiryDate == null) return false;
-    return DateTime.now().isAfter(returnExpiryDate!);
+    final expiry = returnExpiryDate;
+    if (expiry == null) return false;
+    return DateTime.now().isAfter(expiry);
   }
-  
-  /// Days remaining until warranty expires
+
+  /// Days remaining on the primary warranty (0 if expired).
   int? get warrantyDaysRemaining {
-    if (warrantyExpiryDate == null) return null;
-    final days = warrantyExpiryDate!.difference(DateTime.now()).inDays;
+    final expiry = warrantyExpiryDate;
+    if (expiry == null) return null;
+    final days = expiry.difference(DateTime.now()).inDays;
     return days < 0 ? 0 : days;
   }
-  
-  /// Days remaining until return window expires
+
+  /// Days remaining on the primary return window (0 if closed).
   int? get returnDaysRemaining {
-    if (returnExpiryDate == null) return null;
-    final days = returnExpiryDate!.difference(DateTime.now()).inDays;
+    final expiry = returnExpiryDate;
+    if (expiry == null) return null;
+    final days = expiry.difference(DateTime.now()).inDays;
     return days < 0 ? 0 : days;
   }
 }

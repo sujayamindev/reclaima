@@ -5,7 +5,6 @@ Pydantic schemas for API request/response validation.
 from pydantic import BaseModel, Field, EmailStr, ConfigDict
 from typing import Optional, List
 from datetime import datetime
-from decimal import Decimal
 from enum import Enum
 
 
@@ -72,12 +71,35 @@ class ReceiptLineItemResponse(BaseModel):
     product_code: Optional[str] = None
     item_description: Optional[str] = None
     quantity: Optional[str] = None
-    unit_price: Optional[Decimal] = None
-    amount: Optional[Decimal] = None
+    unit_price: Optional[float] = None
+    amount: Optional[float] = None
+    # Per-item product & warranty fields
+    product_name: Optional[str] = None
+    product_category: Optional[str] = None
+    product_image_url: Optional[str] = None
+    warranty_period_months: Optional[int] = None
+    warranty_expiry_date: Optional[datetime] = None
+    return_period_days: Optional[int] = None
+    return_expiry_date: Optional[datetime] = None
     created_at: datetime
+    updated_at: datetime
 
     model_config = ConfigDict(
         from_attributes=True,
+        populate_by_name=True,
+        alias_generator=to_camel
+    )
+
+
+class ReceiptLineItemUpdate(BaseModel):
+    """Partial update schema for a single line item."""
+    item_description: Optional[str] = None
+    product_name: Optional[str] = None
+    product_category: Optional[str] = None
+    warranty_period_months: Optional[int] = None
+    return_period_days: Optional[int] = None
+
+    model_config = ConfigDict(
         populate_by_name=True,
         alias_generator=to_camel
     )
@@ -87,15 +109,11 @@ class ReceiptLineItemResponse(BaseModel):
 # Receipt Schemas
 # ============================================
 class ReceiptBase(BaseModel):
-    """Base receipt schema."""
+    """Base receipt schema. Product/warranty fields now live on line items."""
     store_name: Optional[str] = None
     purchase_date: Optional[datetime] = None
-    total_amount: Optional[Decimal] = None
+    total_amount: Optional[float] = None
     currency: Optional[str] = "USD"
-    product_name: Optional[str] = None
-    product_category: Optional[str] = None
-    warranty_period_months: Optional[int] = None
-    return_period_days: Optional[int] = 30
     notes: Optional[str] = None
 
     # Invoice / receipt identification
@@ -107,7 +125,7 @@ class ReceiptBase(BaseModel):
     vendor_email: Optional[str] = None
     vendor_url: Optional[str] = None
 
-    # Additional OCR fields
+    # Document-level OCR text fields
     remarks: Optional[str] = None        # Remarks / serial number
     warranty_notes: Optional[str] = None  # Warranty policy text
 
@@ -123,15 +141,11 @@ class ReceiptCreate(ReceiptBase):
 
 
 class ReceiptUpdate(BaseModel):
-    """Receipt update schema (partial updates)."""
+    """Receipt update schema (partial updates). Warranty fields are now on line items."""
     store_name: Optional[str] = None
     purchase_date: Optional[datetime] = None
     total_amount: Optional[float] = None
     currency: Optional[str] = None
-    product_name: Optional[str] = None
-    product_category: Optional[str] = None
-    warranty_period_months: Optional[int] = None
-    return_period_days: Optional[int] = None
     notes: Optional[str] = None
     invoice_number: Optional[str] = None
     vendor_address: Optional[str] = None
@@ -140,8 +154,6 @@ class ReceiptUpdate(BaseModel):
     vendor_url: Optional[str] = None
     remarks: Optional[str] = None
     warranty_notes: Optional[str] = None
-    warranty_expiry_date: Optional[datetime] = None
-    return_expiry_date: Optional[datetime] = None
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -150,12 +162,10 @@ class ReceiptUpdate(BaseModel):
 
 
 class ReceiptResponse(ReceiptBase):
-    """Receipt response schema."""
+    """Receipt response schema. Warranty info is embedded in line_items."""
     id: str
     user_id: str
     s3_object_key: Optional[str]
-    warranty_expiry_date: Optional[datetime]
-    return_expiry_date: Optional[datetime]
     status: ReceiptStatusEnum
     ocr_retry_count: int
     last_ocr_attempt_at: Optional[datetime]
@@ -255,22 +265,28 @@ class ClaimDocumentResponse(ClaimDocumentBase):
 # Warranty & Return Schemas
 # ============================================
 class WarrantyInfo(BaseModel):
-    """Warranty information schema."""
+    """Warranty information for a single line item."""
     receipt_id: str
+    line_item_id: str
     store_name: Optional[str]
-    product_name: Optional[str]
+    item_description: Optional[str]  # Product or line-item description
+    product_name: Optional[str]      # Resolved brand/product name
     purchase_date: Optional[datetime]
+    warranty_period_months: Optional[int]
     warranty_expiry_date: Optional[datetime]
     days_remaining: Optional[int]
     is_expired: bool
 
 
 class ReturnInfo(BaseModel):
-    """Return deadline information schema."""
+    """Return deadline information for a single line item."""
     receipt_id: str
+    line_item_id: str
     store_name: Optional[str]
-    product_name: Optional[str]
+    item_description: Optional[str]  # Product or line-item description
+    product_name: Optional[str]      # Resolved brand/product name
     purchase_date: Optional[datetime]
+    return_period_days: Optional[int]
     return_expiry_date: Optional[datetime]
     days_remaining: Optional[int]
     is_expired: bool
@@ -314,6 +330,16 @@ class UserNotificationPreferencesResponse(UserNotificationPreferencesBase):
         populate_by_name=True,
         alias_generator=to_camel
     )
+
+
+# ============================================
+# Receipt Image URL Schema
+# ============================================
+class ReceiptImageUrlResponse(BaseModel):
+    """Response containing a pre-signed S3 URL for the receipt image."""
+    url: str
+
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
 
 
 # ============================================
