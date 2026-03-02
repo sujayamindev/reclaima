@@ -7,7 +7,6 @@ import '../../data/models/receipt_model.dart';
 import '../../data/models/receipt_line_item_model.dart';
 import '../../providers/receipt_provider.dart';
 import '../../core/utils/formatters.dart';
-import '../../widgets/product_image_card.dart';
 
 /// Full-screen product detail view.
 ///
@@ -48,13 +47,17 @@ class ProductDetailScreen extends ConsumerWidget {
                 item = null;
               }
             }
+            // Fall back to the first available line item when no specific ID
+            // was provided (e.g. navigating from the confirmation screen after
+            // save, or arriving via a notification deep link).
+            item ??= receipt.lineItems.isNotEmpty ? receipt.lineItems.first : null;
             final product =
                 ProductViewModel(receipt: receipt, lineItem: item);
             return _buildBody(context, ref, product, imageUrlAsync, isDark);
           },
           loading: () => Column(
             children: [
-              _buildTopBar(context, isDark),
+              _buildTopBar(context, ref, null, isDark),
               const Expanded(
                 child: Center(
                   child: CircularProgressIndicator(color: AppColors.primary),
@@ -64,7 +67,7 @@ class ProductDetailScreen extends ConsumerWidget {
           ),
           error: (err, _) => Column(
             children: [
-              _buildTopBar(context, isDark),
+              _buildTopBar(context, ref, null, isDark),
               Expanded(
                 child: Center(
                   child: Padding(
@@ -121,28 +124,18 @@ class ProductDetailScreen extends ConsumerWidget {
 
     return CustomScrollView(
       slivers: [
-        SliverToBoxAdapter(child: _buildTopBar(context, isDark)),
+        SliverToBoxAdapter(child: _buildTopBar(context, ref, product, isDark)),
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(p, 4, p, 36),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
               // ── Hero card ───────────────────────────────────────────
-              _buildHeroCard(context, ref, product, isDark),
+              _buildHeroCard(product, isDark),
               const SizedBox(height: 12),
 
               // ── Warranty & Return countdown ──────────────────────────
               _buildWarrantySection(product, isDark),
               const SizedBox(height: 12),
-
-              // ── Product Image (Brave / web search) ───────────────────
-              if (product.productImageUrl != null) ...[
-                ProductImageCard(
-                  productName: product.displayName,
-                  imageUrlFuture: Future.value(product.productImageUrl),
-                  isDark: isDark,
-                ),
-                const SizedBox(height: 12),
-              ],
 
               // ── Purchase Details ─────────────────────────────────────
               _buildPurchaseDetails(
@@ -266,7 +259,12 @@ class ProductDetailScreen extends ConsumerWidget {
 
   // ── Top bar ──────────────────────────────────────────────────────────────
 
-  Widget _buildTopBar(BuildContext context, bool isDark) {
+  Widget _buildTopBar(
+    BuildContext context,
+    WidgetRef ref,
+    ProductViewModel? product,
+    bool isDark,
+  ) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Row(
@@ -291,8 +289,77 @@ class ProductDetailScreen extends ConsumerWidget {
               ),
             ),
           ),
-          // Balance the back button width.
-          const SizedBox(width: 48),
+          if (product != null)
+            PopupMenuButton<String>(
+              icon: Icon(Icons.more_vert,
+                  color: AppColors.textPrimary(isDark), size: 22),
+              padding: EdgeInsets.zero,
+              color: AppColors.card(isDark),
+              elevation: 4,
+              shadowColor: Colors.black.withValues(alpha: 0.12),
+              shape: RoundedRectangleBorder(
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.radiusLarge),
+                side: BorderSide(color: AppColors.border(isDark)),
+              ),
+              onSelected: (value) async {
+                if (value == 'edit') {
+                  // TODO: navigate to edit screen
+                } else if (value == 'delete') {
+                  final confirmed = await _showDeleteDialog(context);
+                  if (confirmed == true && context.mounted) {
+                    final ok = await ref
+                        .read(receiptControllerProvider.notifier)
+                        .deleteReceipt(product.receiptId);
+                    if (ok && context.mounted) Navigator.pop(context);
+                  }
+                }
+              },
+              itemBuilder: (_) => [
+                PopupMenuItem(
+                  value: 'edit',
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 4),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: const Icon(Icons.edit_outlined,
+                            size: 15, color: AppColors.primary),
+                      ),
+                      const SizedBox(width: 6),
+                      Text('Edit',
+                          style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.textPrimary(isDark),
+                              fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'delete',
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 4),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 30,
+                        height: 30,
+                        child: const Icon(Icons.delete_outline,
+                            size: 15, color: AppColors.error),
+                      ),
+                      const SizedBox(width: 6),
+                      Text('Delete',
+                          style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.error,
+                              fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                ),
+              ],
+            )
+          else
+            const SizedBox(width: 48),
         ],
       ),
     );
@@ -301,8 +368,6 @@ class ProductDetailScreen extends ConsumerWidget {
   // ── Hero card ────────────────────────────────────────────────────────────
 
   Widget _buildHeroCard(
-    BuildContext context,
-    WidgetRef ref,
     ProductViewModel product,
     bool isDark,
   ) {
@@ -319,146 +384,81 @@ class ProductDetailScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Product name + category ─────────────────────────────────
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Large letter avatar
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.14),
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.radiusMedium),
-                ),
-                child: Center(
-                  child: Text(
-                    product.displayName.isNotEmpty
-                        ? product.displayName[0].toUpperCase()
-                        : '?',
-                    style: AppTextStyles.headingSmall.copyWith(
-                      color: AppColors.primary,
-                      fontSize: 24,
-                      height: 1.0,
+          // ── Product image (top) ─────────────────────────────────────
+          if (product.productImageUrl != null) ...[
+            ClipRRect(
+              borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+              child: CachedNetworkImage(
+                imageUrl: product.productImageUrl!,
+                width: double.infinity,
+                height: 200,
+                fit: BoxFit.contain,
+                placeholder: (_, __) => Container(
+                  height: 200,
+                  color: AppColors.primary.withValues(alpha: 0.06),
+                  child: const Center(
+                    child: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2.5, color: AppColors.primary),
                     ),
                   ),
                 ),
+                errorWidget: (_, __, ___) => const SizedBox.shrink(),
               ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            ),
+            const SizedBox(height: 16),
+          ],
+
+          // ── Product name + amount ───────────────────────────────────
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text.rich(
+                TextSpan(
                   children: [
-                    Text(
-                      product.displayName,
+                    TextSpan(
+                      text: product.displayName,
                       style: AppTextStyles.listTitle.copyWith(
                         fontSize: 18,
                         color: AppColors.textPrimary(isDark),
                         height: 1.3,
                       ),
                     ),
-                    if (product.productCategory != null) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        product.productCategory!,
-                        style: AppTextStyles.caption.copyWith(
-                          color: AppColors.textSecondary(isDark),
+                    // Only show badge for non-completed / notable states
+                    if (product.receipt.status != ReceiptStatus.completed)
+                      WidgetSpan(
+                        alignment: PlaceholderAlignment.middle,
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 8),
+                          child: product.isPending
+                              ? const _StatusBadge(
+                                  color: AppColors.warning,
+                                  label: 'Processing',
+                                )
+                              : _StatusBadge(
+                                  color: statusColor,
+                                  label: _statusLabel(product.receipt),
+                                ),
                         ),
                       ),
-                    ],
                   ],
                 ),
               ),
-              if (product.itemAmount != null) ...[
-                const SizedBox(width: 8),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      CurrencyFormatter.format(
-                        product.itemAmount!,
-                        currency: product.currency ?? 'USD',
-                      ),
-                      style: AppTextStyles.listTitle.copyWith(
-                        fontSize: 16,
-                        color: AppColors.textPrimary(isDark),
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      product.currency ?? 'USD',
-                      style: AppTextStyles.caption
-                          .copyWith(color: AppColors.textSecondary(isDark)),
-                    ),
-                  ],
+              if (product.productCategory != null) ...[
+                const SizedBox(height: 4),
+                Text(
+                  product.productCategory!,
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.textSecondary(isDark),
+                  ),
                 ),
               ],
             ],
           ),
 
-          // ── Status + category badges ────────────────────────────────
-          const SizedBox(height: 14),
-          Wrap(
-            spacing: 8,
-            runSpacing: 6,
-            children: [
-              if (product.isPending)
-                _StatusBadge(
-                  color: AppColors.warning,
-                  label: 'Processing',
-                )
-              else
-                _StatusBadge(
-                  color: statusColor,
-                  label: _statusLabel(product.receipt),
-                ),
-              if (product.receipt.invoiceNumber != null)
-                _StatusBadge(
-                  color: AppColors.textSecondary(isDark),
-                  label: '# ${product.receipt.invoiceNumber!}',
-                  filled: false,
-                  isDark: isDark,
-                ),
-            ],
-          ),
 
-          // ── Action buttons ──────────────────────────────────────────
-          const SizedBox(height: 14),
-          Divider(color: AppColors.border(isDark), height: 1),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                child: _HeroActionButton(
-                  icon: Icons.edit_outlined,
-                  label: 'Edit',
-                  isDark: isDark,
-                  onPressed: () {
-                    // TODO: navigate to edit screen
-                  },
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _HeroActionButton(
-                  icon: Icons.delete_outline,
-                  label: 'Delete',
-                  isDark: isDark,
-                  color: AppColors.error,
-                  onPressed: () async {
-                    final confirmed = await _showDeleteDialog(context);
-                    if (confirmed == true && context.mounted) {
-                      final ok = await ref
-                          .read(receiptControllerProvider.notifier)
-                          .deleteReceipt(product.receiptId);
-                      if (ok && context.mounted) Navigator.pop(context);
-                    }
-                  },
-                ),
-              ),
-            ],
-          ),
         ],
       ),
     );
@@ -1154,12 +1154,14 @@ class _StatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
       decoration: BoxDecoration(
-        color: filled
-            ? color.withValues(alpha: 0.12)
-            : AppColors.border(isDark),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
+        border: Border.all(
+          color: filled ? color.withValues(alpha: 0.45) : color,
+          width: 1,
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1176,7 +1178,7 @@ class _StatusBadge extends StatelessWidget {
           Text(
             label,
             style: AppTextStyles.badgeText.copyWith(
-              color: filled ? color : AppColors.textSecondary(isDark),
+              color: filled ? color : color,
             ),
           ),
         ],
@@ -1185,46 +1187,7 @@ class _StatusBadge extends StatelessWidget {
   }
 }
 
-/// Outlined action button inside the hero card.
-class _HeroActionButton extends StatelessWidget {
-  const _HeroActionButton({
-    required this.icon,
-    required this.label,
-    required this.isDark,
-    required this.onPressed,
-    this.color,
-  });
 
-  final IconData icon;
-  final String label;
-  final bool isDark;
-  final VoidCallback onPressed;
-  final Color? color;
-
-  @override
-  Widget build(BuildContext context) {
-    final fg = color ?? AppColors.textSecondary(isDark);
-    return OutlinedButton.icon(
-      onPressed: onPressed,
-      icon: Icon(icon, size: 16, color: fg),
-      label: Text(label, style: AppTextStyles.badgeText.copyWith(color: fg)),
-      style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        side: BorderSide(
-          color: color != null
-              ? color!.withValues(alpha: 0.35)
-              : AppColors.border(isDark),
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
-        ),
-        backgroundColor: color != null
-            ? color!.withValues(alpha: 0.07)
-            : Colors.transparent,
-      ),
-    );
-  }
-}
 
 /// Side-by-side countdown tile showing days remaining until expiry.
 class _CountdownTile extends StatelessWidget {

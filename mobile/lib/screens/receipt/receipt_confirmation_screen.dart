@@ -18,6 +18,10 @@ class ReceiptConfirmationScreen extends ConsumerStatefulWidget {
   final String? primaryLineItemId;
   /// Product / warranty fields destined for the line-item PATCH/POST.
   final Map<String, dynamic> lineItemData;
+  /// S3 key of the image pre-uploaded via POST /receipts/ocr-extract.
+  /// When set, the receipt is created with this image key already attached
+  /// and the status is set to COMPLETED server-side.
+  final String? stagingS3Key;
 
   const ReceiptConfirmationScreen({
     super.key,
@@ -28,6 +32,7 @@ class ReceiptConfirmationScreen extends ConsumerStatefulWidget {
     this.returnExpiryDate,
     this.primaryLineItemId,
     this.lineItemData = const {},
+    this.stagingS3Key,
   });
 
   @override
@@ -102,7 +107,11 @@ class _ReceiptConfirmationScreenState
     // them now, but guard against a stale call being sent accidentally).
     recData.remove('warrantyExpiryDate');
     recData.remove('returnExpiryDate');
-
+    // Attach pre-uploaded image to the new receipt (OCR path).
+    // The backend sets status = COMPLETED when s3ObjectKey is provided.
+    if (widget.stagingS3Key != null) {
+      recData['s3ObjectKey'] = widget.stagingS3Key;
+    }
     // ── 2. Create / update the receipt ───────────────────────────────
     final result = widget.receiptId == null
         ? await controller.createReceipt(recData)

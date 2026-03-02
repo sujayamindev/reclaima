@@ -126,44 +126,38 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
   Future<void> _upload() async {
     if (_selectedImagePaths.isEmpty) return;
     final controller = ref.read(receiptControllerProvider.notifier);
-    final receipt = await controller.createReceipt({});
-    if (receipt == null) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to create receipt')),
-        );
-      }
+
+    // Upload image → S3 + run OCR without creating a DB record.
+    // On failure the image is still preserved (permanent S3 path).
+    final ocrData = await controller.extractOcr(_selectedImagePaths.first);
+
+    if (!mounted) return;
+
+    if (ocrData == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Upload failed. Please try again.')),
+      );
       return;
     }
-    final uploaded = await controller.uploadReceipt(
-      receipt.id,
-      _selectedImagePaths.first,
+
+    final stagingKey = ocrData['s3ObjectKey'] as String?;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ReviewReceiptScreen(
+          isManualEntry: false,
+          ocrData: ocrData,
+          stagingS3Key: stagingKey,
+        ),
+      ),
     );
-    if (mounted) {
-      if (uploaded == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Upload failed. Please try again.')),
-        );
-      } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ReviewReceiptScreen(
-              receiptId: receipt.id,
-              isManualEntry: false,
-            ),
-          ),
-        );
-      }
-    }
   }
 
   void _manualEntry() {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) =>
-            const ReviewReceiptScreen(receiptId: null, isManualEntry: true),
+        builder: (_) => const ReviewReceiptScreen(isManualEntry: true),
       ),
     );
   }

@@ -154,6 +154,23 @@ class ReceiptController extends StateNotifier<AsyncValue<void>> {
       return null;
     }
   }
+
+  /// Upload image to S3 and run OCR without creating a receipt record.
+  ///
+  /// Returns the OCR-extracted data map (camelCase keys) including
+  /// [s3ObjectKey] on success, or null on error.
+  Future<Map<String, dynamic>?> extractOcr(String filePath) async {
+    state = const AsyncValue.loading();
+
+    try {
+      final result = await _receiptService.extractOcr(filePath);
+      state = const AsyncValue.data(null);
+      return result;
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+      return null;
+    }
+  }
 }
 
 /// Receipt controller provider

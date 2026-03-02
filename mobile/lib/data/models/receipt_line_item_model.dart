@@ -53,6 +53,30 @@ class ReceiptLineItemModel {
   factory ReceiptLineItemModel.fromJson(Map<String, dynamic> json) =>
       _$ReceiptLineItemModelFromJson(json);
 
+  /// Creates a display-only line item from an OCR extract response map.
+  ///
+  /// Used to populate the read-only items-table in [ReviewReceiptScreen] for
+  /// receipts that have not been saved to the database yet. The [id] and
+  /// [receiptId] fields are intentionally empty strings.
+  factory ReceiptLineItemModel.fromOcrExtract(Map<String, dynamic> json) {
+    final now = DateTime.now();
+    return ReceiptLineItemModel(
+      id: '',
+      receiptId: '',
+      rowIndex: (json['rowIndex'] as num?)?.toInt() ?? 0,
+      productCode: json['productCode'] as String?,
+      itemDescription: json['itemDescription'] as String?,
+      quantity: json['quantity'] as String?,
+      unitPrice: (json['unitPrice'] as num?)?.toDouble(),
+      amount: (json['amount'] as num?)?.toDouble(),
+      createdAt: now,
+      updatedAt: now,
+      productName: json['productName'] as String?,
+      productCategory: json['productCategory'] as String?,
+      warrantyPeriodMonths: (json['warrantyPeriodMonths'] as num?)?.toInt(),
+    );
+  }
+
   Map<String, dynamic> toJson() => _$ReceiptLineItemModelToJson(this);
 
   // ── Computed helpers ───────────────────────────────────────────────────

@@ -136,8 +136,14 @@ class ReceiptBase(BaseModel):
 
 
 class ReceiptCreate(ReceiptBase):
-    """Receipt creation schema."""
-    pass
+    """Receipt creation schema.
+
+    Accepts an optional ``s3_object_key`` pointing to an image that was
+    already uploaded to S3 via the ``/receipts/ocr-extract`` endpoint.
+    When provided the receipt status is set to COMPLETED on creation instead
+    of MANUAL_ENTRY.
+    """
+    s3_object_key: Optional[str] = None
 
 
 class ReceiptUpdate(BaseModel):
@@ -188,6 +194,61 @@ class ReceiptListResponse(BaseModel):
     page: int
     page_size: int
     
+    model_config = ConfigDict(
+        populate_by_name=True,
+        alias_generator=to_camel
+    )
+
+
+# ============================================
+# OCR Extract Schemas  (stateless — no DB write)
+# ============================================
+
+class OcrLineItemResult(BaseModel):
+    """A single line item extracted by OCR (not persisted to DB)."""
+    row_index: int = 0
+    product_code: Optional[str] = None
+    item_description: Optional[str] = None
+    quantity: Optional[str] = None
+    unit_price: Optional[float] = None
+    amount: Optional[float] = None
+    product_name: Optional[str] = None
+    product_category: Optional[str] = None
+    warranty_period_months: Optional[int] = None
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+        alias_generator=to_camel
+    )
+
+
+class OcrExtractResponse(BaseModel):
+    """Response from POST /receipts/ocr-extract.
+
+    Returns the S3 key of the uploaded image and all OCR-extracted fields.
+    The image is stored under ``users/{user_id}/receipts/{session_id}/`` —
+    a permanent path so the file is preserved even on OCR failure.
+    """
+    s3_object_key: str
+    ocr_status: str  # "success" | "failed"
+    # Receipt-level fields
+    store_name: Optional[str] = None
+    purchase_date: Optional[datetime] = None
+    total_amount: Optional[float] = None
+    currency: Optional[str] = None
+    invoice_number: Optional[str] = None
+    vendor_address: Optional[str] = None
+    vendor_phone: Optional[str] = None
+    vendor_email: Optional[str] = None
+    vendor_url: Optional[str] = None
+    remarks: Optional[str] = None
+    warranty_notes: Optional[str] = None
+    # Single-product hints (for receipts with no explicit line items)
+    product_name: Optional[str] = None
+    warranty_period_months: Optional[int] = None
+    # Extracted line items
+    line_items: List[OcrLineItemResult] = []
+
     model_config = ConfigDict(
         populate_by_name=True,
         alias_generator=to_camel

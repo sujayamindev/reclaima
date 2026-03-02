@@ -69,22 +69,36 @@ class ReceiptService:
         """
         receipt_id = str(uuid.uuid4())
         
+        # Use provided s3_object_key if the image was pre-uploaded via
+        # /ocr-extract.  Status is COMPLETED (OCR already done) when an image
+        # key is present, otherwise MANUAL_ENTRY for purely text-based entries.
+        s3_key = getattr(receipt_data, 's3_object_key', None)
+        initial_status = ReceiptStatus.COMPLETED if s3_key else ReceiptStatus.MANUAL_ENTRY
+
         receipt = Receipt(
             id=receipt_id,
             user_id=user_id,
+            s3_object_key=s3_key,
             store_name=receipt_data.store_name,
             purchase_date=receipt_data.purchase_date,
             total_amount=receipt_data.total_amount,
             currency=receipt_data.currency,
             notes=receipt_data.notes,
-            status=ReceiptStatus.UPLOADED
+            invoice_number=getattr(receipt_data, 'invoice_number', None),
+            vendor_address=getattr(receipt_data, 'vendor_address', None),
+            vendor_phone=getattr(receipt_data, 'vendor_phone', None),
+            vendor_email=getattr(receipt_data, 'vendor_email', None),
+            vendor_url=getattr(receipt_data, 'vendor_url', None),
+            remarks=getattr(receipt_data, 'remarks', None),
+            warranty_notes=getattr(receipt_data, 'warranty_notes', None),
+            status=initial_status,
         )
         
         db.add(receipt)
         db.commit()
         db.refresh(receipt)
         
-        logger.info(f"Created receipt: {receipt_id} for user: {user_id}")
+        logger.info(f"Created receipt: {receipt_id} for user: {user_id} (status={initial_status.value})")
         
         return receipt
     
@@ -145,6 +159,106 @@ class ReceiptService:
 
         return receipts, total
     
+    def extract_ocr_from_file(
+        self,
+        user_id: str,
+        file_content: bytes,
+        file_name: str,
+        content_type: str,
+    ) -> dict:
+        """
+        Upload an image to S3 and run OCR **without** creating a receipt record.
+
+        The image is stored at:
+            ``users/{user_id}/receipts/{session_id}/{file_name}``
+        which is a permanent path (not ``temp/``), so OCR-failed images are
+        preserved for long-term use (claim PDF generation, manual review, etc.).
+
+        Returns a dict matching the ``OcrExtractResponse`` schema (snake_case
+        keys — FastAPI alias_generator converts to camelCase on the wire).
+        """
+        session_id = str(uuid.uuid4())
+        s3_object_key = f"users/{user_id}/receipts/{session_id}/{file_name}"
+
+        logger.info(f"OCR extract: uploading to {s3_object_key}")
+        self.s3_service.upload_file(file_content, s3_object_key, content_type)
+
+        result: dict = {
+            "s3_object_key": s3_object_key,
+            "ocr_status": "failed",
+            "line_items": [],
+        }
+
+        try:
+            ocr_raw = self.textract_service.analyze_document(s3_object_key)
+
+            if ocr_raw.get("status") == "success":
+                extracted = ocr_raw.get("extracted_data", {})
+
+                # Optional LLM cleanup for long-form text fields
+                if settings.LLM_CLEANUP_ENABLED:
+                    for _field in ("warranty_notes", "remarks"):
+                        if extracted.get(_field):
+                            extracted[_field] = self.llm_service.clean_receipt_notes(
+                                extracted[_field]
+                            )
+
+                # Parse purchase_date to a datetime (or None on failure)
+                purchase_date = None
+                if extracted.get("purchase_date"):
+                    try:
+                        purchase_date = dateutil_parser.parse(
+                            extracted["purchase_date"], dayfirst=False
+                        )
+                    except (ValueError, TypeError, OverflowError):
+                        logger.warning(
+                            f"OCR extract: could not parse purchase_date: "
+                            f"{extracted['purchase_date']!r}"
+                        )
+
+                total_amount = None
+                if extracted.get("total_amount") is not None:
+                    try:
+                        total_amount = float(extracted["total_amount"])
+                    except (TypeError, ValueError):
+                        pass
+
+                result.update(
+                    {
+                        "ocr_status": "success",
+                        "store_name": extracted.get("store_name"),
+                        "purchase_date": purchase_date,
+                        "total_amount": total_amount,
+                        "currency": extracted.get("currency"),
+                        "invoice_number": extracted.get("invoice_number"),
+                        "vendor_address": extracted.get("vendor_address"),
+                        "vendor_phone": extracted.get("vendor_phone"),
+                        "vendor_email": extracted.get("vendor_email"),
+                        "vendor_url": extracted.get("vendor_url"),
+                        "remarks": extracted.get("remarks"),
+                        "warranty_notes": extracted.get("warranty_notes"),
+                        "product_name": extracted.get("product_name"),
+                        "warranty_period_months": extracted.get("warranty_period_months"),
+                        "line_items": extracted.get("line_items", []),
+                    }
+                )
+                logger.info(
+                    f"OCR extract succeeded for user {user_id}, "
+                    f"s3_key={s3_object_key}"
+                )
+            else:
+                logger.warning(
+                    f"OCR extract: Textract returned non-success for "
+                    f"s3_key={s3_object_key}"
+                )
+        except Exception as exc:
+            logger.error(
+                f"OCR extract error for user {user_id}, "
+                f"s3_key={s3_object_key}: {exc}"
+            )
+
+        return result
+
     def update_receipt(
         self,
         db: Session,
@@ -577,6 +691,28 @@ class ReceiptService:
             return_expiry_date=return_expiry,
         )
         db.add(line_item)
+
+        # ── Product image lookup ─────────────────────────────────────────
+        # Best-effort: fetch a product image from Brave for the new item.
+        # Failure must never block the save.
+        _query_name = line_item.product_name or line_item.item_description
+        if _query_name:
+            try:
+                img_result = self.product_image_service.search_product_image_sync(
+                    _query_name
+                )
+                if img_result:
+                    line_item.product_image_url = img_result.get("imageUrl")
+                    logger.info(
+                        f"Product image stored for new line item on receipt {receipt_id}: "
+                        f"{(line_item.product_image_url or '')[:80]}"
+                    )
+            except Exception as img_exc:
+                logger.warning(
+                    f"Product image lookup failed for new line item on receipt "
+                    f"{receipt_id}: {img_exc}"
+                )
+
         db.commit()
         db.refresh(line_item)
         logger.info(
@@ -619,6 +755,26 @@ class ReceiptService:
         update_fields = item_data.model_dump(exclude_unset=True)
         for field, value in update_fields.items():
             setattr(line_item, field, value)
+
+        # ── Product image lookup ─────────────────────────────────────────
+        # Fetch a product image when product_name is being set and the item
+        # has no image yet (e.g. first save via the confirmation screen).
+        _new_name = update_fields.get("product_name") or line_item.product_name
+        if _new_name and not line_item.product_image_url:
+            try:
+                img_result = self.product_image_service.search_product_image_sync(
+                    _new_name
+                )
+                if img_result:
+                    line_item.product_image_url = img_result.get("imageUrl")
+                    logger.info(
+                        f"Product image stored for line item {item_id}: "
+                        f"{(line_item.product_image_url or '')[:80]}"
+                    )
+            except Exception as img_exc:
+                logger.warning(
+                    f"Product image lookup failed for line item {item_id}: {img_exc}"
+                )
 
         # Recompute expiry dates using the receipt's purchase_date as anchor
         purchase_date = receipt.purchase_date

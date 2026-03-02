@@ -190,4 +190,23 @@ class ReceiptService {
       rethrow;
     }
   }
+
+  /// Upload a receipt image to S3, run OCR, and return extracted data.
+  ///
+  /// Does NOT create a receipt record in the database. The [s3ObjectKey]
+  /// returned in the map should be passed to [createReceipt] when the user
+  /// saves on the confirmation screen.
+  Future<Map<String, dynamic>> extractOcr(String filePath) async {
+    try {
+      logger.i('OCR extract: uploading $filePath');
+      final response = await _apiService.uploadFile(
+        '${ApiConstants.receipts}/ocr-extract',
+        filePath,
+      );
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      logger.e('Error during OCR extract: $e');
+      rethrow;
+    }
+  }
 }

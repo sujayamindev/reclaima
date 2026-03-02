@@ -10,13 +10,27 @@ import '../../widgets/step_progress_bar.dart';
 import 'receipt_confirmation_screen.dart';
 
 class ReviewReceiptScreen extends ConsumerStatefulWidget {
+  /// ID of an existing receipt to load from the provider.
+  /// Null for new receipts (both OCR and manual-entry paths).
   final String? receiptId;
   final bool isManualEntry;
 
+  /// OCR-extracted data returned by POST /receipts/ocr-extract.
+  /// When provided the screen pre-populates the form directly without
+  /// polling the receipt provider.
+  final Map<String, dynamic>? ocrData;
+
+  /// S3 key of the image uploaded during OCR extract.
+  /// Passed through to [ReceiptConfirmationScreen] so the final save can
+  /// attach the image to the new receipt record.
+  final String? stagingS3Key;
+
   const ReviewReceiptScreen({
     super.key,
-    required this.receiptId,
+    this.receiptId,
     required this.isManualEntry,
+    this.ocrData,
+    this.stagingS3Key,
   });
 
   @override
@@ -87,7 +101,10 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
   @override
   void initState() {
     super.initState();
-    if (!widget.isManualEntry && widget.receiptId != null) {
+    if (widget.ocrData != null) {
+      // OCR data already available — no polling required.
+      // _populateFromOcrData() is called inside build() guarded by _populated.
+    } else if (!widget.isManualEntry && widget.receiptId != null) {
       _startPolling();
     }
   }
@@ -145,6 +162,62 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
       _returnPeriodCtrl.text = '';
       _warrantyExpiryDate = null;
       _returnExpiryDate = null;
+    }
+  }
+
+  /// Pre-populate form fields from the OCR extract response map.
+  ///
+  /// Called once (guarded by [_populated]) from [build()] when [widget.ocrData]
+  /// is available.  Unlike [_populateFields], this path requires no DB record —
+  /// line items are created as display-only objects from the raw OCR JSON.
+  void _populateFromOcrData(Map<String, dynamic> data) {
+    if (_populated) return;
+    _populated = true;
+
+    _invoiceNumberCtrl.text = (data['invoiceNumber'] as String?) ?? '';
+    _storeNameCtrl.text = (data['storeName'] as String?) ?? '';
+    final pdStr = data['purchaseDate'] as String?;
+    if (pdStr != null) _purchaseDate = DateTime.tryParse(pdStr);
+    final rawAmount = data['totalAmount'];
+    _totalAmountCtrl.text =
+        rawAmount != null ? (rawAmount as num).toStringAsFixed(2) : '';
+    _currencyCtrl.text = (data['currency'] as String?) ?? 'USD';
+    _vendorAddressCtrl.text = (data['vendorAddress'] as String?) ?? '';
+    _vendorPhoneCtrl.text = (data['vendorPhone'] as String?) ?? '';
+    _vendorEmailCtrl.text = (data['vendorEmail'] as String?) ?? '';
+    _remarksCtrl.text = (data['remarks'] as String?) ?? '';
+    _warrantyNotesCtrl.text = (data['warrantyNotes'] as String?) ?? '';
+
+    // Build display-only line items (no DB IDs yet).
+    final rawItems = data['lineItems'] as List<dynamic>? ?? [];
+    _lineItems = rawItems
+        .map((e) => ReceiptLineItemModel.fromOcrExtract(
+              e as Map<String, dynamic>,
+            ))
+        .toList();
+
+    // Primary product info: prefer the first line item, fall back to
+    // receipt-level product hint (single-product receipts / mock data).
+    _primaryLineItemId = null; // no DB item yet — confirmation screen creates it
+    if (_lineItems.isNotEmpty) {
+      final first = _lineItems.first;
+      _productNameCtrl.text =
+          first.productName ?? first.itemDescription ?? '';
+      final ocrCategory = first.productCategory ?? '';
+      _selectedCategory =
+          _categories.contains(ocrCategory) ? ocrCategory : 'Electronics';
+      _warrantyPeriodCtrl.text =
+          first.warrantyPeriodMonths?.toString() ?? '';
+    } else {
+      _productNameCtrl.text =
+          (data['productName'] as String?) ?? '';
+      _warrantyPeriodCtrl.text =
+          data['warrantyPeriodMonths']?.toString() ?? '';
+    }
+
+    if (_purchaseDate != null) {
+      _autoComputeWarrantyExpiry();
+      _autoComputeReturnExpiry();
     }
   }
 
@@ -308,6 +381,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
           formData: receiptData,
           primaryLineItemId: _primaryLineItemId,
           lineItemData: lineItemData,
+          stagingS3Key: widget.stagingS3Key,
           warrantyExpiryDate: _warrantyPeriodCtrl.text.isNotEmpty
               ? _warrantyExpiryDate
               : null,
@@ -363,30 +437,43 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
 
             // ── Body ────────────────────────────────────────────────────────
             Expanded(
-              child: widget.receiptId == null
-                  ? _buildFormBody(isDark, textPrimary)
-                  : widget.isManualEntry
-                  ? _buildFormFromProvider(isDark, textPrimary, receiptAsync)
-                  : receiptAsync.when(
-                      loading: () => _buildRiverpodLoadingBody(textPrimary),
-                      error: (e, _) => _buildErrorBody(textPrimary),
-                      data: (receipt) {
-                        final isProcessing =
-                            receipt.status == ReceiptStatus.uploaded ||
-                            receipt.status == ReceiptStatus.processing;
+              child: widget.ocrData != null
+                  // ── New OCR path: data already in memory, no polling ────
+                  ? _buildBodyFromOcrData(isDark, textPrimary)
+                  : widget.receiptId == null
+                      // ── Manual entry: empty form ────────────────────────
+                      ? _buildFormBody(isDark, textPrimary)
+                      : widget.isManualEntry
+                          ? _buildFormFromProvider(
+                              isDark, textPrimary, receiptAsync)
+                          : receiptAsync.when(
+                              loading: () =>
+                                  _buildRiverpodLoadingBody(textPrimary),
+                              error: (e, _) => _buildErrorBody(textPrimary),
+                              data: (receipt) {
+                                final isProcessing =
+                                    receipt.status ==
+                                        ReceiptStatus.uploaded ||
+                                    receipt.status ==
+                                        ReceiptStatus.processing;
 
-                        if (!_forceShowForm && isProcessing && !_timedOut) {
-                          return _buildOcrLoadingBody(textPrimary);
-                        }
+                                if (!_forceShowForm &&
+                                    isProcessing &&
+                                    !_timedOut) {
+                                  return _buildOcrLoadingBody(textPrimary);
+                                }
 
-                        if (!_forceShowForm && _timedOut && isProcessing) {
-                          return _buildTimedOutBody(isDark, textPrimary);
-                        }
+                                if (!_forceShowForm &&
+                                    _timedOut &&
+                                    isProcessing) {
+                                  return _buildTimedOutBody(
+                                      isDark, textPrimary);
+                                }
 
-                        _populateFields(receipt);
-                        return _buildFormBody(isDark, textPrimary);
-                      },
-                    ),
+                                _populateFields(receipt);
+                                return _buildFormBody(isDark, textPrimary);
+                              },
+                            ),
             ),
           ],
         ),
@@ -407,6 +494,53 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
         _populateFields(receipt);
         return _buildFormBody(isDark, textPrimary);
       },
+    );
+  }
+
+  /// Build the review form using already-available OCR data.
+  ///
+  /// Pre-populates form controllers and immediately shows the form with an
+  /// optional OCR-failed banner when [widget.ocrData] is present.
+  Widget _buildBodyFromOcrData(bool isDark, Color textPrimary) {
+    // Safe to call in build — guarded by the _populated flag.
+    _populateFromOcrData(widget.ocrData!);
+    final ocrFailed =
+        (widget.ocrData!['ocrStatus'] as String?) == 'failed';
+    if (!ocrFailed) {
+      return _buildFormBody(isDark, textPrimary);
+    }
+    // Show a warning banner above the form when OCR couldn't read the image.
+    return Column(
+      children: [
+        Container(
+          width: double.infinity,
+          margin: const EdgeInsets.fromLTRB(24, 8, 24, 0),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: AppColors.error.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
+            border: Border.all(
+                color: AppColors.error.withValues(alpha: 0.3)),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.warning_amber_rounded,
+                  color: AppColors.error, size: 18),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Could not read receipt — please check the details below.',
+                  style: AppTextStyles.bodyXSmall.copyWith(
+                    color: AppColors.error,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(child: _buildFormBody(isDark, textPrimary)),
+      ],
     );
   }
 
