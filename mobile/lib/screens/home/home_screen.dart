@@ -6,6 +6,8 @@ import '../../data/models/product_view_model.dart';
 import '../../providers/product_provider.dart';
 import '../receipt/add_receipt_screen.dart';
 import '../receipt/product_detail_screen.dart';
+import '../settings/settings_screen.dart';
+import '../../widgets/floating_pill_bar.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -148,9 +150,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
       ),
       // ── Bottom nav pill ───────────────────────────────────────
-      bottomNavigationBar: _buildBottomNav(
-        navBarColor,
-        textSecondaryColor,
+      bottomNavigationBar: FloatingPillBar(
+        items: [
+          PillBarItem(
+            icon: Icons.home_rounded,
+            onTap: () => setState(() => _selectedIndex = 0),
+            isActive: _selectedIndex == 0,
+          ),
+          PillBarItem(
+            icon: Icons.receipt_long_outlined,
+            onTap: () => setState(() => _selectedIndex = 1),
+            isActive: _selectedIndex == 1,
+          ),
+          PillBarItem(
+            icon: Icons.shield_outlined,
+            onTap: () => setState(() => _selectedIndex = 2),
+            isActive: _selectedIndex == 2,
+          ),
+          PillBarItem(
+            icon: Icons.settings_outlined,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SettingsScreen()),
+              );
+            },
+            isActive: false,
+          ),
+        ],
       ),
     );
   }
@@ -281,45 +308,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  // ── Bottom nav pill ─────────────────────────────────────────
-  Widget _buildBottomNav(
-    Color navBarColor,
-    Color inactiveColor,
-  ) {
-    const items = [
-      (icon: Icons.home_rounded, label: 'Home'),
-      (icon: Icons.receipt_long_outlined, label: 'Receipts'),
-      (icon: Icons.shield_outlined, label: 'Warranty'),
-      (icon: Icons.settings_outlined, label: 'Settings'),
-    ];
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
-      child: Container(
-        height: AppDimensions.navBarHeight,
-        decoration: BoxDecoration(
-          color: navBarColor,
-          borderRadius: BorderRadius.circular(AppDimensions.radiusNavBar),
-        ),
-        child: Row(
-          children: List.generate(items.length, (index) {
-            final isActive = _selectedIndex == index;
-            return Expanded(
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () => setState(() => _selectedIndex = index),
-                child: Icon(
-                  items[index].icon,
-                  size: 24,
-                  color: isActive ? AppColors.primary : inactiveColor,
-                ),
-              ),
-            );
-          }),
-        ),
-      ),
-    );
-  }
 }
 
 // ── Attention subtitle (dynamic count) ────────────────────────────

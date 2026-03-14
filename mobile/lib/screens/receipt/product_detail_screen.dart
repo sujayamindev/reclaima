@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +9,7 @@ import '../../data/models/receipt_model.dart';
 import '../../data/models/receipt_line_item_model.dart';
 import '../../providers/receipt_provider.dart';
 import '../../core/utils/formatters.dart';
+import '../../widgets/floating_pill_bar.dart';
 
 /// Full-screen product detail view.
 ///
@@ -129,27 +132,70 @@ class ProductDetailScreen extends ConsumerWidget {
           padding: const EdgeInsets.fromLTRB(p, 4, p, 36),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
-              // ── Hero card ───────────────────────────────────────────
+              // ── Hero card ───────────────────────────────────────
               _buildHeroCard(product, isDark),
               const SizedBox(height: 12),
 
-              // ── Warranty & Return countdown ──────────────────────────
-              _buildWarrantySection(product, isDark),
+              // ── Warranty & Return countdown ──────────────────────
+              _buildWarrantySection(context, product, isDark),
               const SizedBox(height: 12),
 
-              // ── Purchase Details ─────────────────────────────────────
+              // ── Per-product Notification Settings ─────────────────
+              _NotificationSettings(
+                isDark: isDark,
+                hasWarranty: product.hasWarranty,
+                hasReturn: product.hasReturn,
+              ),
+              const SizedBox(height: 12),
+
+              // ── Purchase Details ─────────────────────────────────
               _buildPurchaseDetails(
                   context, product.receipt, imageUrlAsync, isDark),
               const SizedBox(height: 12),
 
-              // ── All line items table (multi-product context) ──────────
+              // ── Product Info (single-item only) ──────────────────
+              if (product.lineItem != null &&
+                  product.receipt.lineItems.length <= 1 &&
+                  _hasProductInfo(product.lineItem!)) ...[
+                _buildSection(
+                  isDark,
+                  'Product Info',
+                  Icons.info_outline,
+                  [
+                    if (product.lineItem!.quantity != null)
+                      _buildInfoRow(
+                          'Quantity', product.lineItem!.quantity!, isDark),
+                    if (product.lineItem!.unitPrice != null)
+                      _buildInfoRow(
+                        'Unit Price',
+                        CurrencyFormatter.format(
+                          product.lineItem!.unitPrice!,
+                          currency: product.currency ?? 'USD',
+                        ),
+                        isDark,
+                      ),
+                    if (product.lineItem!.amount != null)
+                      _buildInfoRow(
+                        'Amount',
+                        CurrencyFormatter.format(
+                          product.lineItem!.amount!,
+                          currency: product.currency ?? 'USD',
+                        ),
+                        isDark,
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+              ],
+
+              // ── All line items table (multi-product context) ──────
               if (product.receipt.lineItems.length > 1) ...[
                 _buildLineItemsSection(isDark, product.receipt.lineItems,
                     highlightId: lineItemId),
                 const SizedBox(height: 12),
               ],
 
-              // ── Vendor Contact ───────────────────────────────────────
+              // ── Vendor Contact ───────────────────────────────────
               if (_hasVendorContact(product.receipt)) ...[
                 _buildSection(
                   isDark,
@@ -173,7 +219,7 @@ class ProductDetailScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
               ],
 
-              // ── Warranty Terms ───────────────────────────────────────
+              // ── Warranty Terms ───────────────────────────────────
               if (product.receipt.warrantyNotes != null) ...[
                 _buildSection(
                   isDark,
@@ -192,7 +238,7 @@ class ProductDetailScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
               ],
 
-              // ── Additional Details ───────────────────────────────────
+              // ── Additional Details ───────────────────────────────
               if (product.receipt.remarks != null) ...[
                 _buildSection(
                   isDark,
@@ -211,7 +257,7 @@ class ProductDetailScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
               ],
 
-              // ── Notes ────────────────────────────────────────────────
+              // ── Notes ────────────────────────────────────────────
               if (product.receipt.notes != null) ...[
                 _buildSection(
                   isDark,
@@ -230,7 +276,7 @@ class ProductDetailScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
               ],
 
-              // ── Processing Status ────────────────────────────────────
+              // ── Processing Status ────────────────────────────────
               _buildSection(
                 isDark,
                 'Processing Status',
@@ -246,6 +292,18 @@ class ProductDetailScreen extends ConsumerWidget {
                       'Last Attempt',
                       DateFormatter.formatDateTime(
                           product.receipt.lastOcrAttemptAt!),
+                      isDark,
+                    ),
+                  _buildInfoRow(
+                    'Added',
+                    DateFormatter.formatDateTime(product.receipt.createdAt),
+                    isDark,
+                  ),
+                  if (product.receipt.syncedAt != null)
+                    _buildInfoRow(
+                      'Last Synced',
+                      DateFormatter.formatDateTime(
+                          product.receipt.syncedAt!),
                       isDark,
                     ),
                 ],
@@ -291,7 +349,7 @@ class ProductDetailScreen extends ConsumerWidget {
           ),
           if (product != null)
             PopupMenuButton<String>(
-              icon: Icon(Icons.more_vert,
+              icon: Icon(Icons.more_horiz,
                   color: AppColors.textPrimary(isDark), size: 22),
               padding: EdgeInsets.zero,
               color: AppColors.card(isDark),
@@ -381,84 +439,110 @@ class ProductDetailScreen extends ConsumerWidget {
         borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
         border: Border.all(color: AppColors.border(isDark)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
         children: [
-          // ── Product image (top) ─────────────────────────────────────
-          if (product.productImageUrl != null) ...[
-            ClipRRect(
-              borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
-              child: CachedNetworkImage(
-                imageUrl: product.productImageUrl!,
-                width: double.infinity,
-                height: 200,
-                fit: BoxFit.contain,
-                placeholder: (_, __) => Container(
-                  height: 200,
-                  color: AppColors.primary.withValues(alpha: 0.06),
-                  child: const Center(
-                    child: SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2.5, color: AppColors.primary),
-                    ),
-                  ),
-                ),
-                errorWidget: (_, __, ___) => const SizedBox.shrink(),
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
-
-          // ── Product name + amount ───────────────────────────────────
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text.rich(
-                TextSpan(
-                  children: [
-                    TextSpan(
-                      text: product.displayName,
-                      style: AppTextStyles.listTitle.copyWith(
-                        fontSize: 18,
-                        color: AppColors.textPrimary(isDark),
-                        height: 1.3,
-                      ),
-                    ),
-                    // Only show badge for non-completed / notable states
-                    if (product.receipt.status != ReceiptStatus.completed)
-                      WidgetSpan(
-                        alignment: PlaceholderAlignment.middle,
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 8),
-                          child: product.isPending
-                              ? const _StatusBadge(
-                                  color: AppColors.warning,
-                                  label: 'Processing',
-                                )
-                              : _StatusBadge(
-                                  color: statusColor,
-                                  label: _statusLabel(product.receipt),
-                                ),
+              // ── Product image (top) ─────────────────────────────────────
+              if (product.productImageUrl != null) ...[
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+                  child: CachedNetworkImage(
+                    imageUrl: product.productImageUrl!,
+                    width: double.infinity,
+                    height: 200,
+                    fit: BoxFit.contain,
+                    placeholder: (_, __) => Container(
+                      height: 200,
+                      color: AppColors.primary.withValues(alpha: 0.06),
+                      child: const Center(
+                        child: SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2.5, color: AppColors.primary),
                         ),
                       ),
-                  ],
-                ),
-              ),
-              if (product.productCategory != null) ...[
-                const SizedBox(height: 4),
-                Text(
-                  product.productCategory!,
-                  style: AppTextStyles.caption.copyWith(
-                    color: AppColors.textSecondary(isDark),
+                    ),
+                    errorWidget: (_, __, ___) => const SizedBox.shrink(),
                   ),
                 ),
+                const SizedBox(height: 16),
               ],
+
+              // ── Product name ───────────────────────────────────────────
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: product.displayName,
+                          style: AppTextStyles.listTitle.copyWith(
+                            fontSize: 16,
+                            color: AppColors.textPrimary(isDark),
+                            height: 1.3,
+                          ),
+                        ),
+                        // Only show badge for non-completed / notable states
+                        if (product.receipt.status != ReceiptStatus.completed)
+                          WidgetSpan(
+                            alignment: PlaceholderAlignment.middle,
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 8),
+                              child: product.isPending
+                                  ? const _StatusBadge(
+                                      color: AppColors.warning,
+                                      label: 'Processing',
+                                    )
+                                  : _StatusBadge(
+                                      color: statusColor,
+                                      label: _statusLabel(product.receipt),
+                                    ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  if (product.lineItem?.productCode != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      product.lineItem!.productCode!,
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.muted(isDark),
+                        fontFamily: 'monospace',
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ],
           ),
 
-
+          // ── Category badge (top-right) ─────────────────────────────────
+          if (product.productCategory != null)
+            Positioned(
+              top: 0,
+              right: 0,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.radiusPill),
+                ),
+                child: Text(
+                  product.productCategory!,
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -466,7 +550,7 @@ class ProductDetailScreen extends ConsumerWidget {
 
   // ── Warranty & Return section ─────────────────────────────────────────────
 
-  Widget _buildWarrantySection(ProductViewModel product, bool isDark) {
+  Widget _buildWarrantySection(BuildContext context, ProductViewModel product, bool isDark) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.paddingCard),
@@ -497,6 +581,9 @@ class ProductDetailScreen extends ConsumerWidget {
                     icon: Icons.shield_outlined,
                     expiryDate: product.warrantyExpiryDate,
                     daysRemaining: product.warrantyDaysRemaining,
+                    totalDays: product.warrantyPeriodMonths != null
+                        ? product.warrantyPeriodMonths! * 30
+                        : null,
                     isExpired: product.isWarrantyExpired,
                     noInfoText: 'Not set',
                     isDark: isDark,
@@ -509,6 +596,7 @@ class ProductDetailScreen extends ConsumerWidget {
                     icon: Icons.assignment_return_outlined,
                     expiryDate: product.returnExpiryDate,
                     daysRemaining: product.returnDaysRemaining,
+                    totalDays: product.returnPeriodDays,
                     isExpired: product.isReturnExpired,
                     noInfoText: 'Not set',
                     isDark: isDark,
@@ -520,30 +608,48 @@ class ProductDetailScreen extends ConsumerWidget {
           if (!product.isPending &&
               (product.warrantyPeriodMonths != null ||
                   product.returnPeriodDays != null)) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 18),
             Divider(color: AppColors.border(isDark), height: 1),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                if (product.warrantyPeriodMonths != null)
-                  Expanded(
-                    child: _buildInfoRow(
-                      'Warranty period',
-                      '${product.warrantyPeriodMonths} months',
-                      isDark,
-                    ),
-                  ),
-                if (product.returnPeriodDays != null)
-                  Expanded(
-                    child: _buildInfoRow(
-                      'Return window',
-                      '${product.returnPeriodDays} days',
-                      isDark,
-                    ),
-                  ),
-              ],
-            ),
+            const SizedBox(height: 6),
+            if (product.warrantyPeriodMonths != null)
+              _buildPeriodRow(
+                'Warranty period',
+                '${product.warrantyPeriodMonths} months',
+                isDark,
+              ),
+            if (product.returnPeriodDays != null)
+              _buildPeriodRow(
+                'Return window',
+                '${product.returnPeriodDays} days',
+                isDark,
+              ),
           ],
+          // ── Generate PDF button ───────────────────────────────────
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            height: AppDimensions.buttonHeight,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('PDF generation coming soon'),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.onPrimary,
+                shape: RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.radiusPill),
+                ),
+              ),
+              icon: const Icon(Icons.picture_as_pdf_outlined, size: 20),
+              label: const Text('Generate Claim PDF'),
+            ),
+          ),
         ],
       ),
     );
@@ -604,7 +710,7 @@ class ProductDetailScreen extends ConsumerWidget {
     );
   }
 
-  // ── Purchase Details card ─────────────────────────────────────────────────
+  // ── Details card ─────────────────────────────────────────────────
 
   Widget _buildPurchaseDetails(
     BuildContext context,
@@ -626,17 +732,8 @@ class ProductDetailScreen extends ConsumerWidget {
           // Header row: icon + "Purchase Details"
           Row(
             children: [
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.12),
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.radiusIconContainer),
-                ),
-                child: const Icon(Icons.store_outlined,
-                    size: 16, color: AppColors.primary),
-              ),
+              const Icon(Icons.store_outlined,
+                  size: 20, color: AppColors.primary),
               const SizedBox(width: 10),
               Text(
                 'Purchase Details',
@@ -1001,6 +1098,32 @@ class ProductDetailScreen extends ConsumerWidget {
     );
   }
 
+  // ── Period row (label left, value right) ──────────────────────────────────
+
+  Widget _buildPeriodRow(String label, String value, bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: AppTextStyles.bodyXSmall.copyWith(
+              fontWeight: FontWeight.w500,
+              color: AppColors.textSecondary(isDark),
+            ),
+          ),
+          Text(
+            value,
+            style: AppTextStyles.bodyXSmall.copyWith(
+              color: AppColors.textPrimary(isDark),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // ── Info row ──────────────────────────────────────────────────────────────
 
   Widget _buildInfoRow(String label, String value, bool isDark,
@@ -1040,6 +1163,12 @@ class ProductDetailScreen extends ConsumerWidget {
       receipt.vendorPhone != null ||
       receipt.vendorEmail != null ||
       receipt.vendorUrl != null;
+
+  bool _hasProductInfo(ReceiptLineItemModel item) =>
+      item.productCode != null ||
+      item.quantity != null ||
+      item.unitPrice != null ||
+      item.amount != null;
 
   Color _statusColor(ReceiptModel receipt, bool isDark) {
     switch (receipt.status) {
@@ -1116,16 +1245,7 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.12),
-            borderRadius:
-                BorderRadius.circular(AppDimensions.radiusIconContainer),
-          ),
-          child: Icon(icon, size: 16, color: AppColors.primary),
-        ),
+        Icon(icon, size: 20, color: AppColors.primary),
         const SizedBox(width: 10),
         Text(
           title,
@@ -1189,13 +1309,15 @@ class _StatusBadge extends StatelessWidget {
 
 
 
-/// Side-by-side countdown tile showing days remaining until expiry.
+/// Side-by-side countdown tile showing days remaining until expiry
+/// with a circular progress ring.
 class _CountdownTile extends StatelessWidget {
   const _CountdownTile({
     required this.label,
     required this.icon,
     required this.expiryDate,
     required this.daysRemaining,
+    required this.totalDays,
     required this.isExpired,
     required this.noInfoText,
     required this.isDark,
@@ -1205,6 +1327,7 @@ class _CountdownTile extends StatelessWidget {
   final IconData icon;
   final DateTime? expiryDate;
   final int? daysRemaining;
+  final int? totalDays;
   final bool isExpired;
   final String noInfoText;
   final bool isDark;
@@ -1216,20 +1339,28 @@ class _CountdownTile extends StatelessWidget {
     return AppColors.success;
   }
 
+  double get _progress {
+    if (expiryDate == null || totalDays == null || totalDays! <= 0) return 0.0;
+    if (isExpired) return 0.0;
+    final remaining = (daysRemaining ?? 0).clamp(0, totalDays!);
+    return remaining / totalDays!;
+  }
+
   @override
   Widget build(BuildContext context) {
     final accent = _accent;
+    final progress = _progress;
 
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: accent.withValues(alpha: 0.08),
+        color: accent.withValues(alpha: 0),
         borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
-        border: Border.all(color: accent.withValues(alpha: 0.25)),
+        border: Border.all(color: accent.withValues(alpha: 0.15)),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Label row
           Row(
             children: [
               Icon(icon, size: 13, color: accent),
@@ -1241,28 +1372,83 @@ class _CountdownTile extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          if (expiryDate == null)
-            Text(
-              noInfoText,
-              style: AppTextStyles.caption
-                  .copyWith(color: AppColors.muted(isDark), height: 1.4),
-            )
-          else ...[
-            Text(
-              isExpired ? 'Expired' : '${daysRemaining ?? 0}',
-              style: AppTextStyles.headingSmall.copyWith(
-                fontSize: 28,
-                color: accent,
-                height: 1.0,
+          const SizedBox(height: 12),
+
+          // Circular progress ring with centered text
+          if (expiryDate == null) ...[
+            SizedBox(
+              width: 80,
+              height: 80,
+              child: CustomPaint(
+                painter: _CircularCountdownPainter(
+                  progress: 0,
+                  accentColor: AppColors.muted(isDark),
+                  trackColor: AppColors.muted(isDark).withValues(alpha: 0.15),
+                  strokeWidth: 6,
+                ),
+                child: Center(
+                  child: Text(
+                    noInfoText,
+                    style: AppTextStyles.caption.copyWith(
+                      color: AppColors.muted(isDark),
+                    ),
+                  ),
+                ),
               ),
             ),
-            if (!isExpired)
-              Text(
-                'days left',
-                style: AppTextStyles.caption.copyWith(color: accent),
+            const SizedBox(height: 8),
+            // Invisible spacer matching the date text height below
+            Text(
+              ' ',
+              style: AppTextStyles.caption,
+            ),
+          ]
+          else ...[
+            SizedBox(
+              width: 80,
+              height: 80,
+              child: CustomPaint(
+                painter: _CircularCountdownPainter(
+                  progress: progress,
+                  accentColor: accent,
+                  trackColor: accent.withValues(alpha: 0.15),
+                  strokeWidth: 6,
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        isExpired ? '!' : '${daysRemaining ?? 0}',
+                        style: AppTextStyles.headingSmall.copyWith(
+                          fontSize: isExpired ? 24 : 22,
+                          color: accent,
+                          height: 1.0,
+                        ),
+                      ),
+                      if (!isExpired)
+                        Text(
+                          'days',
+                          style: AppTextStyles.caption.copyWith(
+                            color: accent,
+                            fontSize: 10,
+                          ),
+                        ),
+                      if (isExpired)
+                        Text(
+                          'Expired',
+                          style: AppTextStyles.caption.copyWith(
+                            color: accent,
+                            fontSize: 9,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
               ),
-            const SizedBox(height: 6),
+            ),
+            const SizedBox(height: 8),
             Text(
               DateFormatter.formatDate(expiryDate!),
               style: AppTextStyles.caption
@@ -1271,6 +1457,290 @@ class _CountdownTile extends StatelessWidget {
           ],
         ],
       ),
+    );
+  }
+}
+
+/// Paints a circular progress arc for the countdown tiles.
+class _CircularCountdownPainter extends CustomPainter {
+  _CircularCountdownPainter({
+    required this.progress,
+    required this.accentColor,
+    required this.trackColor,
+    this.strokeWidth = 6,
+  });
+
+  final double progress;
+  final Color accentColor;
+  final Color trackColor;
+  final double strokeWidth;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = (min(size.width, size.height) - strokeWidth) / 2;
+
+    // Track (background circle)
+    final trackPaint = Paint()
+      ..color = trackColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+    canvas.drawCircle(center, radius, trackPaint);
+
+    // Progress arc
+    if (progress > 0) {
+      final arcPaint = Paint()
+        ..color = accentColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth
+        ..strokeCap = StrokeCap.round;
+      const startAngle = -pi / 2; // 12 o'clock
+      final sweepAngle = 2 * pi * progress;
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        startAngle,
+        sweepAngle,
+        false,
+        arcPaint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_CircularCountdownPainter oldDelegate) =>
+      oldDelegate.progress != progress ||
+      oldDelegate.accentColor != accentColor;
+}
+
+/// Per-product notification preferences card.
+///
+/// Local state only — backend persistence will be added later.
+class _NotificationSettings extends StatefulWidget {
+  const _NotificationSettings({
+    required this.isDark,
+    required this.hasWarranty,
+    required this.hasReturn,
+  });
+
+  final bool isDark;
+  final bool hasWarranty;
+  final bool hasReturn;
+
+  @override
+  State<_NotificationSettings> createState() => _NotificationSettingsState();
+}
+
+class _NotificationSettingsState extends State<_NotificationSettings> {
+  bool _warrantyReminder = true;
+  bool _returnReminder = true;
+  int _warrantyLeadDays = 30;
+  int _returnLeadDays = 3;
+
+  static const _warrantyOptions = [7, 14, 30, 60, 90];
+  static const _returnOptions = [1, 2, 3, 5, 7];
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = widget.isDark;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppDimensions.paddingCard),
+      decoration: BoxDecoration(
+        color: AppColors.card(isDark),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+        border: Border.all(color: AppColors.border(isDark)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            children: [
+              Icon(Icons.notifications_outlined,
+                  size: 20, color: AppColors.primary),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Notifications',
+                  style: AppTextStyles.sectionTitle
+                      .copyWith(color: AppColors.textPrimary(isDark)),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+
+          // Warranty reminder
+          if (widget.hasWarranty) ...[
+            _toggleRow(
+              isDark,
+              icon: Icons.shield_outlined,
+              title: 'Warranty Reminder',
+              subtitle: _warrantyReminder
+                  ? '$_warrantyLeadDays days before expiry'
+                  : 'Off',
+              value: _warrantyReminder,
+              onChanged: (v) => setState(() => _warrantyReminder = v),
+            ),
+            // Lead-time selector
+            AnimatedSize(
+              duration: const Duration(milliseconds: 200),
+              child: _warrantyReminder
+                  ? Padding(
+                      padding: const EdgeInsets.only(left: 30, top: 4, bottom: 6),
+                      child: _leadTimeSelector(
+                        isDark,
+                        options: _warrantyOptions,
+                        selected: _warrantyLeadDays,
+                        onChanged: (v) =>
+                            setState(() => _warrantyLeadDays = v),
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+            ),
+          ],
+
+          if (widget.hasWarranty && widget.hasReturn)
+            Divider(
+                color: AppColors.border(isDark), height: 1, indent: 30),
+
+          // Return reminder
+          if (widget.hasReturn) ...[
+            _toggleRow(
+              isDark,
+              icon: Icons.assignment_return_outlined,
+              title: 'Return Reminder',
+              subtitle: _returnReminder
+                  ? '$_returnLeadDays days before deadline'
+                  : 'Off',
+              value: _returnReminder,
+              onChanged: (v) => setState(() => _returnReminder = v),
+            ),
+            AnimatedSize(
+              duration: const Duration(milliseconds: 200),
+              child: _returnReminder
+                  ? Padding(
+                      padding: const EdgeInsets.only(left: 30, top: 4, bottom: 6),
+                      child: _leadTimeSelector(
+                        isDark,
+                        options: _returnOptions,
+                        selected: _returnLeadDays,
+                        onChanged: (v) =>
+                            setState(() => _returnLeadDays = v),
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+            ),
+          ],
+
+          // Fallback when no warranty or return
+          if (!widget.hasWarranty && !widget.hasReturn)
+            Text(
+              'No warranty or return info to set reminders for.',
+              style: AppTextStyles.bodyXSmall.copyWith(
+                color: AppColors.muted(isDark),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // ── Toggle row ────────────────────────────────────────────────
+
+  Widget _toggleRow(
+    bool isDark, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: AppColors.textSecondary(isDark)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textPrimary(isDark),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: AppTextStyles.caption
+                      .copyWith(color: AppColors.textSecondary(isDark)),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(
+            height: 26,
+            child: Switch.adaptive(
+              value: value,
+              onChanged: onChanged,
+              activeColor: AppColors.primary,
+              activeTrackColor: AppColors.primary.withValues(alpha: 0.3),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Lead time chip selector ─────────────────────────────────────
+
+  Widget _leadTimeSelector(
+    bool isDark, {
+    required List<int> options,
+    required int selected,
+    required ValueChanged<int> onChanged,
+  }) {
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      children: options.map((days) {
+        final isSelected = days == selected;
+        return GestureDetector(
+          onTap: () => onChanged(days),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? AppColors.primary.withValues(alpha: 0.15)
+                  : Colors.transparent,
+              borderRadius:
+                  BorderRadius.circular(AppDimensions.radiusPill),
+              border: Border.all(
+                color: isSelected
+                    ? AppColors.primary
+                    : AppColors.border(isDark),
+              ),
+            ),
+            child: Text(
+              '$days days',
+              style: AppTextStyles.caption.copyWith(
+                color: isSelected
+                    ? AppColors.primary
+                    : AppColors.textSecondary(isDark),
+                fontWeight:
+                    isSelected ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 }
