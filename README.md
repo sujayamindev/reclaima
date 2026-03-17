@@ -6,11 +6,13 @@
 
 Smart Receipt & Warranty Manager is a full-stack mobile application that:
 - ✅ Digitizes paper and PDF receipts using OCR (AWS Textract)
-- ✅ Extracts structured purchase information
-- ✅ Tracks warranty and return deadlines
-- ✅ Sends proactive reminders via push notifications
-- ✅ Generates claim-ready PDF documents
-- ✅ Provides offline-first mobile experience
+- ✅ Extracts structured purchase information (per-line-item)
+- ✅ Tracks warranty and return deadlines at the per-item level
+- ✅ Product image lookup via Brave Search Image API
+- ✅ LLM-based OCR cleanup via AWS Bedrock (Claude Haiku)
+- ⏳ Push notification reminders (FCM — planned)
+- ⏳ Claim-ready PDF document generation (planned)
+- ✅ Offline-first mobile architecture (Drift/SQLite)
 
 ---
 
@@ -37,25 +39,27 @@ FastAPI Backend (Dockerized)
 ### Backend
 - **Framework:** FastAPI (Python 3.11+)
 - **Database:** PostgreSQL + SQLAlchemy ORM
-- **Migrations:** Alembic
+- **Migrations:** Alembic (5 migrations)
 - **Authentication:** Firebase Admin SDK (JWT verification)
-- **Background Jobs:** APScheduler
+- **LLM:** AWS Bedrock (Claude Haiku) — OCR text cleanup
+- **Background Jobs:** APScheduler (planned)
 - **Container:** Docker + Docker Compose
 
 ### Mobile
 - **Framework:** Flutter
 - **State Management:** Riverpod
-- **Local Database:** Drift (offline-first)
+- **Local Database:** Drift/SQLite (offline-first)
 - **Authentication:** Firebase Auth SDK
-- **Notifications:** Firebase Cloud Messaging (FCM)
-- **Image Compression:** flutter_image_compress
+- **Notifications:** Firebase Cloud Messaging (planned)
+- **Image Search:** Brave Search Image API (via backend)
 - **HTTP Client:** Dio
 
 ### Cloud Services
 - **Authentication:** Firebase Authentication
-- **OCR:** AWS Textract
-- **Storage:** AWS S3
-- **Notifications:** Firebase Cloud Messaging
+- **OCR:** AWS Textract (mock + real)
+- **Storage:** AWS S3 (mock + real)
+- **LLM:** AWS Bedrock — Claude Haiku (mock + real)
+- **Notifications:** Firebase Cloud Messaging (planned)
 
 ---
 
@@ -72,15 +76,23 @@ smart-receipt-and-warranty-manager/
 │   │   │   ├── user.py
 │   │   │   ├── receipt.py
 │   │   │   ├── receipt_line_item.py
-│   │   │   └── claim_document.py
+│   │   │   ├── claim_document.py
+│   │   │   └── notification_preference.py
 │   │   ├── schemas/         # Pydantic schemas (__init__.py)
 │   │   ├── services/        # Business logic layer
+│   │   │   ├── s3_service.py
+│   │   │   ├── textract_service.py
+│   │   │   ├── llm_service.py        # Bedrock/Claude Haiku
+│   │   │   ├── product_image_service.py  # Brave Search
+│   │   │   ├── receipt_service.py
+│   │   │   └── user_service.py
 │   │   └── api/v1/          # Versioned API routes
 │   │       ├── auth.py
 │   │       ├── receipts.py
 │   │       ├── warranties.py
+│   │       ├── products.py
 │   │       └── health.py
-│   ├── alembic/             # Database migrations
+│   ├── alembic/             # Database migrations (5 applied)
 │   ├── tests/               # Pytest tests
 │   ├── requirements.txt
 │   └── Dockerfile
@@ -90,15 +102,17 @@ smart-receipt-and-warranty-manager/
 │   │   ├── main.dart
 │   │   ├── core/            # Constants, theme, utils
 │   │   ├── data/
-│   │   │   ├── models/      # Dart data models
+│   │   │   ├── models/      # Dart data models (+ .g.dart)
 │   │   │   └── database/    # Drift local database
 │   │   ├── providers/       # Riverpod providers
 │   │   ├── services/        # API & auth services
-│   │   ├── screens/         # UI screens
-│   │   │   ├── auth/        # Login screen
-│   │   │   ├── home/        # Receipt list
-│   │   │   └── receipt/     # Add / Review / Confirm / Detail
-│   │   └── widgets/         # Reusable widgets
+│   │   ├── screens/
+│   │   │   ├── main_shell.dart   # Bottom nav (4 tabs)
+│   │   │   ├── auth/             # login_screen, signup_screen
+│   │   │   ├── home/             # home_screen (redesigned)
+│   │   │   ├── receipt/          # add / review / confirmation / product_detail
+│   │   │   └── settings/         # settings_screen
+│   │   └── widgets/         # step_progress_bar, product_image_card
 │   ├── test/
 │   └── pubspec.yaml
 │
@@ -322,18 +336,27 @@ Once the backend is running, visit:
 | Feature | Status |
 |---------|--------|
 | Backend API Structure | ✅ Complete |
-| Database Models | ✅ Complete |
-| Authentication | ✅ Complete |
-| Receipt Upload & OCR (Mock) | ✅ Complete |
+| Database Models + 5 Migrations | ✅ Complete |
+| Authentication (Email/Password) | ✅ Complete |
+| Receipt Upload & OCR (Mock + Real) | ✅ Complete |
 | Extended OCR Fields (vendor, line items) | ✅ Complete |
-| Warranty & Return Tracking | ✅ Complete |
-| Flutter App (Core) | ✅ Complete |
-| Flutter Multi-Step Add Flow | ✅ Complete |
-| OCR Polling & Review Screen | ✅ Complete |
-| Reminder System (APScheduler) | ⏳ Pending |
-| Push Notifications (FCM) | ⏳ Pending |
-| Real AWS Integration | ⏳ Pending |
-| PDF Generation | ⏳ Pending |
+| Per-Line-Item Warranty & Return Tracking | ✅ Complete |
+| LLM OCR Cleanup (Bedrock/Claude Haiku) | ✅ Complete |
+| Product Image Search (Brave Search) | ✅ Complete |
+| Flutter Bottom Nav Shell | ✅ Complete |
+| Flutter Auth Screens (Email/Password) | ✅ Complete |
+| Flutter Multi-Step Add Receipt Flow | ✅ Complete |
+| Flutter Home Screen (Redesigned) | ✅ Complete |
+| Flutter Product Detail Screen | ✅ Complete |
+| Flutter Settings Screen (UI) | ✅ UI only (no persistence) |
+| Social Login (Google/Apple) | ⏳ Buttons present, not wired |
+| Vault Tab | ⏳ Stub |
+| Stats Tab | ⏳ Stub |
+| Settings Persistence | ⏳ Planned |
+| Reminder System (APScheduler) | ⏳ Planned |
+| Push Notifications (FCM) | ⏳ Planned |
+| PDF Generation | ⏳ Planned |
+| Real AWS Integration | ⏳ Planned |
 
 ---
 
@@ -341,7 +364,7 @@ Once the backend is running, visit:
 
 ### Phase 1: Core Backend ✅
 - [x] Project structure setup
-- [x] Database models and migrations
+- [x] Database models and migrations (5 applied)
 - [x] Authentication with Firebase
 - [x] Receipt CRUD operations
 - [x] Mock AWS services (S3 + Textract)
@@ -350,17 +373,29 @@ Once the backend is running, visit:
 - [x] Extended OCR field extraction (invoice no., vendor details, line items)
 - [x] S3 file upload
 - [x] OCR result parsing and structured field storage
-- [x] Warranty/return date calculation
+- [x] Per-line-item warranty/return date calculation
+- [x] LLM-based OCR cleanup (Bedrock/Claude Haiku)
+- [x] Product image lookup (Brave Search Image API)
+- [x] `POST /receipts/ocr-extract` — stateless OCR extract endpoint
+- [x] `GET /receipts/{id}/image-url` — pre-signed S3 URL endpoint
 
 ### Phase 3: Mobile App ✅
 - [x] Flutter project initialization
-- [x] Offline-first architecture (Drift)
-- [x] Receipt list & detail screens
+- [x] Offline-first architecture (Drift/SQLite)
+- [x] Bottom nav shell with 4 tabs (`main_shell.dart`)
+- [x] Redesigned home screen (attention required, stats, recent receipts)
+- [x] Product detail screen
+- [x] Settings screen (UI only)
 - [x] Multi-step add receipt flow (upload → review → confirm)
 - [x] OCR result polling & review/edit form
 - [x] Image capture & compression
+- [x] `ProductViewModel` + `ProductImageCard` widget
 
-### Phase 4: Reminders & Notifications
+### Phase 4: Vault, Stats & Notifications
+- [ ] Vault tab — full receipt list with search/filter
+- [ ] Stats tab — spend charts, warranty calendar
+- [ ] Settings persistence — wire to backend
+- [ ] Social login (Google/Apple Sign-In)
 - [ ] APScheduler background jobs
 - [ ] Firebase Cloud Messaging integration
 - [ ] Warranty expiry reminders
@@ -368,6 +403,7 @@ Once the backend is running, visit:
 
 ### Phase 5: Production
 - [ ] Real AWS Textract & S3 integration
+- [ ] Claim PDF generation
 - [ ] Comprehensive testing (coverage ≥ 70%)
 - [ ] Error tracking (Sentry)
 - [ ] Monitoring & logging
@@ -400,5 +436,5 @@ For questions or issues, please contact the development team.
 
 ---
 
-**Last Updated:** 2026-02-23  
-**Status:** ✅ Backend + Flutter Core Complete — Next: Notifications & Real AWS Integration
+**Last Updated:** 2026-03-17
+**Status:** ✅ Home screen, product detail, and settings UI complete — Next: Vault tab, Stats tab, Social Login, Settings persistence
