@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/app_constants.dart';
 import '../../providers/auth_provider.dart';
@@ -87,7 +88,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 alignment: Alignment.centerLeft,
                 child: IconButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  icon: Icon(Icons.arrow_back, color: textPrimaryColor),
+                  icon: Icon(Symbols.arrow_back, color: textPrimaryColor),
                   padding: const EdgeInsets.all(8),
                   style: IconButton.styleFrom(
                     backgroundColor: Colors.transparent,
@@ -132,7 +133,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       _buildInputField(
                         label: 'Full Name',
                         controller: _nameController,
-                        icon: Icons.person_outline,
+                        icon: Symbols.person,
                         placeholder: 'Enter your full name',
                         cardColor: cardColor,
                         borderColor: borderColor,
@@ -151,7 +152,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       _buildInputField(
                         label: 'Email Address',
                         controller: _emailController,
-                        icon: Icons.mail_outline,
+                        icon: Symbols.mail,
                         placeholder: 'name@example.com',
                         keyboardType: TextInputType.emailAddress,
                         cardColor: cardColor,
@@ -174,7 +175,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       _buildInputField(
                         label: 'Password',
                         controller: _passwordController,
-                        icon: Icons.lock_outline,
+                        icon: Symbols.lock,
                         placeholder: 'Create a password',
                         obscureText: _obscurePassword,
                         cardColor: cardColor,
@@ -183,7 +184,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                         textColor: textPrimaryColor,
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                            _obscurePassword ? Symbols.visibility : Symbols.visibility_off,
                             color: textSecondaryColor,
                           ),
                           onPressed: () {
@@ -206,7 +207,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       _buildInputField(
                         label: 'Confirm Password',
                         controller: _confirmPasswordController,
-                        icon: Icons.lock_reset,
+                        icon: Symbols.lock_reset,
                         placeholder: 'Repeat your password',
                         obscureText: _obscureConfirmPassword,
                         cardColor: cardColor,
@@ -215,7 +216,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                         textColor: textPrimaryColor,
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _obscureConfirmPassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                            _obscureConfirmPassword ? Symbols.visibility : Symbols.visibility_off,
                             color: textSecondaryColor,
                           ),
                           onPressed: () {

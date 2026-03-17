@@ -63,7 +63,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(
-                    Icons.camera_alt,
+                    Symbols.camera_alt,
                     color: AppColors.primary,
                     size: 20,
                   ),
@@ -90,7 +90,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(
-                    Icons.photo_library,
+                    Symbols.photo_library,
                     color: AppColors.primary,
                     size: 20,
                   ),
@@ -184,7 +184,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                 children: [
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: Icon(Icons.arrow_back, color: textPrimary),
+                    icon: Icon(Symbols.arrow_back, color: textPrimary),
                     padding: const EdgeInsets.all(8),
                     style: IconButton.styleFrom(
                       backgroundColor: Colors.transparent,
@@ -374,7 +374,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                                         ),
                                       ),
                                       child: const Icon(
-                                        Icons.close,
+                                        Symbols.close,
                                         color: Colors.white,
                                         size: 12,
                                       ),
@@ -433,7 +433,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                   ),
                   const SizedBox(width: 4),
                   Icon(
-                    Icons.arrow_forward,
+                    Symbols.arrow_forward,
                     size: 14,
                     color: AppColors.muted(isDark),
                   ),

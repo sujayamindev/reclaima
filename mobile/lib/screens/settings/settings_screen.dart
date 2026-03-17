@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_constants.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 /// Settings screen with notification preferences, data/privacy options,
 /// and app information. Non-functional toggles and actions show visual
@@ -47,7 +48,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   children: [
                     IconButton(
                       onPressed: () => Navigator.pop(context),
-                      icon: Icon(Icons.arrow_back,
+                      icon: Icon(Symbols.arrow_back,
                           color: AppColors.textPrimary(isDark)),
                       padding: const EdgeInsets.all(8),
                       style: IconButton.styleFrom(
@@ -80,11 +81,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _buildSectionCard(
                     isDark,
                     'Notifications',
-                    Icons.notifications_outlined,
+                    Symbols.notifications,
                     [
                       _buildToggleRow(
                         isDark,
-                        icon: Icons.notifications_active_outlined,
+                        icon: Symbols.notifications_active,
                         title: 'Enable Notifications',
                         subtitle: _notificationsEnabled
                             ? 'You will receive alerts'
@@ -108,11 +109,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           _buildSectionCard(
                             isDark,
                             'Reminder Types',
-                            Icons.tune_outlined,
+                            Symbols.tune,
                             [
                               _buildToggleRow(
                                 isDark,
-                                icon: Icons.shield_outlined,
+                                icon: Symbols.shield,
                                 title: 'Warranty Reminders',
                                 subtitle:
                                     '$_warrantyLeadDays days before expiry',
@@ -126,7 +127,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   indent: 40),
                               _buildToggleRow(
                                 isDark,
-                                icon: Icons.assignment_return_outlined,
+                                icon: Symbols.assignment_return,
                                 title: 'Return Reminders',
                                 subtitle:
                                     '$_returnLeadDays days before deadline',
@@ -140,7 +141,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   indent: 40),
                               _buildToggleRow(
                                 isDark,
-                                icon: Icons.sync_outlined,
+                                icon: Symbols.sync,
                                 title: 'Processing Alerts',
                                 subtitle: 'OCR complete or failed',
                                 value: _processingAlerts,
@@ -155,11 +156,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           _buildSectionCard(
                             isDark,
                             'Reminder Timing',
-                            Icons.schedule_outlined,
+                            Symbols.schedule,
                             [
                               _buildDropdownRow(
                                 isDark,
-                                icon: Icons.shield_outlined,
+                                icon: Symbols.shield,
                                 title: 'Warranty Lead Time',
                                 options: _warrantyLeadOptions,
                                 selectedValue: _warrantyLeadDays,
@@ -174,7 +175,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   indent: 40),
                               _buildDropdownRow(
                                 isDark,
-                                icon: Icons.assignment_return_outlined,
+                                icon: Symbols.assignment_return,
                                 title: 'Return Lead Time',
                                 options: _returnLeadOptions,
                                 selectedValue: _returnLeadDays,
@@ -191,11 +192,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           _buildSectionCard(
                             isDark,
                             'Quiet Hours',
-                            Icons.do_not_disturb_on_outlined,
+                            Symbols.do_not_disturb_on,
                             [
                               _buildToggleRow(
                                 isDark,
-                                icon: Icons.bedtime_outlined,
+                                icon: Symbols.bedtime,
                                 title: 'Enable Quiet Hours',
                                 subtitle: _quietHoursEnabled
                                     ? '${_quietStart.format(context)} – ${_quietEnd.format(context)}'
@@ -211,7 +212,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                     indent: 40),
                                 _buildTimePickerRow(
                                   isDark,
-                                  icon: Icons.nightlight_outlined,
+                                  icon: Symbols.nightlight,
                                   title: 'From',
                                   time: _quietStart,
                                   onTap: () async {
@@ -230,7 +231,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                     indent: 40),
                                 _buildTimePickerRow(
                                   isDark,
-                                  icon: Icons.wb_sunny_outlined,
+                                  icon: Symbols.wb_sunny,
                                   title: 'Until',
                                   time: _quietEnd,
                                   onTap: () async {
@@ -256,11 +257,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _buildSectionCard(
                     isDark,
                     'Data & Privacy',
-                    Icons.lock_outline,
+                    Symbols.lock,
                     [
                       _buildTapRow(
                         isDark,
-                        icon: Icons.download_outlined,
+                        icon: Symbols.download,
                         title: 'Export Data',
                         subtitle: 'Download all receipts and warranties',
                         onTap: () => _showComingSoon(context),
@@ -271,7 +272,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           indent: 40),
                       _buildTapRow(
                         isDark,
-                        icon: Icons.delete_forever_outlined,
+                        icon: Symbols.delete_forever,
                         title: 'Delete Account',
                         subtitle: 'Permanently remove all data',
                         onTap: () => _showComingSoon(context),
@@ -285,7 +286,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _buildSectionCard(
                     isDark,
                     'About',
-                    Icons.info_outline,
+                    Symbols.info,
                     [
                       _buildInfoRow(isDark, 'App Version',
                           AppConstants.appVersion),
@@ -437,7 +438,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   value: selectedValue,
                   underline: const SizedBox.shrink(),
                   isDense: true,
-                  icon: Icon(Icons.arrow_drop_down,
+                  icon: Icon(Symbols.arrow_drop_down,
                       size: 18, color: AppColors.primary),
                   style: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.primary,
@@ -565,7 +566,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ],
                 ),
               ),
-              Icon(Icons.chevron_right,
+              Icon(Symbols.chevron_right,
                   size: 18, color: AppColors.muted(isDark)),
             ],
           ),
@@ -581,7 +582,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         children: [
-          Icon(Icons.circle, size: 6, color: AppColors.muted(isDark)),
+          Icon(Symbols.circle, size: 6, color: AppColors.muted(isDark)),
           const SizedBox(width: 12),
           Expanded(
             child: Text(

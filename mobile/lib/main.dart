@@ -5,7 +5,7 @@ import 'core/constants/app_theme.dart';
 import 'core/utils/logger.dart';
 import 'providers/auth_provider.dart';
 import 'screens/auth/login_screen.dart';
-import 'screens/home/home_screen.dart';
+import 'screens/main_shell.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,7 +39,7 @@ class MyApp extends ConsumerWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
       home: authState.when(
-        data: (user) => user != null ? const HomeScreen() : const LoginScreen(),
+        data: (user) => user != null ? const MainShell() : const LoginScreen(),
         loading: () => const Scaffold(
           body: Center(
             child: CircularProgressIndicator(),

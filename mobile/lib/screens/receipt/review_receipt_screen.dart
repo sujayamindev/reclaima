@@ -8,6 +8,7 @@ import '../../data/models/receipt_line_item_model.dart';
 import '../../providers/receipt_provider.dart';
 import '../../widgets/step_progress_bar.dart';
 import 'receipt_confirmation_screen.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 class ReviewReceiptScreen extends ConsumerStatefulWidget {
   /// ID of an existing receipt to load from the provider.
@@ -417,7 +418,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                 children: [
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: Icon(Icons.arrow_back, color: textPrimary),
+                    icon: Icon(Symbols.arrow_back, color: textPrimary),
                     padding: const EdgeInsets.all(8),
                     style: IconButton.styleFrom(
                       backgroundColor: Colors.transparent,
@@ -524,7 +525,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
           ),
           child: Row(
             children: [
-              const Icon(Icons.warning_amber_rounded,
+              const Icon(Symbols.warning,
                   color: AppColors.error, size: 18),
               const SizedBox(width: 10),
               Expanded(
@@ -604,7 +605,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                 ref.invalidate(receiptProvider(widget.receiptId!));
                 _startPolling();
               },
-              icon: const Icon(Icons.refresh, size: 16),
+              icon: const Icon(Symbols.refresh, size: 16),
               label: const Text('Refresh'),
               style: TextButton.styleFrom(foregroundColor: AppColors.primary),
             ),
@@ -630,7 +631,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Icon(
-                Icons.timer_off_outlined,
+                Symbols.timer_off,
                 size: 48,
                 color: AppColors.warning,
               ),
@@ -666,7 +667,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                     ref.invalidate(receiptProvider(widget.receiptId!));
                     _startPolling();
                   },
-                  icon: const Icon(Icons.refresh, size: 18),
+                  icon: const Icon(Symbols.refresh, size: 18),
                   label: const Text('Refresh'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
@@ -709,7 +710,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline, size: 48, color: AppColors.error),
+            const Icon(Symbols.error, size: 48, color: AppColors.error),
             const SizedBox(height: 16),
             Text(
               'Something went wrong',
@@ -731,7 +732,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
             TextButton.icon(
               onPressed: () =>
                   ref.invalidate(receiptProvider(widget.receiptId!)),
-              icon: const Icon(Icons.refresh, size: 16),
+              icon: const Icon(Symbols.refresh, size: 16),
               label: const Text('Retry'),
               style: TextButton.styleFrom(foregroundColor: AppColors.primary),
             ),
@@ -782,7 +783,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                     isDark: isDark,
                     textPrimary: textPrimary,
                     title: 'Purchase Details',
-                    icon: Icons.receipt_long_outlined,
+                    icon: Symbols.receipt_long,
                     iconColor: AppColors.primary,
                     children: [
                       _buildTextField(
@@ -858,7 +859,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                     isDark: isDark,
                     textPrimary: textPrimary,
                     title: 'Store Contact',
-                    icon: Icons.store_outlined,
+                    icon: Symbols.store,
                     iconColor: AppColors.primary,
                     children: [
                       _buildTextField(
@@ -893,7 +894,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                     isDark: isDark,
                     textPrimary: textPrimary,
                     title: 'Product Info',
-                    icon: Icons.inventory_2_outlined,
+                    icon: Symbols.inventory_2,
                     iconColor: AppColors.primary,
                     children: [
                       _buildTextField(
@@ -918,7 +919,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                     isDark: isDark,
                     textPrimary: textPrimary,
                     title: 'Warranty Info',
-                    icon: Icons.verified_outlined,
+                    icon: Symbols.verified,
                     iconColor: AppColors.primary,
                     children: [
                       _buildTextField(
@@ -941,7 +942,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                     isDark: isDark,
                     textPrimary: textPrimary,
                     title: 'Return Policy',
-                    icon: Icons.assignment_return_outlined,
+                    icon: Symbols.assignment_return,
                     iconColor: AppColors.primary,
                     children: [
                       _buildTextField(
@@ -964,7 +965,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                     isDark: isDark,
                     textPrimary: textPrimary,
                     title: 'Remarks & Notes',
-                    icon: Icons.notes_outlined,
+                    icon: Symbols.notes,
                     iconColor: AppColors.primary,
                     children: [
                       _buildTextField(
@@ -1131,7 +1132,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
           dropdownColor: AppColors.card(isDark),
           style: TextStyle(color: textPrimary, fontSize: 15),
           icon: Icon(
-            Icons.keyboard_arrow_down_rounded,
+            Symbols.keyboard_arrow_down,
             color: labelColor,
             size: 20,
           ),
@@ -1187,7 +1188,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
           Row(
             children: [
               const Icon(
-                Icons.shopping_cart_outlined,
+                Symbols.shopping_cart,
                 size: 20,
                 color: AppColors.primary,
               ),
@@ -1360,11 +1361,11 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                 if (value != null && onClear != null)
                   GestureDetector(
                     onTap: onClear,
-                    child: Icon(Icons.close, size: 16, color: labelColor),
+                    child: Icon(Symbols.close, size: 16, color: labelColor),
                   )
                 else
                   Icon(
-                    Icons.calendar_today_outlined,
+                    Symbols.calendar_today,
                     size: 16,
                     color: labelColor,
                   ),

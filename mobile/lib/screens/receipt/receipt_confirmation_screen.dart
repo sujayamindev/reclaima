@@ -6,6 +6,7 @@ import '../../providers/service_providers.dart';
 import '../../widgets/step_progress_bar.dart';
 import '../../widgets/product_image_card.dart';
 import 'product_detail_screen.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 class ReceiptConfirmationScreen extends ConsumerStatefulWidget {
   final String? receiptId;
@@ -191,7 +192,7 @@ class _ReceiptConfirmationScreenState
                 children: [
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: Icon(Icons.arrow_back, color: textPrimary),
+                    icon: Icon(Symbols.arrow_back, color: textPrimary),
                     padding: const EdgeInsets.all(8),
                     style: IconButton.styleFrom(
                       backgroundColor: Colors.transparent,
@@ -250,7 +251,7 @@ class _ReceiptConfirmationScreenState
                       isDark: isDark,
                       textPrimary: textPrimary,
                       title: 'Purchase Summary',
-                      icon: Icons.receipt_long_outlined,
+                      icon: Symbols.receipt_long,
                       children: [
                         _buildDetailRow(isDark, 'Store', storeName),
                         if (invoiceNumber != null)
@@ -279,7 +280,7 @@ class _ReceiptConfirmationScreenState
                         isDark: isDark,
                         textPrimary: textPrimary,
                         title: 'Warranty Coverage',
-                        icon: Icons.verified_outlined,
+                        icon: Symbols.verified,
                         children: [
                           if (widget.warrantyExpiryDate != null)
                             _buildExpiryBanner(
@@ -309,7 +310,7 @@ class _ReceiptConfirmationScreenState
                         isDark: isDark,
                         textPrimary: textPrimary,
                         title: 'Return Window',
-                        icon: Icons.assignment_return_outlined,
+                        icon: Symbols.assignment_return,
                         children: [
                           if (widget.returnExpiryDate != null)
                             _buildExpiryBanner(
@@ -441,7 +442,7 @@ class _ReceiptConfirmationScreenState
     final labelColor = AppColors.muted(isDark);
     return Row(
       children: [
-        Icon(Icons.info_outline, size: 15, color: labelColor),
+        Icon(Symbols.info, size: 15, color: labelColor),
         const SizedBox(width: 6),
         Expanded(
           child: Text(
@@ -577,7 +578,7 @@ class _ReceiptConfirmationScreenState
               // Expiry date row
               Row(
                 children: [
-                  Icon(Icons.event_outlined, size: 14, color: labelColor),
+                  Icon(Symbols.event, size: 14, color: labelColor),
                   const SizedBox(width: 5),
                   Text(
                     'Expires ${_displayDate(expiryDate)}',
@@ -589,7 +590,7 @@ class _ReceiptConfirmationScreenState
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    Icon(Icons.info_outline, size: 14, color: labelColor),
+                    Icon(Symbols.info, size: 14, color: labelColor),
                     const SizedBox(width: 5),
                     Text(
                       periodLabel,
@@ -687,7 +688,7 @@ class _ReceiptConfirmationScreenState
                     color: AppColors.onPrimary,
                   ),
                 )
-              : const Icon(Icons.check_circle_outline,
+              : const Icon(Symbols.check_circle,
                   size: 20, color: AppColors.onPrimary),
           label: const Text(
             'Save Receipt',

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/app_constants.dart';
 import '../../providers/auth_provider.dart';
@@ -81,7 +82,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 alignment: Alignment.centerLeft,
                 child: IconButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  icon: Icon(Icons.arrow_back, color: textPrimaryColor),
+                  icon: Icon(Symbols.arrow_back, color: textPrimaryColor),
                   padding: const EdgeInsets.all(8),
                   style: IconButton.styleFrom(
                     backgroundColor: Colors.transparent,
@@ -126,7 +127,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       _buildInputField(
                         label: 'Email Address',
                         controller: _emailController,
-                        icon: Icons.mail_outline,
+                        icon: Symbols.mail,
                         placeholder: 'name@example.com',
                         keyboardType: TextInputType.emailAddress,
                         cardColor: cardColor,
@@ -149,7 +150,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       _buildInputField(
                         label: 'Password',
                         controller: _passwordController,
-                        icon: Icons.lock_outline,
+                        icon: Symbols.lock,
                         placeholder: 'Enter your password',
                         obscureText: _obscurePassword,
                         cardColor: cardColor,
@@ -158,7 +159,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         textColor: textPrimaryColor,
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                            _obscurePassword ? Symbols.visibility : Symbols.visibility_off,
                             color: textSecondaryColor,
                           ),
                           onPressed: () {

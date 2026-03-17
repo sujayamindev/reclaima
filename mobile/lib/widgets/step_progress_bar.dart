@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import '../core/constants/app_constants.dart';
 
 class StepProgressBar extends StatelessWidget {
@@ -52,7 +53,7 @@ class StepProgressBar extends StatelessWidget {
       ),
       child: Center(
         child: isCompleted
-            ? const Icon(Icons.check, size: 14, color: AppColors.onPrimary)
+            ? const Icon(Symbols.check, size: 14, color: AppColors.onPrimary)
             : Text(
                 '$step',
                 style: TextStyle(

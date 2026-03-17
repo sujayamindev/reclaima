@@ -9,7 +9,7 @@ import '../../data/models/receipt_model.dart';
 import '../../data/models/receipt_line_item_model.dart';
 import '../../providers/receipt_provider.dart';
 import '../../core/utils/formatters.dart';
-import '../../widgets/floating_pill_bar.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 /// Full-screen product detail view.
 ///
@@ -85,7 +85,7 @@ class ProductDetailScreen extends ConsumerWidget {
                             color: AppColors.error.withValues(alpha: 0.12),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.error_outline,
+                          child: const Icon(Symbols.error,
                               size: 32, color: AppColors.error),
                         ),
                         const SizedBox(height: 16),
@@ -160,7 +160,7 @@ class ProductDetailScreen extends ConsumerWidget {
                 _buildSection(
                   isDark,
                   'Product Info',
-                  Icons.info_outline,
+                  Symbols.info,
                   [
                     if (product.lineItem!.quantity != null)
                       _buildInfoRow(
@@ -200,7 +200,7 @@ class ProductDetailScreen extends ConsumerWidget {
                 _buildSection(
                   isDark,
                   'Vendor Contact',
-                  Icons.store_outlined,
+                  Symbols.store,
                   [
                     if (product.receipt.vendorAddress != null)
                       _buildInfoRow(
@@ -224,7 +224,7 @@ class ProductDetailScreen extends ConsumerWidget {
                 _buildSection(
                   isDark,
                   'Warranty Terms',
-                  Icons.policy_outlined,
+                  Symbols.policy,
                   [
                     Text(
                       product.receipt.warrantyNotes!,
@@ -243,7 +243,7 @@ class ProductDetailScreen extends ConsumerWidget {
                 _buildSection(
                   isDark,
                   'Additional Details',
-                  Icons.info_outline,
+                  Symbols.info,
                   [
                     Text(
                       product.receipt.remarks!,
@@ -262,7 +262,7 @@ class ProductDetailScreen extends ConsumerWidget {
                 _buildSection(
                   isDark,
                   'Notes',
-                  Icons.notes_outlined,
+                  Symbols.notes,
                   [
                     Text(
                       product.receipt.notes!,
@@ -280,7 +280,7 @@ class ProductDetailScreen extends ConsumerWidget {
               _buildSection(
                 isDark,
                 'Processing Status',
-                Icons.cloud_done_outlined,
+                Symbols.cloud_done,
                 [
                   _buildInfoRow(
                       'OCR Status', product.receipt.status.name, isDark),
@@ -329,7 +329,7 @@ class ProductDetailScreen extends ConsumerWidget {
         children: [
           IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: Icon(Icons.arrow_back,
+            icon: Icon(Symbols.arrow_back,
                 color: AppColors.textPrimary(isDark)),
             padding: const EdgeInsets.all(8),
             style: IconButton.styleFrom(
@@ -349,7 +349,7 @@ class ProductDetailScreen extends ConsumerWidget {
           ),
           if (product != null)
             PopupMenuButton<String>(
-              icon: Icon(Icons.more_horiz,
+              icon: Icon(Symbols.more_horiz,
                   color: AppColors.textPrimary(isDark), size: 22),
               padding: EdgeInsets.zero,
               color: AppColors.card(isDark),
@@ -383,7 +383,7 @@ class ProductDetailScreen extends ConsumerWidget {
                       SizedBox(
                         width: 30,
                         height: 30,
-                        child: const Icon(Icons.edit_outlined,
+                        child: const Icon(Symbols.edit,
                             size: 15, color: AppColors.primary),
                       ),
                       const SizedBox(width: 6),
@@ -403,7 +403,7 @@ class ProductDetailScreen extends ConsumerWidget {
                       SizedBox(
                         width: 30,
                         height: 30,
-                        child: const Icon(Icons.delete_outline,
+                        child: const Icon(Symbols.delete,
                             size: 15, color: AppColors.error),
                       ),
                       const SizedBox(width: 6),
@@ -516,33 +516,30 @@ class ProductDetailScreen extends ConsumerWidget {
                       ),
                     ),
                   ],
+                  if (product.receipt.storeName != null) ...[
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(Symbols.storefront,
+                            size: 14, color: AppColors.muted(isDark)),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            product.receipt.storeName!,
+                            style: AppTextStyles.caption.copyWith(
+                              color: AppColors.muted(isDark),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ],
           ),
-
-          // ── Category badge (top-right) ─────────────────────────────────
-          if (product.productCategory != null)
-            Positioned(
-              top: 0,
-              right: 0,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.radiusPill),
-                ),
-                child: Text(
-                  product.productCategory!,
-                  style: AppTextStyles.caption.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ),
         ],
       ),
     );
@@ -564,7 +561,7 @@ class ProductDetailScreen extends ConsumerWidget {
         children: [
           _SectionHeader(
             title: 'Warranty & Return',
-            icon: Icons.verified_outlined,
+            icon: Symbols.verified,
             isDark: isDark,
           ),
           const SizedBox(height: 16),
@@ -578,7 +575,7 @@ class ProductDetailScreen extends ConsumerWidget {
                 Expanded(
                   child: _CountdownTile(
                     label: 'WARRANTY',
-                    icon: Icons.shield_outlined,
+                    icon: Symbols.shield,
                     expiryDate: product.warrantyExpiryDate,
                     daysRemaining: product.warrantyDaysRemaining,
                     totalDays: product.warrantyPeriodMonths != null
@@ -593,7 +590,7 @@ class ProductDetailScreen extends ConsumerWidget {
                 Expanded(
                   child: _CountdownTile(
                     label: 'RETURN',
-                    icon: Icons.assignment_return_outlined,
+                    icon: Symbols.assignment_return,
                     expiryDate: product.returnExpiryDate,
                     daysRemaining: product.returnDaysRemaining,
                     totalDays: product.returnPeriodDays,
@@ -608,9 +605,7 @@ class ProductDetailScreen extends ConsumerWidget {
           if (!product.isPending &&
               (product.warrantyPeriodMonths != null ||
                   product.returnPeriodDays != null)) ...[
-            const SizedBox(height: 18),
-            Divider(color: AppColors.border(isDark), height: 1),
-            const SizedBox(height: 6),
+            const SizedBox(height: 14),
             if (product.warrantyPeriodMonths != null)
               _buildPeriodRow(
                 'Warranty period',
@@ -646,7 +641,7 @@ class ProductDetailScreen extends ConsumerWidget {
                       BorderRadius.circular(AppDimensions.radiusPill),
                 ),
               ),
-              icon: const Icon(Icons.picture_as_pdf_outlined, size: 20),
+              icon: const Icon(Symbols.picture_as_pdf, size: 20),
               label: const Text('Generate Claim PDF'),
             ),
           ),
@@ -696,7 +691,7 @@ class ProductDetailScreen extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(vertical: 12),
         child: Column(
           children: [
-            Icon(Icons.verified_user_outlined,
+            Icon(Symbols.verified_user,
                 size: 36, color: AppColors.muted(isDark)),
             const SizedBox(height: 10),
             Text(
@@ -732,7 +727,7 @@ class ProductDetailScreen extends ConsumerWidget {
           // Header row: icon + "Purchase Details"
           Row(
             children: [
-              const Icon(Icons.store_outlined,
+              const Icon(Symbols.store,
                   size: 20, color: AppColors.primary),
               const SizedBox(width: 10),
               Text(
@@ -813,7 +808,7 @@ class ProductDetailScreen extends ConsumerWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.broken_image_outlined,
+                Icon(Symbols.broken_image,
                     size: 32, color: AppColors.muted(isDark)),
                 const SizedBox(height: 8),
                 Text('Image unavailable',
@@ -827,7 +822,7 @@ class ProductDetailScreen extends ConsumerWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.receipt_long_outlined,
+                      Icon(Symbols.receipt_long,
                           size: 36, color: AppColors.muted(isDark)),
                       const SizedBox(height: 8),
                       Text('Receipt image',
@@ -851,7 +846,7 @@ class ProductDetailScreen extends ConsumerWidget {
                         ),
                       ),
                       errorWidget: (_, __, ___) => Center(
-                        child: Icon(Icons.broken_image_outlined,
+                        child: Icon(Symbols.broken_image,
                             size: 36, color: AppColors.muted(isDark)),
                       ),
                     ),
@@ -869,7 +864,7 @@ class ProductDetailScreen extends ConsumerWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.fullscreen,
+                            const Icon(Symbols.fullscreen,
                                 color: Colors.white, size: 15),
                             const SizedBox(width: 4),
                             Text(
@@ -917,7 +912,7 @@ class ProductDetailScreen extends ConsumerWidget {
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white, size: 24),
+                  icon: const Icon(Symbols.close, color: Colors.white, size: 24),
                   onPressed: () => Navigator.pop(context),
                 ),
               ),
@@ -956,7 +951,7 @@ class ProductDetailScreen extends ConsumerWidget {
               Expanded(
                 child: _SectionHeader(
                   title: 'Items on This Receipt',
-                  icon: Icons.shopping_cart_outlined,
+                  icon: Symbols.shopping_cart,
                   isDark: isDark,
                 ),
               ),
@@ -1356,7 +1351,7 @@ class _CountdownTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: accent.withValues(alpha: 0),
         borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
-        border: Border.all(color: accent.withValues(alpha: 0.15)),
+        border: Border.all(color: AppColors.border(isDark).withValues(alpha: 0.5)),
       ),
       child: Column(
         children: [
@@ -1558,7 +1553,7 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
           // Header
           Row(
             children: [
-              Icon(Icons.notifications_outlined,
+              Icon(Symbols.notifications,
                   size: 20, color: AppColors.primary),
               const SizedBox(width: 10),
               Expanded(
@@ -1576,7 +1571,7 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
           if (widget.hasWarranty) ...[
             _toggleRow(
               isDark,
-              icon: Icons.shield_outlined,
+              icon: Symbols.shield,
               title: 'Warranty Reminder',
               subtitle: _warrantyReminder
                   ? '$_warrantyLeadDays days before expiry'
@@ -1602,15 +1597,13 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
             ),
           ],
 
-          if (widget.hasWarranty && widget.hasReturn)
-            Divider(
-                color: AppColors.border(isDark), height: 1, indent: 30),
+          
 
           // Return reminder
           if (widget.hasReturn) ...[
             _toggleRow(
               isDark,
-              icon: Icons.assignment_return_outlined,
+              icon: Symbols.assignment_return,
               title: 'Return Reminder',
               subtitle: _returnReminder
                   ? '$_returnLeadDays days before deadline'

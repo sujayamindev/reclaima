@@ -106,6 +106,42 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
   }
 }
 
+/// Display name provider - resolves from backend profile, Firebase, or email
+final displayNameProvider = Provider<String>((ref) {
+  final profileAsync = ref.watch(userProfileProvider);
+  final firebaseUser = ref.watch(currentUserProvider);
+
+  return profileAsync.maybeWhen(
+    data: (profile) {
+      if (profile?.displayName != null && profile!.displayName!.isNotEmpty) {
+        return profile.displayName!.split(' ').first;
+      }
+      if (firebaseUser?.displayName != null &&
+          firebaseUser!.displayName!.isNotEmpty) {
+        return firebaseUser.displayName!.split(' ').first;
+      }
+      final email = firebaseUser?.email ?? profile?.email ?? '';
+      return email.isNotEmpty ? email.split('@').first : 'there';
+    },
+    orElse: () {
+      if (firebaseUser?.displayName != null &&
+          firebaseUser!.displayName!.isNotEmpty) {
+        return firebaseUser.displayName!.split(' ').first;
+      }
+      final email = firebaseUser?.email ?? '';
+      return email.isNotEmpty ? email.split('@').first : 'there';
+    },
+  );
+});
+
+/// Greeting provider - returns time-appropriate greeting
+final greetingProvider = Provider<String>((_) {
+  final hour = DateTime.now().hour;
+  if (hour < 12) return 'Good morning,';
+  if (hour < 17) return 'Good afternoon,';
+  return 'Good evening,';
+});
+
 /// Auth controller provider
 final authControllerProvider =
     StateNotifierProvider<AuthController, AsyncValue<void>>((ref) {

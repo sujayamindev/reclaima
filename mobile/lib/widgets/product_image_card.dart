@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import '../core/constants/app_constants.dart';
 
 /// A card widget that displays a product image fetched from the internet.
@@ -40,7 +41,7 @@ class ProductImageCard extends StatelessWidget {
           Row(
             children: [
               const Icon(
-                Icons.shopping_bag_outlined,
+                Symbols.shopping_bag,
                 size: 20,
                 color: AppColors.primary,
               ),
@@ -119,7 +120,7 @@ class ProductImageCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.image_not_supported_outlined,
+              Symbols.image_not_supported,
               size: 40,
               color: labelColor.withValues(alpha: 0.5),
             ),
