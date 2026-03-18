@@ -103,6 +103,8 @@ class ReceiptLineItemUpdate(BaseModel):
     return_period_days: Optional[int] = None
     warranty_lead_days_override: Optional[int] = None
     return_lead_days_override: Optional[int] = None
+    warranty_reminder_enabled: Optional[bool] = None
+    return_reminder_enabled: Optional[bool] = None
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -317,9 +319,10 @@ class ClaimDocumentResponse(ClaimDocumentBase):
     id: str
     receipt_id: str
     generated_pdf_s3_key: Optional[str]
+    url: Optional[str] = None  # Pre-signed S3 URL for downloading the PDF
     created_at: datetime
     updated_at: datetime
-    
+
     model_config = ConfigDict(
         from_attributes=True,
         populate_by_name=True,
