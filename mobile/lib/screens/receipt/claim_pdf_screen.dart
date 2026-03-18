@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:share_plus/share_plus.dart';
@@ -88,16 +89,50 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
   Future<void> _downloadPdf() async {
     if (_generatedClaim?.url == null) return;
     try {
-      if (await canLaunchUrl(Uri.parse(_generatedClaim!.url!))) {
-        await launchUrl(
-          Uri.parse(_generatedClaim!.url!),
-          mode: LaunchMode.externalApplication,
+      final uri = Uri.parse(_generatedClaim!.url!);
+
+      // Try to launch URL
+      final canLaunch = await canLaunchUrl(uri);
+      if (!canLaunch) {
+        if (!mounted) return;
+        // If can't launch, offer to copy link instead
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Copy link and paste in browser'),
+            action: SnackBarAction(
+              label: 'Copy',
+              onPressed: () async {
+                await Clipboard.setData(ClipboardData(text: _generatedClaim!.url!));
+              },
+            ),
+          ),
         );
+        return;
       }
+
+      await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
     } catch (e) {
       logger.e('Error downloading PDF: $e');
+      if (!mounted) return;
+
+      // On error, offer to copy link
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to download: $e')),
+        SnackBar(
+          content: const Text('Copy link and paste in browser'),
+          action: SnackBarAction(
+            label: 'Copy',
+            onPressed: () async {
+              await Clipboard.setData(ClipboardData(text: _generatedClaim!.url!));
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Copied to clipboard')),
+              );
+            },
+          ),
+        ),
       );
     }
   }
