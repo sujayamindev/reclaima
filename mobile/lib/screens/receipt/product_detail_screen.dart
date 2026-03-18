@@ -11,6 +11,7 @@ import '../../data/models/receipt_line_item_model.dart';
 import '../../providers/receipt_provider.dart';
 import '../../core/utils/formatters.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'claim_pdf_dialog.dart';
 
 /// Full-screen product detail view.
 ///
@@ -638,10 +639,11 @@ class ProductDetailScreen extends ConsumerWidget {
             height: AppDimensions.buttonHeight,
             child: ElevatedButton.icon(
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('PDF generation coming soon'),
-                    behavior: SnackBarBehavior.floating,
+                showDialog(
+                  context: context,
+                  builder: (context) => ClaimPdfDialog(
+                    receiptId: product.receiptId,
+                    receiptStoreName: product.receipt.storeName ?? 'Store',
                   ),
                 );
               },
@@ -1619,7 +1621,7 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
               subtitle: _warrantyReminder
                   ? (_localWarrantyLeadOverride != null
                       ? '${_localWarrantyLeadOverride} days before expiry (custom)'
-                      : 'Using your global setting')
+                      : 'Using your default setting')
                   : 'Off',
               value: _warrantyReminder,
               onChanged: (v) => setState(() => _warrantyReminder = v),
@@ -1632,7 +1634,6 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
                       padding: const EdgeInsets.only(left: 30, top: 4, bottom: 6),
                       child: _overrideLeadTimeSelector(
                         widget.isDark,
-                        label: 'Remind me before warranty expires (optional)',
                         options: _warrantyOptions,
                         selected: _localWarrantyLeadOverride,
                         onChanged: (v) =>
@@ -1656,7 +1657,7 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
               subtitle: _returnReminder
                   ? (_localReturnLeadOverride != null
                       ? '${_localReturnLeadOverride} days before deadline (custom)'
-                      : 'Using your global setting')
+                      : 'Using your default setting')
                   : 'Off',
               value: _returnReminder,
               onChanged: (v) => setState(() => _returnReminder = v),
@@ -1668,7 +1669,6 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
                       padding: const EdgeInsets.only(left: 30, top: 4, bottom: 6),
                       child: _overrideLeadTimeSelector(
                         widget.isDark,
-                        label: 'Remind me before return deadline (optional)',
                         options: _returnOptions,
                         selected: _localReturnLeadOverride,
                         onChanged: (v) =>
@@ -1877,7 +1877,6 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
 
   Widget _overrideLeadTimeSelector(
     bool isDark, {
-    required String label,
     required List<int> options,
     required int? selected,
     required ValueChanged<int?> onChanged,
@@ -1886,13 +1885,6 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: AppTextStyles.caption.copyWith(
-            color: AppColors.textSecondary(isDark),
-            fontWeight: FontWeight.w500,
-          ),
-        ),
         const SizedBox(height: 6),
         Wrap(
           spacing: 6,

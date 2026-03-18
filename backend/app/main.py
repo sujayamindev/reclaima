@@ -13,7 +13,7 @@ from fastapi.exceptions import RequestValidationError
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.core.config import settings
-from app.api.v1 import auth, receipts, warranties, health, products, notifications
+from app.api.v1 import auth, receipts, warranties, health, products, notifications, claims
 
 # Configure logging
 logging.basicConfig(
@@ -179,6 +179,7 @@ app.include_router(receipts.router, prefix=settings.API_V1_PREFIX)
 app.include_router(warranties.router, prefix=settings.API_V1_PREFIX)
 app.include_router(products.router, prefix=settings.API_V1_PREFIX)
 app.include_router(notifications.router, prefix=settings.API_V1_PREFIX)
+app.include_router(claims.router, prefix=settings.API_V1_PREFIX)
 
 
 # ============================================

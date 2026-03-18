@@ -31,17 +31,20 @@ class ApiConstants {
 class AppConstants {
   static const String appName = 'Smart Receipt Manager';
   static const String appVersion = '1.0.0';
-  
+
   // File upload limits
   static const int maxFileSizeMB = 5;
   static const int maxFileSizeBytes = maxFileSizeMB * 1024 * 1024;
-  
+
   // Allowed file types
   static const List<String> allowedImageTypes = ['jpg', 'jpeg', 'png'];
   static const List<String> allowedDocTypes = ['pdf'];
-  
+
   // Pagination
   static const int defaultPageSize = 20;
+
+  // Claim types for warranty claims
+  static const List<String> claimTypes = ['warranty', 'return', 'repair'];
 }
 
 /// Storage keys for shared preferences
