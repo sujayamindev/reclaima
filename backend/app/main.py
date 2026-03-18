@@ -46,11 +46,12 @@ async def lifespan(app: FastAPI):
 
             scheduler = BackgroundScheduler(timezone="UTC")
             # Warranty reminders — daily at REMINDER_CHECK_HOUR UTC
+            # TODO: Change minute back to 0 after testing. Currently set to 30 for IST+5:30 testing at 8 AM (2:30 AM UTC)
             scheduler.add_job(
                 notification_service.run_warranty_reminders,
                 "cron",
                 hour=settings.REMINDER_CHECK_HOUR,
-                minute=0,
+                minute=30,
                 id="warranty_reminders",
             )
             # Return deadline reminders — daily, 5 min after warranty job
@@ -58,7 +59,7 @@ async def lifespan(app: FastAPI):
                 notification_service.run_return_reminders,
                 "cron",
                 hour=settings.REMINDER_CHECK_HOUR,
-                minute=5,
+                minute=35,
                 id="return_reminders",
             )
             # Hard-delete cleanup — daily at CLEANUP_HOUR UTC
@@ -71,7 +72,7 @@ async def lifespan(app: FastAPI):
             )
             scheduler.start()
             logger.info(
-                f"APScheduler started — reminder jobs at {settings.REMINDER_CHECK_HOUR:02d}:00 UTC, "
+                f"APScheduler started — reminder jobs at {settings.REMINDER_CHECK_HOUR:02d}:30 UTC (08:00 IST for testing), "
                 f"cleanup at {settings.CLEANUP_HOUR:02d}:00 UTC"
             )
         except Exception as exc:
