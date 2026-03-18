@@ -153,6 +153,10 @@ class ProductDetailScreen extends ConsumerWidget {
                     product.lineItem?.warrantyLeadDaysOverride,
                 currentReturnLeadOverride:
                     product.lineItem?.returnLeadDaysOverride,
+                currentWarrantyReminderEnabled:
+                    product.lineItem?.warrantyReminderEnabled,
+                currentReturnReminderEnabled:
+                    product.lineItem?.returnReminderEnabled,
               ),
               const SizedBox(height: 12),
 
@@ -1529,6 +1533,8 @@ class _NotificationSettings extends StatefulWidget {
     required this.ref,
     this.currentWarrantyLeadOverride,
     this.currentReturnLeadOverride,
+    this.currentWarrantyReminderEnabled,
+    this.currentReturnReminderEnabled,
   });
 
   final bool isDark;
@@ -1539,6 +1545,8 @@ class _NotificationSettings extends StatefulWidget {
   final WidgetRef ref;
   final int? currentWarrantyLeadOverride;
   final int? currentReturnLeadOverride;
+  final bool? currentWarrantyReminderEnabled;
+  final bool? currentReturnReminderEnabled;
 
   @override
   State<_NotificationSettings> createState() => _NotificationSettingsState();
@@ -1565,6 +1573,9 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
     // Initialize with current override values from the product
     _localWarrantyLeadOverride = widget.currentWarrantyLeadOverride;
     _localReturnLeadOverride = widget.currentReturnLeadOverride;
+    // Initialize reminder on/off state from the product (default to true if not set)
+    _warrantyReminder = widget.currentWarrantyReminderEnabled ?? true;
+    _returnReminder = widget.currentReturnReminderEnabled ?? true;
   }
 
   @override
@@ -1621,11 +1632,13 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
                       padding: const EdgeInsets.only(left: 30, top: 4, bottom: 6),
                       child: _overrideLeadTimeSelector(
                         widget.isDark,
-                        label: 'Custom warranty notification lead time (optional)',
+                        label: 'Remind me before warranty expires (optional)',
                         options: _warrantyOptions,
                         selected: _localWarrantyLeadOverride,
                         onChanged: (v) =>
                             setState(() => _localWarrantyLeadOverride = v),
+                        onDisableReminder: () =>
+                            setState(() => _warrantyReminder = false),
                       ),
                     )
                   : const SizedBox.shrink(),
@@ -1655,11 +1668,13 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
                       padding: const EdgeInsets.only(left: 30, top: 4, bottom: 6),
                       child: _overrideLeadTimeSelector(
                         widget.isDark,
-                        label: 'Custom return notification lead time (optional)',
+                        label: 'Remind me before return deadline (optional)',
                         options: _returnOptions,
                         selected: _localReturnLeadOverride,
                         onChanged: (v) =>
                             setState(() => _localReturnLeadOverride = v),
+                        onDisableReminder: () =>
+                            setState(() => _returnReminder = false),
                       ),
                     )
                   : const SizedBox.shrink(),
@@ -1669,7 +1684,9 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
           // Save button (if has warranty or return)
           if ((widget.hasWarranty || widget.hasReturn) &&
               (_localWarrantyLeadOverride != widget.currentWarrantyLeadOverride ||
-                  _localReturnLeadOverride != widget.currentReturnLeadOverride))
+                  _localReturnLeadOverride != widget.currentReturnLeadOverride ||
+                  _warrantyReminder != (widget.currentWarrantyReminderEnabled ?? true) ||
+                  _returnReminder != (widget.currentReturnReminderEnabled ?? true)))
             Padding(
               padding: const EdgeInsets.only(top: 12),
               child: SizedBox(
@@ -1827,6 +1844,8 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
                 'warrantyLeadDaysOverride': _localWarrantyLeadOverride,
               if (_localReturnLeadOverride != null)
                 'returnLeadDaysOverride': _localReturnLeadOverride,
+              'warrantyReminderEnabled': _warrantyReminder,
+              'returnReminderEnabled': _returnReminder,
             },
           );
       if (mounted) {
@@ -1862,6 +1881,7 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
     required List<int> options,
     required int? selected,
     required ValueChanged<int?> onChanged,
+    required VoidCallback onDisableReminder,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1878,7 +1898,30 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
           spacing: 6,
           runSpacing: 6,
           children: [
-            // "None" / "Use Global" option
+            // "Off" option
+            GestureDetector(
+              onTap: onDisableReminder,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.radiusPill),
+                  border: Border.all(
+                    color: AppColors.border(isDark),
+                  ),
+                ),
+                child: Text(
+                  'Off',
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.textSecondary(isDark),
+                    fontWeight: FontWeight.normal,
+                  ),
+                ),
+              ),
+            ),
+            // "Use Default" option
             GestureDetector(
               onTap: () => onChanged(null),
               child: AnimatedContainer(
@@ -1897,7 +1940,7 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
                   ),
                 ),
                 child: Text(
-                  'Use global',
+                  'Use default',
                   style: AppTextStyles.caption.copyWith(
                     color: selected == null
                         ? AppColors.primary

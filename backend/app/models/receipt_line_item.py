@@ -4,7 +4,7 @@ Represents a single product / service line on a receipt or invoice.
 Supports multi-item receipts and invoices.
 """
 
-from sqlalchemy import Column, String, DateTime, Numeric, ForeignKey, Integer, Index
+from sqlalchemy import Column, String, DateTime, Numeric, ForeignKey, Integer, Boolean, Index
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 
@@ -55,6 +55,10 @@ class ReceiptLineItem(Base):
     # Per-item notification lead time overrides (NULL = use user's global setting)
     warranty_lead_days_override = Column(Integer, nullable=True)
     return_lead_days_override   = Column(Integer, nullable=True)
+
+    # Per-item notification toggle (False = don't send notifications for this product)
+    warranty_reminder_enabled = Column(Boolean, nullable=False, default=True)
+    return_reminder_enabled   = Column(Boolean, nullable=False, default=True)
 
     # Metadata
     created_at = Column(

@@ -34,6 +34,10 @@ class ReceiptLineItemModel {
   final int? warrantyLeadDaysOverride;
   final int? returnLeadDaysOverride;
 
+  // ── Per-item notification toggle ───────────────────────────────────────
+  final bool? warrantyReminderEnabled;
+  final bool? returnReminderEnabled;
+
   const ReceiptLineItemModel({
     required this.id,
     required this.receiptId,
@@ -54,6 +58,8 @@ class ReceiptLineItemModel {
     this.returnExpiryDate,
     this.warrantyLeadDaysOverride,
     this.returnLeadDaysOverride,
+    this.warrantyReminderEnabled,
+    this.returnReminderEnabled,
   });
 
   factory ReceiptLineItemModel.fromJson(Map<String, dynamic> json) =>

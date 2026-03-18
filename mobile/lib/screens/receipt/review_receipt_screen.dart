@@ -91,11 +91,13 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
   final _warrantyPeriodCtrl = TextEditingController();
   DateTime? _warrantyExpiryDate;
   int? _warrantyLeadDaysOverride;
+  bool _warrantyReminderEnabled = true;
 
   // 💵 Return Policy
   final _returnPeriodCtrl = TextEditingController();
   DateTime? _returnExpiryDate;
   int? _returnLeadDaysOverride;
+  bool _returnReminderEnabled = true;
 
   // 📝 Remarks & Notes
   final _remarksCtrl = TextEditingController();
@@ -386,6 +388,10 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     if (_returnLeadDaysOverride != null) {
       lineItemData['returnLeadDaysOverride'] = _returnLeadDaysOverride;
     }
+
+    // ── Notification reminder on/off ────────────────────────────────────────
+    lineItemData['warrantyReminderEnabled'] = _warrantyReminderEnabled;
+    lineItemData['returnReminderEnabled'] = _returnReminderEnabled;
 
     Navigator.push(
       context,
@@ -950,12 +956,15 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                       const SizedBox(height: 14),
                       _buildLeadTimeDropdown(
                         isDark: isDark,
-                        label: 'Custom Warranty Notification Lead Time (optional)',
-                        hint: 'Default: use global setting',
+                        label: 'Remind me before warranty expires (optional)',
+                        hint: 'Default: use my default setting',
                         options: const [7, 14, 30, 60, 90],
                         selectedValue: _warrantyLeadDaysOverride,
+                        reminderEnabled: _warrantyReminderEnabled,
                         onChanged: (value) =>
                             setState(() => _warrantyLeadDaysOverride = value),
+                        onReminderEnabledChanged: (value) =>
+                            setState(() => _warrantyReminderEnabled = value),
                       ),
                     ],
                   ),
@@ -983,12 +992,15 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                       const SizedBox(height: 14),
                       _buildLeadTimeDropdown(
                         isDark: isDark,
-                        label: 'Custom Return Notification Lead Time (optional)',
-                        hint: 'Default: use global setting',
+                        label: 'Remind me before return deadline (optional)',
+                        hint: 'Default: use my default setting',
                         options: const [1, 2, 3, 5, 7],
                         selectedValue: _returnLeadDaysOverride,
+                        reminderEnabled: _returnReminderEnabled,
                         onChanged: (value) =>
                             setState(() => _returnLeadDaysOverride = value),
+                        onReminderEnabledChanged: (value) =>
+                            setState(() => _returnReminderEnabled = value),
                       ),
                     ],
                   ),
@@ -1208,61 +1220,105 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     required String hint,
     required List<int> options,
     required int? selectedValue,
+    required bool reminderEnabled,
     required ValueChanged<int?> onChanged,
+    required ValueChanged<bool> onReminderEnabledChanged,
   }) {
+    final labelColor = AppColors.label(isDark);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: AppTextStyles.caption.copyWith(
-            color: AppColors.textSecondary(isDark),
-            fontWeight: FontWeight.w500,
+          style: AppTextStyles.formLabel.copyWith(
+            color: labelColor.withValues(alpha: 0.6),
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 10),
         Wrap(
-          spacing: 6,
-          runSpacing: 6,
+          spacing: 8,
+          runSpacing: 8,
           children: [
-            // "Use global" option
+            // "Off" option
             GestureDetector(
-              onTap: () => onChanged(null),
+              onTap: () {
+                onReminderEnabledChanged(false);
+                onChanged(null);
+              },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 150),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: selectedValue == null
+                  color: !reminderEnabled
                       ? AppColors.primary.withValues(alpha: 0.15)
                       : Colors.transparent,
                   borderRadius:
                       BorderRadius.circular(AppDimensions.radiusPill),
                   border: Border.all(
-                    color: selectedValue == null
+                    color: !reminderEnabled
                         ? AppColors.primary
                         : AppColors.border(isDark),
                   ),
                 ),
                 child: Text(
-                  'Use global',
-                  style: AppTextStyles.caption.copyWith(
-                    color: selectedValue == null
+                  'Off',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: !reminderEnabled
                         ? AppColors.primary
-                        : AppColors.textSecondary(isDark),
+                        : labelColor.withValues(alpha: 0.7),
                     fontWeight:
-                        selectedValue == null ? FontWeight.w600 : FontWeight.normal,
+                        !reminderEnabled ? FontWeight.w600 : FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+            // "Use default" option
+            GestureDetector(
+              onTap: () {
+                onReminderEnabledChanged(true);
+                onChanged(null);
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: reminderEnabled && selectedValue == null
+                      ? AppColors.primary.withValues(alpha: 0.15)
+                      : Colors.transparent,
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.radiusPill),
+                  border: Border.all(
+                    color: reminderEnabled && selectedValue == null
+                        ? AppColors.primary
+                        : AppColors.border(isDark),
+                  ),
+                ),
+                child: Text(
+                  'Use default',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: reminderEnabled && selectedValue == null
+                        ? AppColors.primary
+                        : labelColor.withValues(alpha: 0.7),
+                    fontWeight:
+                        reminderEnabled && selectedValue == null ? FontWeight.w600 : FontWeight.w500,
                   ),
                 ),
               ),
             ),
             // Custom options
             ...options.map((days) {
-              final isSelected = days == selectedValue;
+              final isSelected = reminderEnabled && days == selectedValue;
               return GestureDetector(
-                onTap: () => onChanged(days),
+                onTap: () {
+                  onReminderEnabledChanged(true);
+                  onChanged(days);
+                },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 150),
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: isSelected
                         ? AppColors.primary.withValues(alpha: 0.15)
@@ -1277,12 +1333,12 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                   ),
                   child: Text(
                     '$days days',
-                    style: AppTextStyles.caption.copyWith(
+                    style: TextStyle(
+                      fontSize: 13,
                       color: isSelected
                           ? AppColors.primary
-                          : AppColors.textSecondary(isDark),
-                      fontWeight:
-                          isSelected ? FontWeight.w600 : FontWeight.normal,
+                          : labelColor.withValues(alpha: 0.7),
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                     ),
                   ),
                 ),
