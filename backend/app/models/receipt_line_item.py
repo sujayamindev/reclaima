@@ -52,6 +52,10 @@ class ReceiptLineItem(Base):
     return_period_days     = Column(Integer, nullable=True)   # Return window
     return_expiry_date     = Column(DateTime(timezone=True), nullable=True, index=True)
 
+    # Per-item notification lead time overrides (NULL = use user's global setting)
+    warranty_lead_days_override = Column(Integer, nullable=True)
+    return_lead_days_override   = Column(Integer, nullable=True)
+
     # Metadata
     created_at = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False

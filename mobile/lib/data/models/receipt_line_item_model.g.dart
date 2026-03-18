@@ -30,6 +30,8 @@ ReceiptLineItemModel _$ReceiptLineItemModelFromJson(
   returnExpiryDate: json['returnExpiryDate'] == null
       ? null
       : DateTime.parse(json['returnExpiryDate'] as String),
+  warrantyLeadDaysOverride: (json['warrantyLeadDaysOverride'] as num?)?.toInt(),
+  returnLeadDaysOverride: (json['returnLeadDaysOverride'] as num?)?.toInt(),
 );
 
 Map<String, dynamic> _$ReceiptLineItemModelToJson(
@@ -52,4 +54,6 @@ Map<String, dynamic> _$ReceiptLineItemModelToJson(
   'warrantyExpiryDate': instance.warrantyExpiryDate?.toIso8601String(),
   'returnPeriodDays': instance.returnPeriodDays,
   'returnExpiryDate': instance.returnExpiryDate?.toIso8601String(),
+  'warrantyLeadDaysOverride': instance.warrantyLeadDaysOverride,
+  'returnLeadDaysOverride': instance.returnLeadDaysOverride,
 };

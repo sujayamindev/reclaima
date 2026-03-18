@@ -30,6 +30,10 @@ class ReceiptLineItemModel {
   final int? returnPeriodDays;
   final DateTime? returnExpiryDate;
 
+  // ── Per-item notification lead time overrides ──────────────────────────
+  final int? warrantyLeadDaysOverride;
+  final int? returnLeadDaysOverride;
+
   const ReceiptLineItemModel({
     required this.id,
     required this.receiptId,
@@ -48,6 +52,8 @@ class ReceiptLineItemModel {
     this.warrantyExpiryDate,
     this.returnPeriodDays,
     this.returnExpiryDate,
+    this.warrantyLeadDaysOverride,
+    this.returnLeadDaysOverride,
   });
 
   factory ReceiptLineItemModel.fromJson(Map<String, dynamic> json) =>
@@ -109,5 +115,11 @@ class ReceiptLineItemModel {
     final days = returnExpiryDate!.difference(DateTime.now()).inDays;
     return days < 0 ? 0 : days;
   }
+
+  /// Effective warranty lead days — returns override if set, otherwise indicates custom setting exists.
+  int? get effectiveWarrantyLead => warrantyLeadDaysOverride;
+
+  /// Effective return lead days — returns override if set, otherwise indicates custom setting exists.
+  int? get effectiveReturnLead => returnLeadDaysOverride;
 }
 

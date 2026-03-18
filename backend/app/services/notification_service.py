@@ -268,18 +268,28 @@ class NotificationService:
             if kind == "warranty":
                 if prefs and not prefs.warranty_reminders_enabled:
                     continue
+                # Use per-item override if set, otherwise fall back to user's global preference
                 lead = (
-                    prefs.warranty_lead_days
-                    if prefs and prefs.warranty_lead_days
-                    else _DEFAULT_WARRANTY_LEAD
+                    item.warranty_lead_days_override
+                    if item.warranty_lead_days_override is not None
+                    else (
+                        prefs.warranty_lead_days
+                        if prefs and prefs.warranty_lead_days
+                        else _DEFAULT_WARRANTY_LEAD
+                    )
                 )
             else:
                 if prefs and not prefs.return_reminders_enabled:
                     continue
+                # Use per-item override if set, otherwise fall back to user's global preference
                 lead = (
-                    prefs.return_lead_days
-                    if prefs and prefs.return_lead_days
-                    else _DEFAULT_RETURN_LEAD
+                    item.return_lead_days_override
+                    if item.return_lead_days_override is not None
+                    else (
+                        prefs.return_lead_days
+                        if prefs and prefs.return_lead_days
+                        else _DEFAULT_RETURN_LEAD
+                    )
                 )
 
             # ── Check target date ──────────────────────────────────────────

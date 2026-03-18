@@ -81,6 +81,9 @@ class ReceiptLineItemResponse(BaseModel):
     warranty_expiry_date: Optional[datetime] = None
     return_period_days: Optional[int] = None
     return_expiry_date: Optional[datetime] = None
+    # Per-item notification lead time overrides
+    warranty_lead_days_override: Optional[int] = None
+    return_lead_days_override: Optional[int] = None
     created_at: datetime
     updated_at: datetime
 
@@ -98,6 +101,8 @@ class ReceiptLineItemUpdate(BaseModel):
     product_category: Optional[str] = None
     warranty_period_months: Optional[int] = None
     return_period_days: Optional[int] = None
+    warranty_lead_days_override: Optional[int] = None
+    return_lead_days_override: Optional[int] = None
 
     model_config = ConfigDict(
         populate_by_name=True,
