@@ -1614,35 +1614,18 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
 
           // Warranty reminder
           if (widget.hasWarranty) ...[
-            _toggleRow(
-              widget.isDark,
-              icon: Symbols.shield,
-              title: 'Warranty Reminder',
-              subtitle: _warrantyReminder
-                  ? (_localWarrantyLeadOverride != null
-                      ? '${_localWarrantyLeadOverride} days before expiry (custom)'
-                      : 'Using your default setting')
-                  : 'Off',
-              value: _warrantyReminder,
-              onChanged: (v) => setState(() => _warrantyReminder = v),
-            ),
-            // Custom lead-time override selector
-            AnimatedSize(
-              duration: const Duration(milliseconds: 200),
-              child: _warrantyReminder
-                  ? Padding(
-                      padding: const EdgeInsets.only(left: 30, top: 4, bottom: 6),
-                      child: _overrideLeadTimeSelector(
-                        widget.isDark,
-                        options: _warrantyOptions,
-                        selected: _localWarrantyLeadOverride,
-                        onChanged: (v) =>
-                            setState(() => _localWarrantyLeadOverride = v),
-                        onDisableReminder: () =>
-                            setState(() => _warrantyReminder = false),
-                      ),
-                    )
-                  : const SizedBox.shrink(),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: _overrideLeadTimeSelector(
+                widget.isDark,
+                options: _warrantyOptions,
+                selected: _localWarrantyLeadOverride,
+                onChanged: (v) =>
+                    setState(() => _localWarrantyLeadOverride = v),
+                reminderEnabled: _warrantyReminder,
+                onReminderEnabledChanged: (v) =>
+                    setState(() => _warrantyReminder = v),
+              ),
             ),
           ],
 
@@ -1650,34 +1633,18 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
 
           // Return reminder
           if (widget.hasReturn) ...[
-            _toggleRow(
-              widget.isDark,
-              icon: Symbols.assignment_return,
-              title: 'Return Reminder',
-              subtitle: _returnReminder
-                  ? (_localReturnLeadOverride != null
-                      ? '${_localReturnLeadOverride} days before deadline (custom)'
-                      : 'Using your default setting')
-                  : 'Off',
-              value: _returnReminder,
-              onChanged: (v) => setState(() => _returnReminder = v),
-            ),
-            AnimatedSize(
-              duration: const Duration(milliseconds: 200),
-              child: _returnReminder
-                  ? Padding(
-                      padding: const EdgeInsets.only(left: 30, top: 4, bottom: 6),
-                      child: _overrideLeadTimeSelector(
-                        widget.isDark,
-                        options: _returnOptions,
-                        selected: _localReturnLeadOverride,
-                        onChanged: (v) =>
-                            setState(() => _localReturnLeadOverride = v),
-                        onDisableReminder: () =>
-                            setState(() => _returnReminder = false),
-                      ),
-                    )
-                  : const SizedBox.shrink(),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: _overrideLeadTimeSelector(
+                widget.isDark,
+                options: _returnOptions,
+                selected: _localReturnLeadOverride,
+                onChanged: (v) =>
+                    setState(() => _localReturnLeadOverride = v),
+                reminderEnabled: _returnReminder,
+                onReminderEnabledChanged: (v) =>
+                    setState(() => _returnReminder = v),
+              ),
             ),
           ],
 
@@ -1733,102 +1700,6 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
     );
   }
 
-  // ── Toggle row ────────────────────────────────────────────────
-
-  Widget _toggleRow(
-    bool isDark, {
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Icon(icon, size: 18, color: AppColors.textSecondary(isDark)),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textPrimary(isDark),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: AppTextStyles.caption
-                      .copyWith(color: AppColors.textSecondary(isDark)),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(
-            height: 26,
-            child: Switch.adaptive(
-              value: value,
-              onChanged: onChanged,
-              activeColor: AppColors.primary,
-              activeTrackColor: AppColors.primary.withValues(alpha: 0.3),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── Lead time chip selector ─────────────────────────────────────
-
-  Widget _leadTimeSelector(
-    bool isDark, {
-    required List<int> options,
-    required int selected,
-    required ValueChanged<int> onChanged,
-  }) {
-    return Wrap(
-      spacing: 6,
-      runSpacing: 6,
-      children: options.map((days) {
-        final isSelected = days == selected;
-        return GestureDetector(
-          onTap: () => onChanged(days),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? AppColors.primary.withValues(alpha: 0.15)
-                  : Colors.transparent,
-              borderRadius:
-                  BorderRadius.circular(AppDimensions.radiusPill),
-              border: Border.all(
-                color: isSelected
-                    ? AppColors.primary
-                    : AppColors.border(isDark),
-              ),
-            ),
-            child: Text(
-              '$days days',
-              style: AppTextStyles.caption.copyWith(
-                color: isSelected
-                    ? AppColors.primary
-                    : AppColors.textSecondary(isDark),
-                fontWeight:
-                    isSelected ? FontWeight.w600 : FontWeight.normal,
-              ),
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
   // ── Save notification settings ──────────────────────────────────────
 
   Future<void> _saveNotificationSettings() async {
@@ -1880,7 +1751,8 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
     required List<int> options,
     required int? selected,
     required ValueChanged<int?> onChanged,
-    required VoidCallback onDisableReminder,
+    required bool reminderEnabled,
+    required ValueChanged<bool> onReminderEnabledChanged,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1892,41 +1764,54 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
           children: [
             // "Off" option
             GestureDetector(
-              onTap: onDisableReminder,
+              onTap: () {
+                onReminderEnabledChanged(false);
+                onChanged(null);
+              },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 150),
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: Colors.transparent,
+                  color: !reminderEnabled
+                      ? AppColors.primary.withValues(alpha: 0.15)
+                      : Colors.transparent,
                   borderRadius:
                       BorderRadius.circular(AppDimensions.radiusPill),
                   border: Border.all(
-                    color: AppColors.border(isDark),
+                    color: !reminderEnabled
+                        ? AppColors.primary
+                        : AppColors.border(isDark),
                   ),
                 ),
                 child: Text(
                   'Off',
                   style: AppTextStyles.caption.copyWith(
-                    color: AppColors.textSecondary(isDark),
-                    fontWeight: FontWeight.normal,
+                    color: !reminderEnabled
+                        ? AppColors.primary
+                        : AppColors.textSecondary(isDark),
+                    fontWeight:
+                        !reminderEnabled ? FontWeight.w600 : FontWeight.normal,
                   ),
                 ),
               ),
             ),
             // "Use Default" option
             GestureDetector(
-              onTap: () => onChanged(null),
+              onTap: () {
+                onReminderEnabledChanged(true);
+                onChanged(null);
+              },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 150),
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: selected == null
+                  color: reminderEnabled && selected == null
                       ? AppColors.primary.withValues(alpha: 0.15)
                       : Colors.transparent,
                   borderRadius:
                       BorderRadius.circular(AppDimensions.radiusPill),
                   border: Border.all(
-                    color: selected == null
+                    color: reminderEnabled && selected == null
                         ? AppColors.primary
                         : AppColors.border(isDark),
                   ),
@@ -1934,20 +1819,24 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
                 child: Text(
                   'Use default',
                   style: AppTextStyles.caption.copyWith(
-                    color: selected == null
+                    color: reminderEnabled && selected == null
                         ? AppColors.primary
                         : AppColors.textSecondary(isDark),
-                    fontWeight:
-                        selected == null ? FontWeight.w600 : FontWeight.normal,
+                    fontWeight: reminderEnabled && selected == null
+                        ? FontWeight.w600
+                        : FontWeight.normal,
                   ),
                 ),
               ),
             ),
             // Custom options
             ...options.map((days) {
-              final isSelected = days == selected;
+              final isSelected = reminderEnabled && days == selected;
               return GestureDetector(
-                onTap: () => onChanged(days),
+                onTap: () {
+                  onReminderEnabledChanged(true);
+                  onChanged(days);
+                },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 150),
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
