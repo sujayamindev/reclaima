@@ -56,7 +56,11 @@ dependencies:
   image_picker: ^1.1.2
   flutter_image_compress: ^2.3.0
   cached_network_image: ^3.3.1
-  
+
+  # Share & External URLs
+  share_plus: ^9.0.0
+  url_launcher: ^6.2.4
+
   # Utilities
   intl: ^0.19.0
   uuid: ^4.4.0

@@ -11,7 +11,7 @@ import '../../data/models/receipt_line_item_model.dart';
 import '../../providers/receipt_provider.dart';
 import '../../core/utils/formatters.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'claim_pdf_dialog.dart';
+import 'claim_pdf_screen.dart';
 
 /// Full-screen product detail view.
 ///
@@ -639,11 +639,13 @@ class ProductDetailScreen extends ConsumerWidget {
             height: AppDimensions.buttonHeight,
             child: ElevatedButton.icon(
               onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => ClaimPdfDialog(
-                    receiptId: product.receiptId,
-                    receiptStoreName: product.receipt.storeName ?? 'Store',
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ClaimPdfScreen(
+                      receiptId: product.receiptId,
+                      receiptStoreName: product.receipt.storeName ?? 'Store',
+                    ),
                   ),
                 );
               },
