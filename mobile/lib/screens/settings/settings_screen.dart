@@ -17,18 +17,18 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   // Local working state (synced from backend on init)
-  late bool _warrantyReminders;
-  late bool _returnReminders;
-  late bool _processingAlerts;
-  late bool _quietHoursEnabled;
+  bool _warrantyReminders = true;
+  bool _returnReminders = true;
+  bool _processingAlerts = true;
+  bool _quietHoursEnabled = false;
 
   // Reminder lead times
-  late int _warrantyLeadDays;
-  late int _returnLeadDays;
+  int _warrantyLeadDays = 30;
+  int _returnLeadDays = 3;
 
   // Quiet hours
-  late TimeOfDay _quietStart;
-  late TimeOfDay _quietEnd;
+  TimeOfDay _quietStart = const TimeOfDay(hour: 22, minute: 0);
+  TimeOfDay _quietEnd = const TimeOfDay(hour: 8, minute: 0);
 
   bool _isSaving = false;
 
