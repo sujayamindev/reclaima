@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/app_constants.dart';
+import '../../core/utils/logger.dart';
 import '../../data/models/product_view_model.dart';
 import '../../data/models/receipt_model.dart';
 import '../../data/models/receipt_line_item_model.dart';
@@ -145,6 +146,13 @@ class ProductDetailScreen extends ConsumerWidget {
                 isDark: isDark,
                 hasWarranty: product.hasWarranty,
                 hasReturn: product.hasReturn,
+                receiptId: receiptId,
+                lineItemId: lineItemId ?? '',
+                ref: ref,
+                currentWarrantyLeadOverride:
+                    product.lineItem?.warrantyLeadDaysOverride,
+                currentReturnLeadOverride:
+                    product.lineItem?.returnLeadDaysOverride,
               ),
               const SizedBox(height: 12),
 
@@ -1516,24 +1524,48 @@ class _NotificationSettings extends StatefulWidget {
     required this.isDark,
     required this.hasWarranty,
     required this.hasReturn,
+    required this.receiptId,
+    required this.lineItemId,
+    required this.ref,
+    this.currentWarrantyLeadOverride,
+    this.currentReturnLeadOverride,
   });
 
   final bool isDark;
   final bool hasWarranty;
   final bool hasReturn;
+  final String receiptId;
+  final String lineItemId;
+  final WidgetRef ref;
+  final int? currentWarrantyLeadOverride;
+  final int? currentReturnLeadOverride;
 
   @override
   State<_NotificationSettings> createState() => _NotificationSettingsState();
 }
 
 class _NotificationSettingsState extends State<_NotificationSettings> {
+  // Global reminder toggles (read-only, from user preferences)
   bool _warrantyReminder = true;
   bool _returnReminder = true;
-  int _warrantyLeadDays = 30;
-  int _returnLeadDays = 3;
+
+  // Per-product lead time overrides
+  int? _localWarrantyLeadOverride;
+  int? _localReturnLeadOverride;
+
+  // Save state
+  bool _isSaving = false;
 
   static const _warrantyOptions = [7, 14, 30, 60, 90];
   static const _returnOptions = [1, 2, 3, 5, 7];
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize with current override values from the product
+    _localWarrantyLeadOverride = widget.currentWarrantyLeadOverride;
+    _localReturnLeadOverride = widget.currentReturnLeadOverride;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1570,43 +1602,48 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
           // Warranty reminder
           if (widget.hasWarranty) ...[
             _toggleRow(
-              isDark,
+              widget.isDark,
               icon: Symbols.shield,
               title: 'Warranty Reminder',
               subtitle: _warrantyReminder
-                  ? '$_warrantyLeadDays days before expiry'
+                  ? (_localWarrantyLeadOverride != null
+                      ? '${_localWarrantyLeadOverride} days before expiry (custom)'
+                      : 'Using your global setting')
                   : 'Off',
               value: _warrantyReminder,
               onChanged: (v) => setState(() => _warrantyReminder = v),
             ),
-            // Lead-time selector
+            // Custom lead-time override selector
             AnimatedSize(
               duration: const Duration(milliseconds: 200),
               child: _warrantyReminder
                   ? Padding(
                       padding: const EdgeInsets.only(left: 30, top: 4, bottom: 6),
-                      child: _leadTimeSelector(
-                        isDark,
+                      child: _overrideLeadTimeSelector(
+                        widget.isDark,
+                        label: 'Custom warranty notification lead time (optional)',
                         options: _warrantyOptions,
-                        selected: _warrantyLeadDays,
+                        selected: _localWarrantyLeadOverride,
                         onChanged: (v) =>
-                            setState(() => _warrantyLeadDays = v),
+                            setState(() => _localWarrantyLeadOverride = v),
                       ),
                     )
                   : const SizedBox.shrink(),
             ),
           ],
 
-          
+
 
           // Return reminder
           if (widget.hasReturn) ...[
             _toggleRow(
-              isDark,
+              widget.isDark,
               icon: Symbols.assignment_return,
               title: 'Return Reminder',
               subtitle: _returnReminder
-                  ? '$_returnLeadDays days before deadline'
+                  ? (_localReturnLeadOverride != null
+                      ? '${_localReturnLeadOverride} days before deadline (custom)'
+                      : 'Using your global setting')
                   : 'Off',
               value: _returnReminder,
               onChanged: (v) => setState(() => _returnReminder = v),
@@ -1616,24 +1653,62 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
               child: _returnReminder
                   ? Padding(
                       padding: const EdgeInsets.only(left: 30, top: 4, bottom: 6),
-                      child: _leadTimeSelector(
-                        isDark,
+                      child: _overrideLeadTimeSelector(
+                        widget.isDark,
+                        label: 'Custom return notification lead time (optional)',
                         options: _returnOptions,
-                        selected: _returnLeadDays,
+                        selected: _localReturnLeadOverride,
                         onChanged: (v) =>
-                            setState(() => _returnLeadDays = v),
+                            setState(() => _localReturnLeadOverride = v),
                       ),
                     )
                   : const SizedBox.shrink(),
             ),
           ],
 
+          // Save button (if has warranty or return)
+          if ((widget.hasWarranty || widget.hasReturn) &&
+              (_localWarrantyLeadOverride != widget.currentWarrantyLeadOverride ||
+                  _localReturnLeadOverride != widget.currentReturnLeadOverride))
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _isSaving ? null : _saveNotificationSettings,
+                  icon: _isSaving
+                      ? SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation(
+                              AppColors.background(false),
+                            ),
+                          ),
+                        )
+                      : const Icon(Symbols.save),
+                  label: Text(_isSaving
+                      ? 'Saving...'
+                      : 'Save Notification Settings'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: AppColors.background(false),
+                    shape: RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(AppDimensions.radiusPill),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
           // Fallback when no warranty or return
           if (!widget.hasWarranty && !widget.hasReturn)
             Text(
               'No warranty or return info to set reminders for.',
               style: AppTextStyles.bodyXSmall.copyWith(
-                color: AppColors.muted(isDark),
+                color: AppColors.muted(widget.isDark),
               ),
             ),
         ],
@@ -1734,6 +1809,141 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
           ),
         );
       }).toList(),
+    );
+  }
+
+  // ── Save notification settings ──────────────────────────────────────
+
+  Future<void> _saveNotificationSettings() async {
+    setState(() => _isSaving = true);
+    try {
+      await widget.ref
+          .read(receiptControllerProvider.notifier)
+          .updateLineItem(
+            widget.receiptId,
+            widget.lineItemId,
+            {
+              if (_localWarrantyLeadOverride != null)
+                'warrantyLeadDaysOverride': _localWarrantyLeadOverride,
+              if (_localReturnLeadOverride != null)
+                'returnLeadDaysOverride': _localReturnLeadOverride,
+            },
+          );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Notification settings saved'),
+            behavior: SnackBarBehavior.floating,
+            duration: Duration(milliseconds: 1500),
+          ),
+        );
+      }
+    } catch (e, st) {
+      logger.e('Failed to save notification settings: $e', stackTrace: st);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Failed to save notification settings'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  // ── Override lead time chip selector ────────────────────────────────
+
+  Widget _overrideLeadTimeSelector(
+    bool isDark, {
+    required String label,
+    required List<int> options,
+    required int? selected,
+    required ValueChanged<int?> onChanged,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: AppTextStyles.caption.copyWith(
+            color: AppColors.textSecondary(isDark),
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: [
+            // "None" / "Use Global" option
+            GestureDetector(
+              onTap: () => onChanged(null),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: selected == null
+                      ? AppColors.primary.withValues(alpha: 0.15)
+                      : Colors.transparent,
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.radiusPill),
+                  border: Border.all(
+                    color: selected == null
+                        ? AppColors.primary
+                        : AppColors.border(isDark),
+                  ),
+                ),
+                child: Text(
+                  'Use global',
+                  style: AppTextStyles.caption.copyWith(
+                    color: selected == null
+                        ? AppColors.primary
+                        : AppColors.textSecondary(isDark),
+                    fontWeight:
+                        selected == null ? FontWeight.w600 : FontWeight.normal,
+                  ),
+                ),
+              ),
+            ),
+            // Custom options
+            ...options.map((days) {
+              final isSelected = days == selected;
+              return GestureDetector(
+                onTap: () => onChanged(days),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? AppColors.primary.withValues(alpha: 0.15)
+                        : Colors.transparent,
+                    borderRadius:
+                        BorderRadius.circular(AppDimensions.radiusPill),
+                    border: Border.all(
+                      color: isSelected
+                          ? AppColors.primary
+                          : AppColors.border(isDark),
+                    ),
+                  ),
+                  child: Text(
+                    '$days days',
+                    style: AppTextStyles.caption.copyWith(
+                      color: isSelected
+                          ? AppColors.primary
+                          : AppColors.textSecondary(isDark),
+                      fontWeight:
+                          isSelected ? FontWeight.w600 : FontWeight.normal,
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ],
+        ),
+      ],
     );
   }
 }

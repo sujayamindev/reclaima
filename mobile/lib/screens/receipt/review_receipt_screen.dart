@@ -90,10 +90,12 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
   // 🛡️ Warranty Info
   final _warrantyPeriodCtrl = TextEditingController();
   DateTime? _warrantyExpiryDate;
+  int? _warrantyLeadDaysOverride;
 
   // 💵 Return Policy
   final _returnPeriodCtrl = TextEditingController();
   DateTime? _returnExpiryDate;
+  int? _returnLeadDaysOverride;
 
   // 📝 Remarks & Notes
   final _remarksCtrl = TextEditingController();
@@ -153,8 +155,10 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
           _categories.contains(ocrCategory) ? ocrCategory : 'Electronics';
       _warrantyPeriodCtrl.text = primary.warrantyPeriodMonths?.toString() ?? '';
       _warrantyExpiryDate = primary.warrantyExpiryDate;
+      _warrantyLeadDaysOverride = primary.warrantyLeadDaysOverride;
       _returnPeriodCtrl.text = primary.returnPeriodDays?.toString() ?? '';
       _returnExpiryDate = primary.returnExpiryDate;
+      _returnLeadDaysOverride = primary.returnLeadDaysOverride;
     } else {
       _primaryLineItemId = null;
       _productNameCtrl.text = '';
@@ -163,6 +167,8 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
       _returnPeriodCtrl.text = '';
       _warrantyExpiryDate = null;
       _returnExpiryDate = null;
+      _warrantyLeadDaysOverride = null;
+      _returnLeadDaysOverride = null;
     }
   }
 
@@ -371,6 +377,14 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
       }
     } else {
       lineItemData['returnPeriodDays'] = null;
+    }
+
+    // ── Notification lead time overrides ────────────────────────────────────
+    if (_warrantyLeadDaysOverride != null) {
+      lineItemData['warrantyLeadDaysOverride'] = _warrantyLeadDaysOverride;
+    }
+    if (_returnLeadDaysOverride != null) {
+      lineItemData['returnLeadDaysOverride'] = _returnLeadDaysOverride;
     }
 
     Navigator.push(
@@ -933,6 +947,16 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                         ],
                         onChanged: (_) => _autoComputeWarrantyExpiry(),
                       ),
+                      const SizedBox(height: 14),
+                      _buildLeadTimeDropdown(
+                        isDark: isDark,
+                        label: 'Custom Warranty Notification Lead Time (optional)',
+                        hint: 'Default: use global setting',
+                        options: const [7, 14, 30, 60, 90],
+                        selectedValue: _warrantyLeadDaysOverride,
+                        onChanged: (value) =>
+                            setState(() => _warrantyLeadDaysOverride = value),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -955,6 +979,16 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                           FilteringTextInputFormatter.digitsOnly,
                         ],
                         onChanged: (_) => _autoComputeReturnExpiry(),
+                      ),
+                      const SizedBox(height: 14),
+                      _buildLeadTimeDropdown(
+                        isDark: isDark,
+                        label: 'Custom Return Notification Lead Time (optional)',
+                        hint: 'Default: use global setting',
+                        options: const [1, 2, 3, 5, 7],
+                        selectedValue: _returnLeadDaysOverride,
+                        onChanged: (value) =>
+                            setState(() => _returnLeadDaysOverride = value),
                       ),
                     ],
                   ),
@@ -1162,6 +1196,79 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
           onChanged: (value) {
             if (value != null) setState(() => _selectedCategory = value);
           },
+        ),
+      ],
+    );
+  }
+
+  /// Custom notification lead time dropdown (optional override)
+  Widget _buildLeadTimeDropdown({
+    required bool isDark,
+    required String label,
+    required String hint,
+    required List<int> options,
+    required int? selectedValue,
+    required ValueChanged<int?> onChanged,
+  }) {
+    final labelColor = AppColors.label(isDark);
+    final borderColor = AppColors.border(isDark);
+    final fillColor = AppColors.card(isDark);
+    final textPrimary = AppColors.textPrimary(isDark);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: AppTextStyles.formLabel.copyWith(
+            color: labelColor.withValues(alpha: 0.6),
+          ),
+        ),
+        const SizedBox(height: 6),
+        DropdownButtonFormField<int?>(
+          value: selectedValue,
+          dropdownColor: AppColors.card(isDark),
+          style: TextStyle(color: textPrimary, fontSize: 15),
+          icon: Icon(
+            Symbols.keyboard_arrow_down,
+            color: labelColor,
+            size: 20,
+          ),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: TextStyle(color: labelColor.withValues(alpha: 0.5)),
+            filled: true,
+            fillColor: fillColor,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(24),
+              borderSide: BorderSide(color: borderColor),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(24),
+              borderSide: BorderSide(color: borderColor),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
+              borderSide: const BorderSide(color: AppColors.primary, width: 2),
+            ),
+          ),
+          items: [
+            DropdownMenuItem(
+              value: null,
+              child: Text(hint),
+            ),
+            ...options.map(
+              (days) => DropdownMenuItem(
+                value: days,
+                child: Text('$days days'),
+              ),
+            ),
+          ],
+          onChanged: onChanged,
         ),
       ],
     );
