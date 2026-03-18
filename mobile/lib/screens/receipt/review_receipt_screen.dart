@@ -1201,7 +1201,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     );
   }
 
-  /// Custom notification lead time dropdown (optional override)
+  /// Custom notification lead time chip selector (optional override)
   Widget _buildLeadTimeDropdown({
     required bool isDark,
     required String label,
@@ -1210,65 +1210,85 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     required int? selectedValue,
     required ValueChanged<int?> onChanged,
   }) {
-    final labelColor = AppColors.label(isDark);
-    final borderColor = AppColors.border(isDark);
-    final fillColor = AppColors.card(isDark);
-    final textPrimary = AppColors.textPrimary(isDark);
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: AppTextStyles.formLabel.copyWith(
-            color: labelColor.withValues(alpha: 0.6),
+          style: AppTextStyles.caption.copyWith(
+            color: AppColors.textSecondary(isDark),
+            fontWeight: FontWeight.w500,
           ),
         ),
         const SizedBox(height: 6),
-        DropdownButtonFormField<int?>(
-          value: selectedValue,
-          dropdownColor: AppColors.card(isDark),
-          style: TextStyle(color: textPrimary, fontSize: 15),
-          icon: Icon(
-            Symbols.keyboard_arrow_down,
-            color: labelColor,
-            size: 20,
-          ),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: TextStyle(color: labelColor.withValues(alpha: 0.5)),
-            filled: true,
-            fillColor: fillColor,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 12,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(24),
-              borderSide: BorderSide(color: borderColor),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(24),
-              borderSide: BorderSide(color: borderColor),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
-              borderSide: const BorderSide(color: AppColors.primary, width: 2),
-            ),
-          ),
-          items: [
-            DropdownMenuItem(
-              value: null,
-              child: Text(hint),
-            ),
-            ...options.map(
-              (days) => DropdownMenuItem(
-                value: days,
-                child: Text('$days days'),
+        Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: [
+            // "Use global" option
+            GestureDetector(
+              onTap: () => onChanged(null),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: selectedValue == null
+                      ? AppColors.primary.withValues(alpha: 0.15)
+                      : Colors.transparent,
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.radiusPill),
+                  border: Border.all(
+                    color: selectedValue == null
+                        ? AppColors.primary
+                        : AppColors.border(isDark),
+                  ),
+                ),
+                child: Text(
+                  'Use global',
+                  style: AppTextStyles.caption.copyWith(
+                    color: selectedValue == null
+                        ? AppColors.primary
+                        : AppColors.textSecondary(isDark),
+                    fontWeight:
+                        selectedValue == null ? FontWeight.w600 : FontWeight.normal,
+                  ),
+                ),
               ),
             ),
+            // Custom options
+            ...options.map((days) {
+              final isSelected = days == selectedValue;
+              return GestureDetector(
+                onTap: () => onChanged(days),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? AppColors.primary.withValues(alpha: 0.15)
+                        : Colors.transparent,
+                    borderRadius:
+                        BorderRadius.circular(AppDimensions.radiusPill),
+                    border: Border.all(
+                      color: isSelected
+                          ? AppColors.primary
+                          : AppColors.border(isDark),
+                    ),
+                  ),
+                  child: Text(
+                    '$days days',
+                    style: AppTextStyles.caption.copyWith(
+                      color: isSelected
+                          ? AppColors.primary
+                          : AppColors.textSecondary(isDark),
+                      fontWeight:
+                          isSelected ? FontWeight.w600 : FontWeight.normal,
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
           ],
-          onChanged: onChanged,
         ),
       ],
     );
