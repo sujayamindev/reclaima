@@ -308,6 +308,11 @@ class ClaimDocumentBase(BaseModel):
     issue_description: str
     claim_type: Optional[str] = "warranty"
 
+    model_config = ConfigDict(
+        populate_by_name=True,
+        alias_generator=to_camel
+    )
+
 
 class ClaimDocumentCreate(ClaimDocumentBase):
     """Claim document creation schema."""
