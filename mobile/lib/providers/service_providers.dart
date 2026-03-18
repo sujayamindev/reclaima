@@ -3,6 +3,7 @@ import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/receipt_service.dart';
 import '../services/product_image_service.dart';
+import '../services/notification_service.dart';
 import '../data/database/app_database.dart';
 
 /// API Service provider
@@ -31,4 +32,10 @@ final receiptServiceProvider = Provider<ReceiptService>((ref) {
 final productImageServiceProvider = Provider<ProductImageService>((ref) {
   final apiService = ref.watch(apiServiceProvider);
   return ProductImageService(apiService);
+});
+
+/// Notification Service provider
+final notificationServiceProvider = Provider<NotificationService>((ref) {
+  final apiService = ref.watch(apiServiceProvider);
+  return NotificationService(apiService);
 });

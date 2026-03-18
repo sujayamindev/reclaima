@@ -13,7 +13,7 @@ from fastapi.exceptions import RequestValidationError
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.core.config import settings
-from app.api.v1 import auth, receipts, warranties, health, products
+from app.api.v1 import auth, receipts, warranties, health, products, notifications
 
 # Configure logging
 logging.basicConfig(
@@ -37,14 +37,52 @@ async def lifespan(app: FastAPI):
     logger.info(f"Debug mode: {settings.DEBUG}")
     logger.info(f"Using mock AWS services: {settings.USE_MOCK_AWS}")
     logger.info(f"Database: {settings.DATABASE_URL.split('@')[-1] if '@' in settings.DATABASE_URL else 'configured'}")
-    
-    # TODO: Initialize APScheduler for background jobs
-    # if settings.ENABLE_SCHEDULER:
-    #     logger.info("Background scheduler will be initialized here")
-    
+
+    scheduler = None
+    if settings.ENABLE_SCHEDULER:
+        try:
+            from apscheduler.schedulers.background import BackgroundScheduler
+            from app.services.notification_service import notification_service
+
+            scheduler = BackgroundScheduler(timezone="UTC")
+            # Warranty reminders — daily at REMINDER_CHECK_HOUR UTC
+            scheduler.add_job(
+                notification_service.run_warranty_reminders,
+                "cron",
+                hour=settings.REMINDER_CHECK_HOUR,
+                minute=0,
+                id="warranty_reminders",
+            )
+            # Return deadline reminders — daily, 5 min after warranty job
+            scheduler.add_job(
+                notification_service.run_return_reminders,
+                "cron",
+                hour=settings.REMINDER_CHECK_HOUR,
+                minute=5,
+                id="return_reminders",
+            )
+            # Hard-delete cleanup — daily at CLEANUP_HOUR UTC
+            scheduler.add_job(
+                notification_service.run_hard_delete_cleanup,
+                "cron",
+                hour=settings.CLEANUP_HOUR,
+                minute=0,
+                id="hard_delete_cleanup",
+            )
+            scheduler.start()
+            logger.info(
+                f"APScheduler started — reminder jobs at {settings.REMINDER_CHECK_HOUR:02d}:00 UTC, "
+                f"cleanup at {settings.CLEANUP_HOUR:02d}:00 UTC"
+            )
+        except Exception as exc:
+            logger.error(f"Failed to start APScheduler: {exc}", exc_info=True)
+
     yield
-    
+
     # Shutdown
+    if scheduler and scheduler.running:
+        scheduler.shutdown(wait=False)
+        logger.info("APScheduler stopped")
     logger.info("Shutting down application")
 
 
@@ -139,6 +177,7 @@ app.include_router(auth.router, prefix=settings.API_V1_PREFIX)
 app.include_router(receipts.router, prefix=settings.API_V1_PREFIX)
 app.include_router(warranties.router, prefix=settings.API_V1_PREFIX)
 app.include_router(products.router, prefix=settings.API_V1_PREFIX)
+app.include_router(notifications.router, prefix=settings.API_V1_PREFIX)
 
 
 # ============================================

@@ -18,6 +18,8 @@ class ApiConstants {
   static const String receipts = '/receipts';
   static const String warranties = '/warranties';
   static const String productImageSearch = '/products/image-search';
+  static const String notificationPreferences = '/notifications/preferences';
+  static const String fcmToken = '/notifications/fcm-token';
   static const String health = '/health';
   
   // Timeouts

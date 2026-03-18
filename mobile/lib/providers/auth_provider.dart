@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/user_model.dart';
 import '../services/auth_service.dart';
+import '../services/notification_service.dart';
 import 'service_providers.dart';
 
 /// Auth state provider - listen to Firebase auth changes
@@ -43,8 +44,10 @@ final userProfileProvider = FutureProvider<UserModel?>((ref) async {
 /// Auth Controller
 class AuthController extends StateNotifier<AsyncValue<void>> {
   final AuthService _authService;
-  
-  AuthController(this._authService) : super(const AsyncValue.data(null));
+  final NotificationService _notifService;
+
+  AuthController(this._authService, this._notifService)
+      : super(const AsyncValue.data(null));
   
   /// Sign up with email and password
   Future<void> signUp({
@@ -81,11 +84,11 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
     }
   }
   
-  /// Sign out
+  /// Sign out — deregisters FCM token first so push stops immediately
   Future<void> signOut() async {
     state = const AsyncValue.loading();
-    
     try {
+      await _notifService.deregisterToken();
       await _authService.signOut();
       state = const AsyncValue.data(null);
     } catch (e, st) {
@@ -145,6 +148,8 @@ final greetingProvider = Provider<String>((_) {
 /// Auth controller provider
 final authControllerProvider =
     StateNotifierProvider<AuthController, AsyncValue<void>>((ref) {
-  final authService = ref.watch(authServiceProvider);
-  return AuthController(authService);
+  return AuthController(
+    ref.watch(authServiceProvider),
+    ref.watch(notificationServiceProvider),
+  );
 });

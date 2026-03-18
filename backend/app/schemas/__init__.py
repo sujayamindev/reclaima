@@ -361,6 +361,8 @@ class UserNotificationPreferencesBase(BaseModel):
     warranty_reminders_enabled: bool = True
     return_reminders_enabled: bool = True
     ocr_notifications_enabled: bool = True
+    warranty_lead_days: int = 30    # days before warranty expiry to send push
+    return_lead_days: int = 3       # days before return deadline to send push
     quiet_hours_start: Optional[int] = None  # 0-23
     quiet_hours_end: Optional[int] = None    # 0-23
 
@@ -370,6 +372,8 @@ class UserNotificationPreferencesUpdate(BaseModel):
     warranty_reminders_enabled: Optional[bool] = None
     return_reminders_enabled: Optional[bool] = None
     ocr_notifications_enabled: Optional[bool] = None
+    warranty_lead_days: Optional[int] = None
+    return_lead_days: Optional[int] = None
     quiet_hours_start: Optional[int] = None
     quiet_hours_end: Optional[int] = None
 
@@ -391,6 +395,11 @@ class UserNotificationPreferencesResponse(UserNotificationPreferencesBase):
         populate_by_name=True,
         alias_generator=to_camel
     )
+
+
+class UserFcmTokenUpdate(BaseModel):
+    """Request body for registering/clearing an FCM device token."""
+    token: Optional[str] = None
 
 
 # ============================================
