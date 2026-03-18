@@ -689,6 +689,10 @@ class ReceiptService:
             warranty_expiry_date=warranty_expiry,
             return_period_days=return_days,
             return_expiry_date=return_expiry,
+            warranty_lead_days_override=fields.get("warranty_lead_days_override"),
+            return_lead_days_override=fields.get("return_lead_days_override"),
+            warranty_reminder_enabled=fields.get("warranty_reminder_enabled", True),
+            return_reminder_enabled=fields.get("return_reminder_enabled", True),
         )
         db.add(line_item)
 
