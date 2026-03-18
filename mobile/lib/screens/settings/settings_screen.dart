@@ -149,30 +149,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  child: Row(
-                    children: [
-                      IconButton(
-                        onPressed: () => Navigator.pop(context),
-                        icon: Icon(Symbols.arrow_back,
-                            color: AppColors.textPrimary(isDark)),
-                        padding: const EdgeInsets.all(8),
-                        style: IconButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          shape: const CircleBorder(),
-                        ),
+                  child: Center(
+                    child: Text(
+                      'Settings',
+                      style: AppTextStyles.listTitle.copyWith(
+                        fontSize: 17,
+                        color: AppColors.textPrimary(isDark),
                       ),
-                      Expanded(
-                        child: Text(
-                          'Settings',
-                          textAlign: TextAlign.center,
-                          style: AppTextStyles.listTitle.copyWith(
-                            fontSize: 17,
-                            color: AppColors.textPrimary(isDark),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 48),
-                    ],
+                    ),
                   ),
                 ),
               ),
