@@ -24,6 +24,8 @@ class ClaimDocument(Base):
     # Claim information
     issue_description = Column(Text, nullable=False)
     claim_type = Column(String(64), nullable=True)  # e.g., "warranty", "return", "repair"
+    status = Column(String(32), default="SUBMITTED", nullable=False)
+    notes = Column(Text, nullable=True)
     
     # Generated PDF reference
     generated_pdf_s3_key = Column(String(512), nullable=True)

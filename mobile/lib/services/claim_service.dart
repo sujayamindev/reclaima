@@ -9,6 +9,8 @@ class ClaimDocumentResponse {
   final String receiptId;
   final String issueDescription;
   final String? claimType;
+  final String status;
+  final String? notes;
   final String? generatedPdfS3Key;
   final String? url; // Pre-signed S3 URL for downloading
   final DateTime createdAt;
@@ -19,6 +21,8 @@ class ClaimDocumentResponse {
     required this.receiptId,
     required this.issueDescription,
     this.claimType,
+    required this.status,
+    this.notes,
     this.generatedPdfS3Key,
     this.url,
     required this.createdAt,
@@ -31,6 +35,8 @@ class ClaimDocumentResponse {
       receiptId: json['receiptId'] ?? json['receipt_id'] as String,
       issueDescription: json['issueDescription'] ?? json['issue_description'] as String,
       claimType: json['claimType'] ?? json['claim_type'] as String?,
+      status: json['status'] as String? ?? 'SUBMITTED',
+      notes: json['notes'] as String?,
       generatedPdfS3Key: json['generatedPdfS3Key'] ?? json['generated_pdf_s3_key'] as String?,
       url: json['url'] as String?,
       createdAt: DateTime.parse(json['createdAt'] ?? json['created_at'] as String),
@@ -43,6 +49,8 @@ class ClaimDocumentResponse {
     'receiptId': receiptId,
     'issueDescription': issueDescription,
     'claimType': claimType,
+    'status': status,
+    'notes': notes,
     'generatedPdfS3Key': generatedPdfS3Key,
     'url': url,
     'createdAt': createdAt.toIso8601String(),
@@ -181,6 +189,33 @@ class ClaimService {
       }
     } catch (e) {
       logger.e('Error deleting claim: $e');
+      rethrow;
+    }
+  }
+
+  /// Update an existing claim
+  Future<ClaimDocumentResponse> updateClaim(String claimId, {String? status, String? notes}) async {
+    try {
+      logger.i('Updating claim $claimId');
+      
+      final data = <String, dynamic>{};
+      if (status != null) data['status'] = status;
+      if (notes != null) data['notes'] = notes;
+
+      final response = await _apiService.patch(
+        '/claims/$claimId',
+        data: data,
+      );
+
+      if (response.statusCode == 200) {
+        final respData = response.data as Map<String, dynamic>;
+        logger.i('Claim updated successfully: $claimId');
+        return ClaimDocumentResponse.fromJson(respData);
+      } else {
+        throw Exception('Failed to update claim: ${response.statusCode}');
+      }
+    } catch (e) {
+      logger.e('Error updating claim: $e');
       rethrow;
     }
   }

@@ -25,14 +25,19 @@ class ClaimPdfScreen extends ConsumerStatefulWidget {
 
 class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
   late final TextEditingController _issueController = TextEditingController();
+  late final TextEditingController _notesController = TextEditingController();
   String _selectedClaimType = 'warranty';
   bool _isLoading = false;
+  bool _isUpdating = false;
   ClaimDocumentResponse? _generatedClaim;
   String? _error;
+  
+  final List<String> _statusOptions = ['DRAFT', 'SUBMITTED', 'IN_PROGRESS', 'RESOLVED', 'DENIED'];
 
   @override
   void dispose() {
     _issueController.dispose();
+    _notesController.dispose();
     super.dispose();
   }
 
@@ -64,6 +69,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
 
       setState(() {
         _generatedClaim = claim;
+        _notesController.text = claim.notes ?? '';
       });
     } catch (e) {
       logger.e('Error generating claim: $e');
@@ -83,6 +89,37 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
       if (mounted) {
         setState(() => _isLoading = false);
       }
+    }
+  }
+
+  Future<void> _updateClaimStatus(String newStatus) async {
+    if (_generatedClaim == null) return;
+    setState(() => _isUpdating = true);
+    try {
+      final claimService = ref.read(claimServiceProvider);
+      final updated = await claimService.updateClaim(_generatedClaim!.id, status: newStatus);
+      setState(() => _generatedClaim = updated);
+    } catch (e) {
+      logger.e('Error updating status: $e');
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
+    } finally {
+      if (mounted) setState(() => _isUpdating = false);
+    }
+  }
+
+  Future<void> _updateClaimNotes() async {
+    if (_generatedClaim == null) return;
+    setState(() => _isUpdating = true);
+    try {
+      final claimService = ref.read(claimServiceProvider);
+      final updated = await claimService.updateClaim(_generatedClaim!.id, notes: _notesController.text);
+      setState(() => _generatedClaim = updated);
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Notes saved')));
+    } catch (e) {
+      logger.e('Error updating notes: $e');
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
+    } finally {
+      if (mounted) setState(() => _isUpdating = false);
     }
   }
 
@@ -445,8 +482,57 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                     _buildDetailRow('Type', _generatedClaim!.claimType?.toUpperCase() ?? 'UNKNOWN', isDark),
                     const SizedBox(height: 12),
                     _buildDetailRow('Store', widget.receiptStoreName, isDark),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Status', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary(isDark))),
+                        _isUpdating ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) :
+                        DropdownButton<String>(
+                          value: _generatedClaim!.status,
+                          items: _statusOptions.map((s) => DropdownMenuItem(value: s, child: Text(s, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textPrimary(isDark))))).toList(),
+                          onChanged: (val) { if (val != null) _updateClaimStatus(val); },
+                          underline: const SizedBox(),
+                          alignment: Alignment.centerRight,
+                        ),
+                      ],
+                    ),
                   ],
                 ),
+              ),
+              const SizedBox(height: 24),
+
+              // Notes field
+              Text('Resolution Notes', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: secondaryColor, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 8),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _notesController,
+                      maxLines: 3,
+                      minLines: 2,
+                      enabled: !_isUpdating,
+                      style: TextStyle(color: textColor, fontSize: 14),
+                      decoration: InputDecoration(
+                        hintText: 'Add tracking numbers, support ticket IDs, or resolution notes...',
+                        hintStyle: TextStyle(color: secondaryColor.withValues(alpha: 0.5)),
+                        filled: true,
+                        fillColor: cardColor,
+                        contentPadding: const EdgeInsets.all(12),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: AppColors.border(isDark))),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    onPressed: _isUpdating ? null : _updateClaimNotes,
+                    icon: const Icon(Symbols.save),
+                    color: AppColors.primary,
+                    tooltip: 'Save Notes',
+                  ),
+                ],
               ),
               const SizedBox(height: 24),
 

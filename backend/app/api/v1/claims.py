@@ -20,6 +20,7 @@ from app.models import ClaimDocument, Receipt
 from app.schemas import (
     ClaimDocumentCreate,
     ClaimDocumentResponse,
+    ClaimDocumentUpdate,
 )
 
 logger = logging.getLogger(__name__)
@@ -136,6 +137,7 @@ async def create_claim(
             receipt_id=receipt.id,
             issue_description=claim_data.issue_description,
             claim_type=claim_data.claim_type or "warranty",
+            status="SUBMITTED",
             generated_pdf_s3_key=s3_object_key,
         )
         db.add(claim_document)
@@ -162,6 +164,93 @@ async def create_claim(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to generate claim PDF"
         )
+
+
+@router.patch(
+    "/{claim_id}",
+    response_model=ClaimDocumentResponse,
+    response_model_by_alias=True
+)
+async def update_claim(
+    claim_id: str,
+    claim_update: ClaimDocumentUpdate,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Update a claim document's status or notes.
+    """
+    firebase_uid = current_user.get("uid")
+    db_user = user_service.get_user_by_firebase_uid(db, firebase_uid)
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+
+    # Get claim
+    claim = db.query(ClaimDocument).filter(
+        and_(
+            ClaimDocument.id == claim_id,
+            ClaimDocument.deleted_at.is_(None)
+        )
+    ).first()
+
+    if not claim:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Claim not found"
+        )
+
+    # Verify user owns the associated receipt
+    receipt = _get_receipt_with_line_items(db, claim.receipt_id)
+    if not receipt or receipt.user_id != db_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have permission to modify this claim"
+        )
+
+    # Update fields
+    updated = False
+    if claim_update.status is not None:
+        claim.status = claim_update.status
+        updated = True
+    if claim_update.notes is not None:
+        claim.notes = claim_update.notes
+        updated = True
+
+    if updated:
+        db.commit()
+        db.refresh(claim)
+
+    s3_service = get_s3_service(
+        bucket_name=settings.AWS_S3_BUCKET,
+        use_mock=settings.USE_MOCK_AWS,
+        region=settings.AWS_REGION
+    )
+
+    response = ClaimDocumentResponse.model_validate(claim)
+    if claim.generated_pdf_s3_key:
+        if not s3_service.file_exists(claim.generated_pdf_s3_key):
+            pdf_service = get_pdf_service()
+            pdf_bytes = pdf_service.generate_claim_pdf(
+                receipt=receipt,
+                user=db_user,
+                issue_description=claim.issue_description,
+                claim_type=claim.claim_type or "warranty"
+            )
+            s3_service.upload_file(
+                file_content=pdf_bytes,
+                object_key=claim.generated_pdf_s3_key,
+                content_type="application/pdf"
+            )
+        response.url = s3_service.generate_presigned_url(
+            claim.generated_pdf_s3_key,
+            expiration=3600,
+            operation="get_object"
+        )
+
+    return response
 
 
 @router.get(
@@ -238,6 +327,22 @@ async def list_claims(
         for claim in claims:
             response = ClaimDocumentResponse.model_validate(claim)
             if claim.generated_pdf_s3_key:
+                if not s3_service.file_exists(claim.generated_pdf_s3_key):
+                    # Ephemeral storage regeneration
+                    pdf_service = get_pdf_service()
+                    receipt_for_claim = next((r for r in [receipt] if r.id == claim.receipt_id), None) if receipt_id else _get_receipt_with_line_items(db, claim.receipt_id)
+                    if receipt_for_claim:
+                        pdf_bytes = pdf_service.generate_claim_pdf(
+                            receipt=receipt_for_claim,
+                            user=db_user,
+                            issue_description=claim.issue_description,
+                            claim_type=claim.claim_type or "warranty"
+                        )
+                        s3_service.upload_file(
+                            file_content=pdf_bytes,
+                            object_key=claim.generated_pdf_s3_key,
+                            content_type="application/pdf"
+                        )
                 response.url = s3_service.generate_presigned_url(
                     claim.generated_pdf_s3_key,
                     expiration=3600,
@@ -325,6 +430,20 @@ async def get_claim(
 
         response = ClaimDocumentResponse.model_validate(claim)
         if claim.generated_pdf_s3_key:
+            if not s3_service.file_exists(claim.generated_pdf_s3_key):
+                # Ephemeral storage regeneration
+                pdf_service = get_pdf_service()
+                pdf_bytes = pdf_service.generate_claim_pdf(
+                    receipt=receipt,
+                    user=db_user,
+                    issue_description=claim.issue_description,
+                    claim_type=claim.claim_type or "warranty"
+                )
+                s3_service.upload_file(
+                    file_content=pdf_bytes,
+                    object_key=claim.generated_pdf_s3_key,
+                    content_type="application/pdf"
+                )
             response.url = s3_service.generate_presigned_url(
                 claim.generated_pdf_s3_key,
                 expiration=3600,

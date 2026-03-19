@@ -303,6 +303,15 @@ class OCRResult(BaseModel):
 # ============================================
 # Claim Document Schemas
 # ============================================
+class ClaimStatusEnum(str, Enum):
+    """Claim processing status."""
+    DRAFT = "DRAFT"
+    SUBMITTED = "SUBMITTED"
+    IN_PROGRESS = "IN_PROGRESS"
+    RESOLVED = "RESOLVED"
+    DENIED = "DENIED"
+
+
 class ClaimDocumentBase(BaseModel):
     """Base claim document schema."""
     issue_description: str
@@ -319,10 +328,23 @@ class ClaimDocumentCreate(ClaimDocumentBase):
     receipt_id: str
 
 
+class ClaimDocumentUpdate(BaseModel):
+    """Claim document partial update schema."""
+    status: Optional[ClaimStatusEnum] = None
+    notes: Optional[str] = None
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+        alias_generator=to_camel
+    )
+
+
 class ClaimDocumentResponse(ClaimDocumentBase):
     """Claim document response schema."""
     id: str
     receipt_id: str
+    status: ClaimStatusEnum
+    notes: Optional[str] = None
     generated_pdf_s3_key: Optional[str]
     url: Optional[str] = None  # Pre-signed S3 URL for downloading the PDF
     created_at: datetime
