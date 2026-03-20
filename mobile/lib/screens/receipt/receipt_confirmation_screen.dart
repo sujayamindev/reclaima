@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/app_constants.dart';
+import '../../core/utils/logger.dart';
 import '../../providers/receipt_provider.dart';
 import '../../providers/claim_provider.dart';
 import '../../providers/service_providers.dart';
+import '../../services/claim_service.dart';
 import '../../widgets/step_progress_bar.dart';
 import '../../widgets/product_image_card.dart';
 import 'product_detail_screen.dart';

@@ -12,6 +12,7 @@ import '../../providers/receipt_provider.dart';
 import '../../core/utils/formatters.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'claim_pdf_screen.dart';
+import 'claims_list_screen.dart';
 
 /// Full-screen product detail view.
 ///
@@ -700,7 +701,7 @@ class ProductDetailScreen extends ConsumerWidget {
                 isDark,
               ),
           ],
-          // ── Generate PDF button ───────────────────────────────────
+          // ── Warranty Claims Button ────────────────────────────────
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
@@ -710,7 +711,7 @@ class ProductDetailScreen extends ConsumerWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ClaimPdfScreen(
+                    builder: (context) => ClaimsListScreen(
                       receiptId: product.receiptId,
                       receiptStoreName: product.receipt.storeName ?? 'Store',
                     ),
@@ -725,8 +726,8 @@ class ProductDetailScreen extends ConsumerWidget {
                       BorderRadius.circular(AppDimensions.radiusPill),
                 ),
               ),
-              icon: const Icon(Symbols.picture_as_pdf, size: 20),
-              label: const Text('Generate Claim PDF'),
+              icon: const Icon(Symbols.description, size: 20),
+              label: const Text('Manage Claims'),
             ),
           ),
         ],
