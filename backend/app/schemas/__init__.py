@@ -84,6 +84,9 @@ class ReceiptLineItemResponse(BaseModel):
     # Per-item notification lead time overrides
     warranty_lead_days_override: Optional[int] = None
     return_lead_days_override: Optional[int] = None
+    status: str
+    replacement_for_id: Optional[str] = None
+    replaced_by_id: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
@@ -352,6 +355,18 @@ class ClaimDocumentResponse(ClaimDocumentBase):
 
     model_config = ConfigDict(
         from_attributes=True,
+        populate_by_name=True,
+        alias_generator=to_camel
+    )
+
+
+class ClaimResolutionRequest(BaseModel):
+    """Claim resolution schema."""
+    outcome: str  # "REFUNDED", "REPAIRED", "REPLACED"
+    linked_item_id: Optional[str] = None
+    duplicate_details: bool = False
+
+    model_config = ConfigDict(
         populate_by_name=True,
         alias_generator=to_camel
     )

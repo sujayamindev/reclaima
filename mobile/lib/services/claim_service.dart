@@ -106,28 +106,32 @@ class ClaimService {
     }
   }
 
-  /// Get all claims for a specific receipt
+  /// Get all claims (optionally filtered by receipt)
   ///
   /// Args:
-  ///   receiptId: Receipt ID to filter claims by
+  ///   receiptId: Optional receipt ID to filter claims by
   ///
   /// Returns:
   ///   List of ClaimDocumentResponse objects
   ///
   /// Throws:
   ///   Exception if retrieval fails
-  Future<List<ClaimDocumentResponse>> getClaimsForReceipt(String receiptId) async {
+  Future<List<ClaimDocumentResponse>> getClaims({String? receiptId}) async {
     try {
-      logger.i('Fetching claims for receipt $receiptId');
+      if (receiptId != null) {
+        logger.i('Fetching claims for receipt $receiptId');
+      } else {
+        logger.i('Fetching all claims');
+      }
 
       final response = await _apiService.get(
         '/claims',
-        queryParameters: {'receiptId': receiptId},
+        queryParameters: receiptId != null ? {'receiptId': receiptId} : null,
       );
 
       if (response.statusCode == 200) {
         final data = response.data as List;
-        logger.i('Retrieved ${data.length} claims for receipt $receiptId');
+        logger.i('Retrieved ${data.length} claims');
         return data
             .map((json) => ClaimDocumentResponse.fromJson(json as Map<String, dynamic>))
             .toList();
@@ -189,6 +193,53 @@ class ClaimService {
       }
     } catch (e) {
       logger.e('Error deleting claim: $e');
+      rethrow;
+    }
+  }
+
+  /// Resolve a warranty claim
+  ///
+  /// Args:
+  ///   claimId: Claim ID
+  ///   outcome: Resolution outcome (REFUNDED, REPAIRED, REPLACED)
+  ///   linkedItemId: Optional item ID to link to the replacement
+  ///   duplicateDetails: Whether to clone the original item as a replacement
+  ///
+  /// Returns:
+  ///   Updated ClaimDocumentResponse object
+  Future<ClaimDocumentResponse> resolveClaim(
+    String claimId,
+    String outcome, {
+    String? linkedItemId,
+    bool? duplicateDetails,
+  }) async {
+    try {
+      logger.i('Resolving claim $claimId with outcome $outcome');
+      
+      final Map<String, dynamic> data = {
+        'outcome': outcome,
+      };
+      
+      if (linkedItemId != null) {
+        data['linkedItemId'] = linkedItemId;
+      }
+      if (duplicateDetails != null) {
+        data['duplicateDetails'] = duplicateDetails;
+      }
+
+      final response = await _apiService.post(
+        '/claims/$claimId/resolve',
+        data: data,
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        logger.i('Claim resolved successfully');
+        return ClaimDocumentResponse.fromJson(response.data as Map<String, dynamic>);
+      } else {
+        throw Exception('Failed to resolve claim: ${response.statusCode}');
+      }
+    } catch (e) {
+      logger.e('Error resolving claim: $e');
       rethrow;
     }
   }

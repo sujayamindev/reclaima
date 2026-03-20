@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/app_constants.dart';
 import '../../providers/receipt_provider.dart';
+import '../../providers/claim_provider.dart';
 import '../../providers/service_providers.dart';
 import '../../widgets/step_progress_bar.dart';
 import '../../widgets/product_image_card.dart';
@@ -140,6 +141,29 @@ class _ReceiptConfirmationScreenState
       } else {
         // Manual entry: no OCR line items yet — create a new one.
         await controller.createLineItem(result.id, liData);
+      }
+    }
+
+    // ── 4. Handle Pending Replacement Links ─────────────────────────────────
+    final pendingClaimId = ref.read(pendingReplacementClaimIdProvider);
+    if (pendingClaimId != null) {
+      try {
+        final claimService = ref.read(claimServiceProvider);
+        final newLineItemId = widget.primaryLineItemId ?? 
+            (result.lineItems.isNotEmpty ? result.lineItems.first.id : null);
+            
+        if (newLineItemId != null) {
+          await claimService.resolveClaim(
+            pendingClaimId,
+            'REPLACED',
+            linkedItemId: newLineItemId,
+          );
+          // Clear the pending state
+          ref.read(pendingReplacementClaimIdProvider.notifier).state = null;
+        }
+      } catch (e) {
+        // We log but don't block navigation if linking fails
+        logger.e('Failed to link replacement claim to new receipt: $e');
       }
     }
 

@@ -123,6 +123,185 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
     }
   }
 
+  Future<void> _showResolutionOutcomeDialog() async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = AppColors.card(isDark);
+    final textColor = AppColors.textPrimary(isDark);
+    
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: cardColor,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      isScrollControlled: true,
+      builder: (BuildContext ctx) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Claim Resolved', style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: textColor, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                Text('What was the outcome of this claim?', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary(isDark))),
+                const SizedBox(height: 24),
+                
+                // Refunded
+                _buildOutcomeOption(
+                  icon: Symbols.payments,
+                  title: 'Refunded / Returned',
+                  subtitle: 'Item will be archived and stop tracking warranty.',
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _resolveClaimOutcome('REFUNDED');
+                  },
+                  isDark: isDark,
+                ),
+                const SizedBox(height: 12),
+                
+                // Repaired
+                _buildOutcomeOption(
+                  icon: Symbols.build,
+                  title: 'Repaired',
+                  subtitle: 'Item stays active. You can update its warranty date.',
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _resolveClaimOutcome('REPAIRED');
+                  },
+                  isDark: isDark,
+                ),
+                const SizedBox(height: 12),
+                
+                // Replaced
+                _buildOutcomeOption(
+                  icon: Symbols.autorenew,
+                  title: 'Replaced with New Item',
+                  subtitle: 'Archive old item and prepare a new digital record.',
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _showReplacementStrategyDialog();
+                  },
+                  isDark: isDark,
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+    );
+  }
+
+  Widget _buildOutcomeOption({required IconData icon, required String title, required String subtitle, required VoidCallback onTap, required bool isDark}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          border: Border.all(color: AppColors.border(isDark)),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.1), shape: BoxShape.circle),
+              child: Icon(icon, color: AppColors.primary),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppColors.textPrimary(isDark), fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 4),
+                  Text(subtitle, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary(isDark))),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showReplacementStrategyDialog() async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: AppColors.card(isDark),
+          title: Text('Add Replacement', style: TextStyle(color: AppColors.textPrimary(isDark))),
+          content: Text(
+            'How would you like to add the new replacement item to your inventory?',
+            style: TextStyle(color: AppColors.textSecondary(isDark)),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                // Implementation for Phase 4 linking will go here shortly.
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Upload a new receipt to link it (Coming soon)')));
+              },
+              child: const Text('Scan New Receipt', style: TextStyle(color: AppColors.primary)),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                _resolveClaimOutcome('REPLACED', duplicateDetails: true);
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: AppColors.onPrimary),
+              child: const Text('Duplicate Old Details'),
+            ),
+          ],
+        );
+      }
+    );
+  }
+
+  Future<void> _resolveClaimOutcome(String outcome, {bool duplicateDetails = false}) async {
+    if (_generatedClaim == null) return;
+    setState(() => _isUpdating = true);
+    try {
+      final claimService = ref.read(claimServiceProvider);
+      final updated = await claimService.resolveClaim(
+        _generatedClaim!.id,
+        outcome,
+        duplicateDetails: duplicateDetails ? true : null,
+      );
+      setState(() => _generatedClaim = updated);
+
+      if (!mounted) return;
+      if (outcome == 'REFUNDED') {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Item successfully archived.')));
+      } else if (outcome == 'REPAIRED') {
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            backgroundColor: AppColors.card(Theme.of(context).brightness == Brightness.dark),
+            title: Text('Claim Resolved', style: TextStyle(color: AppColors.textPrimary(Theme.of(context).brightness == Brightness.dark))),
+            content: Text('Please check your warranty and return coverages and update them if they got extended.', style: TextStyle(color: AppColors.textSecondary(Theme.of(context).brightness == Brightness.dark))),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('OK', style: TextStyle(color: AppColors.primary)),
+              )
+            ]
+          )
+        );
+      } else if (outcome == 'REPLACED') {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Replacement item created successfully.')));
+      }
+    } catch (e) {
+      logger.e('Error resolving claim: $e');
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to resolve claim: $e')));
+    } finally {
+      if (mounted) setState(() => _isUpdating = false);
+    }
+  }
+
   Future<void> _downloadPdf() async {
     if (_generatedClaim?.url == null) return;
     try {
@@ -491,7 +670,14 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                         DropdownButton<String>(
                           value: _generatedClaim!.status,
                           items: _statusOptions.map((s) => DropdownMenuItem(value: s, child: Text(s, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textPrimary(isDark))))).toList(),
-                          onChanged: (val) { if (val != null) _updateClaimStatus(val); },
+                          onChanged: (val) { 
+                            if (val == null) return;
+                            if (val == 'RESOLVED') {
+                              _showResolutionOutcomeDialog();
+                            } else {
+                              _updateClaimStatus(val); 
+                            }
+                          },
                           underline: const SizedBox(),
                           alignment: Alignment.centerRight,
                         ),

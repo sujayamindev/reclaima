@@ -9,6 +9,8 @@ import '../../data/models/receipt_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/receipt_provider.dart';
 import '../receipt/product_detail_screen.dart';
+import '../../services/claim_service.dart';
+import '../../providers/claim_provider.dart';
 
 // ── Attention item ─────────────────────────────────────────────────────────────
 
@@ -22,6 +24,8 @@ class _AttentionItem {
 
   /// true = return window expiring, false = warranty expiring
   final bool isReturn;
+  final bool isClaim;
+  final String? claimStatus;
 
   const _AttentionItem({
     required this.receiptId,
@@ -31,6 +35,8 @@ class _AttentionItem {
     this.productImageUrl,
     required this.daysRemaining,
     required this.isReturn,
+    this.isClaim = false,
+    this.claimStatus,
   });
 }
 
@@ -47,10 +53,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   static const int _warrantyAlertDays = 30;
   static const int _returnAlertDays = 3;
 
-  List<_AttentionItem> _buildAttentionItems(List<ReceiptModel> receipts) {
+  List<_AttentionItem> _buildAttentionItems(List<ReceiptModel> receipts, List<ClaimDocumentResponse> claims) {
     final items = <_AttentionItem>[];
     for (final receipt in receipts) {
       for (final item in receipt.lineItems) {
+        if (item.status == 'ARCHIVED') continue;
+
         final returnDays = item.returnDaysRemaining;
         if (returnDays != null &&
             !item.isReturnExpired &&
@@ -82,6 +90,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         }
       }
     }
+    
+    // Add claims that need attention
+    for (final claim in claims) {
+      if (claim.status != 'RESOLVED' && claim.status != 'DENIED') {
+        final receipt = receipts.where((r) => r.id == claim.receiptId).firstOrNull;
+        if (receipt != null) {
+          final lineItem = receipt.lineItems.isNotEmpty ? receipt.lineItems.first : null;
+          if (lineItem != null && lineItem.status != 'ARCHIVED') {
+            items.add(_AttentionItem(
+              receiptId: receipt.id,
+              lineItemId: lineItem.id,
+              productName: receipt.productName ?? lineItem.displayName,
+              storeName: receipt.storeName,
+              productImageUrl: receipt.productImageUrl,
+              daysRemaining: 9999, // Lower priority than expiring returns/warranties
+              isReturn: false,
+              isClaim: true,
+              claimStatus: claim.status,
+            ));
+          }
+        }
+      }
+    }
+    
     items.sort((a, b) => a.daysRemaining.compareTo(b.daysRemaining));
     return items;
   }
@@ -104,6 +136,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final greeting = ref.watch(greetingProvider);
     final userName = ref.watch(displayNameProvider);
     final receiptsAsync = ref.watch(receiptsProvider);
+    final claimsAsync = ref.watch(userClaimsProvider);
 
     final bg = AppColors.background(isDark);
     final textPrimary = AppColors.textPrimary(isDark);
@@ -202,17 +235,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             // ── Attention required ────────────────────────────────────────
             receiptsAsync.when(
               data: (receipts) {
-                final attentionItems = _buildAttentionItems(receipts);
-                if (attentionItems.isEmpty) {
-                  return const SliverToBoxAdapter(child: SizedBox.shrink());
-                }
-                return SliverToBoxAdapter(
-                  child: _AttentionSection(
-                    items: attentionItems,
-                    isDark: isDark,
-                    onTap: (item) =>
-                        _goToDetail(item.receiptId, item.lineItemId),
-                  ),
+                return claimsAsync.when(
+                  data: (claims) {
+                    final attentionItems = _buildAttentionItems(receipts, claims);
+                    if (attentionItems.isEmpty) {
+                      return const SliverToBoxAdapter(child: SizedBox.shrink());
+                    }
+                    return SliverToBoxAdapter(
+                      child: _AttentionSection(
+                        items: attentionItems,
+                        isDark: isDark,
+                        onTap: (item) =>
+                            _goToDetail(item.receiptId, item.lineItemId),
+                      ),
+                    );
+                  },
+                  loading: () =>
+                      const SliverToBoxAdapter(child: SizedBox.shrink()),
+                  error: (_, _) =>
+                      const SliverToBoxAdapter(child: SizedBox.shrink()),
                 );
               },
               loading: () =>
@@ -441,10 +482,12 @@ class _StatCard extends StatelessWidget {
 
 // ── Attention section ──────────────────────────────────────────────────────────
 
-Color _accentFor(_AttentionItem item) =>
-    (item.isReturn || item.daysRemaining <= 7)
-        ? AppColors.error
-        : AppColors.warning;
+Color _accentFor(_AttentionItem item) {
+  if (item.isClaim) return AppColors.info;
+  return (item.isReturn || item.daysRemaining <= 7)
+      ? AppColors.error
+      : AppColors.warning;
+}
 
 class _AttentionSection extends StatefulWidget {
   const _AttentionSection({
@@ -558,10 +601,14 @@ class _AttentionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accentColor = _accentFor(item);
-    final typeLabel = item.isReturn ? 'RETURN PERIOD' : 'WARRANTY';
-    final daysLabel = item.daysRemaining == 0
-        ? 'Expires today'
-        : '${item.daysRemaining} day${item.daysRemaining == 1 ? '' : 's'} left';
+    final typeLabel = item.isClaim
+        ? 'ACTIVE CLAIM'
+        : item.isReturn ? 'RETURN PERIOD' : 'WARRANTY';
+    final daysLabel = item.isClaim
+        ? 'Update status'
+        : item.daysRemaining == 0
+            ? 'Expires today'
+            : '${item.daysRemaining} day${item.daysRemaining == 1 ? '' : 's'} left';
 
     return GestureDetector(
       onTap: onTap,

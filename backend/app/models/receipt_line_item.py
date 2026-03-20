@@ -60,6 +60,15 @@ class ReceiptLineItem(Base):
     warranty_reminder_enabled = Column(Boolean, nullable=False, default=True)
     return_reminder_enabled   = Column(Boolean, nullable=False, default=True)
 
+    # Resolution Flow tracking
+    status = Column(String(50), nullable=False, default="ACTIVE", index=True)
+    replacement_for_id = Column(
+        String(36), 
+        ForeignKey("receipt_line_items.id", ondelete="SET NULL"), 
+        nullable=True
+    )
+    replaced_by_id = Column(String(36), nullable=True)
+
     # Metadata
     created_at = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False

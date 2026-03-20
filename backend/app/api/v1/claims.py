@@ -16,11 +16,12 @@ from app.services.pdf_service import get_pdf_service
 from app.services.s3_service import get_s3_service
 from app.core.config import settings
 from app.db.session import get_db
-from app.models import ClaimDocument, Receipt
+from app.models import ClaimDocument, Receipt, ReceiptLineItem
 from app.schemas import (
     ClaimDocumentCreate,
     ClaimDocumentResponse,
     ClaimDocumentUpdate,
+    ClaimResolutionRequest,
 )
 
 logger = logging.getLogger(__name__)
@@ -244,6 +245,109 @@ async def update_claim(
                 object_key=claim.generated_pdf_s3_key,
                 content_type="application/pdf"
             )
+        response.url = s3_service.generate_presigned_url(
+            claim.generated_pdf_s3_key,
+            expiration=3600,
+            operation="get_object"
+        )
+
+    return response
+
+
+@router.post(
+    "/{claim_id}/resolve",
+    response_model=ClaimDocumentResponse,
+    response_model_by_alias=True
+)
+async def resolve_claim(
+    claim_id: str,
+    resolution_data: ClaimResolutionRequest,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Resolve a warranty claim based on outcome (REFUNDED, REPAIRED, REPLACED).
+    Handles archiving items, linking new replacement items, or duplicating items.
+    """
+    firebase_uid = current_user.get("uid")
+    db_user = user_service.get_user_by_firebase_uid(db, firebase_uid)
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+
+    # Get claim
+    claim = db.query(ClaimDocument).filter(
+        and_(
+            ClaimDocument.id == claim_id,
+            ClaimDocument.deleted_at.is_(None)
+        )
+    ).first()
+
+    if not claim:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Claim not found"
+        )
+
+    # Verify user owns the associated receipt
+    receipt = _get_receipt_with_line_items(db, claim.receipt_id)
+    if not receipt or receipt.user_id != db_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have permission to modify this claim"
+        )
+
+    # Mark claim as RESOLVED
+    claim.status = "RESOLVED"
+
+    # Identify the primary item (for simplicity, using the first line item)
+    if receipt.line_items:
+        item = receipt.line_items[0]
+
+        if resolution_data.outcome == "REFUNDED":
+            item.status = "ARCHIVED"
+        elif resolution_data.outcome == "REPLACED":
+            if resolution_data.duplicate_details:
+                import uuid
+                new_item_id = str(uuid.uuid4())
+                new_item = ReceiptLineItem(
+                    id=new_item_id,
+                    receipt_id=receipt.id,
+                    row_index=len(receipt.line_items),
+                    item_description=item.item_description,
+                    product_name=item.product_name,
+                    product_category=item.product_category,
+                    product_image_url=item.product_image_url,
+                    warranty_period_months=item.warranty_period_months,
+                    return_period_days=item.return_period_days,
+                    replacement_for_id=item.id,
+                    status="ACTIVE"
+                )
+                item.replaced_by_id = new_item_id
+                item.status = "ARCHIVED"
+                db.add(new_item)
+            elif resolution_data.linked_item_id:
+                new_item = db.query(ReceiptLineItem).filter(
+                    ReceiptLineItem.id == resolution_data.linked_item_id
+                ).first()
+                if new_item:
+                    new_item.replacement_for_id = item.id
+                    item.replaced_by_id = new_item.id
+                item.status = "ARCHIVED"
+
+    db.commit()
+    db.refresh(claim)
+
+    s3_service = get_s3_service(
+        bucket_name=settings.AWS_S3_BUCKET,
+        use_mock=settings.USE_MOCK_AWS,
+        region=settings.AWS_REGION
+    )
+
+    response = ClaimDocumentResponse.model_validate(claim)
+    if claim.generated_pdf_s3_key:
         response.url = s3_service.generate_presigned_url(
             claim.generated_pdf_s3_key,
             expiration=3600,

@@ -38,6 +38,11 @@ class ReceiptLineItemModel {
   final bool? warrantyReminderEnabled;
   final bool? returnReminderEnabled;
 
+  // ── Resolution Flow tracking ───────────────────────────────────────────
+  final String status;
+  final String? replacementForId;
+  final String? replacedById;
+
   const ReceiptLineItemModel({
     required this.id,
     required this.receiptId,
@@ -60,6 +65,9 @@ class ReceiptLineItemModel {
     this.returnLeadDaysOverride,
     this.warrantyReminderEnabled,
     this.returnReminderEnabled,
+    this.status = 'ACTIVE',
+    this.replacementForId,
+    this.replacedById,
   });
 
   factory ReceiptLineItemModel.fromJson(Map<String, dynamic> json) =>
@@ -86,6 +94,7 @@ class ReceiptLineItemModel {
       productName: json['productName'] as String?,
       productCategory: json['productCategory'] as String?,
       warrantyPeriodMonths: (json['warrantyPeriodMonths'] as num?)?.toInt(),
+      status: 'ACTIVE',
     );
   }
 

@@ -137,6 +137,9 @@ class ProductDetailScreen extends ConsumerWidget {
               // ── Hero card ───────────────────────────────────────
               _buildHeroCard(product, isDark),
               const SizedBox(height: 12),
+              
+              // ── Link Banners (Replacements) ──────────────────────
+              _buildLinkBanners(context, ref, product, isDark),
 
               // ── Warranty & Return countdown ──────────────────────
               _buildWarrantySection(context, product, isDark),
@@ -555,6 +558,71 @@ class ProductDetailScreen extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+
+  // ── Link Banners (Replacements) ──────────────────────────────────────────
+
+  Widget _buildLinkBanners(BuildContext context, WidgetRef ref, ProductViewModel product, bool isDark) {
+    if (product.lineItem == null) return const SizedBox.shrink();
+    
+    final replacedById = product.lineItem!.replacedById;
+    final replacementForId = product.lineItem!.replacementForId;
+    
+    if (replacedById == null && replacementForId == null) return const SizedBox.shrink();
+    
+    final allReceiptsVal = ref.read(receiptsProvider);
+    if (allReceiptsVal.valueOrNull == null) return const SizedBox.shrink();
+    
+    final allReceipts = allReceiptsVal.value!;
+    
+    Widget buildBanner({required String id, required String label, required IconData icon, required Color color}) {
+      // Find the receipt that has this line item
+      ReceiptModel? targetReceipt;
+      for (final r in allReceipts) {
+        if (r.lineItems.any((item) => item.id == id)) {
+          targetReceipt = r;
+          break;
+        }
+      }
+      
+      if (targetReceipt == null) return const SizedBox.shrink();
+      
+      return InkWell(
+        onTap: () {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => ProductDetailScreen(receiptId: targetReceipt!.id, lineItemId: id)));
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: color.withValues(alpha: 0.3)),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, color: color, size: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  label,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textPrimary(isDark), fontWeight: FontWeight.w600),
+                ),
+              ),
+              Icon(Symbols.chevron_right, color: color, size: 20),
+            ],
+          ),
+        ),
+      );
+    }
+    
+    return Column(
+      children: [
+        if (replacedById != null) buildBanner(id: replacedById, label: 'View Replacement Item', icon: Symbols.autorenew, color: AppColors.primary),
+        if (replacementForId != null) buildBanner(id: replacementForId, label: 'View Original Replaced Item', icon: Symbols.history, color: AppColors.info),
+      ],
     );
   }
 
