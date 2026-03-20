@@ -83,6 +83,18 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
       state = AsyncValue.error(e, st);
     }
   }
+
+  /// Sign in with Google
+  Future<void> signInWithGoogle() async {
+    state = const AsyncValue.loading();
+    
+    try {
+      await _authService.signInWithGoogle();
+      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
   
   /// Sign out — deregisters FCM token first so push stops immediately
   Future<void> signOut() async {

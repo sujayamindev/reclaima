@@ -338,8 +338,17 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                             child: _buildSocialButton(
                               label: 'Google',
                               icon: _buildGoogleIcon(),
-                              onPressed: () {
-                                // TODO: Implement Google Sign In
+                              onPressed: authState.isLoading ? () {} : () async {
+                                final authController = ref.read(authControllerProvider.notifier);
+                                await authController.signInWithGoogle();
+                                
+                                if (!context.mounted) return;
+                                final state = ref.read(authControllerProvider);
+                                if (state.hasError) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Error: ${state.error}')),
+                                  );
+                                }
                               },
                               cardColor: cardColor,
                               borderColor: borderColor,
@@ -356,7 +365,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                 size: 20,
                               ),
                               onPressed: () {
-                                // TODO: Implement Apple Sign In
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Apple Sign-In is coming soon!')),
+                                );
                               },
                               cardColor: cardColor,
                               borderColor: borderColor,

@@ -2,12 +2,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../core/utils/logger.dart';
 import '../data/models/user_model.dart';
 import 'api_service.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../core/constants/app_constants.dart';
 
 /// Authentication service
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final ApiService _apiService;
+  bool _isGoogleInitialized = false;
   
   AuthService(this._apiService);
   
@@ -64,6 +66,48 @@ class AuthService {
     } on FirebaseAuthException catch (e) {
       logger.e('Firebase signin error: ${e.code}');
       rethrow;
+    }
+  }
+
+  /// Sign in with Google
+  Future<UserCredential> signInWithGoogle() async {
+    try {
+      logger.i('Starting Google sign-in flow');
+      
+      if (!_isGoogleInitialized) {
+        await GoogleSignIn.instance.initialize();
+        _isGoogleInitialized = true;
+      }
+      
+      final GoogleSignInAccount googleUser = await GoogleSignIn.instance.authenticate();
+
+      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
+      
+      // Request client authorization to get access token (needed for some Firebase/Google features)
+      final GoogleSignInClientAuthorization? clientAuth = 
+          await googleUser.authorizationClient.authorizationForScopes(['email', 'profile']);
+          
+      final OAuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: clientAuth?.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final userCredential = await _auth.signInWithCredential(credential);
+
+      // Register or update user in backend
+      try {
+        await registerInBackend(fullName: userCredential.user?.displayName);
+      } catch (e) {
+        logger.w('Backend registration failed during Google signup: $e');
+      }
+
+      return userCredential;
+    } on FirebaseAuthException catch (e) {
+      logger.e('Firebase Google signin error: ${e.code}');
+      rethrow;
+    } catch (e) {
+      logger.e('Google signin error: $e');
+      throw Exception('Google sign-in failed: $e'); // standardized throwing
     }
   }
   
