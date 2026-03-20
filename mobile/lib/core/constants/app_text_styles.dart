@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Reusable text styles for the entire app — all using the Inter font.
+/// Reusable text styles for the app — combining Space Grotesk and Inter.
 ///
 /// Colors are intentionally NOT baked in — combine with AppColors:
 /// ```dart
@@ -11,7 +11,7 @@ abstract final class AppTextStyles {
   // ── Display / Auth headings ────────────────────────────────────────────────
 
   /// 36 / bold — auth screen titles (Log In, Sign Up).
-  static TextStyle get displayLarge => GoogleFonts.inter(
+  static TextStyle get displayLarge => GoogleFonts.spaceGrotesk(
         fontSize: 36,
         fontWeight: FontWeight.bold,
         letterSpacing: -0.5,
@@ -20,7 +20,7 @@ abstract final class AppTextStyles {
   // ── Hero headings ──────────────────────────────────────────────────────────
 
   /// 32 / bold — home screen hero headline.
-  static TextStyle get headingLarge => GoogleFonts.inter(
+  static TextStyle get headingLarge => GoogleFonts.spaceGrotesk(
         fontSize: 32,
         fontWeight: FontWeight.bold,
         height: 1.2,
@@ -28,14 +28,14 @@ abstract final class AppTextStyles {
       );
 
   /// 30 / bold — add receipt "Smart Upload" title.
-  static TextStyle get headingMedium => GoogleFonts.inter(
+  static TextStyle get headingMedium => GoogleFonts.spaceGrotesk(
         fontSize: 30,
         fontWeight: FontWeight.bold,
         height: 1.25,
       );
 
   /// 28 / bold — review & confirmation screen titles.
-  static TextStyle get headingSmall => GoogleFonts.inter(
+  static TextStyle get headingSmall => GoogleFonts.spaceGrotesk(
         fontSize: 28,
         fontWeight: FontWeight.bold,
         height: 1.25,
@@ -44,7 +44,7 @@ abstract final class AppTextStyles {
   // ── App name / brand ───────────────────────────────────────────────────────
 
   /// 24 / bold — "Recepta." app name in top bar.
-  static TextStyle get appName => GoogleFonts.inter(
+  static TextStyle get appName => GoogleFonts.spaceGrotesk(
         fontSize: 24,
         fontWeight: FontWeight.bold,
         letterSpacing: -0.5,
@@ -53,19 +53,19 @@ abstract final class AppTextStyles {
   // ── Section / card titles ──────────────────────────────────────────────────
 
   /// 18 / bold — empty-state "No receipts yet", timed-out banner headings.
-  static TextStyle get titleLarge => GoogleFonts.inter(
+  static TextStyle get titleLarge => GoogleFonts.spaceGrotesk(
         fontSize: 18,
         fontWeight: FontWeight.bold,
       );
 
   /// 15 / bold — card section titles ("Purchase Details", "Store Contact").
-  static TextStyle get sectionTitle => GoogleFonts.inter(
+  static TextStyle get sectionTitle => GoogleFonts.spaceGrotesk(
         fontSize: 15,
         fontWeight: FontWeight.bold,
       );
 
   /// 15 / w600 — receipt card store name, ListTile titles.
-  static TextStyle get listTitle => GoogleFonts.inter(
+  static TextStyle get listTitle => GoogleFonts.spaceGrotesk(
         fontSize: 15,
         fontWeight: FontWeight.w600,
       );
@@ -103,13 +103,13 @@ abstract final class AppTextStyles {
       );
 
   /// 16 / bold — primary button labels.
-  static TextStyle get button => GoogleFonts.inter(
+  static TextStyle get button => GoogleFonts.spaceGrotesk(
         fontSize: 16,
         fontWeight: FontWeight.bold,
       );
 
   /// 14 / bold — text button labels (Sign Up, Log In).
-  static TextStyle get buttonSmall => GoogleFonts.inter(
+  static TextStyle get buttonSmall => GoogleFonts.spaceGrotesk(
         fontSize: 14,
         fontWeight: FontWeight.bold,
       );
