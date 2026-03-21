@@ -60,7 +60,7 @@ class PdfGenerationService:
             receipt: Receipt object with all details
             user: User object (for contact info)
             issue_description: Description of the claim issue
-            claim_type: Type of claim (warranty, return, repair)
+            claim_type: Type of claim (warranty, return)
 
         Returns:
             PDF document as bytes

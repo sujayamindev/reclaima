@@ -3,7 +3,7 @@ Pydantic schemas for API request/response validation.
 """
 
 from pydantic import BaseModel, Field, EmailStr, ConfigDict
-from typing import Optional, List
+from typing import Optional, List, Literal
 from datetime import datetime
 from enum import Enum
 
@@ -329,6 +329,7 @@ class ClaimDocumentBase(BaseModel):
 class ClaimDocumentCreate(ClaimDocumentBase):
     """Claim document creation schema."""
     receipt_id: str
+    claim_type: Literal["warranty", "return"] = "warranty"
 
 
 class ClaimDocumentUpdate(BaseModel):
