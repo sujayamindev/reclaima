@@ -72,7 +72,7 @@ async def create_claim(
         db: Database session
 
     Returns:
-        ClaimDocumentResponse with claim details and pre-signed download URL
+        ClaimDocumentResponse with claim metadata
 
     Raises:
         404: If receipt or user not found
@@ -146,17 +146,8 @@ async def create_claim(
         db.refresh(claim_document)
         logger.info(f"Created claim document record: {claim_id}")
 
-        # Generate pre-signed URL
-        presigned_url = s3_service.generate_presigned_url(
-            s3_object_key,
-            expiration=86400,  # 1 day (24 hours)
-            operation="get_object"
-        )
-        logger.info(f"Generated pre-signed URL for claim {claim_id}")
-
         # Build response
         response = ClaimDocumentResponse.model_validate(claim_document)
-        response.url = presigned_url
         return response
 
     except Exception as exc:
@@ -224,34 +215,7 @@ async def update_claim(
         db.commit()
         db.refresh(claim)
 
-    s3_service = get_s3_service(
-        bucket_name=settings.AWS_S3_BUCKET,
-        use_mock=settings.USE_MOCK_AWS,
-        region=settings.AWS_REGION
-    )
-
     response = ClaimDocumentResponse.model_validate(claim)
-    if claim.generated_pdf_s3_key:
-        if not s3_service.file_exists(claim.generated_pdf_s3_key):
-            pdf_service = get_pdf_service()
-            pdf_bytes = pdf_service.generate_claim_pdf(
-                receipt=receipt,
-                user=db_user,
-                issue_description=claim.issue_description,
-                claim_type=claim.claim_type or "warranty",
-                created_at=claim.created_at
-            )
-            s3_service.upload_file(
-                file_content=pdf_bytes,
-                object_key=claim.generated_pdf_s3_key,
-                content_type="application/pdf"
-            )
-        response.url = s3_service.generate_presigned_url(
-            claim.generated_pdf_s3_key,
-            expiration=86400,  # 1 day (24 hours)
-            operation="get_object"
-        )
-
     return response
 
 
@@ -341,20 +305,7 @@ async def resolve_claim(
     db.commit()
     db.refresh(claim)
 
-    s3_service = get_s3_service(
-        bucket_name=settings.AWS_S3_BUCKET,
-        use_mock=settings.USE_MOCK_AWS,
-        region=settings.AWS_REGION
-    )
-
     response = ClaimDocumentResponse.model_validate(claim)
-    if claim.generated_pdf_s3_key:
-        response.url = s3_service.generate_presigned_url(
-            claim.generated_pdf_s3_key,
-            expiration=86400,  # 1 day (24 hours)
-            operation="get_object"
-        )
-
     return response
 
 
@@ -421,39 +372,9 @@ async def list_claims(
 
         claims = query.order_by(ClaimDocument.created_at.desc()).all()
 
-        # Generate pre-signed URLs for all claims
-        s3_service = get_s3_service(
-            bucket_name=settings.AWS_S3_BUCKET,
-            use_mock=settings.USE_MOCK_AWS,
-            region=settings.AWS_REGION
-        )
-
         responses = []
         for claim in claims:
             response = ClaimDocumentResponse.model_validate(claim)
-            if claim.generated_pdf_s3_key:
-                if not s3_service.file_exists(claim.generated_pdf_s3_key):
-                    # Ephemeral storage regeneration
-                    pdf_service = get_pdf_service()
-                    receipt_for_claim = next((r for r in [receipt] if r.id == claim.receipt_id), None) if receipt_id else _get_receipt_with_line_items(db, claim.receipt_id)
-                    if receipt_for_claim:
-                        pdf_bytes = pdf_service.generate_claim_pdf(
-                            receipt=receipt_for_claim,
-                            user=db_user,
-                            issue_description=claim.issue_description,
-                            claim_type=claim.claim_type or "warranty",
-                            created_at=claim.created_at
-                        )
-                        s3_service.upload_file(
-                            file_content=pdf_bytes,
-                            object_key=claim.generated_pdf_s3_key,
-                            content_type="application/pdf"
-                        )
-                response.url = s3_service.generate_presigned_url(
-                    claim.generated_pdf_s3_key,
-                    expiration=3600,
-                    operation="get_object"
-                )
             responses.append(response)
 
         return responses
@@ -527,36 +448,7 @@ async def get_claim(
                 detail="You don't have permission to access this claim"
             )
 
-        # Generate pre-signed URL
-        s3_service = get_s3_service(
-            bucket_name=settings.AWS_S3_BUCKET,
-            use_mock=settings.USE_MOCK_AWS,
-            region=settings.AWS_REGION
-        )
-
         response = ClaimDocumentResponse.model_validate(claim)
-        if claim.generated_pdf_s3_key:
-            if not s3_service.file_exists(claim.generated_pdf_s3_key):
-                # Ephemeral storage regeneration
-                pdf_service = get_pdf_service()
-                pdf_bytes = pdf_service.generate_claim_pdf(
-                    receipt=receipt,
-                    user=db_user,
-                    issue_description=claim.issue_description,
-                    claim_type=claim.claim_type or "warranty",
-                    created_at=claim.created_at
-                )
-                s3_service.upload_file(
-                    file_content=pdf_bytes,
-                    object_key=claim.generated_pdf_s3_key,
-                    content_type="application/pdf"
-                )
-            response.url = s3_service.generate_presigned_url(
-                claim.generated_pdf_s3_key,
-                expiration=3600,
-                operation="get_object"
-            )
-
         return response
 
     except HTTPException:
@@ -566,6 +458,98 @@ async def get_claim(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve claim"
+        )
+
+
+@router.post(
+    "/{claim_id}/pdf-access",
+    response_model=ClaimDocumentResponse,
+    response_model_by_alias=True
+)
+async def access_claim_pdf(
+    claim_id: str,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Access a claim PDF for user-initiated actions (open/download/share/copy).
+
+    Regenerates the PDF only when the object is missing from storage.
+    """
+    firebase_uid = current_user.get("uid")
+    db_user = user_service.get_user_by_firebase_uid(db, firebase_uid)
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+
+    try:
+        claim = db.query(ClaimDocument).filter(
+            and_(
+                ClaimDocument.id == claim_id,
+                ClaimDocument.deleted_at.is_(None)
+            )
+        ).first()
+
+        if not claim:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Claim not found"
+            )
+
+        receipt = _get_receipt_with_line_items(db, claim.receipt_id)
+        if not receipt or receipt.user_id != db_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You don't have permission to access this claim"
+            )
+
+        if not claim.generated_pdf_s3_key:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Claim PDF is not available"
+            )
+
+        s3_service = get_s3_service(
+            bucket_name=settings.AWS_S3_BUCKET,
+            use_mock=settings.USE_MOCK_AWS,
+            region=settings.AWS_REGION
+        )
+
+        if not s3_service.file_exists(claim.generated_pdf_s3_key):
+            logger.info(
+                f"Claim PDF missing in storage for claim {claim.id}; regenerating"
+            )
+            pdf_service = get_pdf_service()
+            pdf_bytes = pdf_service.generate_claim_pdf(
+                receipt=receipt,
+                user=db_user,
+                issue_description=claim.issue_description,
+                claim_type=claim.claim_type or "warranty",
+                created_at=claim.created_at
+            )
+            s3_service.upload_file(
+                file_content=pdf_bytes,
+                object_key=claim.generated_pdf_s3_key,
+                content_type="application/pdf"
+            )
+
+        response = ClaimDocumentResponse.model_validate(claim)
+        response.url = s3_service.generate_presigned_url(
+            claim.generated_pdf_s3_key,
+            expiration=3600,
+            operation="get_object"
+        )
+        return response
+
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error(f"Error accessing claim PDF: {exc}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to access claim PDF"
         )
 
 
