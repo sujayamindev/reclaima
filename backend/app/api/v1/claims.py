@@ -149,7 +149,7 @@ async def create_claim(
         # Generate pre-signed URL
         presigned_url = s3_service.generate_presigned_url(
             s3_object_key,
-            expiration=3600,  # 1 hour
+            expiration=86400,  # 1 day (24 hours)
             operation="get_object"
         )
         logger.info(f"Generated pre-signed URL for claim {claim_id}")
@@ -238,7 +238,8 @@ async def update_claim(
                 receipt=receipt,
                 user=db_user,
                 issue_description=claim.issue_description,
-                claim_type=claim.claim_type or "warranty"
+                claim_type=claim.claim_type or "warranty",
+                created_at=claim.created_at
             )
             s3_service.upload_file(
                 file_content=pdf_bytes,
@@ -247,7 +248,7 @@ async def update_claim(
             )
         response.url = s3_service.generate_presigned_url(
             claim.generated_pdf_s3_key,
-            expiration=3600,
+            expiration=86400,  # 1 day (24 hours)
             operation="get_object"
         )
 
@@ -350,7 +351,7 @@ async def resolve_claim(
     if claim.generated_pdf_s3_key:
         response.url = s3_service.generate_presigned_url(
             claim.generated_pdf_s3_key,
-            expiration=3600,
+            expiration=86400,  # 1 day (24 hours)
             operation="get_object"
         )
 
@@ -440,7 +441,8 @@ async def list_claims(
                             receipt=receipt_for_claim,
                             user=db_user,
                             issue_description=claim.issue_description,
-                            claim_type=claim.claim_type or "warranty"
+                            claim_type=claim.claim_type or "warranty",
+                            created_at=claim.created_at
                         )
                         s3_service.upload_file(
                             file_content=pdf_bytes,
@@ -541,7 +543,8 @@ async def get_claim(
                     receipt=receipt,
                     user=db_user,
                     issue_description=claim.issue_description,
-                    claim_type=claim.claim_type or "warranty"
+                    claim_type=claim.claim_type or "warranty",
+                    created_at=claim.created_at
                 )
                 s3_service.upload_file(
                     file_content=pdf_bytes,

@@ -51,7 +51,8 @@ class PdfGenerationService:
         receipt: Receipt,
         user: User,
         issue_description: str,
-        claim_type: str
+        claim_type: str,
+        created_at: Optional[datetime] = None
     ) -> bytes:
         """
         Generate a warranty claim PDF document.
@@ -61,6 +62,7 @@ class PdfGenerationService:
             user: User object (for contact info)
             issue_description: Description of the claim issue
             claim_type: Type of claim (warranty, return)
+            created_at: Original claim creation timestamp (for regenerated PDFs)
 
         Returns:
             PDF document as bytes
@@ -128,7 +130,8 @@ class PdfGenerationService:
         story.append(Spacer(1, 0.1 * inch))
 
         # Document ID and date
-        doc_info = f"Claim ID: {receipt.id[:8]}... | Generated: {datetime.now(timezone.utc).strftime('%B %d, %Y at %I:%M %p')}"
+        generation_date = created_at or datetime.now(timezone.utc)
+        doc_info = f"Claim ID: {receipt.id[:8]}... | Generated: {generation_date.strftime('%B %d, %Y at %I:%M %p')}"
         story.append(Paragraph(doc_info, label_style))
         story.append(Spacer(1, 0.2 * inch))
 

@@ -53,17 +53,17 @@ class MockS3Service:
     def generate_presigned_url(
         self,
         object_key: str,
-        expiration: int = 3600,
+        expiration: int = 86400,  # 1 day (24 hours)
         operation: str = "get_object"
     ) -> str:
         """
         Mock generate pre-signed URL for S3 object.
-        
+
         Args:
             object_key: S3 object key
-            expiration: URL expiration time in seconds
+            expiration: URL expiration time in seconds (default: 1 day)
             operation: Operation type (get_object, put_object)
-            
+
         Returns:
             Mock pre-signed URL
         """
@@ -181,7 +181,7 @@ class RealS3Service:
     def generate_presigned_url(
         self,
         object_key: str,
-        expiration: int = 3600,
+        expiration: int = 86400,  # 1 day (24 hours)
         operation: str = "get_object"
     ) -> str:
         """
