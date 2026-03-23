@@ -6,7 +6,7 @@ Creates professional PDFs with receipt details, warranty information, and user d
 import logging
 from io import BytesIO
 from datetime import datetime, timezone
-from typing import Optional, Tuple
+from typing import Optional, Tuple, TYPE_CHECKING
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter, A4
@@ -17,11 +17,15 @@ from reportlab.platypus import (
     Image as RLImage
 )
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+from PIL import Image as PILImage
 
 from sqlalchemy.orm import Session
 
 from app.models import Receipt, User
 from app.models.receipt_line_item import ReceiptLineItem
+
+if TYPE_CHECKING:
+    from app.services.s3_service import MockS3Service, RealS3Service
 
 logger = logging.getLogger(__name__)
 
@@ -46,13 +50,63 @@ class PdfGenerationService:
         self.top_margin = 0.75 * inch
         self.bottom_margin = 0.75 * inch
 
+    def _get_scaled_image(
+        self,
+        image_bytes: bytes,
+        max_width: float = 5.5 * inch,
+        max_height: float = 3.5 * inch
+    ) -> Optional[RLImage]:
+        """
+        Process image bytes and return a ReportLab Image with scaling.
+
+        Args:
+            image_bytes: Image content as bytes
+            max_width: Maximum width for the image
+            max_height: Maximum height for the image
+
+        Returns:
+            ReportLab Image object or None if processing fails
+        """
+        try:
+            # Open image with PIL
+            pil_image = PILImage.open(BytesIO(image_bytes))
+
+            # Convert to RGB if necessary (remove alpha channel)
+            if pil_image.mode in ('RGBA', 'LA', 'P'):
+                background = PILImage.new('RGB', pil_image.size, (255, 255, 255))
+                background.paste(pil_image, mask=pil_image.split()[-1] if pil_image.mode == 'RGBA' else None)
+                pil_image = background
+
+            # Calculate scaling to fit within max dimensions while maintaining aspect ratio
+            img_width, img_height = pil_image.size
+            width_ratio = max_width / img_width
+            height_ratio = max_height / img_height
+            scale_ratio = min(width_ratio, height_ratio, 1.0)  # Don't upscale
+
+            new_width = img_width * scale_ratio
+            new_height = img_height * scale_ratio
+
+            # Save processed image to bytes
+            img_buffer = BytesIO()
+            pil_image.save(img_buffer, format='JPEG', quality=85)
+            img_buffer.seek(0)
+
+            # Create ReportLab Image
+            rl_image = RLImage(img_buffer, width=new_width, height=new_height)
+            return rl_image
+
+        except Exception as e:
+            logger.warning(f"Failed to process receipt image: {e}")
+            return None
+
     def generate_claim_pdf(
         self,
         receipt: Receipt,
         user: User,
         issue_description: str,
         claim_type: str,
-        created_at: Optional[datetime] = None
+        created_at: Optional[datetime] = None,
+        s3_service: Optional[object] = None
     ) -> bytes:
         """
         Generate a warranty claim PDF document.
@@ -63,6 +117,7 @@ class PdfGenerationService:
             issue_description: Description of the claim issue
             claim_type: Type of claim (warranty, return)
             created_at: Original claim creation timestamp (for regenerated PDFs)
+            s3_service: S3 service for retrieving receipt image
 
         Returns:
             PDF document as bytes
@@ -134,6 +189,28 @@ class PdfGenerationService:
         doc_info = f"Claim ID: {receipt.id[:8]}... | Generated: {generation_date.strftime('%B %d, %Y at %I:%M %p')}"
         story.append(Paragraph(doc_info, label_style))
         story.append(Spacer(1, 0.2 * inch))
+
+        # ── Receipt Image ───────────────────────────────────────────────
+        if receipt.s3_object_key and s3_service:
+            try:
+                image_bytes = s3_service.get_file(receipt.s3_object_key)
+                if image_bytes:
+                    receipt_image = self._get_scaled_image(image_bytes)
+                    if receipt_image:
+                        story.append(Paragraph("RECEIPT IMAGE", heading_style))
+                        # Center the image by wrapping in a table
+                        image_table = Table(
+                            [[receipt_image]],
+                            colWidths=[6 * inch]
+                        )
+                        image_table.setStyle(TableStyle([
+                            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                        ]))
+                        story.append(image_table)
+                        story.append(Spacer(1, 0.15 * inch))
+            except Exception as e:
+                logger.warning(f"Failed to include receipt image in PDF: {e}")
 
         # ── Customer Information ────────────────────────────────────────
         story.append(Paragraph("CUSTOMER INFORMATION", heading_style))

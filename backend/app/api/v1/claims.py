@@ -106,13 +106,21 @@ async def create_claim(
         )
 
     try:
+        # Initialize S3 service
+        s3_service = get_s3_service(
+            bucket_name=settings.AWS_S3_BUCKET,
+            use_mock=settings.USE_MOCK_AWS,
+            region=settings.AWS_REGION
+        )
+
         # Generate PDF
         pdf_service = get_pdf_service()
         pdf_bytes = pdf_service.generate_claim_pdf(
             receipt=receipt,
             user=db_user,
             issue_description=claim_data.issue_description,
-            claim_type=claim_data.claim_type or "warranty"
+            claim_type=claim_data.claim_type or "warranty",
+            s3_service=s3_service
         )
         logger.info(f"Generated claim PDF: {len(pdf_bytes)} bytes")
 
@@ -120,11 +128,6 @@ async def create_claim(
         claim_id = str(uuid.uuid4())
         s3_object_key = f"users/{db_user.id}/claims/{claim_id}.pdf"
 
-        s3_service = get_s3_service(
-            bucket_name=settings.AWS_S3_BUCKET,
-            use_mock=settings.USE_MOCK_AWS,
-            region=settings.AWS_REGION
-        )
         s3_service.upload_file(
             file_content=pdf_bytes,
             object_key=s3_object_key,
@@ -527,7 +530,8 @@ async def access_claim_pdf(
                 user=db_user,
                 issue_description=claim.issue_description,
                 claim_type=claim.claim_type or "warranty",
-                created_at=claim.created_at
+                created_at=claim.created_at,
+                s3_service=s3_service
             )
             s3_service.upload_file(
                 file_content=pdf_bytes,
