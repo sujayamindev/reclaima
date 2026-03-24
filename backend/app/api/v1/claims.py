@@ -142,7 +142,7 @@ async def create_claim(
             line_item_id=claim_data.line_item_id,
             issue_description=claim_data.issue_description,
             claim_type=claim_data.claim_type or "warranty",
-            status="SUBMITTED",
+            status="DRAFT",
             generated_pdf_s3_key=s3_object_key,
         )
         db.add(claim_document)

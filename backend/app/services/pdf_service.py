@@ -216,6 +216,7 @@ class PdfGenerationService:
         story.append(Paragraph("CUSTOMER INFORMATION", heading_style))
         customer_data = [
             ["Name:", user.display_name or "Not Provided"],
+            ["Contact:", user.contact_number or "Not Provided"],
             ["Email:", user.email],
         ]
         customer_table = Table(customer_data, colWidths=[1.5 * inch, 4 * inch])

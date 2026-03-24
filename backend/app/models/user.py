@@ -25,6 +25,7 @@ class User(Base):
     # User information
     email = Column(String(255), unique=True, nullable=False, index=True)
     display_name = Column(String(255), nullable=True)
+    contact_number = Column(String(50), nullable=True)
 
     # Push notifications
     fcm_token = Column(String(512), nullable=True)

@@ -34,6 +34,7 @@ class UserBase(BaseModel):
     """Base user schema."""
     email: EmailStr
     display_name: Optional[str] = None
+    contact_number: Optional[str] = None
 
 
 class UserCreate(UserBase):
@@ -44,6 +45,7 @@ class UserCreate(UserBase):
 class UserUpdate(BaseModel):
     """User update schema."""
     display_name: Optional[str] = None
+    contact_number: Optional[str] = None
 
 
 class UserResponse(UserBase):
