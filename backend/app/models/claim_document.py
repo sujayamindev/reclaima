@@ -18,8 +18,9 @@ class ClaimDocument(Base):
     # Primary key
     id = Column(String(36), primary_key=True, index=True)
     
-    # Foreign key to receipt
+    # Foreign keys
     receipt_id = Column(String(36), ForeignKey("receipts.id", ondelete="CASCADE"), nullable=False, index=True)
+    line_item_id = Column(String(36), ForeignKey("receipt_line_items.id", ondelete="CASCADE"), nullable=True, index=True)
     
     # Claim information
     issue_description = Column(Text, nullable=False)
@@ -41,4 +42,4 @@ class ClaimDocument(Base):
     receipt = relationship("Receipt", back_populates="claim_documents")
     
     def __repr__(self):
-        return f"<ClaimDocument(id={self.id}, receipt_id={self.receipt_id})>"
+        return f"<ClaimDocument(id={self.id}, receipt_id={self.receipt_id}, line_item_id={self.line_item_id})>"

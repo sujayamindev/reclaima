@@ -139,6 +139,7 @@ async def create_claim(
         claim_document = ClaimDocument(
             id=claim_id,
             receipt_id=receipt.id,
+            line_item_id=claim_data.line_item_id,
             issue_description=claim_data.issue_description,
             claim_type=claim_data.claim_type or "warranty",
             status="SUBMITTED",
@@ -319,16 +320,19 @@ async def resolve_claim(
 )
 async def list_claims(
     receipt_id: Optional[str] = Query(None, description="Filter by receipt ID"),
+    line_item_id: Optional[str] = Query(None, description="Filter by line item ID (product)"),
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
     List warranty claim documents.
 
-    Can optionally filter by receipt_id to get all claims for a specific receipt.
+    Can optionally filter by receipt_id to get all claims for a specific receipt,
+    or by line_item_id to get claims for a specific product.
 
     Args:
         receipt_id: Optional receipt ID to filter by
+        line_item_id: Optional line item ID to filter by (takes precedence over receipt_id)
         current_user: Current authenticated user
         db: Database session
 
@@ -353,7 +357,10 @@ async def list_claims(
             ClaimDocument.deleted_at.is_(None)
         )
 
-        if receipt_id:
+        if line_item_id:
+            # Filter by specific line item (product)
+            query = query.filter(ClaimDocument.line_item_id == line_item_id)
+        elif receipt_id:
             # Verify user owns the receipt
             receipt = _get_receipt_with_line_items(db, receipt_id)
             if not receipt or receipt.user_id != db_user.id:
