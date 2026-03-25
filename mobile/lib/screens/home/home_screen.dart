@@ -10,6 +10,7 @@ import '../../data/models/receipt_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/receipt_provider.dart';
 import '../receipt/product_detail_screen.dart';
+import '../receipt/claim_detail_screen.dart';
 import '../../services/claim_service.dart';
 import '../../providers/claim_provider.dart';
 import '../../widgets/all_clear_placeholder.dart';
@@ -18,7 +19,7 @@ import '../../widgets/all_clear_placeholder.dart';
 
 class _AttentionItem {
   final String receiptId;
-  final String lineItemId;
+  final String? lineItemId;
   final String productName;
   final String? storeName;
   final String? productImageUrl;
@@ -28,6 +29,7 @@ class _AttentionItem {
   final bool isReturn;
   final bool isClaim;
   final String? claimStatus;
+  final String? claimId;
 
   const _AttentionItem({
     required this.receiptId,
@@ -39,6 +41,7 @@ class _AttentionItem {
     required this.isReturn,
     this.isClaim = false,
     this.claimStatus,
+    this.claimId,
   });
 }
 
@@ -120,30 +123,42 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     // Add claims that need attention
     for (final claim in claims) {
-      if (claim.status != 'RESOLVED' && claim.status != 'DENIED') {
+      final status = claim.status.toUpperCase();
+      if (status != 'RESOLVED' && status != 'DENIED') {
         final receipt = receipts
             .where((r) => r.id == claim.receiptId)
             .firstOrNull;
         if (receipt != null) {
-          final lineItem = receipt.lineItems.isNotEmpty
-              ? receipt.lineItems.first
-              : null;
-          if (lineItem != null && lineItem.status != 'ARCHIVED') {
-            items.add(
-              _AttentionItem(
-                receiptId: receipt.id,
-                lineItemId: lineItem.id,
-                productName: receipt.productName ?? lineItem.displayName,
-                storeName: receipt.storeName,
-                productImageUrl: receipt.productImageUrl,
-                daysRemaining:
-                    9999, // Lower priority than expiring returns/warranties
-                isReturn: false,
-                isClaim: true,
-                claimStatus: claim.status,
-              ),
-            );
-          }
+          // Find matching line item or fallback to the first one available
+          final lineItem =
+              (claim.lineItemId != null && claim.lineItemId!.isNotEmpty)
+              ? (receipt.lineItems
+                        .where((i) => i.id == claim.lineItemId)
+                        .firstOrNull ??
+                    receipt.lineItems.firstOrNull)
+              : receipt.lineItems.firstOrNull;
+
+          // Even if line item is archived, we still show the claim because it's active.
+          // Note: if lineItem is entirely null, we can still fall back to receipt data.
+          items.add(
+            _AttentionItem(
+              receiptId: receipt.id,
+              lineItemId: lineItem?.id,
+              productName:
+                  lineItem?.displayName ??
+                  receipt.productName ??
+                  'Unknown Product',
+              storeName: receipt.storeName,
+              productImageUrl:
+                  lineItem?.productImageUrl ?? receipt.productImageUrl,
+              daysRemaining:
+                  9999, // Lower priority than expiring returns/warranties
+              isReturn: false,
+              isClaim: true,
+              claimStatus: claim.status,
+              claimId: claim.id,
+            ),
+          );
         }
       }
     }
@@ -152,14 +167,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return items;
   }
 
-  void _goToDetail(String receiptId, String? lineItemId) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) =>
-            ProductDetailScreen(receiptId: receiptId, lineItemId: lineItemId),
-      ),
-    );
+  void _goToDetail(_AttentionItem item) {
+    if (item.isClaim && item.claimId != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ClaimDetailScreen(
+            claimId: item.claimId!,
+            receiptStoreName: item.storeName ?? 'Unknown Store',
+          ),
+        ),
+      );
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ProductDetailScreen(
+            receiptId: item.receiptId,
+            lineItemId: item.lineItemId,
+          ),
+        ),
+      );
+    }
   }
 
   Future<void> _refreshHomeData() async {
@@ -288,7 +317,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           const SliverToBoxAdapter(child: SizedBox(height: 28)),
                     ),
 
-                    // ── Attention required ────────────────────────────────────────
+                    // ── At a glance ───────────────────────────────────────────────
                     receiptsAsync.when(
                       data: (receipts) {
                         return claimsAsync.when(
@@ -301,10 +330,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               child: _AttentionSection(
                                 items: attentionItems,
                                 isDark: isDark,
-                                onTap: (item) => _goToDetail(
-                                  item.receiptId,
-                                  item.lineItemId,
-                                ),
+                                onTap: _goToDetail,
                               ),
                             );
                           },
@@ -604,7 +630,7 @@ class _AttentionSectionState extends State<_AttentionSection> {
           child: Row(
             children: [
               Text(
-                'ATTENTION REQUIRED',
+                'AT A GLANCE',
                 style: AppTextStyles.capsLabel.copyWith(
                   color: AppColors.textSecondary(isDark),
                 ),
@@ -689,7 +715,14 @@ class _AttentionCard extends StatelessWidget {
         ? 'RETURN PERIOD'
         : 'WARRANTY';
     final daysLabel = item.isClaim
-        ? 'Update status'
+        ? (item.claimStatus ?? 'Pending')
+              .replaceAll('_', ' ')
+              .split(' ')
+              .map(
+                (word) =>
+                    word[0].toUpperCase() + word.substring(1).toLowerCase(),
+              )
+              .join(' ')
         : item.daysRemaining == 0
         ? 'Expires today'
         : '${item.daysRemaining} day${item.daysRemaining == 1 ? '' : 's'} left';
@@ -781,7 +814,9 @@ class _AttentionCard extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          Symbols.timer_rounded,
+                          item.isClaim
+                              ? Symbols.info_rounded
+                              : Symbols.timer_rounded,
                           size: AppDimensions.iconTiny,
                           color: accentColor,
                           weight: AppDimensions.iconWeightBold,
