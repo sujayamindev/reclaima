@@ -117,7 +117,7 @@ class _ImageCropRotateScreenState extends State<ImageCropRotateScreen> {
         elevation: 0,
         leading: IconButton(
           onPressed: () => Navigator.of(context).pop(),
-          icon: Icon(Symbols.arrow_back, color: textPrimary),
+          icon: Icon(Symbols.arrow_back_rounded, color: textPrimary),
         ),
         title: Text(
           'Crop & Rotate',
@@ -178,8 +178,8 @@ class _ImageCropRotateScreenState extends State<ImageCropRotateScreen> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          icon: Icon(Symbols.crop,
-                              color: AppColors.primary, size: 20),
+                          icon: Icon(Symbols.crop_rounded,
+                              color: AppColors.primary, size: AppDimensions.iconMedium),
                           label: Text(
                             'Crop Image',
                             style: AppTextStyles.button.copyWith(
@@ -206,8 +206,8 @@ class _ImageCropRotateScreenState extends State<ImageCropRotateScreen> {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
-                              icon: Icon(Symbols.rotate_right,
-                                  color: AppColors.primary, size: 18),
+                              icon: Icon(Symbols.rotate_right_rounded,
+                                  color: AppColors.primary, size: AppDimensions.iconMedium),
                               label: Text(
                                 'Rotate 90°',
                                 style: AppTextStyles.button.copyWith(
@@ -231,8 +231,8 @@ class _ImageCropRotateScreenState extends State<ImageCropRotateScreen> {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
-                              icon: Icon(Symbols.rotate_left,
-                                  color: AppColors.primary, size: 18),
+                              icon: Icon(Symbols.rotate_left_rounded,
+                                  color: AppColors.primary, size: AppDimensions.iconMedium),
                               label: Text(
                                 'Rotate 180°',
                                 style: AppTextStyles.button.copyWith(
@@ -262,8 +262,8 @@ class _ImageCropRotateScreenState extends State<ImageCropRotateScreen> {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
-                              icon: Icon(Symbols.flip_to_front,
-                                  color: AppColors.primary, size: 18),
+                              icon: Icon(Symbols.flip_to_front_rounded,
+                                  color: AppColors.primary, size: AppDimensions.iconMedium),
                               label: Text(
                                 'Rotate 270°',
                                 style: AppTextStyles.button.copyWith(

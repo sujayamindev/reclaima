@@ -73,6 +73,7 @@ dependencies:
   figma_squircle: ^0.6.3
   google_sign_in: ^7.2.0
   open_filex: ^4.7.0
+  permission_handler: ^12.0.1
 
 dev_dependencies:
   flutter_test:

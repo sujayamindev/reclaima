@@ -127,3 +127,6 @@ backend/.aws/
 # OS
 Thumbs.db
 .DS_Store
+
+TODOS.md
+*backup.sql

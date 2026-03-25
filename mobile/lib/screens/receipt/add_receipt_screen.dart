@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../core/constants/app_constants.dart';
 import '../../providers/receipt_provider.dart';
 import '../../widgets/step_progress_bar.dart';
+import '../../widgets/app_primary_button.dart';
 import 'image_crop_rotate_screen.dart';
 import 'review_receipt_screen.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -53,26 +54,20 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
               const SizedBox(height: 20),
               ListTile(
                 leading: Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(AppDimensions.paddingCardSmall),
                   decoration: BoxDecoration(
-                    color: const Color.fromARGB(
-                      255,
-                      0,
-                      0,
-                      0,
-                    ).withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(10),
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusIconContainer),
                   ),
                   child: const Icon(
-                    Symbols.camera_alt,
+                    Symbols.camera_alt_rounded,
                     color: AppColors.primary,
-                    size: 20,
+                    size: AppDimensions.iconMedium,
                   ),
                 ),
                 title: Text(
                   'Snap a Photo',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
+                  style: AppTextStyles.listTitle.copyWith(
                     color: textPrimary,
                   ),
                 ),
@@ -80,26 +75,20 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
               ),
               ListTile(
                 leading: Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(AppDimensions.paddingCardSmall),
                   decoration: BoxDecoration(
-                    color: const Color.fromARGB(
-                      255,
-                      0,
-                      0,
-                      0,
-                    ).withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(10),
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusIconContainer),
                   ),
                   child: const Icon(
-                    Symbols.photo_library,
+                    Symbols.photo_library_rounded,
                     color: AppColors.primary,
-                    size: 20,
+                    size: AppDimensions.iconMedium,
                   ),
                 ),
                 title: Text(
                   'Choose from Gallery',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
+                  style: AppTextStyles.listTitle.copyWith(
                     color: textPrimary,
                   ),
                 ),
@@ -197,7 +186,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                 children: [
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: Icon(Symbols.arrow_back, color: textPrimary),
+                    icon: Icon(Symbols.arrow_back_rounded, color: textPrimary),
                     padding: const EdgeInsets.all(8),
                     style: IconButton.styleFrom(
                       backgroundColor: Colors.transparent,
@@ -287,11 +276,11 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                                     shape: BoxShape.circle,
                                   ),
                                   child: Icon(
-                                    Symbols.add_a_photo,
+                                    Symbols.add_a_photo_rounded,
                                     color: AppColors.onPrimary,
-                                    size: 28,
+                                    size: AppDimensions.iconNormal,
                                     fill: 0,
-                                    weight: 700,
+                                    weight: AppDimensions.iconWeightBold,
                                   ),
                                 ),
                                 const SizedBox(height: 10),
@@ -306,8 +295,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                                 const SizedBox(height: 4),
                                 Text(
                                   'Any receipt, warranty card,\nor invoice',
-                                  style: TextStyle(
-                                    fontSize: 12,
+                                  style: AppTextStyles.bodySmall.copyWith(
                                     color: AppColors.onPrimary.withValues(
                                       alpha: 0.6,
                                     ),
@@ -387,9 +375,9 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                                         ),
                                       ),
                                       child: const Icon(
-                                        Symbols.close,
+                                        Symbols.close_rounded,
                                         color: Colors.white,
-                                        size: 12,
+                                        size: AppDimensions.iconTiny,
                                       ),
                                     ),
                                   ),
@@ -446,52 +434,23 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                   ),
                   const SizedBox(width: 4),
                   Icon(
-                    Symbols.arrow_forward,
-                    size: 14,
+                    Symbols.arrow_forward_rounded,
+                    size: AppDimensions.iconTiny,
                     color: AppColors.muted(isDark),
                   ),
                 ],
               ),
             ),
           ),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed:
+          AppPrimaryButton.dark(
+            onPressed:
                   (controllerState.isLoading || _selectedImagePaths.isEmpty)
                   ? null
                   : _upload,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.onPrimary,
-                foregroundColor: Colors.white,
-                disabledBackgroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 17),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
-                  side: BorderSide(color: AppColors.border(isDark), width: 1),
-                ),
-                elevation: 0,
-              ),
-              child: controllerState.isLoading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: AppColors.primary,
-                      ),
-                    )
-                  : Text(
-                      _selectedImagePaths.isEmpty
-                          ? 'Add a photo to continue'
-                          : 'Upload ${_selectedImagePaths.length} '
-                                '${_selectedImagePaths.length == 1 ? "image" : "images"}',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-            ),
+            isLoading: controllerState.isLoading,
+            text: _selectedImagePaths.isEmpty
+                ? 'Add a photo to continue'
+                : 'Upload ${_selectedImagePaths.length} ${_selectedImagePaths.length == 1 ? "image" : "images"}',
           ),
         ],
       ),

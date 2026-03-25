@@ -42,7 +42,7 @@ class ProductImageCard extends StatelessWidget {
             children: [
               const Icon(
                 Symbols.shopping_bag,
-                size: 20,
+                size: AppDimensions.iconMedium,
                 color: AppColors.primary,
               ),
               const SizedBox(width: 10),
@@ -121,7 +121,7 @@ class ProductImageCard extends StatelessWidget {
           children: [
             Icon(
               Symbols.image_not_supported,
-              size: 40,
+              size: AppDimensions.iconLarge,
               color: labelColor.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 8),

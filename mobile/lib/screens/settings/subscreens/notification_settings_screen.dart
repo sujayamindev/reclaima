@@ -114,7 +114,7 @@ class _NotificationSettingsScreenState
         children: [
           Row(
             children: [
-              Icon(icon, size: 20, color: AppColors.primary, weight: 800.0),
+              Icon(icon, size: AppDimensions.iconMedium, color: AppColors.primary, weight: AppDimensions.iconWeightHeavy),
               const SizedBox(width: 10),
               Text(
                 title,
@@ -144,7 +144,7 @@ class _NotificationSettingsScreenState
       child: Row(
         children: [
           Icon(icon,
-              size: 20, color: AppColors.textSecondary(isDark), weight: 600.0),
+              size: AppDimensions.iconMedium, color: AppColors.textSecondary(isDark), weight: 600.0),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -201,7 +201,7 @@ class _NotificationSettingsScreenState
           child: Row(
             children: [
               Icon(icon,
-                  size: 20,
+                  size: AppDimensions.iconMedium,
                   color: AppColors.textSecondary(isDark),
                   weight: 600.0),
               const SizedBox(width: 12),
@@ -226,8 +226,8 @@ class _NotificationSettingsScreenState
                   value: selectedValue,
                   underline: const SizedBox.shrink(),
                   isDense: true,
-                  icon: Icon(Symbols.arrow_drop_down,
-                      size: 18, color: AppColors.primary, weight: 600.0),
+                  icon: Icon(Symbols.arrow_drop_down_rounded,
+                      size: AppDimensions.iconMedium, color: AppColors.primary, weight: AppDimensions.iconWeightBold),
                   style: AppTextStyles.listTitle.copyWith(
                     color: AppColors.primary,
                   ),
@@ -270,7 +270,7 @@ class _NotificationSettingsScreenState
           child: Row(
             children: [
               Icon(icon,
-                  size: 18,
+                  size: AppDimensions.iconMedium,
                   color: AppColors.textSecondary(isDark),
                   weight: 600.0),
               const SizedBox(width: 12),
@@ -341,11 +341,11 @@ class _NotificationSettingsScreenState
               _buildSectionCard(
                 isDark,
                 'Reminder Types',
-                Symbols.tune,
+                Symbols.tune_rounded,
                 [
                   _buildToggleRow(
                     isDark,
-                    icon: Symbols.verified_user,
+                    icon: Symbols.verified_user_rounded,
                     title: 'Warranty Reminders',
                     subtitle: 'Alerts before warranty expiry',
                     value: _warrantyReminders,
@@ -357,7 +357,7 @@ class _NotificationSettingsScreenState
                   Divider(color: AppColors.border(isDark), height: 1),
                   _buildToggleRow(
                     isDark,
-                    icon: Symbols.keyboard_return,
+                    icon: Symbols.keyboard_return_rounded,
                     title: 'Return Window Reminders',
                     subtitle: 'Alerts before return period ends',
                     value: _returnReminders,
@@ -369,7 +369,7 @@ class _NotificationSettingsScreenState
                   Divider(color: AppColors.border(isDark), height: 1),
                   _buildToggleRow(
                     isDark,
-                    icon: Symbols.document_scanner,
+                    icon: Symbols.document_scanner_rounded,
                     title: 'Receipt Processing',
                     subtitle: 'Alerts when receipt scan completes',
                     value: _processingAlerts,
@@ -384,11 +384,11 @@ class _NotificationSettingsScreenState
               _buildSectionCard(
                 isDark,
                 'Reminder Timing',
-                Symbols.schedule,
+                Symbols.schedule_rounded,
                 [
                   _buildDropdownRow(
                     isDark,
-                    icon: Symbols.event_note,
+                    icon: Symbols.event_note_rounded,
                     title: 'Warranty Lead Time',
                     options: _warrantyLeadOptions,
                     selectedValue: _warrantyLeadDays,
@@ -402,7 +402,7 @@ class _NotificationSettingsScreenState
                   Divider(color: AppColors.border(isDark), height: 1),
                   _buildDropdownRow(
                     isDark,
-                    icon: Symbols.event_note,
+                    icon: Symbols.event_note_rounded,
                     title: 'Return Window Lead Time',
                     options: _returnLeadOptions,
                     selectedValue: _returnLeadDays,
@@ -419,11 +419,11 @@ class _NotificationSettingsScreenState
               _buildSectionCard(
                 isDark,
                 'Do Not Disturb',
-                Symbols.bedtime,
+                Symbols.bedtime_rounded,
                 [
                   _buildToggleRow(
                     isDark,
-                    icon: Symbols.nights_stay,
+                    icon: Symbols.nights_stay_rounded,
                     title: 'Quiet Hours',
                     subtitle: 'Mute notifications during sleep',
                     value: _quietHoursEnabled,
@@ -436,7 +436,7 @@ class _NotificationSettingsScreenState
                     Divider(color: AppColors.border(isDark), height: 1),
                     _buildTimePickerRow(
                       isDark,
-                      icon: Symbols.start,
+                      icon: Symbols.start_rounded,
                       title: 'Start Time',
                       time: _quietStart,
                       onTap: () async {
@@ -453,7 +453,7 @@ class _NotificationSettingsScreenState
                     Divider(color: AppColors.border(isDark), height: 1),
                     _buildTimePickerRow(
                       isDark,
-                      icon: Symbols.stop,
+                      icon: Symbols.stop_rounded,
                       title: 'End Time',
                       time: _quietEnd,
                       onTap: () async {

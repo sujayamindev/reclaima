@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../receipt/add_receipt_screen.dart';
@@ -54,7 +55,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   static const int _warrantyAlertDays = 30;
   static const int _returnAlertDays = 3;
 
-  List<_AttentionItem> _buildAttentionItems(List<ReceiptModel> receipts, List<ClaimDocumentResponse> claims) {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _requestPermissions();
+    });
+  }
+
+  Future<void> _requestPermissions() async {
+    // Request notification and camera permissions on app load
+    await [
+      Permission.notification,
+      Permission.camera,
+      Permission
+          .storage, // Storage is often needed along with camera for attachments
+    ].request();
+  }
+
+  List<_AttentionItem> _buildAttentionItems(
+    List<ReceiptModel> receipts,
+    List<ClaimDocumentResponse> claims,
+  ) {
     final items = <_AttentionItem>[];
     for (final receipt in receipts) {
       for (final item in receipt.lineItems) {
@@ -64,57 +86,68 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         if (returnDays != null &&
             !item.isReturnExpired &&
             returnDays <= _returnAlertDays) {
-          items.add(_AttentionItem(
-            receiptId: receipt.id,
-            lineItemId: item.id,
-            productName: item.displayName,
-            storeName: receipt.storeName,
-            productImageUrl: item.productImageUrl,
-            daysRemaining: returnDays,
-            isReturn: true,
-          ));
+          items.add(
+            _AttentionItem(
+              receiptId: receipt.id,
+              lineItemId: item.id,
+              productName: item.displayName,
+              storeName: receipt.storeName,
+              productImageUrl: item.productImageUrl,
+              daysRemaining: returnDays,
+              isReturn: true,
+            ),
+          );
         }
 
         final warrantyDays = item.warrantyDaysRemaining;
         if (warrantyDays != null &&
             !item.isWarrantyExpired &&
             warrantyDays <= _warrantyAlertDays) {
-          items.add(_AttentionItem(
-            receiptId: receipt.id,
-            lineItemId: item.id,
-            productName: item.displayName,
-            storeName: receipt.storeName,
-            productImageUrl: item.productImageUrl,
-            daysRemaining: warrantyDays,
-            isReturn: false,
-          ));
+          items.add(
+            _AttentionItem(
+              receiptId: receipt.id,
+              lineItemId: item.id,
+              productName: item.displayName,
+              storeName: receipt.storeName,
+              productImageUrl: item.productImageUrl,
+              daysRemaining: warrantyDays,
+              isReturn: false,
+            ),
+          );
         }
       }
     }
-    
+
     // Add claims that need attention
     for (final claim in claims) {
       if (claim.status != 'RESOLVED' && claim.status != 'DENIED') {
-        final receipt = receipts.where((r) => r.id == claim.receiptId).firstOrNull;
+        final receipt = receipts
+            .where((r) => r.id == claim.receiptId)
+            .firstOrNull;
         if (receipt != null) {
-          final lineItem = receipt.lineItems.isNotEmpty ? receipt.lineItems.first : null;
+          final lineItem = receipt.lineItems.isNotEmpty
+              ? receipt.lineItems.first
+              : null;
           if (lineItem != null && lineItem.status != 'ARCHIVED') {
-            items.add(_AttentionItem(
-              receiptId: receipt.id,
-              lineItemId: lineItem.id,
-              productName: receipt.productName ?? lineItem.displayName,
-              storeName: receipt.storeName,
-              productImageUrl: receipt.productImageUrl,
-              daysRemaining: 9999, // Lower priority than expiring returns/warranties
-              isReturn: false,
-              isClaim: true,
-              claimStatus: claim.status,
-            ));
+            items.add(
+              _AttentionItem(
+                receiptId: receipt.id,
+                lineItemId: lineItem.id,
+                productName: receipt.productName ?? lineItem.displayName,
+                storeName: receipt.storeName,
+                productImageUrl: receipt.productImageUrl,
+                daysRemaining:
+                    9999, // Lower priority than expiring returns/warranties
+                isReturn: false,
+                isClaim: true,
+                claimStatus: claim.status,
+              ),
+            );
           }
         }
       }
     }
-    
+
     items.sort((a, b) => a.daysRemaining.compareTo(b.daysRemaining));
     return items;
   }
@@ -123,10 +156,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => ProductDetailScreen(
-          receiptId: receiptId,
-          lineItemId: lineItemId,
-        ),
+        builder: (_) =>
+            ProductDetailScreen(receiptId: receiptId, lineItemId: lineItemId),
       ),
     );
   }
@@ -162,117 +193,136 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: RefreshIndicator(
                 onRefresh: _refreshHomeData,
                 child: CustomScrollView(
-          physics: const AlwaysScrollableScrollPhysics(
-            parent: BouncingScrollPhysics(),
-          ),
-          slivers: [
-            // ── Top bar ──────────────────────────────────────────────────
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                    AppDimensions.paddingPage, 20, AppDimensions.paddingPage, 0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Recepta.',
-                      style: AppTextStyles.appName.copyWith(color: textPrimary),
-                    ),
-                    Row(
-                      children: [
-                        _CircleIconButton(
-                          icon: Symbols.search,
-                          iconColor: textSecondary,
-                          cardColor: card,
-                          borderColor: border,
-                          onPressed: () {},
-                        ),
-                        const SizedBox(width: 10),
-                        _CircleIconButton(
-                          icon: Symbols.notifications,
-                          iconColor: textSecondary,
-                          cardColor: card,
-                          borderColor: border,
-                          onPressed: () {},
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // ── Greeting ─────────────────────────────────────────────────
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                    AppDimensions.paddingPage, 24, AppDimensions.paddingPage, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      greeting,
-                      style: AppTextStyles.bodyMedium
-                          .copyWith(color: textSecondary),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '$userName 👋',
-                      style: AppTextStyles.headingLarge
-                          .copyWith(color: textPrimary),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // ── Stats row ─────────────────────────────────────────────────
-            receiptsAsync.when(
-              data: (receipts) => SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                      AppDimensions.paddingPage, 28, AppDimensions.paddingPage, 0),
-                  child: _StatsRow(
-                    receipts: receipts,
-                    isDark: isDark,
+                  physics: const AlwaysScrollableScrollPhysics(
+                    parent: BouncingScrollPhysics(),
                   ),
-                ),
-              ),
-              loading: () =>
-                  const SliverToBoxAdapter(child: SizedBox(height: 28)),
-              error: (_, _) =>
-                  const SliverToBoxAdapter(child: SizedBox(height: 28)),
-            ),
-
-            // ── Attention required ────────────────────────────────────────
-            receiptsAsync.when(
-              data: (receipts) {
-                return claimsAsync.when(
-                  data: (claims) {
-                    final attentionItems = _buildAttentionItems(receipts, claims);
-                    return SliverToBoxAdapter(
-                      child: _AttentionSection(
-                        items: attentionItems,
-                        isDark: isDark,
-                        onTap: (item) =>
-                            _goToDetail(item.receiptId, item.lineItemId),
+                  slivers: [
+                    // ── Top bar ──────────────────────────────────────────────────
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(
+                          AppDimensions.paddingPage,
+                          20,
+                          AppDimensions.paddingPage,
+                          0,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Recepta.',
+                              style: AppTextStyles.appName.copyWith(
+                                color: textPrimary,
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                _CircleIconButton(
+                                  icon: Symbols.search_rounded,
+                                  iconColor: textSecondary,
+                                  cardColor: card,
+                                  borderColor: border,
+                                  onPressed: () {},
+                                ),
+                                const SizedBox(width: 10),
+                                _CircleIconButton(
+                                  icon: Symbols.notifications_rounded,
+                                  iconColor: textSecondary,
+                                  cardColor: card,
+                                  borderColor: border,
+                                  onPressed: () {},
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
-                    );
-                  },
-                  loading: () =>
-                      const SliverToBoxAdapter(child: SizedBox.shrink()),
-                  error: (_, _) =>
-                      const SliverToBoxAdapter(child: SizedBox.shrink()),
-                );
-              },
-              loading: () =>
-                  const SliverToBoxAdapter(child: SizedBox.shrink()),
-              error: (_, _) =>
-                  const SliverToBoxAdapter(child: SizedBox.shrink()),
-            ),
+                    ),
 
-          ],
-        ),
+                    // ── Greeting ─────────────────────────────────────────────────
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(
+                          AppDimensions.paddingPage,
+                          24,
+                          AppDimensions.paddingPage,
+                          0,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              greeting,
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                color: textSecondary,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '$userName 👋',
+                              style: AppTextStyles.headingLarge.copyWith(
+                                color: textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // ── Stats row ─────────────────────────────────────────────────
+                    receiptsAsync.when(
+                      data: (receipts) => SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(
+                            AppDimensions.paddingPage,
+                            28,
+                            AppDimensions.paddingPage,
+                            0,
+                          ),
+                          child: _StatsRow(receipts: receipts, isDark: isDark),
+                        ),
+                      ),
+                      loading: () =>
+                          const SliverToBoxAdapter(child: SizedBox(height: 28)),
+                      error: (_, _) =>
+                          const SliverToBoxAdapter(child: SizedBox(height: 28)),
+                    ),
+
+                    // ── Attention required ────────────────────────────────────────
+                    receiptsAsync.when(
+                      data: (receipts) {
+                        return claimsAsync.when(
+                          data: (claims) {
+                            final attentionItems = _buildAttentionItems(
+                              receipts,
+                              claims,
+                            );
+                            return SliverToBoxAdapter(
+                              child: _AttentionSection(
+                                items: attentionItems,
+                                isDark: isDark,
+                                onTap: (item) => _goToDetail(
+                                  item.receiptId,
+                                  item.lineItemId,
+                                ),
+                              ),
+                            );
+                          },
+                          loading: () => const SliverToBoxAdapter(
+                            child: SizedBox.shrink(),
+                          ),
+                          error: (_, _) => const SliverToBoxAdapter(
+                            child: SizedBox.shrink(),
+                          ),
+                        );
+                      },
+                      loading: () =>
+                          const SliverToBoxAdapter(child: SizedBox.shrink()),
+                      error: (_, _) =>
+                          const SliverToBoxAdapter(child: SizedBox.shrink()),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -282,10 +332,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             top: false,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(
-                  AppDimensions.paddingPage,
-                  12,
-                  AppDimensions.paddingPage,
-                  38),
+                AppDimensions.paddingPage,
+                12,
+                AppDimensions.paddingPage,
+                38,
+              ),
               child: Row(
                 children: [
                   Expanded(
@@ -293,7 +344,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (_) => const AddReceiptScreen()),
+                          builder: (_) => const AddReceiptScreen(),
+                        ),
                       ),
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 14),
@@ -317,13 +369,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               height: 30,
                               width: 30,
                               decoration: BoxDecoration(
-                                color: AppColors.onPrimary.withValues(alpha: 0.15),
+                                color: AppColors.onPrimary.withValues(
+                                  alpha: 0.15,
+                                ),
                                 shape: BoxShape.circle,
                               ),
-                              child: Icon(Symbols.arrow_right_alt_rounded,
-                                  size: 16,
-                                  weight: 600.0,
-                                  color: AppColors.onPrimary),
+                              child: Icon(
+                                Symbols.arrow_right_alt_rounded,
+                                size: AppDimensions.iconSmall,
+                                weight: AppDimensions.iconWeightBold,
+                                color: AppColors.onPrimary,
+                              ),
                             ),
                           ],
                         ),
@@ -357,13 +413,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               height: 30,
                               width: 30,
                               decoration: BoxDecoration(
-                                color: AppColors.onPrimary.withValues(alpha: 0.08),
+                                color: AppColors.onPrimary.withValues(
+                                  alpha: 0.08,
+                                ),
                                 shape: BoxShape.circle,
                               ),
-                              child: Icon(Symbols.adf_scanner_rounded,
-                                  size: 16,
-                                  weight: 600.0,
-                                  color: AppColors.onPrimary),
+                              child: Icon(
+                                Symbols.adf_scanner_rounded,
+                                size: AppDimensions.iconSmall,
+                                weight: AppDimensions.iconWeightBold,
+                                color: AppColors.onPrimary,
+                              ),
                             ),
                           ],
                         ),
@@ -383,10 +443,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 // ── Stats row ──────────────────────────────────────────────────────────────────
 
 class _StatsRow extends StatelessWidget {
-  const _StatsRow({
-    required this.receipts,
-    required this.isDark,
-  });
+  const _StatsRow({required this.receipts, required this.isDark});
 
   final List<ReceiptModel> receipts;
   final bool isDark;
@@ -403,9 +460,23 @@ class _StatsRow extends StatelessWidget {
 
     return Row(
       children: [
-        Expanded(child: _StatCard(value: fmt(total), label: 'Total', isDark: isDark, icon: Symbols.shopping_bag)),
+        Expanded(
+          child: _StatCard(
+            value: fmt(total),
+            label: 'Total',
+            isDark: isDark,
+            icon: Symbols.shopping_bag_rounded,
+          ),
+        ),
         const SizedBox(width: 10),
-        Expanded(child: _StatCard(value: fmt(protected), label: 'Protected', isDark: isDark, icon: Symbols.shield_rounded)),
+        Expanded(
+          child: _StatCard(
+            value: fmt(protected),
+            label: 'Protected',
+            isDark: isDark,
+            icon: Symbols.shield_rounded,
+          ),
+        ),
       ],
     );
   }
@@ -445,7 +516,12 @@ class _StatCard extends StatelessWidget {
               color: AppColors.textSecondary(isDark).withValues(alpha: 0.08),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, size: 16, color: labelColor, weight: 600.0),
+            child: Icon(
+              icon,
+              size: AppDimensions.iconSmall,
+              color: labelColor,
+              weight: AppDimensions.iconWeightBold,
+            ),
           ),
           const SizedBox(width: 8),
           Text(
@@ -520,13 +596,18 @@ class _AttentionSectionState extends State<_AttentionSection> {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(
-              AppDimensions.paddingPage, 32, AppDimensions.paddingPage, 0),
+            AppDimensions.paddingPage,
+            32,
+            AppDimensions.paddingPage,
+            0,
+          ),
           child: Row(
             children: [
               Text(
                 'ATTENTION REQUIRED',
-                style: AppTextStyles.capsLabel
-                    .copyWith(color: AppColors.textSecondary(isDark)),
+                style: AppTextStyles.capsLabel.copyWith(
+                  color: AppColors.textSecondary(isDark),
+                ),
               ),
             ],
           ),
@@ -537,7 +618,8 @@ class _AttentionSectionState extends State<_AttentionSection> {
         if (items.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.paddingPage),
+              horizontal: AppDimensions.paddingPage,
+            ),
             child: AllClearPlaceholder(isDark: isDark),
           )
         else ...[
@@ -549,7 +631,8 @@ class _AttentionSectionState extends State<_AttentionSection> {
               onPageChanged: (i) => setState(() => _currentPage = i),
               itemBuilder: (_, i) => Padding(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.paddingPage),
+                  horizontal: AppDimensions.paddingPage,
+                ),
                 child: _AttentionCard(
                   item: items[i],
                   isDark: isDark,
@@ -602,12 +685,14 @@ class _AttentionCard extends StatelessWidget {
     final accentColor = _accentFor(item);
     final typeLabel = item.isClaim
         ? 'ACTIVE CLAIM'
-        : item.isReturn ? 'RETURN PERIOD' : 'WARRANTY';
+        : item.isReturn
+        ? 'RETURN PERIOD'
+        : 'WARRANTY';
     final daysLabel = item.isClaim
         ? 'Update status'
         : item.daysRemaining == 0
-            ? 'Expires today'
-            : '${item.daysRemaining} day${item.daysRemaining == 1 ? '' : 's'} left';
+        ? 'Expires today'
+        : '${item.daysRemaining} day${item.daysRemaining == 1 ? '' : 's'} left';
 
     return GestureDetector(
       onTap: onTap,
@@ -624,13 +709,13 @@ class _AttentionCard extends StatelessWidget {
             // ── Product image ─────────────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(
-                  AppDimensions.paddingCardSmall,
-                  AppDimensions.paddingCardSmall,
-                  0,
-                  AppDimensions.paddingCardSmall),
+                AppDimensions.paddingCardSmall,
+                AppDimensions.paddingCardSmall,
+                0,
+                AppDimensions.paddingCardSmall,
+              ),
               child: ClipRRect(
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.radiusMedium),
+                borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
                 child: SizedBox(
                   width: 110,
                   child: item.productImageUrl != null
@@ -661,7 +746,8 @@ class _AttentionCard extends StatelessWidget {
                         Text(
                           item.productName,
                           style: AppTextStyles.listTitle.copyWith(
-                              color: AppColors.textPrimary(isDark)),
+                            color: AppColors.textPrimary(isDark),
+                          ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -670,16 +756,18 @@ class _AttentionCard extends StatelessWidget {
                           Row(
                             children: [
                               Icon(
-                                Symbols.storefront,
-                                size: 12,
+                                Symbols.storefront_rounded,
+                                size: AppDimensions.iconTiny,
                                 color: AppColors.textSecondary(isDark),
-                                weight: 600.0),
+                                weight: 600.0,
+                              ),
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
                                   item.storeName!,
                                   style: AppTextStyles.caption.copyWith(
-                                      color: AppColors.textSecondary(isDark)),
+                                    color: AppColors.textSecondary(isDark),
+                                  ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -692,7 +780,12 @@ class _AttentionCard extends StatelessWidget {
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Symbols.timer, size: 13, color: accentColor, weight: 600.0),
+                        Icon(
+                          Symbols.timer_rounded,
+                          size: AppDimensions.iconTiny,
+                          color: accentColor,
+                          weight: AppDimensions.iconWeightBold,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           daysLabel,
@@ -727,8 +820,8 @@ class _ImagePlaceholder extends StatelessWidget {
       color: color.withValues(alpha: 0.08),
       child: Center(
         child: Icon(
-          Symbols.image_not_supported,
-          size: 28,
+          Symbols.image_not_supported_rounded,
+          size: AppDimensions.iconNormal,
           color: color.withValues(alpha: 0.35),
         ),
       ),
@@ -750,10 +843,7 @@ class _TypeBadge extends StatelessWidget {
         color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(AppDimensions.radiusSmall - 2),
       ),
-      child: Text(
-        label,
-        style: AppTextStyles.badgeText.copyWith(color: color),
-      ),
+      child: Text(label, style: AppTextStyles.badgeText.copyWith(color: color)),
     );
   }
 }
@@ -791,7 +881,12 @@ class _CircleIconButton extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onPressed,
-          child: Icon(icon, size: 22, color: iconColor, weight: 600.0),
+          child: Icon(
+            icon,
+            size: AppDimensions.iconMedium,
+            color: iconColor,
+            weight: AppDimensions.iconWeightBold,
+          ),
         ),
       ),
     );

@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
@@ -40,11 +41,13 @@ class _VaultProductItem {
   final String receiptId;
   final ReceiptLineItemModel lineItem;
   final String? storeName;
+  final DateTime? purchaseDate;
 
   const _VaultProductItem({
     required this.receiptId,
     required this.lineItem,
     this.storeName,
+    required this.purchaseDate,
   });
 
   /// Warranty status: null = no warranty, expired = true, active = false
@@ -82,8 +85,7 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
       if (_searchQuery.isEmpty) return true;
       final q = _searchQuery.toLowerCase();
       final nameMatches = item.lineItem.displayName.toLowerCase().contains(q);
-      final storeMatches =
-          item.storeName?.toLowerCase().contains(q) ?? false;
+      final storeMatches = item.storeName?.toLowerCase().contains(q) ?? false;
       return nameMatches || storeMatches;
     }).toList();
 
@@ -136,8 +138,7 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
           if (bDate == null) return -1;
           return aDate.compareTo(bDate);
         case VaultSortType.name:
-          return a.lineItem.displayName
-              .compareTo(b.lineItem.displayName);
+          return a.lineItem.displayName.compareTo(b.lineItem.displayName);
       }
     });
 
@@ -166,16 +167,18 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
             final allProducts = <_VaultProductItem>[];
             for (final receipt in receipts) {
               for (final item in receipt.lineItems) {
-                allProducts.add(_VaultProductItem(
-                  receiptId: receipt.id,
-                  lineItem: item,
-                  storeName: receipt.storeName,
-                ));
+                allProducts.add(
+                  _VaultProductItem(
+                    receiptId: receipt.id,
+                    lineItem: item,
+                    storeName: receipt.storeName,
+                    purchaseDate: receipt.purchaseDate,
+                  ),
+                );
               }
             }
 
-            final filteredProducts =
-                _filterAndSortProducts(allProducts);
+            final filteredProducts = _filterAndSortProducts(allProducts);
 
             return Column(
               children: [
@@ -195,8 +198,9 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
                         children: [
                           Text(
                             'Vault',
-                            style: AppTextStyles.headingLarge
-                                .copyWith(color: textPrimary),
+                            style: AppTextStyles.headingLarge.copyWith(
+                              color: textPrimary,
+                            ),
                           ),
                         ],
                       ),
@@ -210,18 +214,26 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
                         ),
                         child: TextField(
                           controller: _searchController,
-                          onChanged: (val) => setState(() => _searchQuery = val),
-                          style: AppTextStyles.bodyMedium.copyWith(color: textPrimary),
+                          onChanged: (val) =>
+                              setState(() => _searchQuery = val),
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: textPrimary,
+                          ),
                           decoration: InputDecoration(
                             hintText: 'Search products...',
                             hintStyle: AppTextStyles.bodyMedium.copyWith(
-                                color: AppColors.textSecondary(isDark)),
-                            prefixIcon: Icon(Symbols.search,
-                                color: AppColors.textSecondary(isDark)),
+                              color: AppColors.textSecondary(isDark),
+                            ),
+                            prefixIcon: Icon(
+                              Symbols.search_rounded,
+                              color: AppColors.textSecondary(isDark),
+                            ),
                             suffixIcon: _searchQuery.isNotEmpty
                                 ? IconButton(
-                                    icon: Icon(Symbols.close,
-                                        color: AppColors.textSecondary(isDark)),
+                                    icon: Icon(
+                                      Symbols.close_rounded,
+                                      color: AppColors.textSecondary(isDark),
+                                    ),
                                     onPressed: () {
                                       _searchController.clear();
                                       setState(() => _searchQuery = '');
@@ -230,16 +242,19 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
                                   )
                                 : null,
                             border: InputBorder.none,
-                            contentPadding:
-                                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
                           ),
                         ),
                       ),
                       const SizedBox(height: 12),
                       Text(
                         '${filteredProducts.length} product${filteredProducts.length != 1 ? 's' : ''}',
-                        style: AppTextStyles.bodySmall
-                            .copyWith(color: textSecondary),
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: textSecondary,
+                        ),
                       ),
                     ],
                   ),
@@ -260,14 +275,14 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
                             label: _selectedFilter.label,
                             isDark: isDark,
                             onTap: () => _showFilterMenu(context, isDark),
-                            icon: Symbols.tune,
+                            icon: Symbols.tune_rounded,
                           ),
                           const SizedBox(width: 8),
                           _FilterChip(
                             label: _selectedSort.label,
                             isDark: isDark,
                             onTap: () => _showSortMenu(context, isDark),
-                            icon: Symbols.swap_vert,
+                            icon: Symbols.swap_vert_rounded,
                           ),
                         ],
                       ),
@@ -287,8 +302,7 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
                       behavior: HitTestBehavior.translucent,
                       child: filteredProducts.isEmpty
                           ? _buildEmptyState(isDark, textPrimary, textSecondary)
-                          : _buildListView(
-                              filteredProducts, isDark),
+                          : _buildListView(filteredProducts, isDark),
                     ),
                   ),
                 ),
@@ -296,15 +310,12 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
             );
           },
           loading: () => Center(
-            child: CircularProgressIndicator(
-              color: AppColors.primary,
-            ),
+            child: CircularProgressIndicator(color: AppColors.primary),
           ),
           error: (err, st) => Center(
             child: Text(
               'Error loading products',
-              style: AppTextStyles.bodyMedium
-                  .copyWith(color: textSecondary),
+              style: AppTextStyles.bodyMedium.copyWith(color: textSecondary),
             ),
           ),
         ),
@@ -318,8 +329,8 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            Symbols.shopping_bag,
-            size: 64,
+            Symbols.shopping_bag_rounded,
+            size: AppDimensions.iconXXL,
             color: textSecondary.withValues(alpha: 0.3),
           ),
           const SizedBox(height: 16),
@@ -470,10 +481,10 @@ class _ProductListItem extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(
-                12,
-                12,
+                AppDimensions.paddingCardSmall,
+                AppDimensions.paddingCardSmall,
                 0,
-                12,
+                AppDimensions.paddingCardSmall,
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
@@ -494,49 +505,79 @@ class _ProductListItem extends StatelessWidget {
 
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(AppDimensions.paddingCardSmall),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       item.lineItem.displayName,
-                      style: AppTextStyles.listTitle.copyWith(color: textPrimary),
+                      style: AppTextStyles.listTitle.copyWith(
+                        color: textPrimary,
+                      ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    if (item.storeName != null) ...[
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        if (item.storeName != null &&
+                            item.storeName!.isNotEmpty) ...[
                           Icon(
-                            Symbols.storefront,
-                            size: 12,
+                            Symbols.storefront_rounded,
+                            size: AppDimensions.iconTiny,
                             color: textSecondary,
-                            weight: 600.0,
+                            weight: AppDimensions.iconWeightBold,
                           ),
                           const SizedBox(width: 4),
-                          Expanded(
+                          Flexible(
                             child: Text(
                               item.storeName!,
-                              style: AppTextStyles.caption
-                                  .copyWith(color: textSecondary),
+                              style: AppTextStyles.caption.copyWith(
+                                color: textSecondary,
+                              ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '•',
+                            style: AppTextStyles.bodyXSmall.copyWith(
+                              color: textSecondary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
                         ],
-                      ),
-                    ],
+                        if (item.purchaseDate != null) ...[
+                          Icon(
+                            Symbols.calendar_today_rounded,
+                            size: 10,
+                            color: textSecondary,
+                            weight: AppDimensions.iconWeightBold,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            DateFormat(
+                              'MMM d, yyyy',
+                            ).format(item.purchaseDate!),
+                            style: AppTextStyles.caption.copyWith(
+                              color: textSecondary,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
                     const SizedBox(height: 6),
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          Symbols.timer,
-                          size: 13,
+                          Symbols.timer_rounded,
+                          size: AppDimensions.iconTiny,
                           color: statusColor,
-                          weight: 600.0,
+                          weight: AppDimensions.iconWeightBold,
                         ),
                         const SizedBox(width: 4),
                         Text(
@@ -570,8 +611,8 @@ class _VaultImagePlaceholder extends StatelessWidget {
       color: color.withValues(alpha: 0.08),
       child: Center(
         child: Icon(
-          Symbols.image_not_supported,
-          size: 28,
+          Symbols.image_not_supported_rounded,
+          size: AppDimensions.iconNormal,
           color: color.withValues(alpha: 0.35),
         ),
       ),
@@ -610,12 +651,14 @@ class _FilterMenu extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          ...VaultFilterType.values.map((filter) => _MenuItem(
-            label: filter.label,
-            isSelected: filter == selectedFilter,
-            isDark: isDark,
-            onTap: () => onFilterSelected(filter),
-          )),
+          ...VaultFilterType.values.map(
+            (filter) => _MenuItem(
+              label: filter.label,
+              isSelected: filter == selectedFilter,
+              isDark: isDark,
+              onTap: () => onFilterSelected(filter),
+            ),
+          ),
           const SizedBox(height: 8),
         ],
       ),
@@ -654,12 +697,14 @@ class _SortMenu extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          ...VaultSortType.values.map((sort) => _MenuItem(
-            label: sort.label,
-            isSelected: sort == selectedSort,
-            isDark: isDark,
-            onTap: () => onSortSelected(sort),
-          )),
+          ...VaultSortType.values.map(
+            (sort) => _MenuItem(
+              label: sort.label,
+              isSelected: sort == selectedSort,
+              isDark: isDark,
+              onTap: () => onSortSelected(sort),
+            ),
+          ),
           const SizedBox(height: 8),
         ],
       ),
@@ -704,9 +749,9 @@ class _MenuItem extends StatelessWidget {
               ),
               if (isSelected)
                 Icon(
-                  Symbols.check,
+                  Symbols.check_rounded,
                   color: AppColors.primary,
-                  size: 20,
+                  size: AppDimensions.iconMedium,
                 ),
             ],
           ),
@@ -749,12 +794,16 @@ class _FilterChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 16, color: textPrimary, weight: 600.0),
+            Icon(
+              icon,
+              size: AppDimensions.iconSmall,
+              color: textPrimary,
+              weight: AppDimensions.iconWeightBold,
+            ),
             const SizedBox(width: 6),
             Text(
               label,
-              style:
-                  AppTextStyles.bodySmall.copyWith(color: textPrimary),
+              style: AppTextStyles.bodySmall.copyWith(color: textPrimary),
             ),
           ],
         ),

@@ -53,4 +53,37 @@ abstract final class AppDimensions {
 
   /// 39 — circular icon button size (search / notification).
   static const double circleButtonSize = 39;
+  // ── Icon sizes ─────────────────────────────────────────────────────────────
+
+  /// 12 — tiny icons, very small inline indicators.
+  static const double iconTiny = 12.0;
+
+  /// 16 — small icons, usually inline with text or small secondary elements.
+  static const double iconSmall = 16.0;
+
+  /// 20 — medium icons, typically used in text fields or smaller buttons.
+  static const double iconMedium = 20.0;
+
+  /// 24 — standard default icon size (material standard).
+  static const double iconNormal = 24.0;
+
+  /// 32 — large icons.
+  static const double iconLarge = 32.0;
+
+  /// 48 — extra large, big feature icons.
+  static const double iconXL = 48.0;
+
+  /// 64 — huge empty state icons.
+  static const double iconXXL = 64.0;
+
+  // ── Icon weights ───────────────────────────────────────────────────────────
+
+  /// Standard icon weight
+  static const double iconWeightNormal = 400.0;
+
+  /// Semi-bold or bold icon weight
+  static const double iconWeightBold = 600.0;
+
+  /// Extra thick icon weight
+  static const double iconWeightHeavy = 800.0;
 }

@@ -63,11 +63,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   _buildSectionCard(
                     isDark,
                     'Account & Preferences',
-                    Symbols.settings,
+                    Symbols.settings_rounded,
                     [
                       _buildTapRow(
                         isDark,
-                        icon: Symbols.person,
+                        icon: Symbols.person_rounded,
                         title: 'Profile & Security',
                         subtitle: 'Update details & change password',
                         onTap: () => Navigator.push(
@@ -80,7 +80,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       const SizedBox(height: 8),
                       _buildTapRow(
                         isDark,
-                        icon: Symbols.notifications_active,
+                        icon: Symbols.notifications_active_rounded,
                         title: 'Notifications & Reminders',
                         subtitle: 'Manage alerts & quiet hours',
                         onTap: () => Navigator.push(
@@ -94,7 +94,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       const SizedBox(height: 8),
                       _buildTapRow(
                         isDark,
-                        icon: Symbols.shield,
+                        icon: Symbols.shield_rounded,
                         title: 'Data & Privacy',
                         subtitle: 'Export data & policies',
                         onTap: () => Navigator.push(
@@ -112,7 +112,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   _buildSectionCard(
                     isDark,
                     'About',
-                    Symbols.info,
+                    Symbols.info_rounded,
                     [
                       _buildInfoRow(isDark, 'App Version', _appVersion),
                     ],
@@ -148,7 +148,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Row(
               children: [
-                Icon(icon, size: 20, color: AppColors.primary, weight: 800.0),
+                Icon(icon, size: AppDimensions.iconMedium, color: AppColors.primary, weight: AppDimensions.iconWeightHeavy),
                 const SizedBox(width: 10),
                 Text(
                   title,
@@ -183,7 +183,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           child: Row(
             children: [
               Icon(icon,
-                  size: 20, weight: 600.0, color: AppColors.textSecondary(isDark)),
+                  size: AppDimensions.iconMedium, weight: AppDimensions.iconWeightBold, color: AppColors.textSecondary(isDark)),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
@@ -205,8 +205,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ],
                 ),
               ),
-              Icon(Symbols.chevron_right,
-                  size: 20, color: AppColors.muted(isDark), weight: 600.0),
+              Icon(Symbols.chevron_right_rounded,
+                  size: AppDimensions.iconMedium, color: AppColors.muted(isDark), weight: 600.0),
             ],
           ),
         ),
@@ -220,8 +220,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
       child: Row(
         children: [
-          Icon(Symbols.circle,
-              size: 6, color: AppColors.muted(isDark), weight: 600.0),
+          Icon(Symbols.circle_rounded,
+              size: AppDimensions.iconTiny, color: AppColors.muted(isDark), weight: 600.0),
           const SizedBox(width: 12),
           Expanded(
             child: Text(

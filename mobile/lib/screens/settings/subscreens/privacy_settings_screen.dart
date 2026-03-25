@@ -26,7 +26,7 @@ class PrivacySettingsScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, size: 20, color: AppColors.primary, weight: 800.0),
+              Icon(icon, size: AppDimensions.iconMedium, color: AppColors.primary, weight: AppDimensions.iconWeightHeavy),
               const SizedBox(width: 10),
               Text(
                 title,
@@ -59,8 +59,8 @@ class PrivacySettingsScreen extends StatelessWidget {
           child: Row(
             children: [
               Icon(icon,
-                  size: 18,
-                  weight: 600.0,
+                  size: AppDimensions.iconMedium,
+                  weight: AppDimensions.iconWeightBold,
                   color: AppColors.textSecondary(isDark)),
               const SizedBox(width: 12),
               Expanded(
@@ -83,8 +83,8 @@ class PrivacySettingsScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(Symbols.chevron_right,
-                  size: 18, color: AppColors.muted(isDark), weight: 600.0),
+              Icon(Symbols.chevron_right_rounded,
+                  size: AppDimensions.iconMedium, color: AppColors.muted(isDark), weight: 600.0),
             ],
           ),
         ),
@@ -129,11 +129,11 @@ class PrivacySettingsScreen extends StatelessWidget {
               _buildSectionCard(
                 isDark,
                 'Data Management',
-                Symbols.database,
+                Symbols.database_rounded,
                 [
                   _buildTapRow(
                     isDark,
-                    icon: Symbols.download,
+                    icon: Symbols.download_rounded,
                     title: 'Export My Data',
                     subtitle: 'Download a copy of your receipts',
                     onTap: () => _showComingSoon(context),
@@ -141,7 +141,7 @@ class PrivacySettingsScreen extends StatelessWidget {
                   Divider(color: AppColors.border(isDark), height: 1),
                   _buildTapRow(
                     isDark,
-                    icon: Symbols.sync,
+                    icon: Symbols.sync_rounded,
                     title: 'Sync Status',
                     subtitle: 'Manage cloud synchronization',
                     onTap: () => _showComingSoon(context),
@@ -152,11 +152,11 @@ class PrivacySettingsScreen extends StatelessWidget {
               _buildSectionCard(
                 isDark,
                 'Legal & Policies',
-                Symbols.policy,
+                Symbols.policy_rounded,
                 [
                   _buildTapRow(
                     isDark,
-                    icon: Symbols.description,
+                    icon: Symbols.description_rounded,
                     title: 'Terms of Service',
                     subtitle: 'Read our terms of service',
                     onTap: () => _showComingSoon(context),
@@ -164,7 +164,7 @@ class PrivacySettingsScreen extends StatelessWidget {
                   Divider(color: AppColors.border(isDark), height: 1),
                   _buildTapRow(
                     isDark,
-                    icon: Symbols.privacy_tip,
+                    icon: Symbols.privacy_tip_rounded,
                     title: 'Privacy Policy',
                     subtitle: 'Read our privacy policy',
                     onTap: () => _showComingSoon(context),

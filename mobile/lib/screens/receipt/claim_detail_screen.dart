@@ -220,7 +220,7 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.1), shape: BoxShape.circle),
-              child: Icon(icon, color: AppColors.primary, weight: 600.0),
+              child: Icon(icon, color: AppColors.primary, weight: AppDimensions.iconWeightBold),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -694,8 +694,8 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  Symbols.error,
-                  size: 64,
+                  Symbols.error_rounded,
+                  size: AppDimensions.iconXXL,
                   color: Colors.red.withValues(alpha: 0.7),
                 ),
                 const SizedBox(height: 16),
@@ -843,7 +843,7 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
                     onPressed: _showStatusInfoDialog,
                     icon: Icon(
                       Symbols.info_rounded,
-                      size: 16,
+                      size: AppDimensions.iconSmall,
                       color: AppColors.textSecondary(isDark),
                       weight: 700.0,
                     ),
@@ -898,7 +898,7 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
                                 turns: _isStatusExpanded ? 0.5 : 0,
                                 duration: const Duration(milliseconds: 200),
                                 child: Icon(
-                                  Symbols.expand_more,
+                                  Symbols.expand_more_rounded,
                                   color: AppColors.textSecondary(isDark),
                                   size: 20,
                                   weight: 800.0,
@@ -1028,7 +1028,7 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
                       height: 48,
                       child: OutlinedButton.icon(
                         onPressed: _claim != null ? _openPdf : null,
-                        icon: const Icon(Symbols.open_in_new_rounded, weight: 800.0,),
+                        icon: const Icon(Symbols.open_in_new_rounded, weight: AppDimensions.iconWeightHeavy,),
                         label: const Text('Open PDF'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.textSecondary(isDark),
@@ -1046,7 +1046,7 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
                       height: 48,
                       child: OutlinedButton.icon(
                         onPressed: _claim != null ? _downloadPdf : null,
-                        icon: const Icon(Symbols.file_download_rounded, weight: 800.0,),
+                        icon: const Icon(Symbols.file_download_rounded, weight: AppDimensions.iconWeightHeavy,),
                         label: const Text('Download PDF'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.textSecondary(isDark),
@@ -1064,7 +1064,7 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
                       height: 48,
                       child: OutlinedButton.icon(
                         onPressed: _claim != null ? _sharePdf : null,
-                        icon: const Icon(Symbols.share_rounded, weight: 800.0,),
+                        icon: const Icon(Symbols.share_rounded, weight: AppDimensions.iconWeightHeavy,),
                         label: const Text('Share PDF'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.textSecondary(isDark),
@@ -1098,7 +1098,7 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
               onPressed: () async {
                 await _saveChangesAndClose();
               },
-              icon: const Icon(Symbols.done_all_rounded, weight: 800.0),
+              icon: const Icon(Symbols.done_all_rounded, weight: AppDimensions.iconWeightHeavy),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: AppColors.onPrimary,
@@ -1171,8 +1171,8 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
           children: [
             Icon(
               icon,
-              size: 14,
-              weight: 800.0,
+              size: AppDimensions.iconTiny,
+              weight: AppDimensions.iconWeightHeavy,
               color: AppColors.textSecondary(isDark),
             ),
             const SizedBox(width: 6),

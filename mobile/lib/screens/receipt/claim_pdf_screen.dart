@@ -307,7 +307,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                 
                 // Refunded
                 _buildOutcomeOption(
-                  icon: Symbols.payments,
+                  icon: Symbols.payments_rounded,
                   title: 'Refunded / Returned',
                   subtitle: 'Item will be archived and stop tracking warranty.',
                   onTap: () {
@@ -320,7 +320,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                 
                 // Repaired
                 _buildOutcomeOption(
-                  icon: Symbols.build,
+                  icon: Symbols.build_rounded,
                   title: 'Repaired',
                   subtitle: 'Item stays active. You can update its warranty date.',
                   onTap: () {
@@ -333,7 +333,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                 
                 // Replaced
                 _buildOutcomeOption(
-                  icon: Symbols.autorenew,
+                  icon: Symbols.autorenew_rounded,
                   title: 'Replaced with New Item',
                   subtitle: 'Archive old item and prepare a new digital record.',
                   onTap: () {
@@ -606,9 +606,9 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
           children: [
             Icon(
               Symbols.download_rounded,
-              size: 18,
+              size: AppDimensions.iconMedium,
               color: AppColors.primary,
-              weight: 800.0,
+              weight: AppDimensions.iconWeightHeavy,
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -893,7 +893,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                                 turns: _isClaimTypeExpanded ? 0.5 : 0,
                                 duration: const Duration(milliseconds: 200),
                                 child: Icon(
-                                  Symbols.expand_more,
+                                  Symbols.expand_more_rounded,
                                   color: AppColors.textSecondary(isDark),
                                   size: 20,
                                   weight: 800.0,
@@ -990,7 +990,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                   ),
                   child: Row(
                     children: [
-                      Icon(Symbols.error_rounded, color: AppColors.error, size: 20, weight: 800.0),
+                      Icon(Symbols.error_rounded, color: AppColors.error, size: AppDimensions.iconMedium, weight: AppDimensions.iconWeightHeavy),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
@@ -1034,7 +1034,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                       ),
                     ),
                   )
-                  : const Icon(Symbols.file_download_rounded, weight: 800.0),
+                  : const Icon(Symbols.file_download_rounded, weight: AppDimensions.iconWeightHeavy),
               label: Text(
                 _isLoading ? 'Generating PDF...' : 'Generate Claim PDF',
                 style: AppTextStyles.button,
@@ -1095,8 +1095,8 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                     child: Icon(
                       Symbols.check_circle_rounded,
                       color: AppColors.primary,
-                      size: 48,
-                      weight: 800.0,
+                      size: AppDimensions.iconXL,
+                      weight: AppDimensions.iconWeightHeavy,
                     ),
                   ),
                 ),
@@ -1185,7 +1185,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                       height: 48,
                       child: ElevatedButton.icon(
                         onPressed: _generatedClaim != null ? _downloadPdf : null,
-                        icon: const Icon(Symbols.file_download_rounded, weight: 800.0),
+                        icon: const Icon(Symbols.file_download_rounded, weight: AppDimensions.iconWeightHeavy),
                         label: const Text('Download PDF'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
@@ -1205,7 +1205,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                       height: 48,
                       child: OutlinedButton.icon(
                         onPressed: _generatedClaim != null ? _openPdf : null,
-                        icon: const Icon(Symbols.open_in_new_rounded, weight: 800.0,),
+                        icon: const Icon(Symbols.open_in_new_rounded, weight: AppDimensions.iconWeightHeavy,),
                         label: const Text('Open PDF'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.textSecondary(isDark),
@@ -1223,7 +1223,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                       height: 48,
                       child: OutlinedButton.icon(
                         onPressed: _generatedClaim != null ? _sharePdf : null,
-                        icon: const Icon(Symbols.share_rounded, weight: 800.0,),
+                        icon: const Icon(Symbols.share_rounded, weight: AppDimensions.iconWeightHeavy,),
                         label: const Text('Share PDF'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.textSecondary(isDark),
@@ -1254,7 +1254,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                     onPressed: _showStatusInfoDialog,
                     icon: Icon(
                       Symbols.info_rounded,
-                      size: 16,
+                      size: AppDimensions.iconSmall,
                       color: AppColors.textSecondary(isDark),
                       weight: 700.0,
                     ),
@@ -1316,7 +1316,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                                   turns: _isStatusExpanded ? 0.5 : 0,
                                   duration: const Duration(milliseconds: 200),
                                   child: Icon(
-                                    Symbols.expand_more,
+                                    Symbols.expand_more_rounded,
                                     color: AppColors.textSecondary(isDark),
                                     size: 20,
                                     weight: 800.0,
@@ -1502,7 +1502,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
       children: [
         Row(
           children: [
-            Icon(icon, size: 14, weight: 800.0, color: AppColors.textSecondary(isDark)),
+            Icon(icon, size: AppDimensions.iconTiny, weight: AppDimensions.iconWeightHeavy, color: AppColors.textSecondary(isDark)),
             const SizedBox(width: 6),
             Text(label, style: AppTextStyles.bodySmall.copyWith(
               color: AppColors.textSecondary(isDark),

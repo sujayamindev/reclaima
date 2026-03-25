@@ -318,7 +318,7 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
         children: [
           Row(
             children: [
-              Icon(icon, size: 20, color: AppColors.primary, weight: 800.0),
+              Icon(icon, size: AppDimensions.iconMedium, color: AppColors.primary, weight: AppDimensions.iconWeightHeavy),
               const SizedBox(width: 10),
               Text(
                 title,
@@ -362,7 +362,7 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
               _buildSectionCard(
                 isDark,
                 'Personal Information',
-                Symbols.person,
+                Symbols.person_rounded,
                 [
                   _buildTextFieldRow(
                     isDark,
@@ -424,12 +424,12 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
               _buildSectionCard(
                 isDark,
                 'Change Password',
-                Symbols.lock,
+                Symbols.lock_rounded,
                 [
                   if (ref.read(currentUserProvider)?.providerData.any((p) => p.providerId == 'password') ?? false) ...[
                     _buildTextFieldRow(
                       isDark,
-                      icon: Symbols.key,
+                      icon: Symbols.key_rounded,
                       title: 'Current Password',
                       hintText: 'Enter current password',
                       controller: _currentPasswordController,
@@ -438,7 +438,7 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
                     const SizedBox(height: 6),
                     _buildTextFieldRow(
                       isDark,
-                      icon: Symbols.password,
+                      icon: Symbols.password_rounded,
                       title: 'New Password',
                       hintText: 'Enter new password',
                       controller: _newPasswordController,
@@ -447,7 +447,7 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
                     const SizedBox(height: 6),
                     _buildTextFieldRow(
                       isDark,
-                      icon: Symbols.password,
+                      icon: Symbols.password_rounded,
                       title: 'Confirm New Password',
                       hintText: 'Confirm new password',
                       controller: _confirmPasswordController,
@@ -496,12 +496,12 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
               _buildSectionCard(
                 isDark,
                 'Danger Zone',
-                Symbols.warning,
+                Symbols.warning_rounded,
                 [
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     horizontalTitleGap: 12,
-                    leading: Icon(Symbols.delete, color: AppColors.error, weight: 600.0),
+                    leading: Icon(Symbols.delete_rounded, color: AppColors.error, weight: AppDimensions.iconWeightBold),
                     title: Text(
                       'Delete Account',
                       style: AppTextStyles.listTitle.copyWith(color: AppColors.error),
@@ -510,7 +510,7 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
                       'Permanently remove all your data',
                       style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary(isDark)),
                     ),
-                    trailing: Icon(Symbols.chevron_right, size: 18, color: AppColors.muted(isDark)),
+                    trailing: Icon(Symbols.chevron_right_rounded, size: AppDimensions.iconMedium, color: AppColors.muted(isDark)),
                     onTap: () => _showDeleteAccountDialog(context, isDark),
                   ),
                 ],

@@ -3,7 +3,10 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/app_constants.dart';
 import '../../providers/auth_provider.dart';
-import '../home/home_screen.dart';
+import '../../widgets/app_primary_button.dart';
+import '../../widgets/app_text_field.dart';
+import '../../widgets/app_social_button.dart';
+import '../main_shell.dart';
 import 'signup_screen.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -40,9 +43,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     final state = ref.read(authControllerProvider);
     if (state.hasError) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${state.error}')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: ${state.error}')));
     }
   }
 
@@ -50,25 +53,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    // Listen to auth state changes and navigate directly to HomeScreen
+
+    // Listen to auth state changes and navigate directly to MainShell
     ref.listen<AsyncValue<dynamic>>(authStateProvider, (previous, next) {
       next.whenData((user) {
         if (user != null && mounted) {
           Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const HomeScreen()),
+            MaterialPageRoute(builder: (_) => const MainShell()),
             (route) => false,
           );
         }
       });
     });
-    
+
     final backgroundColor = AppColors.background(isDark);
-    final cardColor = AppColors.card(isDark);
     final borderColor = AppColors.border(isDark);
     final textPrimaryColor = AppColors.textPrimary(isDark);
     final textSecondaryColor = AppColors.textSecondary(isDark);
-    final labelColor = AppColors.label(isDark);
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -82,7 +83,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 alignment: Alignment.centerLeft,
                 child: IconButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  icon: Icon(Symbols.arrow_back, color: textPrimaryColor),
+                  icon: Icon(Symbols.arrow_back_rounded, color: textPrimaryColor),
                   padding: const EdgeInsets.all(8),
                   style: IconButton.styleFrom(
                     backgroundColor: Colors.transparent,
@@ -91,7 +92,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
               ),
             ),
-            
+
             // Header
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
@@ -114,318 +115,221 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ],
               ),
             ),
-            
+
             // Form
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      // Email Address
-                      _buildInputField(
-                        label: 'Email Address',
-                        controller: _emailController,
-                        icon: Symbols.mail,
-                        placeholder: 'name@example.com',
-                        keyboardType: TextInputType.emailAddress,
-                        cardColor: cardColor,
-                        borderColor: borderColor,
-                        labelColor: labelColor,
-                        textColor: textPrimaryColor,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your email';
-                          }
-                          if (!value.contains('@')) {
-                            return 'Please enter a valid email';
-                          }
-                          return null;
-                        },
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight,
                       ),
-                      const SizedBox(height: 20),
-                      
-                      // Password
-                      _buildInputField(
-                        label: 'Password',
-                        controller: _passwordController,
-                        icon: Symbols.lock,
-                        placeholder: 'Enter your password',
-                        obscureText: _obscurePassword,
-                        cardColor: cardColor,
-                        borderColor: borderColor,
-                        labelColor: labelColor,
-                        textColor: textPrimaryColor,
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscurePassword ? Symbols.visibility : Symbols.visibility_off,
-                            color: textSecondaryColor,
-                          ),
-                          onPressed: () {
-                            setState(() => _obscurePassword = !_obscurePassword);
-                          },
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your password';
-                          }
-                          if (value.length < 6) {
-                            return 'Password must be at least 6 characters';
-                          }
-                          return null;
-                        },
-                      ),
-                      
-                      // Submit Button
-                      const SizedBox(height: 36),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 48,
-                        child: ElevatedButton(
-                          onPressed: authState.isLoading ? null : _submit,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: const Color(0xFF0F172A),
-                            elevation: 8,
-                            shadowColor: AppColors.primary.withValues(alpha: 0.3),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(24),
-                            ),
-                            textStyle: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          child: authState.isLoading
-                              ? const SizedBox(
-                                  height: 24,
-                                  width: 24,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2.5,
-                                    color: Color(0xFF0F172A),
+                      child: IntrinsicHeight(
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              // Email Address
+                              AppTextField(
+                                label: 'Email Address',
+                                controller: _emailController,
+                                icon: Symbols.mail_rounded,
+                                placeholder: 'name@example.com',
+                                keyboardType: TextInputType.emailAddress,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter your email';
+                                  }
+                                  if (!value.contains('@')) {
+                                    return 'Please enter a valid email';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 20),
+
+                              // Password
+                              AppTextField(
+                                label: 'Password',
+                                controller: _passwordController,
+                                icon: Symbols.lock_rounded,
+                                placeholder: 'Enter your password',
+                                obscureText: _obscurePassword,
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _obscurePassword
+                                        ? Symbols.visibility_rounded
+                                        : Symbols.visibility_off_rounded,
+                                    color: textSecondaryColor,
                                   ),
-                                )
-                              : const Text('Sign In'),
-                        ),
-                      ),
-                      
-                      // Don't have an account
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Don\'t have an account?',
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: textSecondaryColor,
+                                  onPressed: () {
+                                    setState(
+                                      () =>
+                                          _obscurePassword = !_obscurePassword,
+                                    );
+                                  },
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter your password';
+                                  }
+                                  if (value.length < 6) {
+                                    return 'Password must be at least 6 characters';
+                                  }
+                                  return null;
+                                },
                               ),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute(
-                                    builder: (context) => const SignupScreen(),
-                                  ),
-                                );
-                              },
-                              style: TextButton.styleFrom(
-                                foregroundColor: AppColors.primary,
-                                padding: const EdgeInsets.symmetric(horizontal: 8),
+
+                              // Submit Button
+                              const SizedBox(height: 36),
+                              AppPrimaryButton(
+                                text: 'Sign In',
+                                isLoading: authState.isLoading,
+                                onPressed: _submit,
                               ),
-                              child: Text(
-                                'Sign Up',
-                                style: AppTextStyles.buttonSmall,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      
-                      // Divider
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(0, 0, 0, 16),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Container(
-                                height: 1,
-                                color: borderColor,
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: Text(
-                                'OR',
-                                style: AppTextStyles.bodySmall.copyWith(
-                                  color: textSecondaryColor,
-                                  fontWeight: FontWeight.w500,
+
+                              // Don't have an account
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      'Don\'t have an account?',
+                                      style: AppTextStyles.bodySmall.copyWith(
+                                        color: textSecondaryColor,
+                                      ),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pushReplacement(
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                const SignupScreen(),
+                                          ),
+                                        );
+                                      },
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: AppColors.primary,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        'Sign Up',
+                                        style: AppTextStyles.buttonSmall,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ),
-                            Expanded(
-                              child: Container(
-                                height: 1,
-                                color: borderColor,
+
+                              const Spacer(),
+
+                              // Divider
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(0, 0, 0, 16),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Container(
+                                        height: 1,
+                                        color: borderColor,
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                      ),
+                                      child: Text(
+                                        'OR',
+                                        style: AppTextStyles.bodySmall.copyWith(
+                                          color: textSecondaryColor,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Container(
+                                        height: 1,
+                                        color: borderColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
+
+                              // Social Login Buttons
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: AppSocialButton(
+                                      label: 'Google',
+                                      icon: _buildGoogleIcon(),
+                                      onPressed: authState.isLoading
+                                          ? () {}
+                                          : () async {
+                                              final authController = ref.read(
+                                                authControllerProvider.notifier,
+                                              );
+                                              await authController
+                                                  .signInWithGoogle();
+
+                                              if (!context.mounted) return;
+                                              final state = ref.read(
+                                                authControllerProvider,
+                                              );
+                                              if (state.hasError) {
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                      'Error: ${state.error}',
+                                                    ),
+                                                  ),
+                                                );
+                                              }
+                                            },
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: AppSocialButton(
+                                      label: 'Apple',
+                                      icon: Icon(
+                                        Icons.apple,
+                                        color: isDark
+                                            ? Colors.white
+                                            : AppColors.onPrimary,
+                                        size: AppDimensions.iconMedium,
+                                      ),
+                                      onPressed: () {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Apple Sign-In is coming soon!',
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 32),
+                            ],
+                          ),
                         ),
                       ),
-                      
-                      // Social Login Buttons
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildSocialButton(
-                              label: 'Google',
-                              icon: _buildGoogleIcon(),
-                              onPressed: authState.isLoading ? () {} : () async {
-                                final authController = ref.read(authControllerProvider.notifier);
-                                await authController.signInWithGoogle();
-                                
-                                if (!context.mounted) return;
-                                final state = ref.read(authControllerProvider);
-                                if (state.hasError) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Error: ${state.error}')),
-                                  );
-                                }
-                              },
-                              cardColor: cardColor,
-                              borderColor: borderColor,
-                              textColor: labelColor,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: _buildSocialButton(
-                              label: 'Apple',
-                              icon: Icon(
-                                Icons.apple,
-                                color: isDark ? Colors.white : AppColors.onPrimary,
-                                size: 20,
-                              ),
-                              onPressed: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Apple Sign-In is coming soon!')),
-                                );
-                              },
-                              cardColor: cardColor,
-                              borderColor: borderColor,
-                              textColor: labelColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 32),
-                    ],
-                  ),
-                ),
+                    ),
+                  );
+                },
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInputField({
-    required String label,
-    required TextEditingController controller,
-    required IconData icon,
-    required String placeholder,
-    required Color cardColor,
-    required Color borderColor,
-    required Color labelColor,
-    required Color textColor,
-    bool obscureText = false,
-    Widget? suffixIcon,
-    TextInputType? keyboardType,
-    String? Function(String?)? validator,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 4, bottom: 6),
-          child: Text(
-            label,
-            style: AppTextStyles.formLabel.copyWith(color: labelColor),
-          ),
-        ),
-        TextFormField(
-          controller: controller,
-          obscureText: obscureText,
-          keyboardType: keyboardType,
-          style: AppTextStyles.bodyMedium.copyWith(color: textColor),
-          decoration: InputDecoration(
-            hintText: placeholder,
-            hintStyle: TextStyle(color: labelColor.withValues(alpha: 0.5)),
-            filled: true,
-            fillColor: cardColor,
-            prefixIcon: Padding(
-              padding: const EdgeInsets.only(left: 16, right: 12),
-              child: Icon(icon, color: labelColor.withValues(alpha: 0.7), size: 20),
-            ),
-            suffixIcon: suffixIcon,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
-              borderSide: BorderSide(color: borderColor),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
-              borderSide: BorderSide(color: borderColor),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
-              borderSide: const BorderSide(color: AppColors.primary, width: 2),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
-              borderSide: const BorderSide(color: AppColors.error),
-            ),
-            focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
-              borderSide: const BorderSide(color: AppColors.error, width: 2),
-            ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          ),
-          validator: validator,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSocialButton({
-    required String label,
-    required Widget icon,
-    required VoidCallback onPressed,
-    required Color cardColor,
-    required Color borderColor,
-    required Color textColor,
-  }) {
-    return SizedBox(
-      height: AppDimensions.buttonHeight,
-      child: OutlinedButton(
-        onPressed: onPressed,
-        style: OutlinedButton.styleFrom(
-          backgroundColor: cardColor,
-          side: BorderSide(color: borderColor),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            icon,
-            const SizedBox(width: 12),
-            Text(
-              label,
-              style: AppTextStyles.formLabel.copyWith(color: textColor),
             ),
           ],
         ),
@@ -437,9 +341,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return SizedBox(
       width: 20,
       height: 20,
-      child: CustomPaint(
-        painter: GoogleIconPainter(),
-      ),
+      child: CustomPaint(painter: GoogleIconPainter()),
     );
   }
 }
@@ -448,63 +350,168 @@ class GoogleIconPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..style = PaintingStyle.fill;
-    
+
     // Blue
     paint.color = AppColors.googleBlue;
     canvas.drawPath(
       Path()
         ..moveTo(size.width * 0.94, size.height * 0.51)
-        ..cubicTo(size.width * 0.94, size.height * 0.48, size.width * 0.94, size.height * 0.45, size.width * 0.93, size.height * 0.42)
+        ..cubicTo(
+          size.width * 0.94,
+          size.height * 0.48,
+          size.width * 0.94,
+          size.height * 0.45,
+          size.width * 0.93,
+          size.height * 0.42,
+        )
         ..lineTo(size.width * 0.5, size.height * 0.42)
         ..lineTo(size.width * 0.5, size.height * 0.60)
         ..lineTo(size.width * 0.75, size.height * 0.60)
-        ..cubicTo(size.width * 0.74, size.height * 0.66, size.width * 0.71, size.height * 0.71, size.width * 0.66, size.height * 0.74)
+        ..cubicTo(
+          size.width * 0.74,
+          size.height * 0.66,
+          size.width * 0.71,
+          size.height * 0.71,
+          size.width * 0.66,
+          size.height * 0.74,
+        )
         ..lineTo(size.width * 0.66, size.height * 0.86)
         ..lineTo(size.width * 0.815, size.height * 0.86)
-        ..cubicTo(size.width * 0.90, size.height * 0.78, size.width * 0.94, size.height * 0.65, size.width * 0.94, size.height * 0.51),
+        ..cubicTo(
+          size.width * 0.90,
+          size.height * 0.78,
+          size.width * 0.94,
+          size.height * 0.65,
+          size.width * 0.94,
+          size.height * 0.51,
+        ),
       paint,
     );
-    
+
     // Green
     paint.color = AppColors.googleGreen;
     canvas.drawPath(
       Path()
         ..moveTo(size.width * 0.5, size.height * 0.96)
-        ..cubicTo(size.width * 0.62, size.height * 0.96, size.width * 0.73, size.height * 0.92, size.width * 0.815, size.height * 0.86)
+        ..cubicTo(
+          size.width * 0.62,
+          size.height * 0.96,
+          size.width * 0.73,
+          size.height * 0.92,
+          size.width * 0.815,
+          size.height * 0.86,
+        )
         ..lineTo(size.width * 0.66, size.height * 0.74)
-        ..cubicTo(size.width * 0.63, size.height * 0.77, size.width * 0.59, size.height * 0.79, size.width * 0.545, size.height * 0.79)
-        ..cubicTo(size.width * 0.42, size.height * 0.79, size.width * 0.315, size.height * 0.71, size.width * 0.26, size.height * 0.59)
+        ..cubicTo(
+          size.width * 0.63,
+          size.height * 0.77,
+          size.width * 0.59,
+          size.height * 0.79,
+          size.width * 0.545,
+          size.height * 0.79,
+        )
+        ..cubicTo(
+          size.width * 0.42,
+          size.height * 0.79,
+          size.width * 0.315,
+          size.height * 0.71,
+          size.width * 0.26,
+          size.height * 0.59,
+        )
         ..lineTo(size.width * 0.09, size.height * 0.71)
-        ..cubicTo(size.width * 0.17, size.height * 0.86, size.width * 0.32, size.height * 0.96, size.width * 0.5, size.height * 0.96),
+        ..cubicTo(
+          size.width * 0.17,
+          size.height * 0.86,
+          size.width * 0.32,
+          size.height * 0.96,
+          size.width * 0.5,
+          size.height * 0.96,
+        ),
       paint,
     );
-    
+
     // Yellow
     paint.color = AppColors.googleYellow;
     canvas.drawPath(
       Path()
         ..moveTo(size.width * 0.26, size.height * 0.59)
-        ..cubicTo(size.width * 0.245, size.height * 0.56, size.width * 0.235, size.height * 0.53, size.width * 0.235, size.height * 0.5)
-        ..cubicTo(size.width * 0.235, size.height * 0.47, size.width * 0.245, size.height * 0.44, size.width * 0.26, size.height * 0.41)
+        ..cubicTo(
+          size.width * 0.245,
+          size.height * 0.56,
+          size.width * 0.235,
+          size.height * 0.53,
+          size.width * 0.235,
+          size.height * 0.5,
+        )
+        ..cubicTo(
+          size.width * 0.235,
+          size.height * 0.47,
+          size.width * 0.245,
+          size.height * 0.44,
+          size.width * 0.26,
+          size.height * 0.41,
+        )
         ..lineTo(size.width * 0.26, size.height * 0.29)
         ..lineTo(size.width * 0.09, size.height * 0.29)
-        ..cubicTo(size.width * 0.06, size.height * 0.36, size.width * 0.04, size.height * 0.43, size.width * 0.04, size.height * 0.5)
-        ..cubicTo(size.width * 0.04, size.height * 0.57, size.width * 0.06, size.height * 0.64, size.width * 0.09, size.height * 0.71)
+        ..cubicTo(
+          size.width * 0.06,
+          size.height * 0.36,
+          size.width * 0.04,
+          size.height * 0.43,
+          size.width * 0.04,
+          size.height * 0.5,
+        )
+        ..cubicTo(
+          size.width * 0.04,
+          size.height * 0.57,
+          size.width * 0.06,
+          size.height * 0.64,
+          size.width * 0.09,
+          size.height * 0.71,
+        )
         ..lineTo(size.width * 0.26, size.height * 0.59),
       paint,
     );
-    
+
     // Red
     paint.color = AppColors.googleRed;
     canvas.drawPath(
       Path()
         ..moveTo(size.width * 0.5, size.height * 0.22)
-        ..cubicTo(size.width * 0.57, size.height * 0.22, size.width * 0.64, size.height * 0.24, size.width * 0.68, size.height * 0.29)
+        ..cubicTo(
+          size.width * 0.57,
+          size.height * 0.22,
+          size.width * 0.64,
+          size.height * 0.24,
+          size.width * 0.68,
+          size.height * 0.29,
+        )
         ..lineTo(size.width * 0.82, size.height * 0.16)
-        ..cubicTo(size.width * 0.73, size.height * 0.09, size.width * 0.62, size.height * 0.04, size.width * 0.5, size.height * 0.04)
-        ..cubicTo(size.width * 0.32, size.height * 0.04, size.width * 0.17, size.height * 0.14, size.width * 0.09, size.height * 0.29)
+        ..cubicTo(
+          size.width * 0.73,
+          size.height * 0.09,
+          size.width * 0.62,
+          size.height * 0.04,
+          size.width * 0.5,
+          size.height * 0.04,
+        )
+        ..cubicTo(
+          size.width * 0.32,
+          size.height * 0.04,
+          size.width * 0.17,
+          size.height * 0.14,
+          size.width * 0.09,
+          size.height * 0.29,
+        )
         ..lineTo(size.width * 0.26, size.height * 0.41)
-        ..cubicTo(size.width * 0.31, size.height * 0.29, size.width * 0.40, size.height * 0.22, size.width * 0.5, size.height * 0.22),
+        ..cubicTo(
+          size.width * 0.31,
+          size.height * 0.29,
+          size.width * 0.40,
+          size.height * 0.22,
+          size.width * 0.5,
+          size.height * 0.22,
+        ),
       paint,
     );
   }

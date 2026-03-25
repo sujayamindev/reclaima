@@ -44,7 +44,9 @@ class _ClaimsListScreenState extends ConsumerState<ClaimsListScreen> {
     });
 
     try {
-      logger.i('Loading claims for product ${widget.lineItemId ?? "all"} in receipt ${widget.receiptId}');
+      logger.i(
+        'Loading claims for product ${widget.lineItemId ?? "all"} in receipt ${widget.receiptId}',
+      );
       final claimService = ref.read(claimServiceProvider);
       final claims = await claimService.getClaims(
         receiptId: widget.receiptId,
@@ -71,11 +73,24 @@ class _ClaimsListScreenState extends ConsumerState<ClaimsListScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.card(Theme.of(context).brightness == Brightness.dark),
-        title: Text('Delete Claim', style: TextStyle(color: AppColors.textPrimary(Theme.of(context).brightness == Brightness.dark))),
+        backgroundColor: AppColors.card(
+          Theme.of(context).brightness == Brightness.dark,
+        ),
+        title: Text(
+          'Delete Claim',
+          style: TextStyle(
+            color: AppColors.textPrimary(
+              Theme.of(context).brightness == Brightness.dark,
+            ),
+          ),
+        ),
         content: Text(
           'Are you sure you want to delete this claim? This action cannot be undone.',
-          style: TextStyle(color: AppColors.textSecondary(Theme.of(context).brightness == Brightness.dark)),
+          style: TextStyle(
+            color: AppColors.textSecondary(
+              Theme.of(context).brightness == Brightness.dark,
+            ),
+          ),
         ),
         actions: [
           TextButton(
@@ -108,11 +123,13 @@ class _ClaimsListScreenState extends ConsumerState<ClaimsListScreen> {
       logger.e('Error deleting claim: $e');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to delete claim: $e'), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text('Failed to delete claim: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -168,12 +185,14 @@ class _ClaimsListScreenState extends ConsumerState<ClaimsListScreen> {
       ),
       body: SafeArea(
         child: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+            ? const Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
+              )
             : _error != null
-                ? _buildErrorState(isDark)
-                : _claims.isEmpty
-                    ? _buildEmptyState(isDark)
-                    : _buildClaimsList(isDark),
+            ? _buildErrorState(isDark)
+            : _claims.isEmpty
+            ? _buildEmptyState(isDark)
+            : _buildClaimsList(isDark),
       ),
       bottomNavigationBar: SafeArea(
         top: false,
@@ -218,7 +237,10 @@ class _ClaimsListScreenState extends ConsumerState<ClaimsListScreen> {
                   borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
                 ),
               ),
-              icon: const Icon(Symbols.add_rounded, weight: 800.0),
+              icon: const Icon(
+                Symbols.add_rounded,
+                weight: AppDimensions.iconWeightHeavy,
+              ),
               label: const Text('New Claim'),
             ),
           ),
@@ -236,8 +258,8 @@ class _ClaimsListScreenState extends ConsumerState<ClaimsListScreen> {
           children: [
             Icon(
               Symbols.error_rounded,
-              size: 64,
-              weight: 800.0,
+              size: AppDimensions.iconXXL,
+              weight: AppDimensions.iconWeightHeavy,
               color: Colors.red.withValues(alpha: 0.7),
             ),
             const SizedBox(height: 16),
@@ -258,7 +280,10 @@ class _ClaimsListScreenState extends ConsumerState<ClaimsListScreen> {
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: _loadClaims,
-              icon: const Icon(Symbols.refresh_rounded, weight: 800.0),
+              icon: const Icon(
+                Symbols.refresh_rounded,
+                weight: AppDimensions.iconWeightHeavy,
+              ),
               label: const Text('Try Again'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
@@ -292,8 +317,8 @@ class _ClaimsListScreenState extends ConsumerState<ClaimsListScreen> {
               child: Center(
                 child: Icon(
                   Symbols.description_rounded,
-                  size: 60,
-                  weight: 800.0,
+                  size: AppDimensions.iconXXL,
+                  weight: AppDimensions.iconWeightHeavy,
                   color: AppColors.primary,
                 ),
               ),
@@ -329,18 +354,14 @@ class _ClaimsListScreenState extends ConsumerState<ClaimsListScreen> {
   }
 
   Widget _buildClaimsList(bool isDark) {
-    final ongoingClaims = _claims
-        .where((claim) {
-          final status = claim.status.toUpperCase();
-          return status != 'RESOLVED' && status != 'DENIED';
-        })
-        .toList();
-    final closedClaims = _claims
-        .where((claim) {
-          final status = claim.status.toUpperCase();
-          return status == 'RESOLVED' || status == 'DENIED';
-        })
-        .toList();
+    final ongoingClaims = _claims.where((claim) {
+      final status = claim.status.toUpperCase();
+      return status != 'RESOLVED' && status != 'DENIED';
+    }).toList();
+    final closedClaims = _claims.where((claim) {
+      final status = claim.status.toUpperCase();
+      return status == 'RESOLVED' || status == 'DENIED';
+    }).toList();
 
     return RefreshIndicator(
       onRefresh: _loadClaims,
@@ -402,10 +423,7 @@ class _ClaimsListScreenState extends ConsumerState<ClaimsListScreen> {
     }
   }
 
-  Widget _buildClaimProgressTimeline(
-    String status,
-    bool isDark,
-  ) {
+  Widget _buildClaimProgressTimeline(String status, bool isDark) {
     const steps = ['Draft', 'Submitted', 'In Progress', 'Closed'];
     const stepFlex = [2, 3, 3, 2];
     final normalized = _normalizeTimelineStatus(status);
@@ -428,8 +446,8 @@ class _ClaimsListScreenState extends ConsumerState<ClaimsListScreen> {
                           color: i == 0
                               ? Colors.transparent
                               : (i - 1) < activeIndex
-                                  ? AppColors.primary.withValues(alpha: 0.9)
-                                  : AppColors.border(isDark),
+                              ? AppColors.primary.withValues(alpha: 0.9)
+                              : AppColors.border(isDark),
                           borderRadius: BorderRadius.circular(999),
                         ),
                       ),
@@ -443,10 +461,12 @@ class _ClaimsListScreenState extends ConsumerState<ClaimsListScreen> {
                             ? AppColors.primary
                             : i == activeIndex
                             ? (isDenied ? AppColors.primary : AppColors.primary)
-                                : Colors.transparent,
+                            : Colors.transparent,
                         border: Border.all(
                           color: i <= activeIndex
-                              ? (i == activeIndex && isDenied ? AppColors.primary: AppColors.primary)
+                              ? (i == activeIndex && isDenied
+                                    ? AppColors.primary
+                                    : AppColors.primary)
                               : AppColors.border(isDark),
                           width: 1.3,
                         ),
@@ -459,8 +479,8 @@ class _ClaimsListScreenState extends ConsumerState<ClaimsListScreen> {
                           color: i == steps.length - 1
                               ? Colors.transparent
                               : i < activeIndex
-                                  ? AppColors.primary.withValues(alpha: 0.9)
-                                  : AppColors.border(isDark),
+                              ? AppColors.primary.withValues(alpha: 0.9)
+                              : AppColors.border(isDark),
                           borderRadius: BorderRadius.circular(999),
                         ),
                       ),
@@ -481,9 +501,13 @@ class _ClaimsListScreenState extends ConsumerState<ClaimsListScreen> {
                   textAlign: TextAlign.center,
                   style: AppTextStyles.caption.copyWith(
                     color: i == activeIndex
-                        ? (isDenied ? AppColors.textPrimary(isDark): AppColors.textPrimary(isDark))
+                        ? (isDenied
+                              ? AppColors.textPrimary(isDark)
+                              : AppColors.textPrimary(isDark))
                         : AppColors.textSecondary(isDark),
-                    fontWeight: i == activeIndex ? FontWeight.w700 : FontWeight.w500,
+                    fontWeight: i == activeIndex
+                        ? FontWeight.w700
+                        : FontWeight.w500,
                     fontSize: 10,
                   ),
                   maxLines: 1,
@@ -502,31 +526,43 @@ class _ClaimsListScreenState extends ConsumerState<ClaimsListScreen> {
     required bool isDark,
     TextStyle? textStyle,
     int maxLines = 1,
+    double? fixedHeight,
   }) {
-    return Row(
+    Widget content = Row(
       children: [
         Icon(
           icon,
-          size: 13,
-          weight: 800.0,
+          size: AppDimensions.iconTiny,
+          weight: AppDimensions.iconWeightHeavy,
           color: AppColors.textSecondary(isDark),
         ),
         const SizedBox(width: 6),
         Expanded(
           child: Text(
             text,
-            style: textStyle ?? AppTextStyles.caption.copyWith(color: AppColors.textSecondary(isDark)),
+            style:
+                textStyle ??
+                AppTextStyles.caption.copyWith(
+                  color: AppColors.textSecondary(isDark),
+                ),
             maxLines: maxLines,
             overflow: TextOverflow.ellipsis,
           ),
         ),
       ],
     );
+
+    if (fixedHeight != null) {
+      return SizedBox(height: fixedHeight, child: content);
+    }
+    return content;
   }
 
   Widget _buildClaimCard(ClaimDocumentResponse claim, bool isDark) {
     final claimType = (claim.claimType ?? 'warranty').toUpperCase();
-    final shortClaimId = claim.id.length > 10 ? claim.id.substring(0, 10) : claim.id;
+    final shortClaimId = claim.id.length > 10
+        ? claim.id.substring(0, 10)
+        : claim.id;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -579,7 +615,9 @@ class _ClaimsListScreenState extends ConsumerState<ClaimsListScreen> {
                           ),
                           _buildInfoRow(
                             icon: Symbols.calendar_month_rounded,
-                            text: DateFormatter.formatDate(claim.createdAt.toLocal()),
+                            text: DateFormatter.formatDate(
+                              claim.createdAt.toLocal(),
+                            ),
                             isDark: isDark,
                             textStyle: AppTextStyles.caption.copyWith(
                               color: AppColors.textSecondary(isDark),
@@ -592,10 +630,15 @@ class _ClaimsListScreenState extends ConsumerState<ClaimsListScreen> {
                     const SizedBox(width: 8),
                     // Claim type badge
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.primary.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusSmall),
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.radiusSmall,
+                        ),
                       ),
                       child: Text(
                         claimType,
@@ -614,7 +657,8 @@ class _ClaimsListScreenState extends ConsumerState<ClaimsListScreen> {
                   icon: Symbols.report_problem_rounded,
                   text: claim.issueDescription,
                   isDark: isDark,
-                  maxLines: 2,
+                  maxLines: 1,
+                  fixedHeight: 20, // Exact height for 1 line of text
                   textStyle: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.textPrimary(isDark),
                     fontWeight: FontWeight.w500,
@@ -624,21 +668,29 @@ class _ClaimsListScreenState extends ConsumerState<ClaimsListScreen> {
 
                 const SizedBox(height: 12),
 
-                // Notes (if any)
-                if (claim.notes != null && claim.notes!.isNotEmpty) ...[
-                  _buildInfoRow(
-                    icon: Symbols.sticky_note_2_rounded,
-                    text: claim.notes!,
-                    isDark: isDark,
-                    maxLines: 2,
-                    textStyle: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textPrimary(isDark),
-                      fontWeight: FontWeight.w500,
-                      height: 1.3,
-                    ),
+                // Notes (always reserve space to keep card height uniform)
+                _buildInfoRow(
+                  icon: Symbols.sticky_note_2_rounded,
+                  text: (claim.notes != null && claim.notes!.isNotEmpty)
+                      ? claim.notes!
+                      : 'No additional notes provided.',
+                  isDark: isDark,
+                  maxLines: 1,
+                  fixedHeight: 20, // Exact height for 1 line of text
+                  textStyle: AppTextStyles.bodySmall.copyWith(
+                    color: (claim.notes != null && claim.notes!.isNotEmpty)
+                        ? AppColors.textPrimary(isDark)
+                        : AppColors.textSecondary(
+                            isDark,
+                          ).withValues(alpha: 0.5),
+                    fontWeight: FontWeight.w500,
+                    fontStyle: (claim.notes != null && claim.notes!.isNotEmpty)
+                        ? FontStyle.normal
+                        : FontStyle.italic,
+                    height: 1.3,
                   ),
-                  const SizedBox(height: 12),
-                ],
+                ),
+                const SizedBox(height: 12),
 
                 const SizedBox(height: 12),
 

@@ -7,6 +7,7 @@ import '../../data/models/receipt_model.dart';
 import '../../data/models/receipt_line_item_model.dart';
 import '../../providers/receipt_provider.dart';
 import '../../widgets/step_progress_bar.dart';
+import '../../widgets/app_primary_button.dart';
 import 'receipt_confirmation_screen.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
@@ -65,6 +66,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
   final _productNameCtrl = TextEditingController();
   String _selectedCategory = 'Electronics';
   List<ReceiptLineItemModel> _lineItems = [];
+
   /// ID of the primary (first) OCR-generated line item, if one exists.
   /// Used to PATCH the line item rather than the receipt for warranty data.
   String? _primaryLineItemId;
@@ -151,10 +153,12 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     if (receipt.lineItems.isNotEmpty) {
       final primary = receipt.lineItems.first;
       _primaryLineItemId = primary.id;
-      _productNameCtrl.text = primary.productName ?? primary.itemDescription ?? '';
+      _productNameCtrl.text =
+          primary.productName ?? primary.itemDescription ?? '';
       final ocrCategory = primary.productCategory ?? '';
-      _selectedCategory =
-          _categories.contains(ocrCategory) ? ocrCategory : 'Electronics';
+      _selectedCategory = _categories.contains(ocrCategory)
+          ? ocrCategory
+          : 'Electronics';
       _warrantyPeriodCtrl.text = primary.warrantyPeriodMonths?.toString() ?? '';
       _warrantyExpiryDate = primary.warrantyExpiryDate;
       _warrantyLeadDaysOverride = primary.warrantyLeadDaysOverride;
@@ -188,8 +192,9 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     final pdStr = data['purchaseDate'] as String?;
     if (pdStr != null) _purchaseDate = DateTime.tryParse(pdStr);
     final rawAmount = data['totalAmount'];
-    _totalAmountCtrl.text =
-        rawAmount != null ? (rawAmount as num).toStringAsFixed(2) : '';
+    _totalAmountCtrl.text = rawAmount != null
+        ? (rawAmount as num).toStringAsFixed(2)
+        : '';
     _currencyCtrl.text = (data['currency'] as String?) ?? 'USD';
     _vendorAddressCtrl.text = (data['vendorAddress'] as String?) ?? '';
     _vendorPhoneCtrl.text = (data['vendorPhone'] as String?) ?? '';
@@ -200,28 +205,26 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     // Build display-only line items (no DB IDs yet).
     final rawItems = data['lineItems'] as List<dynamic>? ?? [];
     _lineItems = rawItems
-        .map((e) => ReceiptLineItemModel.fromOcrExtract(
-              e as Map<String, dynamic>,
-            ))
+        .map(
+          (e) => ReceiptLineItemModel.fromOcrExtract(e as Map<String, dynamic>),
+        )
         .toList();
 
     // Primary product info: prefer the first line item, fall back to
     // receipt-level product hint (single-product receipts / mock data).
-    _primaryLineItemId = null; // no DB item yet — confirmation screen creates it
+    _primaryLineItemId =
+        null; // no DB item yet — confirmation screen creates it
     if (_lineItems.isNotEmpty) {
       final first = _lineItems.first;
-      _productNameCtrl.text =
-          first.productName ?? first.itemDescription ?? '';
+      _productNameCtrl.text = first.productName ?? first.itemDescription ?? '';
       final ocrCategory = first.productCategory ?? '';
-      _selectedCategory =
-          _categories.contains(ocrCategory) ? ocrCategory : 'Electronics';
-      _warrantyPeriodCtrl.text =
-          first.warrantyPeriodMonths?.toString() ?? '';
+      _selectedCategory = _categories.contains(ocrCategory)
+          ? ocrCategory
+          : 'Electronics';
+      _warrantyPeriodCtrl.text = first.warrantyPeriodMonths?.toString() ?? '';
     } else {
-      _productNameCtrl.text =
-          (data['productName'] as String?) ?? '';
-      _warrantyPeriodCtrl.text =
-          data['warrantyPeriodMonths']?.toString() ?? '';
+      _productNameCtrl.text = (data['productName'] as String?) ?? '';
+      _warrantyPeriodCtrl.text = data['warrantyPeriodMonths']?.toString() ?? '';
     }
 
     if (_purchaseDate != null) {
@@ -438,7 +441,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                 children: [
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: Icon(Symbols.arrow_back, color: textPrimary),
+                    icon: Icon(Symbols.arrow_back_rounded, color: textPrimary),
                     padding: const EdgeInsets.all(8),
                     style: IconButton.styleFrom(
                       backgroundColor: Colors.transparent,
@@ -462,39 +465,30 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                   // ── New OCR path: data already in memory, no polling ────
                   ? _buildBodyFromOcrData(isDark, textPrimary)
                   : widget.receiptId == null
-                      // ── Manual entry: empty form ────────────────────────
-                      ? _buildFormBody(isDark, textPrimary)
-                      : widget.isManualEntry
-                          ? _buildFormFromProvider(
-                              isDark, textPrimary, receiptAsync)
-                          : receiptAsync.when(
-                              loading: () =>
-                                  _buildRiverpodLoadingBody(textPrimary),
-                              error: (e, _) => _buildErrorBody(textPrimary),
-                              data: (receipt) {
-                                final isProcessing =
-                                    receipt.status ==
-                                        ReceiptStatus.uploaded ||
-                                    receipt.status ==
-                                        ReceiptStatus.processing;
+                  // ── Manual entry: empty form ────────────────────────
+                  ? _buildFormBody(isDark, textPrimary)
+                  : widget.isManualEntry
+                  ? _buildFormFromProvider(isDark, textPrimary, receiptAsync)
+                  : receiptAsync.when(
+                      loading: () => _buildRiverpodLoadingBody(textPrimary),
+                      error: (e, _) => _buildErrorBody(textPrimary),
+                      data: (receipt) {
+                        final isProcessing =
+                            receipt.status == ReceiptStatus.uploaded ||
+                            receipt.status == ReceiptStatus.processing;
 
-                                if (!_forceShowForm &&
-                                    isProcessing &&
-                                    !_timedOut) {
-                                  return _buildOcrLoadingBody(textPrimary);
-                                }
+                        if (!_forceShowForm && isProcessing && !_timedOut) {
+                          return _buildOcrLoadingBody(textPrimary);
+                        }
 
-                                if (!_forceShowForm &&
-                                    _timedOut &&
-                                    isProcessing) {
-                                  return _buildTimedOutBody(
-                                      isDark, textPrimary);
-                                }
+                        if (!_forceShowForm && _timedOut && isProcessing) {
+                          return _buildTimedOutBody(isDark, textPrimary);
+                        }
 
-                                _populateFields(receipt);
-                                return _buildFormBody(isDark, textPrimary);
-                              },
-                            ),
+                        _populateFields(receipt);
+                        return _buildFormBody(isDark, textPrimary);
+                      },
+                    ),
             ),
           ],
         ),
@@ -525,8 +519,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
   Widget _buildBodyFromOcrData(bool isDark, Color textPrimary) {
     // Safe to call in build — guarded by the _populated flag.
     _populateFromOcrData(widget.ocrData!);
-    final ocrFailed =
-        (widget.ocrData!['ocrStatus'] as String?) == 'failed';
+    final ocrFailed = (widget.ocrData!['ocrStatus'] as String?) == 'failed';
     if (!ocrFailed) {
       return _buildFormBody(isDark, textPrimary);
     }
@@ -540,13 +533,11 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
           decoration: BoxDecoration(
             color: AppColors.error.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
-            border: Border.all(
-                color: AppColors.error.withValues(alpha: 0.3)),
+            border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
           ),
           child: Row(
             children: [
-              const Icon(Symbols.warning,
-                  color: AppColors.error, size: 18),
+              const Icon(Symbols.warning_rounded, color: AppColors.error, size: AppDimensions.iconMedium),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -574,7 +565,10 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
         children: [
           CircularProgressIndicator(color: AppColors.primary, strokeWidth: 3),
           const SizedBox(height: 20),
-          Text('Loading…', style: TextStyle(color: textPrimary, fontSize: 16)),
+          Text(
+            'Loading…',
+            style: AppTextStyles.bodyMedium.copyWith(color: textPrimary),
+          ),
         ],
       ),
     );
@@ -598,19 +592,14 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
             const SizedBox(height: 28),
             Text(
               'Analyzing your receipt…',
-              style: TextStyle(
-                color: textPrimary,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: AppTextStyles.headingMedium.copyWith(color: textPrimary),
             ),
             const SizedBox(height: 12),
             Text(
               'Our AI is extracting text and data\nfrom your document.',
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: AppTextStyles.bodySmall.copyWith(
                 color: textPrimary.withValues(alpha: 0.6),
-                fontSize: 14,
                 height: 1.6,
               ),
             ),
@@ -625,7 +614,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                 ref.invalidate(receiptProvider(widget.receiptId!));
                 _startPolling();
               },
-              icon: const Icon(Symbols.refresh, size: 16),
+              icon: const Icon(Symbols.refresh_rounded, size: AppDimensions.iconSmall),
               label: const Text('Refresh'),
               style: TextButton.styleFrom(foregroundColor: AppColors.primary),
             ),
@@ -650,57 +639,34 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
-                Symbols.timer_off,
-                size: 48,
-                color: AppColors.warning,
-              ),
+              const Icon(Symbols.timer_off_rounded, size: AppDimensions.iconXL, color: AppColors.warning),
               const SizedBox(height: 16),
               Text(
                 'Taking longer than expected',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: textPrimary,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: AppTextStyles.titleLarge.copyWith(color: textPrimary),
               ),
               const SizedBox(height: 8),
               Text(
                 'OCR processing is still in progress. You can wait, refresh, or fill in the details manually.',
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: AppTextStyles.bodySmall.copyWith(
                   color: textPrimary.withValues(alpha: 0.6),
-                  fontSize: 14,
                   height: 1.5,
                 ),
               ),
               const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    setState(() {
-                      _timedOut = false;
-                      _pollSeconds = 0;
-                    });
-                    ref.invalidate(receiptProvider(widget.receiptId!));
-                    _startPolling();
-                  },
-                  icon: const Icon(Symbols.refresh, size: 18),
-                  label: const Text('Refresh'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: AppColors.onPrimary,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                        AppDimensions.radiusLarge,
-                      ),
-                    ),
-                    elevation: 0,
-                  ),
-                ),
+              AppPrimaryButton(
+                onPressed: () {
+                  setState(() {
+                    _timedOut = false;
+                    _pollSeconds = 0;
+                  });
+                  ref.invalidate(receiptProvider(widget.receiptId!));
+                  _startPolling();
+                },
+                icon: const Icon(Symbols.refresh_rounded, size: AppDimensions.iconMedium),
+                text: 'Refresh',
               ),
               const SizedBox(height: 12),
               TextButton(
@@ -730,29 +696,24 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Symbols.error, size: 48, color: AppColors.error),
+            const Icon(Symbols.error_rounded, size: AppDimensions.iconXL, color: AppColors.error),
             const SizedBox(height: 16),
             Text(
               'Something went wrong',
-              style: TextStyle(
-                color: textPrimary,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: AppTextStyles.titleLarge.copyWith(color: textPrimary),
             ),
             const SizedBox(height: 8),
             Text(
               'Failed to load receipt data.',
-              style: TextStyle(
+              style: AppTextStyles.bodySmall.copyWith(
                 color: textPrimary.withValues(alpha: 0.6),
-                fontSize: 14,
               ),
             ),
             const SizedBox(height: 24),
             TextButton.icon(
               onPressed: () =>
                   ref.invalidate(receiptProvider(widget.receiptId!)),
-              icon: const Icon(Symbols.refresh, size: 16),
+              icon: const Icon(Symbols.refresh_rounded, size: AppDimensions.iconSmall),
               label: const Text('Retry'),
               style: TextButton.styleFrom(foregroundColor: AppColors.primary),
             ),
@@ -803,7 +764,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                     isDark: isDark,
                     textPrimary: textPrimary,
                     title: 'Purchase Details',
-                    icon: Symbols.receipt_long,
+                    icon: Symbols.receipt_long_rounded,
                     iconColor: AppColors.primary,
                     children: [
                       _buildTextField(
@@ -879,7 +840,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                     isDark: isDark,
                     textPrimary: textPrimary,
                     title: 'Store Contact',
-                    icon: Symbols.store,
+                    icon: Symbols.store_rounded,
                     iconColor: AppColors.primary,
                     children: [
                       _buildTextField(
@@ -914,7 +875,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                     isDark: isDark,
                     textPrimary: textPrimary,
                     title: 'Product Info',
-                    icon: Symbols.inventory_2,
+                    icon: Symbols.inventory_2_rounded,
                     iconColor: AppColors.primary,
                     children: [
                       _buildTextField(
@@ -939,7 +900,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                     isDark: isDark,
                     textPrimary: textPrimary,
                     title: 'Warranty Info',
-                    icon: Symbols.verified,
+                    icon: Symbols.verified_rounded,
                     iconColor: AppColors.primary,
                     children: [
                       _buildTextField(
@@ -975,7 +936,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                     isDark: isDark,
                     textPrimary: textPrimary,
                     title: 'Return Policy',
-                    icon: Symbols.assignment_return,
+                    icon: Symbols.assignment_return_rounded,
                     iconColor: AppColors.primary,
                     children: [
                       _buildTextField(
@@ -1011,7 +972,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                     isDark: isDark,
                     textPrimary: textPrimary,
                     title: 'Remarks & Notes',
-                    icon: Symbols.notes,
+                    icon: Symbols.notes_rounded,
                     iconColor: AppColors.primary,
                     children: [
                       _buildTextField(
@@ -1068,7 +1029,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
         children: [
           Row(
             children: [
-              Icon(icon, size: 20, color: iconColor),
+              Icon(icon, size: AppDimensions.iconMedium, color: iconColor),
               const SizedBox(width: 10),
               Text(
                 title,
@@ -1118,13 +1079,12 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
           onChanged: onChanged,
           validator: validator,
           maxLines: maxLines,
-          style: TextStyle(
-            color: textPrimary,
-            fontSize: 15,
-          ),
+          style: AppTextStyles.bodyMedium.copyWith(color: textPrimary),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: labelColor.withValues(alpha: 0.5)),
+            hintStyle: AppTextStyles.bodySmall.copyWith(
+              color: labelColor.withValues(alpha: 0.5),
+            ),
             filled: true,
             fillColor: fillColor,
             contentPadding: const EdgeInsets.symmetric(
@@ -1176,12 +1136,8 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
         DropdownButtonFormField<String>(
           value: _selectedCategory,
           dropdownColor: AppColors.card(isDark),
-          style: TextStyle(color: textPrimary, fontSize: 15),
-          icon: Icon(
-            Symbols.keyboard_arrow_down,
-            color: labelColor,
-            size: 20,
-          ),
+          style: AppTextStyles.bodyMedium.copyWith(color: textPrimary),
+          icon: Icon(Symbols.keyboard_arrow_down_rounded, color: labelColor, size: AppDimensions.iconMedium),
           decoration: InputDecoration(
             filled: true,
             fillColor: fillColor,
@@ -1248,13 +1204,15 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
               },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 150),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: !reminderEnabled
                       ? AppColors.primary.withValues(alpha: 0.15)
                       : Colors.transparent,
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.radiusPill),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
                   border: Border.all(
                     color: !reminderEnabled
                         ? AppColors.primary
@@ -1263,13 +1221,13 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                 ),
                 child: Text(
                   'Off',
-                  style: TextStyle(
-                    fontSize: 13,
+                  style: AppTextStyles.bodyXSmall.copyWith(
                     color: !reminderEnabled
                         ? AppColors.primary
                         : labelColor.withValues(alpha: 0.7),
-                    fontWeight:
-                        !reminderEnabled ? FontWeight.w600 : FontWeight.w500,
+                    fontWeight: !reminderEnabled
+                        ? FontWeight.w600
+                        : FontWeight.w500,
                   ),
                 ),
               ),
@@ -1282,13 +1240,15 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
               },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 150),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: reminderEnabled && selectedValue == null
                       ? AppColors.primary.withValues(alpha: 0.15)
                       : Colors.transparent,
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.radiusPill),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
                   border: Border.all(
                     color: reminderEnabled && selectedValue == null
                         ? AppColors.primary
@@ -1297,13 +1257,13 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                 ),
                 child: Text(
                   'Use default',
-                  style: TextStyle(
-                    fontSize: 13,
+                  style: AppTextStyles.bodyXSmall.copyWith(
                     color: reminderEnabled && selectedValue == null
                         ? AppColors.primary
                         : labelColor.withValues(alpha: 0.7),
-                    fontWeight:
-                        reminderEnabled && selectedValue == null ? FontWeight.w600 : FontWeight.w500,
+                    fontWeight: reminderEnabled && selectedValue == null
+                        ? FontWeight.w600
+                        : FontWeight.w500,
                   ),
                 ),
               ),
@@ -1318,13 +1278,17 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                 },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 150),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: isSelected
                         ? AppColors.primary.withValues(alpha: 0.15)
                         : Colors.transparent,
-                    borderRadius:
-                        BorderRadius.circular(AppDimensions.radiusPill),
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.radiusPill,
+                    ),
                     border: Border.all(
                       color: isSelected
                           ? AppColors.primary
@@ -1333,12 +1297,13 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                   ),
                   child: Text(
                     '$days days',
-                    style: TextStyle(
-                      fontSize: 13,
+                    style: AppTextStyles.bodyXSmall.copyWith(
                       color: isSelected
                           ? AppColors.primary
                           : labelColor.withValues(alpha: 0.7),
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.w500,
                     ),
                   ),
                 ),
@@ -1356,7 +1321,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     final borderColor = AppColors.border(isDark);
     final labelColor = AppColors.label(isDark);
     final headerStyle = AppTextStyles.tableHeader.copyWith(color: labelColor);
-    const cellStyle = TextStyle(fontSize: 13);
+    final cellStyle = AppTextStyles.bodyXSmall;
 
     return Container(
       decoration: BoxDecoration(
@@ -1371,18 +1336,14 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
           Row(
             children: [
               const Icon(
-                Symbols.shopping_cart,
-                size: 20,
+                Symbols.shopping_cart_rounded,
+                size: AppDimensions.iconMedium,
                 color: AppColors.primary,
               ),
               const SizedBox(width: 10),
               Text(
                 'Items Purchased',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                  color: textPrimary,
-                ),
+                style: AppTextStyles.sectionTitle.copyWith(color: textPrimary),
               ),
               const Spacer(),
               Container(
@@ -1395,10 +1356,8 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                 ),
                 child: Text(
                   '${_lineItems.length} item${_lineItems.length == 1 ? '' : 's'}',
-                  style: const TextStyle(
-                    fontSize: 11,
+                  style: AppTextStyles.badgeText.copyWith(
                     color: AppColors.primary,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -1407,8 +1366,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
           const SizedBox(height: 4),
           Text(
             'Extracted from receipt — edit via Receipt Details if needed.',
-            style: TextStyle(
-              fontSize: 11,
+            style: AppTextStyles.caption.copyWith(
               color: labelColor,
               fontStyle: FontStyle.italic,
             ),
@@ -1459,8 +1417,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                     width: 52,
                     child: Text(
                       item.productCode ?? '—',
-                      style: TextStyle(
-                        fontSize: 11,
+                      style: AppTextStyles.caption.copyWith(
                         color: labelColor,
                         fontFamily: 'monospace',
                       ),
@@ -1533,25 +1490,20 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                 Expanded(
                   child: Text(
                     displayText ?? hint,
-                    style: TextStyle(
+                    style: AppTextStyles.bodyMedium.copyWith(
                       color: displayText != null
                           ? textPrimary
                           : labelColor.withValues(alpha: 0.5),
-                      fontSize: 15,
                     ),
                   ),
                 ),
                 if (value != null && onClear != null)
                   GestureDetector(
                     onTap: onClear,
-                    child: Icon(Symbols.close, size: 16, color: labelColor),
+                    child: Icon(Symbols.close_rounded, size: AppDimensions.iconSmall, color: labelColor),
                   )
                 else
-                  Icon(
-                    Symbols.calendar_today,
-                    size: 16,
-                    color: labelColor,
-                  ),
+                  Icon(Symbols.calendar_today_rounded, size: AppDimensions.iconSmall, color: labelColor),
               ],
             ),
           ),
@@ -1568,24 +1520,9 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
       decoration: BoxDecoration(color: backgroundColor),
-      child: SizedBox(
-        width: double.infinity,
-        child: ElevatedButton(
-          onPressed: _goToConfirmation,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.onPrimary,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 17),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
-            ),
-            elevation: 0,
-          ),
-          child: const Text(
-            'Continue',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-        ),
+      child: AppPrimaryButton.dark(
+        onPressed: _goToConfirmation,
+        text: 'Continue',
       ),
     );
   }

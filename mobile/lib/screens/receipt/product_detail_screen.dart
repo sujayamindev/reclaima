@@ -11,6 +11,7 @@ import '../../data/models/receipt_line_item_model.dart';
 import '../../providers/receipt_provider.dart';
 import '../../core/utils/formatters.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import '../../widgets/app_primary_button.dart';
 import 'claim_pdf_screen.dart';
 import 'claims_list_screen.dart';
 
@@ -47,8 +48,9 @@ class ProductDetailScreen extends ConsumerWidget {
             ReceiptLineItemModel? item;
             if (lineItemId != null) {
               try {
-                item = receipt.lineItems
-                    .firstWhere((li) => li.id == lineItemId);
+                item = receipt.lineItems.firstWhere(
+                  (li) => li.id == lineItemId,
+                );
               } catch (_) {
                 item = null;
               }
@@ -56,9 +58,10 @@ class ProductDetailScreen extends ConsumerWidget {
             // Fall back to the first available line item when no specific ID
             // was provided (e.g. navigating from the confirmation screen after
             // save, or arriving via a notification deep link).
-            item ??= receipt.lineItems.isNotEmpty ? receipt.lineItems.first : null;
-            final product =
-                ProductViewModel(receipt: receipt, lineItem: item);
+            item ??= receipt.lineItems.isNotEmpty
+                ? receipt.lineItems.first
+                : null;
+            final product = ProductViewModel(receipt: receipt, lineItem: item);
             return _buildBody(context, ref, product, imageUrlAsync, isDark);
           },
           loading: () => CustomScrollView(
@@ -92,16 +95,17 @@ class ProductDetailScreen extends ConsumerWidget {
                           ),
                           child: const Icon(
                             Symbols.error_rounded,
-                            size: 32,
+                            size: AppDimensions.iconLarge,
                             color: AppColors.error,
-                            weight: 800.0,
+                            weight: AppDimensions.iconWeightHeavy,
                           ),
                         ),
                         const SizedBox(height: 16),
                         Text(
                           'Failed to load product',
-                          style: AppTextStyles.titleLarge
-                              .copyWith(color: AppColors.textPrimary(isDark)),
+                          style: AppTextStyles.titleLarge.copyWith(
+                            color: AppColors.textPrimary(isDark),
+                          ),
                         ),
                         const SizedBox(height: 8),
                         Text(
@@ -144,7 +148,7 @@ class ProductDetailScreen extends ConsumerWidget {
               // ── Hero card ───────────────────────────────────────
               _buildHeroCard(product, isDark),
               const SizedBox(height: 12),
-              
+
               // ── Link Banners (Replacements) ──────────────────────
               _buildLinkBanners(context, ref, product, isDark),
 
@@ -173,48 +177,53 @@ class ProductDetailScreen extends ConsumerWidget {
 
               // ── Purchase Details ─────────────────────────────────
               _buildPurchaseDetails(
-                  context, product.receipt, imageUrlAsync, isDark),
+                context,
+                product.receipt,
+                imageUrlAsync,
+                isDark,
+              ),
               const SizedBox(height: 12),
 
               // ── Product Info (single-item only) ──────────────────
               if (product.lineItem != null &&
                   product.receipt.lineItems.length <= 1 &&
                   _hasProductInfo(product.lineItem!)) ...[
-                _buildSection(
-                  isDark,
-                  'Product Info',
-                  Symbols.info_rounded,
-                  [
-                    if (product.lineItem!.quantity != null)
-                      _buildInfoRow(
-                          'Quantity', product.lineItem!.quantity!, isDark),
-                    if (product.lineItem!.unitPrice != null)
-                      _buildInfoRow(
-                        'Unit Price',
-                        CurrencyFormatter.format(
-                          product.lineItem!.unitPrice!,
-                          currency: product.currency ?? 'USD',
-                        ),
-                        isDark,
+                _buildSection(isDark, 'Product Info', Symbols.info_rounded, [
+                  if (product.lineItem!.quantity != null)
+                    _buildInfoRow(
+                      'Quantity',
+                      product.lineItem!.quantity!,
+                      isDark,
+                    ),
+                  if (product.lineItem!.unitPrice != null)
+                    _buildInfoRow(
+                      'Unit Price',
+                      CurrencyFormatter.format(
+                        product.lineItem!.unitPrice!,
+                        currency: product.currency ?? 'USD',
                       ),
-                    if (product.lineItem!.amount != null)
-                      _buildInfoRow(
-                        'Amount',
-                        CurrencyFormatter.format(
-                          product.lineItem!.amount!,
-                          currency: product.currency ?? 'USD',
-                        ),
-                        isDark,
+                      isDark,
+                    ),
+                  if (product.lineItem!.amount != null)
+                    _buildInfoRow(
+                      'Amount',
+                      CurrencyFormatter.format(
+                        product.lineItem!.amount!,
+                        currency: product.currency ?? 'USD',
                       ),
-                  ],
-                ),
+                      isDark,
+                    ),
+                ]),
                 const SizedBox(height: 12),
               ],
 
               // ── All line items table (multi-product context) ──────
               if (product.receipt.lineItems.length > 1) ...[
-                _buildLineItemsSection(isDark, product.receipt.lineItems,
-                    highlightId: lineItemId),
+                _buildLineItemsSection(
+                  isDark,
+                  product.receipt.lineItems,
+                  highlightId: lineItemId,
+                ),
                 const SizedBox(height: 12),
               ],
 
@@ -227,16 +236,28 @@ class ProductDetailScreen extends ConsumerWidget {
                   [
                     if (product.receipt.vendorAddress != null)
                       _buildInfoRow(
-                          'Address', product.receipt.vendorAddress!, isDark),
+                        'Address',
+                        product.receipt.vendorAddress!,
+                        isDark,
+                      ),
                     if (product.receipt.vendorPhone != null)
                       _buildInfoRow(
-                          'Phone', product.receipt.vendorPhone!, isDark),
+                        'Phone',
+                        product.receipt.vendorPhone!,
+                        isDark,
+                      ),
                     if (product.receipt.vendorEmail != null)
                       _buildInfoRow(
-                          'Email', product.receipt.vendorEmail!, isDark),
+                        'Email',
+                        product.receipt.vendorEmail!,
+                        isDark,
+                      ),
                     if (product.receipt.vendorUrl != null)
                       _buildInfoRow(
-                          'Website', product.receipt.vendorUrl!, isDark),
+                        'Website',
+                        product.receipt.vendorUrl!,
+                        isDark,
+                      ),
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -282,20 +303,15 @@ class ProductDetailScreen extends ConsumerWidget {
 
               // ── Notes ────────────────────────────────────────────
               if (product.receipt.notes != null) ...[
-                _buildSection(
-                  isDark,
-                  'Notes',
-                  Symbols.notes_rounded,
-                  [
-                    Text(
-                      product.receipt.notes!,
-                      style: AppTextStyles.bodyXSmall.copyWith(
-                        color: AppColors.textSecondary(isDark),
-                        height: 1.5,
-                      ),
+                _buildSection(isDark, 'Notes', Symbols.notes_rounded, [
+                  Text(
+                    product.receipt.notes!,
+                    style: AppTextStyles.bodyXSmall.copyWith(
+                      color: AppColors.textSecondary(isDark),
+                      height: 1.5,
                     ),
-                  ],
-                ),
+                  ),
+                ]),
                 const SizedBox(height: 12),
               ],
 
@@ -306,15 +322,21 @@ class ProductDetailScreen extends ConsumerWidget {
                 Symbols.cloud_done_rounded,
                 [
                   _buildInfoRow(
-                      'OCR Status', product.receipt.status.name, isDark),
+                    'OCR Status',
+                    product.receipt.status.name,
+                    isDark,
+                  ),
                   _buildInfoRow(
-                      'Retry Count', '${product.receipt.ocrRetryCount}',
-                      isDark),
+                    'Retry Count',
+                    '${product.receipt.ocrRetryCount}',
+                    isDark,
+                  ),
                   if (product.receipt.lastOcrAttemptAt != null)
                     _buildInfoRow(
                       'Last Attempt',
                       DateFormatter.formatDateTime(
-                          product.receipt.lastOcrAttemptAt!),
+                        product.receipt.lastOcrAttemptAt!,
+                      ),
                       isDark,
                     ),
                   _buildInfoRow(
@@ -325,8 +347,7 @@ class ProductDetailScreen extends ConsumerWidget {
                   if (product.receipt.syncedAt != null)
                     _buildInfoRow(
                       'Last Synced',
-                      DateFormatter.formatDateTime(
-                          product.receipt.syncedAt!),
+                      DateFormatter.formatDateTime(product.receipt.syncedAt!),
                       isDark,
                     ),
                 ],
@@ -354,7 +375,11 @@ class ProductDetailScreen extends ConsumerWidget {
       toolbarHeight: 64,
       leading: IconButton(
         onPressed: () => Navigator.pop(context),
-        icon: Icon(Symbols.arrow_back_rounded, color: AppColors.textPrimary(isDark), weight: 600.0,),
+        icon: Icon(
+          Symbols.arrow_back_rounded,
+          color: AppColors.textPrimary(isDark),
+          weight: 600.0,
+        ),
         padding: const EdgeInsets.all(8),
         style: IconButton.styleFrom(
           backgroundColor: Colors.transparent,
@@ -373,8 +398,13 @@ class ProductDetailScreen extends ConsumerWidget {
       actions: [
         if (product != null)
           PopupMenuButton<String>(
-            icon: Icon(Symbols.more_horiz_rounded,
-              color: AppColors.textPrimary(isDark), size: 22, weight: 600.0, grade: 200.0),
+            icon: Icon(
+              Symbols.more_horiz_rounded,
+              color: AppColors.textPrimary(isDark),
+              size: 22,
+              weight: 600.0,
+              grade: 200.0,
+            ),
             padding: EdgeInsets.zero,
             position: PopupMenuPosition.under,
             offset: const Offset(0, 8),
@@ -424,17 +454,16 @@ class ProductDetailScreen extends ConsumerWidget {
             Expanded(
               child: Center(
                 child: InkWell(
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.radiusPill),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
                   onTap: () => Navigator.of(context).pop('edit'),
                   child: const SizedBox(
                     width: 40,
                     height: 40,
                     child: Icon(
                       Symbols.edit_rounded,
-                      size: 20,
+                      size: AppDimensions.iconMedium,
                       color: AppColors.primary,
-                      weight: 800.0,
+                      weight: AppDimensions.iconWeightHeavy,
                     ),
                   ),
                 ),
@@ -451,17 +480,16 @@ class ProductDetailScreen extends ConsumerWidget {
             Expanded(
               child: Center(
                 child: InkWell(
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.radiusPill),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
                   onTap: () => Navigator.of(context).pop('delete'),
                   child: const SizedBox(
                     width: 40,
                     height: 40,
                     child: Icon(
                       Symbols.delete_rounded,
-                      size: 20,
+                      size: AppDimensions.iconMedium,
                       color: AppColors.error,
-                      weight: 800.0
+                      weight: AppDimensions.iconWeightHeavy,
                     ),
                   ),
                 ),
@@ -475,10 +503,7 @@ class ProductDetailScreen extends ConsumerWidget {
 
   // ── Hero card ────────────────────────────────────────────────────────────
 
-  Widget _buildHeroCard(
-    ProductViewModel product,
-    bool isDark,
-  ) {
+  Widget _buildHeroCard(ProductViewModel product, bool isDark) {
     final statusColor = _statusColor(product.receipt, isDark);
 
     return Container(
@@ -497,7 +522,9 @@ class ProductDetailScreen extends ConsumerWidget {
               // ── Product image (top) ─────────────────────────────────────
               if (product.productImageUrl != null) ...[
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.radiusMedium,
+                  ),
                   child: CachedNetworkImage(
                     imageUrl: product.productImageUrl!,
                     width: double.infinity,
@@ -511,7 +538,9 @@ class ProductDetailScreen extends ConsumerWidget {
                           width: 24,
                           height: 24,
                           child: CircularProgressIndicator(
-                              strokeWidth: 2.5, color: AppColors.primary),
+                            strokeWidth: 2.5,
+                            color: AppColors.primary,
+                          ),
                         ),
                       ),
                     ),
@@ -570,8 +599,12 @@ class ProductDetailScreen extends ConsumerWidget {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Icon(Symbols.storefront_rounded,
-                          size: 14, color: AppColors.muted(isDark), weight: 800.0),
+                        Icon(
+                          Symbols.storefront_rounded,
+                          size: AppDimensions.iconTiny,
+                          color: AppColors.muted(isDark),
+                          weight: 800.0,
+                        ),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
@@ -597,20 +630,31 @@ class ProductDetailScreen extends ConsumerWidget {
 
   // ── Link Banners (Replacements) ──────────────────────────────────────────
 
-  Widget _buildLinkBanners(BuildContext context, WidgetRef ref, ProductViewModel product, bool isDark) {
+  Widget _buildLinkBanners(
+    BuildContext context,
+    WidgetRef ref,
+    ProductViewModel product,
+    bool isDark,
+  ) {
     if (product.lineItem == null) return const SizedBox.shrink();
-    
+
     final replacedById = product.lineItem!.replacedById;
     final replacementForId = product.lineItem!.replacementForId;
-    
-    if (replacedById == null && replacementForId == null) return const SizedBox.shrink();
-    
+
+    if (replacedById == null && replacementForId == null)
+      return const SizedBox.shrink();
+
     final allReceiptsVal = ref.read(receiptsProvider);
     if (allReceiptsVal.valueOrNull == null) return const SizedBox.shrink();
-    
+
     final allReceipts = allReceiptsVal.value!;
-    
-    Widget buildBanner({required String id, required String label, required IconData icon, required Color color}) {
+
+    Widget buildBanner({
+      required String id,
+      required String label,
+      required IconData icon,
+      required Color color,
+    }) {
       // Find the receipt that has this line item
       ReceiptModel? targetReceipt;
       for (final r in allReceipts) {
@@ -619,12 +663,20 @@ class ProductDetailScreen extends ConsumerWidget {
           break;
         }
       }
-      
+
       if (targetReceipt == null) return const SizedBox.shrink();
-      
+
       return InkWell(
         onTap: () {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => ProductDetailScreen(receiptId: targetReceipt!.id, lineItemId: id)));
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => ProductDetailScreen(
+                receiptId: targetReceipt!.id,
+                lineItemId: id,
+              ),
+            ),
+          );
         },
         borderRadius: BorderRadius.circular(12),
         child: Container(
@@ -637,32 +689,56 @@ class ProductDetailScreen extends ConsumerWidget {
           ),
           child: Row(
             children: [
-              Icon(icon, color: color, size: 20),
+              Icon(icon, color: color, size: AppDimensions.iconMedium),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   label,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textPrimary(isDark), fontWeight: FontWeight.w600),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.textPrimary(isDark),
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
-              Icon(Symbols.chevron_right_rounded, color: color, size: 20, weight: 800.0),
+              Icon(
+                Symbols.chevron_right_rounded,
+                color: color,
+                size: AppDimensions.iconMedium,
+                weight: AppDimensions.iconWeightHeavy,
+              ),
             ],
           ),
         ),
       );
     }
-    
+
     return Column(
       children: [
-        if (replacedById != null) buildBanner(id: replacedById, label: 'View Replacement Item', icon: Symbols.autorenew_rounded, color: AppColors.primary),
-        if (replacementForId != null) buildBanner(id: replacementForId, label: 'View Original Replaced Item', icon: Symbols.history_rounded, color: AppColors.info),
+        if (replacedById != null)
+          buildBanner(
+            id: replacedById,
+            label: 'View Replacement Item',
+            icon: Symbols.autorenew_rounded,
+            color: AppColors.primary,
+          ),
+        if (replacementForId != null)
+          buildBanner(
+            id: replacementForId,
+            label: 'View Original Replaced Item',
+            icon: Symbols.history_rounded,
+            color: AppColors.info,
+          ),
       ],
     );
   }
 
   // ── Warranty & Return section ─────────────────────────────────────────────
 
-  Widget _buildWarrantySection(BuildContext context, ProductViewModel product, bool isDark) {
+  Widget _buildWarrantySection(
+    BuildContext context,
+    ProductViewModel product,
+    bool isDark,
+  ) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppDimensions.paddingCard),
@@ -736,41 +812,25 @@ class ProductDetailScreen extends ConsumerWidget {
           ],
           // ── Warranty Claims Button ────────────────────────────────
           const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            height: AppDimensions.buttonHeight,
-            child: ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ClaimsListScreen(
-                      receiptId: product.receiptId,
-                      lineItemId: product.lineItemId,
-                      receiptStoreName: product.receipt.storeName ?? 'Store',
-                    ),
+          AppPrimaryButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ClaimsListScreen(
+                    receiptId: product.receiptId,
+                    lineItemId: product.lineItemId,
+                    receiptStoreName: product.receipt.storeName ?? 'Store',
                   ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.onPrimary,
-                elevation: 0,
-                shadowColor: Colors.transparent,
-                surfaceTintColor: Colors.transparent,
-                overlayColor: Colors.transparent,
-                splashFactory: NoSplash.splashFactory,
-                enableFeedback: false,
-                shape: RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.radiusXL),
-                  side: BorderSide.none,
                 ),
-                side: BorderSide.none,
-              ),
-              icon: const Icon(Symbols.description_rounded, size: 20, weight: 800.0),
-              label: const Text('Manage Claims'),
+              );
+            },
+            icon: const Icon(
+              Symbols.description_rounded,
+              size: AppDimensions.iconMedium,
+              weight: AppDimensions.iconWeightHeavy,
             ),
+            text: 'Manage Claims',
           ),
         ],
       ),
@@ -794,8 +854,9 @@ class ProductDetailScreen extends ConsumerWidget {
             const SizedBox(height: 12),
             Text(
               'Processing receipt…',
-              style: AppTextStyles.bodySmall
-                  .copyWith(color: AppColors.muted(isDark)),
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.muted(isDark),
+              ),
             ),
             const SizedBox(height: 4),
             Text(
@@ -818,13 +879,18 @@ class ProductDetailScreen extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(vertical: 12),
         child: Column(
           children: [
-            Icon(Symbols.verified_user_rounded,
-              size: 36, color: AppColors.muted(isDark), weight: 800.0),
+            Icon(
+              Symbols.verified_user_rounded,
+              size: AppDimensions.iconLarge,
+              color: AppColors.muted(isDark),
+              weight: 800.0,
+            ),
             const SizedBox(height: 10),
             Text(
               'No warranty information tracked',
-              style: AppTextStyles.bodySmall
-                  .copyWith(color: AppColors.muted(isDark)),
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.muted(isDark),
+              ),
             ),
           ],
         ),
@@ -854,24 +920,25 @@ class ProductDetailScreen extends ConsumerWidget {
           // Header row: icon + "Purchase Details"
           Row(
             children: [
-                const Icon(Symbols.storefront_rounded,
-                  size: 20, color: AppColors.primary, weight: 800.0),
+              const Icon(
+                Symbols.storefront_rounded,
+                size: AppDimensions.iconMedium,
+                color: AppColors.primary,
+                weight: AppDimensions.iconWeightHeavy,
+              ),
               const SizedBox(width: 10),
               Text(
                 'Purchase Details',
-                style: AppTextStyles.sectionTitle
-                    .copyWith(color: AppColors.textPrimary(isDark)),
+                style: AppTextStyles.sectionTitle.copyWith(
+                  color: AppColors.textPrimary(isDark),
+                ),
               ),
             ],
           ),
           const SizedBox(height: 14),
 
           // Store name + date
-          _buildInfoRow(
-            'Store',
-            receipt.storeName ?? 'Unknown Store',
-            isDark,
-          ),
+          _buildInfoRow('Store', receipt.storeName ?? 'Unknown Store', isDark),
           if (receipt.purchaseDate != null)
             _buildInfoRow(
               'Purchase Date',
@@ -908,11 +975,9 @@ class ProductDetailScreen extends ConsumerWidget {
     bool isDark,
   ) {
     return GestureDetector(
-      onTap: () => imageUrlAsync.whenData(
-        (url) {
-          if (url != null) _openFullscreenImage(context, url);
-        },
-      ),
+      onTap: () => imageUrlAsync.whenData((url) {
+        if (url != null) _openFullscreenImage(context, url);
+      }),
       child: Container(
         height: 200,
         width: double.infinity,
@@ -928,19 +993,28 @@ class ProductDetailScreen extends ConsumerWidget {
               width: 28,
               height: 28,
               child: CircularProgressIndicator(
-                  strokeWidth: 2.5, color: AppColors.primary),
+                strokeWidth: 2.5,
+                color: AppColors.primary,
+              ),
             ),
           ),
           error: (_, __) => Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Symbols.broken_image_rounded,
-                  size: 32, color: AppColors.muted(isDark), weight: 800.0),
+                Icon(
+                  Symbols.broken_image_rounded,
+                  size: AppDimensions.iconLarge,
+                  color: AppColors.muted(isDark),
+                  weight: 800.0,
+                ),
                 const SizedBox(height: 8),
-                Text('Image unavailable',
-                    style: AppTextStyles.caption
-                        .copyWith(color: AppColors.muted(isDark))),
+                Text(
+                  'Image unavailable',
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.muted(isDark),
+                  ),
+                ),
               ],
             ),
           ),
@@ -949,12 +1023,19 @@ class ProductDetailScreen extends ConsumerWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                        Icon(Symbols.receipt_long_rounded,
-                          size: 36, color: AppColors.muted(isDark), weight: 800.0),
+                      Icon(
+                        Symbols.receipt_long_rounded,
+                        size: AppDimensions.iconLarge,
+                        color: AppColors.muted(isDark),
+                        weight: 800.0,
+                      ),
                       const SizedBox(height: 8),
-                      Text('Receipt image',
-                          style: AppTextStyles.caption
-                              .copyWith(color: AppColors.muted(isDark))),
+                      Text(
+                        'Receipt image',
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.muted(isDark),
+                        ),
+                      ),
                     ],
                   ),
                 )
@@ -969,12 +1050,18 @@ class ProductDetailScreen extends ConsumerWidget {
                           width: 28,
                           height: 28,
                           child: CircularProgressIndicator(
-                              strokeWidth: 2.5, color: AppColors.primary),
+                            strokeWidth: 2.5,
+                            color: AppColors.primary,
+                          ),
                         ),
                       ),
                       errorWidget: (_, __, ___) => Center(
-                        child: Icon(Symbols.broken_image_rounded,
-                          size: 36, color: AppColors.muted(isDark), weight: 800.0),
+                        child: Icon(
+                          Symbols.broken_image_rounded,
+                          size: AppDimensions.iconLarge,
+                          color: AppColors.muted(isDark),
+                          weight: 800.0,
+                        ),
                       ),
                     ),
                     Positioned(
@@ -982,17 +1069,24 @@ class ProductDetailScreen extends ConsumerWidget {
                       bottom: 10,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 6),
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.black.withValues(alpha: 0.55),
-                          borderRadius:
-                              BorderRadius.circular(AppDimensions.radiusPill),
+                          borderRadius: BorderRadius.circular(
+                            AppDimensions.radiusPill,
+                          ),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Symbols.fullscreen_rounded,
-                              color: Colors.white, size: 15, weight: 800.0),
+                            const Icon(
+                              Symbols.fullscreen_rounded,
+                              color: Colors.white,
+                              size: AppDimensions.iconSmall,
+                              weight: AppDimensions.iconWeightHeavy,
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               'View',
@@ -1039,7 +1133,12 @@ class ProductDetailScreen extends ConsumerWidget {
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
-                  icon: const Icon(Symbols.close_rounded, color: Colors.white, size: 24, weight: 800.0),
+                  icon: const Icon(
+                    Symbols.close_rounded,
+                    color: Colors.white,
+                    size: AppDimensions.iconNormal,
+                    weight: AppDimensions.iconWeightHeavy,
+                  ),
                   onPressed: () => Navigator.pop(context),
                 ),
               ),
@@ -1057,10 +1156,12 @@ class ProductDetailScreen extends ConsumerWidget {
     List<ReceiptLineItemModel> items, {
     String? highlightId,
   }) {
-    final headerStyle = AppTextStyles.tableHeader
-        .copyWith(color: AppColors.textSecondary(isDark));
-    final cellStyle = AppTextStyles.bodyXSmall
-        .copyWith(color: AppColors.textPrimary(isDark));
+    final headerStyle = AppTextStyles.tableHeader.copyWith(
+      color: AppColors.textSecondary(isDark),
+    );
+    final cellStyle = AppTextStyles.bodyXSmall.copyWith(
+      color: AppColors.textPrimary(isDark),
+    );
 
     return Container(
       width: double.infinity,
@@ -1083,17 +1184,16 @@ class ProductDetailScreen extends ConsumerWidget {
                 ),
               ),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.12),
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.radiusPill),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
                 ),
                 child: Text(
                   '${items.length} items',
-                  style: AppTextStyles.badgeText
-                      .copyWith(color: AppColors.primary),
+                  style: AppTextStyles.badgeText.copyWith(
+                    color: AppColors.primary,
+                  ),
                 ),
               ),
             ],
@@ -1104,19 +1204,33 @@ class ProductDetailScreen extends ConsumerWidget {
             child: Row(
               children: [
                 Expanded(
-                    flex: 3, child: Text('Description', style: headerStyle)),
+                  flex: 3,
+                  child: Text('Description', style: headerStyle),
+                ),
                 SizedBox(
-                    width: 48,
-                    child: Text('Qty',
-                        style: headerStyle, textAlign: TextAlign.center)),
+                  width: 48,
+                  child: Text(
+                    'Qty',
+                    style: headerStyle,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
                 SizedBox(
-                    width: 64,
-                    child: Text('Unit',
-                        style: headerStyle, textAlign: TextAlign.right)),
+                  width: 64,
+                  child: Text(
+                    'Unit',
+                    style: headerStyle,
+                    textAlign: TextAlign.right,
+                  ),
+                ),
                 SizedBox(
-                    width: 72,
-                    child: Text('Amount',
-                        style: headerStyle, textAlign: TextAlign.right)),
+                  width: 72,
+                  child: Text(
+                    'Amount',
+                    style: headerStyle,
+                    textAlign: TextAlign.right,
+                  ),
+                ),
               ],
             ),
           ),
@@ -1130,8 +1244,9 @@ class ProductDetailScreen extends ConsumerWidget {
               decoration: item.id == highlightId
                   ? BoxDecoration(
                       color: AppColors.primary.withValues(alpha: 0.07),
-                      borderRadius:
-                          BorderRadius.circular(AppDimensions.radiusSmall),
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.radiusSmall,
+                      ),
                     )
                   : null,
               child: Padding(
@@ -1152,13 +1267,18 @@ class ProductDetailScreen extends ConsumerWidget {
                       children: [
                         Expanded(
                           flex: 3,
-                          child: Text(item.itemDescription ?? '—',
-                              style: cellStyle),
+                          child: Text(
+                            item.itemDescription ?? '—',
+                            style: cellStyle,
+                          ),
                         ),
                         SizedBox(
                           width: 48,
-                          child: Text(item.quantity ?? '—',
-                              style: cellStyle, textAlign: TextAlign.center),
+                          child: Text(
+                            item.quantity ?? '—',
+                            style: cellStyle,
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                         SizedBox(
                           width: 64,
@@ -1176,8 +1296,9 @@ class ProductDetailScreen extends ConsumerWidget {
                             item.amount != null
                                 ? item.amount!.toStringAsFixed(2)
                                 : '—',
-                            style: cellStyle
-                                .copyWith(fontWeight: FontWeight.w600),
+                            style: cellStyle.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
                             textAlign: TextAlign.right,
                           ),
                         ),
@@ -1248,8 +1369,12 @@ class ProductDetailScreen extends ConsumerWidget {
 
   // ── Info row ──────────────────────────────────────────────────────────────
 
-  Widget _buildInfoRow(String label, String value, bool isDark,
-      {Color? valueColor}) {
+  Widget _buildInfoRow(
+    String label,
+    String value,
+    bool isDark, {
+    Color? valueColor,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
@@ -1367,12 +1492,18 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: AppColors.primary, weight: 800.0),
+        Icon(
+          icon,
+          size: AppDimensions.iconMedium,
+          color: AppColors.primary,
+          weight: AppDimensions.iconWeightHeavy,
+        ),
         const SizedBox(width: 10),
         Text(
           title,
-          style: AppTextStyles.sectionTitle
-              .copyWith(color: AppColors.textPrimary(isDark)),
+          style: AppTextStyles.sectionTitle.copyWith(
+            color: AppColors.textPrimary(isDark),
+          ),
         ),
       ],
     );
@@ -1412,8 +1543,7 @@ class _StatusBadge extends StatelessWidget {
             Container(
               width: 6,
               height: 6,
-              decoration:
-                  BoxDecoration(color: color, shape: BoxShape.circle),
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
             ),
             const SizedBox(width: 6),
           ],
@@ -1428,8 +1558,6 @@ class _StatusBadge extends StatelessWidget {
     );
   }
 }
-
-
 
 /// Side-by-side countdown tile showing days remaining until expiry
 /// with a circular progress ring.
@@ -1478,19 +1606,28 @@ class _CountdownTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: accent.withValues(alpha: 0),
         borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
-        border: Border.all(color: AppColors.border(isDark).withValues(alpha: 0.5)),
+        border: Border.all(
+          color: AppColors.border(isDark).withValues(alpha: 0.5),
+        ),
       ),
       child: Column(
         children: [
           // Label row
           Row(
             children: [
-              Icon(icon, size: 13, color: accent, weight: 800.0),
+              Icon(
+                icon,
+                size: AppDimensions.iconTiny,
+                color: accent,
+                weight: AppDimensions.iconWeightHeavy,
+              ),
               const SizedBox(width: 5),
               Text(
                 label,
-                style: AppTextStyles.capsLabel
-                    .copyWith(fontSize: 10, color: accent),
+                style: AppTextStyles.capsLabel.copyWith(
+                  fontSize: 10,
+                  color: accent,
+                ),
               ),
             ],
           ),
@@ -1520,12 +1657,8 @@ class _CountdownTile extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             // Invisible spacer matching the date text height below
-            Text(
-              ' ',
-              style: AppTextStyles.caption,
-            ),
-          ]
-          else ...[
+            Text(' ', style: AppTextStyles.caption),
+          ] else ...[
             SizedBox(
               width: 80,
               height: 80,
@@ -1573,8 +1706,9 @@ class _CountdownTile extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               DateFormatter.formatDate(expiryDate!),
-              style: AppTextStyles.caption
-                  .copyWith(color: AppColors.textSecondary(isDark)),
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.textSecondary(isDark),
+              ),
             ),
           ],
         ],
@@ -1711,14 +1845,19 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
           // Header
           Row(
             children: [
-                Icon(Symbols.notifications_rounded,
-                  size: 20, color: AppColors.primary, weight: 800.0),
+              Icon(
+                Symbols.notifications_rounded,
+                size: AppDimensions.iconMedium,
+                color: AppColors.primary,
+                weight: AppDimensions.iconWeightHeavy,
+              ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   'Notifications',
-                  style: AppTextStyles.sectionTitle
-                      .copyWith(color: AppColors.textPrimary(isDark)),
+                  style: AppTextStyles.sectionTitle.copyWith(
+                    color: AppColors.textPrimary(isDark),
+                  ),
                 ),
               ),
             ],
@@ -1728,78 +1867,67 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
           if (widget.hasWarranty) ...[
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
-              child: _overrideLeadTimeSelector(
-                widget.isDark,
-                options: _warrantyOptions,
-                selected: _localWarrantyLeadOverride,
-                onChanged: (v) =>
-                    setState(() => _localWarrantyLeadOverride = v),
-                reminderEnabled: _warrantyReminder,
-                onReminderEnabledChanged: (v) =>
-                    setState(() => _warrantyReminder = v),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Warranty Expiry Reminder',
+                    style: AppTextStyles.bodyXSmall.copyWith(
+                      color: AppColors.textSecondary(isDark),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  _overrideLeadTimeSelector(
+                    widget.isDark,
+                    options: _warrantyOptions,
+                    selected: _localWarrantyLeadOverride,
+                    reminderEnabled: _warrantyReminder,
+                    onChanged: (enabled, leadTime) {
+                      setState(() {
+                        _warrantyReminder = enabled;
+                        _localWarrantyLeadOverride = leadTime;
+                      });
+                      _saveNotificationSettings();
+                    },
+                  ),
+                ],
               ),
             ),
           ],
-
-
 
           // Return reminder
           if (widget.hasReturn) ...[
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
-              child: _overrideLeadTimeSelector(
-                widget.isDark,
-                options: _returnOptions,
-                selected: _localReturnLeadOverride,
-                onChanged: (v) =>
-                    setState(() => _localReturnLeadOverride = v),
-                reminderEnabled: _returnReminder,
-                onReminderEnabledChanged: (v) =>
-                    setState(() => _returnReminder = v),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 12),
+                  Text(
+                    'Return Deadline Reminder',
+                    style: AppTextStyles.bodyXSmall.copyWith(
+                      color: AppColors.textSecondary(isDark),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  _overrideLeadTimeSelector(
+                    widget.isDark,
+                    options: _returnOptions,
+                    selected: _localReturnLeadOverride,
+                    reminderEnabled: _returnReminder,
+                    onChanged: (enabled, leadTime) {
+                      setState(() {
+                        _returnReminder = enabled;
+                        _localReturnLeadOverride = leadTime;
+                      });
+                      _saveNotificationSettings();
+                    },
+                  ),
+                ],
               ),
             ),
           ],
 
-          // Save button (if has warranty or return)
-          if ((widget.hasWarranty || widget.hasReturn) &&
-              (_localWarrantyLeadOverride != widget.currentWarrantyLeadOverride ||
-                  _localReturnLeadOverride != widget.currentReturnLeadOverride ||
-                  _warrantyReminder != (widget.currentWarrantyReminderEnabled ?? true) ||
-                  _returnReminder != (widget.currentReturnReminderEnabled ?? true)))
-            Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: _isSaving ? null : _saveNotificationSettings,
-                  icon: _isSaving
-                      ? SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation(
-                              AppColors.background(false),
-                            ),
-                          ),
-                        )
-                      : const Icon(Symbols.save_rounded, weight: 800.0),
-                  label: Text(_isSaving
-                      ? 'Saving...'
-                      : 'Save Notification Settings'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: AppColors.background(false),
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppDimensions.radiusPill),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-          // Fallback when no warranty or return
           if (!widget.hasWarranty && !widget.hasReturn)
             Text(
               'No warranty or return info to set reminders for.',
@@ -1819,23 +1947,18 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
     try {
       await widget.ref
           .read(receiptControllerProvider.notifier)
-          .updateLineItem(
-            widget.receiptId,
-            widget.lineItemId,
-            {
-              if (_localWarrantyLeadOverride != null)
-                'warrantyLeadDaysOverride': _localWarrantyLeadOverride,
-              if (_localReturnLeadOverride != null)
-                'returnLeadDaysOverride': _localReturnLeadOverride,
-              'warrantyReminderEnabled': _warrantyReminder,
-              'returnReminderEnabled': _returnReminder,
-            },
-          );
+          .updateLineItem(widget.receiptId, widget.lineItemId, {
+            if (_localWarrantyLeadOverride != null)
+              'warrantyLeadDaysOverride': _localWarrantyLeadOverride,
+            if (_localReturnLeadOverride != null)
+              'returnLeadDaysOverride': _localReturnLeadOverride,
+            'warrantyReminderEnabled': _warrantyReminder,
+            'returnReminderEnabled': _returnReminder,
+          });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Notification settings saved'),
-            behavior: SnackBarBehavior.floating,
             duration: Duration(milliseconds: 1500),
           ),
         );
@@ -1844,10 +1967,13 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
       logger.e('Failed to save notification settings: $e', stackTrace: st);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Failed to save notification settings'),
-            behavior: SnackBarBehavior.floating,
+          const SnackBar(
+            content: Text(
+              'Failed to save notification settings',
+              style: TextStyle(color: Colors.white),
+            ),
             backgroundColor: AppColors.error,
+            duration: Duration(milliseconds: 2000),
           ),
         );
       }
@@ -1862,9 +1988,8 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
     bool isDark, {
     required List<int> options,
     required int? selected,
-    required ValueChanged<int?> onChanged,
     required bool reminderEnabled,
-    required ValueChanged<bool> onReminderEnabledChanged,
+    required void Function(bool enabled, int? leadOverride) onChanged,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1877,18 +2002,19 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
             // "Off" option
             GestureDetector(
               onTap: () {
-                onReminderEnabledChanged(false);
-                onChanged(null);
+                onChanged(false, null);
               },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 150),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: !reminderEnabled
                       ? AppColors.primary.withValues(alpha: 0.15)
                       : Colors.transparent,
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.radiusPill),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
                   border: Border.all(
                     color: !reminderEnabled
                         ? AppColors.primary
@@ -1901,8 +2027,9 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
                     color: !reminderEnabled
                         ? AppColors.primary
                         : AppColors.textSecondary(isDark),
-                    fontWeight:
-                        !reminderEnabled ? FontWeight.w600 : FontWeight.normal,
+                    fontWeight: !reminderEnabled
+                        ? FontWeight.w600
+                        : FontWeight.normal,
                   ),
                 ),
               ),
@@ -1910,18 +2037,19 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
             // "Use Default" option
             GestureDetector(
               onTap: () {
-                onReminderEnabledChanged(true);
-                onChanged(null);
+                onChanged(true, null);
               },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 150),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: reminderEnabled && selected == null
                       ? AppColors.primary.withValues(alpha: 0.15)
                       : Colors.transparent,
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.radiusPill),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
                   border: Border.all(
                     color: reminderEnabled && selected == null
                         ? AppColors.primary
@@ -1946,18 +2074,21 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
               final isSelected = reminderEnabled && days == selected;
               return GestureDetector(
                 onTap: () {
-                  onReminderEnabledChanged(true);
-                  onChanged(days);
+                  onChanged(true, days);
                 },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 150),
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
                   decoration: BoxDecoration(
                     color: isSelected
                         ? AppColors.primary.withValues(alpha: 0.15)
                         : Colors.transparent,
-                    borderRadius:
-                        BorderRadius.circular(AppDimensions.radiusPill),
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.radiusPill,
+                    ),
                     border: Border.all(
                       color: isSelected
                           ? AppColors.primary
@@ -1970,8 +2101,9 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
                       color: isSelected
                           ? AppColors.primary
                           : AppColors.textSecondary(isDark),
-                      fontWeight:
-                          isSelected ? FontWeight.w600 : FontWeight.normal,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.normal,
                     ),
                   ),
                 ),

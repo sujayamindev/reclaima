@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:intl/intl.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../data/models/receipt_model.dart';
@@ -67,7 +67,9 @@ class _ClaimsHubScreenState extends ConsumerState<ClaimsHubScreen> {
 
     // Apply status filter
     var filtered = searchFiltered.where((claim) {
-      final isOngoing = claim.status.toUpperCase() != 'RESOLVED' && claim.status.toUpperCase() != 'DENIED';
+      final isOngoing =
+          claim.status.toUpperCase() != 'RESOLVED' &&
+          claim.status.toUpperCase() != 'DENIED';
       switch (_selectedFilter) {
         case ClaimsFilterType.all:
           return true;
@@ -155,8 +157,9 @@ class _ClaimsHubScreenState extends ConsumerState<ClaimsHubScreen> {
                         children: [
                           Text(
                             'Claims',
-                            style: AppTextStyles.headingLarge
-                                .copyWith(color: textPrimary),
+                            style: AppTextStyles.headingLarge.copyWith(
+                              color: textPrimary,
+                            ),
                           ),
                           const SizedBox(height: 16),
                           // Search Bar
@@ -167,22 +170,34 @@ class _ClaimsHubScreenState extends ConsumerState<ClaimsHubScreen> {
                               height: 48,
                               decoration: BoxDecoration(
                                 color: AppColors.card(isDark),
-                                borderRadius: BorderRadius.circular(50),
+                                borderRadius: BorderRadius.circular(
+                                  AppDimensions.radiusXL,
+                                ),
                               ),
                               child: TextField(
                                 controller: _searchController,
-                                onChanged: (val) => setState(() => _searchQuery = val),
-                                style: AppTextStyles.bodyMedium.copyWith(color: textPrimary),
+                                onChanged: (val) =>
+                                    setState(() => _searchQuery = val),
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  color: textPrimary,
+                                ),
                                 decoration: InputDecoration(
                                   hintText: 'Search claims...',
                                   hintStyle: AppTextStyles.bodyMedium.copyWith(
-                                      color: AppColors.textSecondary(isDark)),
-                                  prefixIcon: Icon(Symbols.search,
-                                      color: AppColors.textSecondary(isDark)),
+                                    color: AppColors.textSecondary(isDark),
+                                  ),
+                                  prefixIcon: Icon(
+                                    Symbols.search_rounded,
+                                    color: AppColors.textSecondary(isDark),
+                                  ),
                                   suffixIcon: _searchQuery.isNotEmpty
                                       ? IconButton(
-                                          icon: Icon(Symbols.close,
-                                              color: AppColors.textSecondary(isDark)),
+                                          icon: Icon(
+                                            Symbols.close_rounded,
+                                            color: AppColors.textSecondary(
+                                              isDark,
+                                            ),
+                                          ),
                                           onPressed: () {
                                             _searchController.clear();
                                             setState(() => _searchQuery = '');
@@ -192,7 +207,9 @@ class _ClaimsHubScreenState extends ConsumerState<ClaimsHubScreen> {
                                       : null,
                                   border: InputBorder.none,
                                   contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 12),
+                                    horizontal: 16,
+                                    vertical: 12,
+                                  ),
                                 ),
                               ),
                             ),
@@ -200,8 +217,9 @@ class _ClaimsHubScreenState extends ConsumerState<ClaimsHubScreen> {
                           const SizedBox(height: 12),
                           Text(
                             '${filteredClaims.length} claim${filteredClaims.length != 1 ? 's' : ''}',
-                            style: AppTextStyles.bodySmall
-                                .copyWith(color: textSecondary),
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: textSecondary,
+                            ),
                           ),
                         ],
                       ),
@@ -215,49 +233,46 @@ class _ClaimsHubScreenState extends ConsumerState<ClaimsHubScreen> {
                           horizontal: AppDimensions.paddingPage,
                         ),
                         child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Expanded(
-                              child: _FilterChip(
-                                label: _selectedFilter.label,
-                                isDark: isDark,
-                                onTap: () {
-                                  showModalBottomSheet(
-                                    context: context,
-                                    backgroundColor: AppColors.background(isDark),
-                                    builder: (context) => _FilterMenu(
-                                      selectedFilter: _selectedFilter,
-                                      onFilterSelected: (filter) {
-                                        setState(() => _selectedFilter = filter);
-                                        Navigator.pop(context);
-                                      },
-                                      isDark: isDark,
-                                    ),
-                                  );
-                                },
-                                icon: Symbols.tune,
-                              ),
+                            _FilterChip(
+                              label: _selectedFilter.label,
+                              isDark: isDark,
+                              onTap: () {
+                                showModalBottomSheet(
+                                  context: context,
+                                  backgroundColor: AppColors.background(isDark),
+                                  builder: (context) => _FilterMenu(
+                                    selectedFilter: _selectedFilter,
+                                    onFilterSelected: (filter) {
+                                      setState(() => _selectedFilter = filter);
+                                      Navigator.pop(context);
+                                    },
+                                    isDark: isDark,
+                                  ),
+                                );
+                              },
+                              icon: Symbols.tune_rounded,
                             ),
                             const SizedBox(width: 8),
-                            Expanded(
-                              child: _FilterChip(
-                                label: _selectedSort.label,
-                                isDark: isDark,
-                                onTap: () {
-                                  showModalBottomSheet(
-                                    context: context,
-                                    backgroundColor: AppColors.background(isDark),
-                                    builder: (context) => _SortMenu(
-                                      selectedSort: _selectedSort,
-                                      onSortSelected: (sort) {
-                                        setState(() => _selectedSort = sort);
-                                        Navigator.pop(context);
-                                      },
-                                      isDark: isDark,
-                                    ),
-                                  );
-                                },
-                                icon: Symbols.swap_vert,
-                              ),
+                            _FilterChip(
+                              label: _selectedSort.label,
+                              isDark: isDark,
+                              onTap: () {
+                                showModalBottomSheet(
+                                  context: context,
+                                  backgroundColor: AppColors.background(isDark),
+                                  builder: (context) => _SortMenu(
+                                    selectedSort: _selectedSort,
+                                    onSortSelected: (sort) {
+                                      setState(() => _selectedSort = sort);
+                                      Navigator.pop(context);
+                                    },
+                                    isDark: isDark,
+                                  ),
+                                );
+                              },
+                              icon: Symbols.swap_vert_rounded,
                             ),
                           ],
                         ),
@@ -275,9 +290,18 @@ class _ClaimsHubScreenState extends ConsumerState<ClaimsHubScreen> {
                           onTap: () => FocusScope.of(context).unfocus(),
                           behavior: HitTestBehavior.translucent,
                           child: filteredClaims.isEmpty
-                              ? _buildEmptyState(isDark, textPrimary, textSecondary)
+                              ? _buildEmptyState(
+                                  isDark,
+                                  textPrimary,
+                                  textSecondary,
+                                )
                               : _buildClaimsList(
-                                  filteredClaims, isDark, textPrimary, textSecondary, allReceipts),
+                                  filteredClaims,
+                                  isDark,
+                                  textPrimary,
+                                  textSecondary,
+                                  allReceipts,
+                                ),
                         ),
                       ),
                     ),
@@ -285,9 +309,7 @@ class _ClaimsHubScreenState extends ConsumerState<ClaimsHubScreen> {
                 );
               },
               loading: () => Center(
-                child: CircularProgressIndicator(
-                  color: AppColors.primary,
-                ),
+                child: CircularProgressIndicator(color: AppColors.primary),
               ),
               error: (err, st) => Center(
                 child: Column(
@@ -295,7 +317,7 @@ class _ClaimsHubScreenState extends ConsumerState<ClaimsHubScreen> {
                   children: [
                     Icon(
                       Symbols.error_rounded,
-                      size: 64,
+                      size: AppDimensions.iconXXL,
                       color: Colors.red.withValues(alpha: 0.7),
                     ),
                     const SizedBox(height: 16),
@@ -311,9 +333,7 @@ class _ClaimsHubScreenState extends ConsumerState<ClaimsHubScreen> {
             );
           },
           loading: () => Center(
-            child: CircularProgressIndicator(
-              color: AppColors.primary,
-            ),
+            child: CircularProgressIndicator(color: AppColors.primary),
           ),
           error: (err, st) => Center(
             child: Column(
@@ -321,7 +341,7 @@ class _ClaimsHubScreenState extends ConsumerState<ClaimsHubScreen> {
               children: [
                 Icon(
                   Symbols.error_rounded,
-                  size: 64,
+                  size: AppDimensions.iconXXL,
                   color: Colors.red.withValues(alpha: 0.7),
                 ),
                 const SizedBox(height: 16),
@@ -334,8 +354,9 @@ class _ClaimsHubScreenState extends ConsumerState<ClaimsHubScreen> {
                 const SizedBox(height: 8),
                 Text(
                   err.toString(),
-                  style: AppTextStyles.bodySmall
-                      .copyWith(color: AppColors.textSecondary(isDark)),
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textSecondary(isDark),
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -352,8 +373,8 @@ class _ClaimsHubScreenState extends ConsumerState<ClaimsHubScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            Symbols.assignment,
-            size: 64,
+            Symbols.assignment_rounded,
+            size: AppDimensions.iconXXL,
             color: textSecondary.withValues(alpha: 0.3),
           ),
           const SizedBox(height: 16),
@@ -371,21 +392,22 @@ class _ClaimsHubScreenState extends ConsumerState<ClaimsHubScreen> {
     );
   }
 
-  Widget _buildClaimsList(List<ClaimDocumentResponse> claims, bool isDark,
-      Color textPrimary, Color textSecondary, List<ReceiptModel> allReceipts) {
-    final ongoingClaims = claims
-        .where((claim) {
-          final status = claim.status.toUpperCase();
-          return status != 'RESOLVED' && status != 'DENIED';
-        })
-        .toList();
+  Widget _buildClaimsList(
+    List<ClaimDocumentResponse> claims,
+    bool isDark,
+    Color textPrimary,
+    Color textSecondary,
+    List<ReceiptModel> allReceipts,
+  ) {
+    final ongoingClaims = claims.where((claim) {
+      final status = claim.status.toUpperCase();
+      return status != 'RESOLVED' && status != 'DENIED';
+    }).toList();
 
-    final closedClaims = claims
-        .where((claim) {
-          final status = claim.status.toUpperCase();
-          return status == 'RESOLVED' || status == 'DENIED';
-        })
-        .toList();
+    final closedClaims = claims.where((claim) {
+      final status = claim.status.toUpperCase();
+      return status == 'RESOLVED' || status == 'DENIED';
+    }).toList();
 
     return ListView(
       padding: const EdgeInsets.symmetric(
@@ -396,35 +418,43 @@ class _ClaimsHubScreenState extends ConsumerState<ClaimsHubScreen> {
         if (ongoingClaims.isNotEmpty) ...[
           Text(
             'ONGOING CLAIMS',
-            style: AppTextStyles.capsLabel.copyWith(color: AppColors.textSecondary(isDark)),
+            style: AppTextStyles.capsLabel.copyWith(
+              color: AppColors.textSecondary(isDark),
+            ),
           ),
           const SizedBox(height: 8),
-          ...ongoingClaims.map((claim) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: _ClaimCard(
-                  claim: claim,
-                  isDark: isDark,
-                  allReceipts: allReceipts,
-                  onTap: () => _navigateToClaimDetail(claim, allReceipts),
-                ),
-              )),
+          ...ongoingClaims.map(
+            (claim) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: _ClaimCard(
+                claim: claim,
+                isDark: isDark,
+                allReceipts: allReceipts,
+                onTap: () => _navigateToClaimDetail(claim, allReceipts),
+              ),
+            ),
+          ),
           const SizedBox(height: 16),
         ],
         if (closedClaims.isNotEmpty) ...[
           Text(
             'CLOSED CLAIMS',
-            style: AppTextStyles.capsLabel.copyWith(color: AppColors.textSecondary(isDark)),
+            style: AppTextStyles.capsLabel.copyWith(
+              color: AppColors.textSecondary(isDark),
+            ),
           ),
           const SizedBox(height: 8),
-          ...closedClaims.map((claim) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: _ClaimCard(
-                  claim: claim,
-                  isDark: isDark,
-                  allReceipts: allReceipts,
-                  onTap: () => _navigateToClaimDetail(claim, allReceipts),
-                ),
-              )),
+          ...closedClaims.map(
+            (claim) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: _ClaimCard(
+                claim: claim,
+                isDark: isDark,
+                allReceipts: allReceipts,
+                onTap: () => _navigateToClaimDetail(claim, allReceipts),
+              ),
+            ),
+          ),
         ],
       ],
     );
@@ -449,20 +479,60 @@ class _ClaimCard extends StatelessWidget {
   String _getProductNames() {
     try {
       final receipt = allReceipts.firstWhere((r) => r.id == claim.receiptId);
-      final productNames = receipt.lineItems.map((item) => item.displayName).toList();
+      final productNames = receipt.lineItems
+          .map((item) => item.displayName)
+          .toList();
       if (productNames.isEmpty) return 'Unknown Product';
       if (productNames.length == 1) return productNames.first;
-      return '${productNames.first} + ${productNames.length - 1} more';
+      return ' +  more';
     } catch (e) {
       return 'Unknown Product';
     }
   }
 
+  String? get _productImageUrl {
+    try {
+      final receipt = allReceipts.firstWhere((r) => r.id == claim.receiptId);
+      if (claim.lineItemId != null) {
+        try {
+          final item = receipt.lineItems.firstWhere(
+            (i) => i.id == claim.lineItemId,
+          );
+          if (item.productImageUrl != null) return item.productImageUrl;
+        } catch (_) {}
+      }
+      return receipt.productImageUrl;
+    } catch (e) {
+      return null;
+    }
+  }
+
   Color _getStatusColor() {
     final s = claim.status.toUpperCase();
-    if (s == 'RESOLVED' || s == 'DENIED') return AppColors.success;
-    if (s == 'SUBMITTED' || s == 'IN_PROGRESS') return AppColors.warning;
+    if (s == 'RESOLVED') {
+      return AppColors.success;
+    }
+    if (s == 'DENIED') {
+      return AppColors.error;
+    }
+    if (s == 'SUBMITTED' || s == 'IN_PROGRESS') {
+      return AppColors.warning;
+    }
     return AppColors.textSecondary(isDark);
+  }
+
+  IconData _getStatusIcon() {
+    final s = claim.status.toUpperCase();
+    if (s == 'RESOLVED') {
+      return Symbols.check_circle_rounded;
+    }
+    if (s == 'DENIED') {
+      return Symbols.cancel_rounded;
+    }
+    if (s == 'SUBMITTED' || s == 'IN_PROGRESS') {
+      return Symbols.pending_actions_rounded;
+    }
+    return Symbols.info_rounded;
   }
 
   String _getStatusLabel() {
@@ -478,109 +548,141 @@ class _ClaimCard extends StatelessWidget {
     final textPrimary = AppColors.textPrimary(isDark);
     final textSecondary = AppColors.textSecondary(isDark);
     final statusColor = _getStatusColor();
+    final imageUrl = _productImageUrl;
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
+        clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: AppColors.card(isDark),
           borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
           border: Border.all(color: AppColors.border(isDark)),
         ),
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _getProductNames(),
-                        style: AppTextStyles.listTitle.copyWith(
-                          color: textPrimary,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppDimensions.paddingCardSmall,
+                AppDimensions.paddingCardSmall,
+                0,
+                AppDimensions.paddingCardSmall,
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+                child: SizedBox(
+                  width: 84,
+                  height: 84,
+                  child: imageUrl != null
+                      ? CachedNetworkImage(
+                          imageUrl: imageUrl,
+                          fit: BoxFit.contain,
+                          errorWidget: (_, _, _) =>
+                              _ClaimImagePlaceholder(color: statusColor),
+                        )
+                      : _ClaimImagePlaceholder(color: statusColor),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(AppDimensions.paddingCardSmall),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      _getProductNames(),
+                      style: AppTextStyles.listTitle.copyWith(
+                        color: textPrimary,
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (claim.issueDescription.isNotEmpty) ...[
                       const SizedBox(height: 2),
-                      Text(
-                        claim.issueDescription,
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: textSecondary,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(top: 0.0),
+                            child: Icon(
+                              Symbols.notes_rounded,
+                              size: AppDimensions.iconTiny,
+                              color: textSecondary,
+                              weight: AppDimensions.iconWeightBold,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              claim.issueDescription,
+                              style: AppTextStyles.bodyXSmall.copyWith(
+                                color: textSecondary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                if (claim.claimType != null)
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      claim.claimType!.toUpperCase(),
-                      style: AppTextStyles.caption.copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 10,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 2),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Symbols.calendar_today,
-                      size: 14,
-                      color: textSecondary.withValues(alpha: 0.7),
-                      weight: 600.0,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      DateFormat('MMM d, yyyy').format(claim.createdAt),
-                      style: AppTextStyles.bodyXSmall.copyWith(
-                        color: textSecondary.withValues(alpha: 0.7),
-                        fontWeight: FontWeight.w500,
-                      ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          _getStatusIcon(),
+                          size: AppDimensions.iconTiny,
+                          color: statusColor,
+                          weight: AppDimensions.iconWeightBold,
+                        ),
+                        const SizedBox(width: 4),
+                        if (claim.claimType != null &&
+                            claim.claimType!.isNotEmpty)
+                          Text(
+                            '${claim.claimType![0].toUpperCase()}${claim.claimType!.substring(1).toLowerCase()} claim is ${_getStatusLabel().toLowerCase()}',
+                            style: AppTextStyles.bodyXSmall.copyWith(
+                              color: statusColor,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          )
+                        else
+                          Text(
+                            'Claim is ${_getStatusLabel().toLowerCase()}',
+                            style: AppTextStyles.bodyXSmall.copyWith(
+                              color: statusColor,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                      ],
                     ),
                   ],
                 ),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    _getStatusLabel(),
-                    style: AppTextStyles.caption.copyWith(
-                      color: statusColor,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 11,
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ClaimImagePlaceholder extends StatelessWidget {
+  final Color color;
+
+  const _ClaimImagePlaceholder({required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: color.withValues(alpha: 0.08),
+      child: Center(
+        child: Icon(
+          Symbols.image_not_supported_rounded,
+          size: AppDimensions.iconNormal,
+          color: color.withValues(alpha: 0.35),
         ),
       ),
     );
@@ -618,19 +720,20 @@ class _FilterMenu extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          ...ClaimsFilterType.values.map((filter) => _MenuItem(
-            label: filter.label,
-            isSelected: filter == selectedFilter,
-            isDark: isDark,
-            onTap: () => onFilterSelected(filter),
-          )),
+          ...ClaimsFilterType.values.map(
+            (filter) => _MenuItem(
+              label: filter.label,
+              isSelected: filter == selectedFilter,
+              isDark: isDark,
+              onTap: () => onFilterSelected(filter),
+            ),
+          ),
           const SizedBox(height: 8),
         ],
       ),
     );
   }
 }
-
 
 // ── Sort menu ──────────────────────────────────────────────────────────────
 
@@ -663,12 +766,14 @@ class _SortMenu extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          ...ClaimsSortType.values.map((sort) => _MenuItem(
-            label: sort.label,
-            isSelected: sort == selectedSort,
-            isDark: isDark,
-            onTap: () => onSortSelected(sort),
-          )),
+          ...ClaimsSortType.values.map(
+            (sort) => _MenuItem(
+              label: sort.label,
+              isSelected: sort == selectedSort,
+              isDark: isDark,
+              onTap: () => onSortSelected(sort),
+            ),
+          ),
           const SizedBox(height: 8),
         ],
       ),
@@ -713,9 +818,9 @@ class _MenuItem extends StatelessWidget {
               ),
               if (isSelected)
                 Icon(
-                  Symbols.check,
+                  Symbols.check_rounded,
                   color: AppColors.primary,
-                  size: 20,
+                  size: AppDimensions.iconMedium,
                 ),
             ],
           ),
@@ -759,13 +864,17 @@ class _FilterChip extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 16, color: textPrimary, weight: 600.0),
+            Icon(
+              icon,
+              size: AppDimensions.iconSmall,
+              color: textPrimary,
+              weight: AppDimensions.iconWeightBold,
+            ),
             const SizedBox(width: 6),
             Flexible(
               child: Text(
                 label,
-                style:
-                    AppTextStyles.bodySmall.copyWith(color: textPrimary),
+                style: AppTextStyles.bodySmall.copyWith(color: textPrimary),
                 overflow: TextOverflow.ellipsis,
               ),
             ),

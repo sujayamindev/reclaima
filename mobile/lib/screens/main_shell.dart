@@ -108,9 +108,9 @@ class _BottomNavBar extends StatelessWidget {
                         Icon(
                           item.symbol,
                           fill: active ? 1.0 : 0.0,
-                          weight: 600.0,
+                          weight: AppDimensions.iconWeightBold,
                           color: color,
-                          size: 26,
+                          size: AppDimensions.iconNormal,
                         ),
                       ],
                     ),
