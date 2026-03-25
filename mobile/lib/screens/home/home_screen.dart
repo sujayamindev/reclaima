@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:intl/intl.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../receipt/add_receipt_screen.dart';
@@ -327,10 +328,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               claims,
                             );
                             return SliverToBoxAdapter(
-                              child: _AttentionSection(
-                                items: attentionItems,
-                                isDark: isDark,
-                                onTap: _goToDetail,
+                              child: Column(
+                                children: [
+                                  _AttentionSection(
+                                    items: attentionItems,
+                                    isDark: isDark,
+                                    onTap: _goToDetail,
+                                  ),
+                                  const SizedBox(height: 28),
+                                  _InsightsSection(
+                                    receipts: receipts,
+                                    claims: claims,
+                                    isDark: isDark,
+                                  ),
+                                  const SizedBox(height: 24),
+                                ],
                               ),
                             );
                           },
@@ -361,7 +373,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 AppDimensions.paddingPage,
                 12,
                 AppDimensions.paddingPage,
-                38,
+                32,
               ),
               child: Row(
                 children: [
@@ -838,6 +850,145 @@ class _AttentionCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+// ── Insights section ───────────────────────────────────────────────────────────
+
+class _InsightsSection extends StatelessWidget {
+  const _InsightsSection({
+    required this.receipts,
+    required this.claims,
+    required this.isDark,
+  });
+
+  final List<ReceiptModel> receipts;
+  final List<ClaimDocumentResponse> claims;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    double valueProtected = 0.0;
+    for (final r in receipts) {
+      for (final item in r.lineItems) {
+        if (item.status != 'ARCHIVED' &&
+            item.warrantyExpiryDate != null &&
+            !item.isWarrantyExpired) {
+          valueProtected +=
+              (item.amount ?? item.unitPrice ?? r.totalAmount ?? 0.0);
+        }
+      }
+    }
+
+    final claimsResolved = claims
+        .where((c) => c.status.toUpperCase() == 'RESOLVED')
+        .length;
+
+    final currencyFormat = NumberFormat.simpleCurrency(decimalDigits: 0);
+    final formattedValue = currencyFormat.format(valueProtected);
+
+    final card = AppColors.card(isDark);
+    final border = AppColors.border(isDark);
+    final textPrimary = AppColors.textPrimary(isDark);
+    final textSecondary = AppColors.textSecondary(isDark);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.paddingPage,
+          ),
+          child: Text(
+            'LIFETIME VALUE',
+            style: AppTextStyles.capsLabel.copyWith(color: textSecondary),
+          ),
+        ),
+        const SizedBox(height: 14),
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.paddingPage,
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: card,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+              border: Border.all(color: border),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              'Value Protected',
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: textSecondary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        formattedValue,
+                        style: AppTextStyles.headingLarge.copyWith(
+                          fontSize: 24,
+                          color: textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Container(width: 1, height: 48, color: border),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              'Claims Resolved',
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: textSecondary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        claimsResolved.toString(),
+                        style: AppTextStyles.headingLarge.copyWith(
+                          fontSize: 24,
+                          color: textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
