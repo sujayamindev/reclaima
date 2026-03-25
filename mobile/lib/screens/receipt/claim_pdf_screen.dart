@@ -1,21 +1,30 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../core/constants/app_constants.dart';
+import '../../providers/receipt_provider.dart';
+import '../../services/android_download_manager_service.dart';
 import '../../services/claim_service.dart';
 import '../../core/utils/logger.dart';
+import '../../data/models/receipt_line_item_model.dart';
 
 /// Screen for generating and managing warranty claim PDFs
 class ClaimPdfScreen extends ConsumerStatefulWidget {
   final String receiptId;
+  final String? lineItemId; // Product/line item ID - optional
   final String receiptStoreName;
 
   const ClaimPdfScreen({
     super.key,
     required this.receiptId,
+    this.lineItemId,
     required this.receiptStoreName,
   });
 
@@ -26,18 +35,106 @@ class ClaimPdfScreen extends ConsumerStatefulWidget {
 class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
   late final TextEditingController _issueController = TextEditingController();
   late final TextEditingController _notesController = TextEditingController();
+  late final FocusNode _notesFocusNode = FocusNode();
   String _selectedClaimType = 'warranty';
+  bool _isClaimTypeExpanded = false;
+  bool _isStatusExpanded = false;
   bool _isLoading = false;
   bool _isUpdating = false;
   ClaimDocumentResponse? _generatedClaim;
   String? _error;
-  
+
   final List<String> _statusOptions = ['DRAFT', 'SUBMITTED', 'IN_PROGRESS', 'RESOLVED', 'DENIED'];
+  List<String> get _claimTypeOptions => AppConstants.claimTypes
+      .toList(growable: false);
+
+  String _formatClaimTypeText(String type) {
+    return type.isNotEmpty ? type[0].toUpperCase() + type.substring(1).toLowerCase() : type;
+  }
+
+  IconData _getClaimTypeIcon(String type) {
+    switch (type.toLowerCase()) {
+      case 'warranty':
+        return Symbols.verified_user_rounded;
+      case 'return':
+        return Symbols.undo_rounded;
+      case 'repair':
+        return Symbols.build_rounded;
+      default:
+        return Symbols.help_rounded;
+    }
+  }
+
+  String _shortId(String value, {int take = 64}) {
+    if (value.length <= take) return value;
+    return '${value.substring(0, take)}...';
+  }
+
+  String _formatStatusText(String status) {
+    return status
+        .split('_')
+        .map((word) => word[0].toUpperCase() + word.substring(1).toLowerCase())
+        .join(' ');
+  }
+
+  IconData _getStatusIcon(String status) {
+    switch (status) {
+      case 'DRAFT':
+        return Symbols.adf_scanner_rounded;
+      case 'SUBMITTED':
+        return Symbols.publish_rounded;
+      case 'IN_PROGRESS':
+        return Symbols.progress_activity_rounded;
+      case 'RESOLVED':
+        return Symbols.check_rounded;
+      case 'DENIED':
+        return Symbols.close_rounded;
+      default:
+        return Symbols.help_rounded;
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _notesFocusNode.addListener(_onNotesFocusChange);
+  }
+
+  void _onNotesFocusChange() {
+    if (!_notesFocusNode.hasFocus && _generatedClaim != null) {
+      _saveNotesIfChanged();
+    }
+  }
+
+  Future<void> _saveNotesIfChanged() async {
+    if (_generatedClaim == null) return;
+    final currentNotes = _notesController.text;
+    final previousNotes = _generatedClaim!.notes ?? '';
+
+    if (currentNotes == previousNotes) return;
+
+    setState(() => _isUpdating = true);
+    try {
+      final claimService = ref.read(claimServiceProvider);
+      final updated = await claimService.updateClaim(_generatedClaim!.id, notes: currentNotes);
+      setState(() => _generatedClaim = updated);
+    } catch (e) {
+      logger.e('Error saving notes: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to save notes: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUpdating = false);
+    }
+  }
 
   @override
   void dispose() {
     _issueController.dispose();
     _notesController.dispose();
+    _notesFocusNode.dispose();
     super.dispose();
   }
 
@@ -63,6 +160,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
         receiptId: widget.receiptId,
         issueDescription: _issueController.text,
         claimType: _selectedClaimType,
+        lineItemId: widget.lineItemId,
       );
 
       logger.i('Claim PDF generated successfully: ${claim.id}');
@@ -107,20 +205,81 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
     }
   }
 
-  Future<void> _updateClaimNotes() async {
-    if (_generatedClaim == null) return;
-    setState(() => _isUpdating = true);
-    try {
-      final claimService = ref.read(claimServiceProvider);
-      final updated = await claimService.updateClaim(_generatedClaim!.id, notes: _notesController.text);
-      setState(() => _generatedClaim = updated);
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Notes saved')));
-    } catch (e) {
-      logger.e('Error updating notes: $e');
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
-    } finally {
-      if (mounted) setState(() => _isUpdating = false);
-    }
+  Future<void> _showStatusInfoDialog() async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.card(isDark),
+        title: Text(
+          'Claim Status Guide',
+          style: AppTextStyles.titleLarge.copyWith(
+            color: AppColors.textPrimary(isDark),
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildStatusInfoItem('DRAFT', 'Claim document is created but not submitted yet.', isDark),
+            const SizedBox(height: 16),
+            _buildStatusInfoItem('SUBMITTED', 'Claim is sent and awaiting processing.', isDark),
+            const SizedBox(height: 16),
+            _buildStatusInfoItem('IN_PROGRESS', 'Claim is currently being worked on.', isDark),
+            const SizedBox(height: 16),
+            _buildStatusInfoItem('RESOLVED', 'Claim has been completed successfully.', isDark),
+            const SizedBox(height: 16),
+            _buildStatusInfoItem('DENIED', 'Claim was reviewed and rejected.', isDark),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Close',
+              style: AppTextStyles.buttonSmall.copyWith(color: AppColors.primary),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusInfoItem(String status, String description, bool isDark) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(
+          _getStatusIcon(status),
+          size: 18,
+          color: AppColors.textSecondary(isDark),
+          weight: 700.0,
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: RichText(
+            text: TextSpan(
+              children: [
+                TextSpan(
+                  text: '$status: ',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textPrimary(isDark),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                TextSpan(
+                  text: description,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textSecondary(isDark),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   Future<void> _showResolutionOutcomeDialog() async {
@@ -141,9 +300,9 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Claim Resolved', style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: textColor, fontWeight: FontWeight.bold)),
+                Text('Claim Resolved', style: AppTextStyles.titleLarge.copyWith(color: textColor)),
                 const SizedBox(height: 8),
-                Text('What was the outcome of this claim?', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary(isDark))),
+                Text('What was the outcome of this claim?', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary(isDark))),
                 const SizedBox(height: 24),
                 
                 // Refunded
@@ -213,9 +372,9 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppColors.textPrimary(isDark), fontWeight: FontWeight.w600)),
+                  Text(title, style: AppTextStyles.bodyLarge.copyWith(color: AppColors.textPrimary(isDark), fontWeight: FontWeight.w600)),
                   const SizedBox(height: 4),
-                  Text(subtitle, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary(isDark))),
+                  Text(subtitle, style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary(isDark))),
                 ],
               ),
             ),
@@ -233,19 +392,18 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
       builder: (ctx) {
         return AlertDialog(
           backgroundColor: AppColors.card(isDark),
-          title: Text('Add Replacement', style: TextStyle(color: AppColors.textPrimary(isDark))),
+          title: Text('Add Replacement', style: AppTextStyles.titleLarge.copyWith(color: AppColors.textPrimary(isDark))),
           content: Text(
             'How would you like to add the new replacement item to your inventory?',
-            style: TextStyle(color: AppColors.textSecondary(isDark)),
+            style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary(isDark)),
           ),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.pop(ctx);
-                // Implementation for Phase 4 linking will go here shortly.
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Upload a new receipt to link it (Coming soon)')));
               },
-              child: const Text('Scan New Receipt', style: TextStyle(color: AppColors.primary)),
+              child: Text('Scan New Receipt', style: AppTextStyles.buttonSmall.copyWith(color: AppColors.primary)),
             ),
             ElevatedButton(
               onPressed: () {
@@ -253,7 +411,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                 _resolveClaimOutcome('REPLACED', duplicateDetails: true);
               },
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: AppColors.onPrimary),
-              child: const Text('Duplicate Old Details'),
+              child: Text('Duplicate Old Details', style: AppTextStyles.button),
             ),
           ],
         );
@@ -281,12 +439,12 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
           context: context,
           builder: (ctx) => AlertDialog(
             backgroundColor: AppColors.card(Theme.of(context).brightness == Brightness.dark),
-            title: Text('Claim Resolved', style: TextStyle(color: AppColors.textPrimary(Theme.of(context).brightness == Brightness.dark))),
-            content: Text('Please check your warranty and return coverages and update them if they got extended.', style: TextStyle(color: AppColors.textSecondary(Theme.of(context).brightness == Brightness.dark))),
+            title: Text('Claim Resolved', style: AppTextStyles.titleLarge.copyWith(color: AppColors.textPrimary(Theme.of(context).brightness == Brightness.dark))),
+            content: Text('Please check your warranty and return coverages and update them if they got extended.', style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary(Theme.of(context).brightness == Brightness.dark))),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text('OK', style: TextStyle(color: AppColors.primary)),
+                child: Text('OK', style: AppTextStyles.buttonSmall.copyWith(color: AppColors.primary)),
               )
             ]
           )
@@ -302,79 +460,199 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
     }
   }
 
-  Future<void> _downloadPdf() async {
-    if (_generatedClaim?.url == null) return;
+  Future<void> _openPdf() async {
+    final filePath = await _downloadPdfFile(showSuccessMessage: false);
+    if (filePath == null) return;
+
     try {
-      final uri = Uri.parse(_generatedClaim!.url!);
-
-      // Try to launch URL
-      final canLaunch = await canLaunchUrl(uri);
-      if (!canLaunch) {
-        if (!mounted) return;
-        // If can't launch, offer to copy link instead
+      final openResult = await OpenFilex.open(filePath, type: 'application/pdf');
+      if (openResult.type != ResultType.done && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Copy link and paste in browser'),
-            action: SnackBarAction(
-              label: 'Copy',
-              onPressed: () async {
-                await Clipboard.setData(ClipboardData(text: _generatedClaim!.url!));
-              },
-            ),
-          ),
+          SnackBar(content: Text(openResult.message.isNotEmpty ? openResult.message : 'No PDF app found on this device.')),
         );
-        return;
       }
+    } catch (e) {
+      logger.e('Error opening PDF: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to open PDF. Please try Download instead.')),
+      );
+    }
+  }
 
-      await launchUrl(
-        uri,
-        mode: LaunchMode.externalApplication,
+  Future<void> _downloadPdf() async {
+    await _downloadPdfToPublicDownloads();
+  }
+
+  Future<void> _sharePdf() async {
+    final filePath = await _downloadPdfFile(showSuccessMessage: false);
+    if (filePath == null) return;
+
+    try {
+      await Share.shareXFiles(
+        [XFile(filePath)],
+        text: 'Warranty claim PDF from ${widget.receiptStoreName}',
+        subject: 'Warranty Claim PDF',
       );
     } catch (e) {
-      logger.e('Error downloading PDF: $e');
+      logger.e('Error sharing PDF: $e');
       if (!mounted) return;
-
-      // On error, offer to copy link
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Copy link and paste in browser'),
-          action: SnackBarAction(
-            label: 'Copy',
-            onPressed: () async {
-              await Clipboard.setData(ClipboardData(text: _generatedClaim!.url!));
-              if (!mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Copied to clipboard')),
-              );
-            },
-          ),
+          content: Text('Failed to share PDF: ${e.toString()}'),
+          backgroundColor: Colors.red,
         ),
       );
     }
   }
 
-  Future<void> _sharePdf() async {
-    if (_generatedClaim?.url == null) return;
+  Future<String?> _downloadPdfFile({bool showSuccessMessage = true}) async {
+    final url = await _getFreshClaimUrl();
+    if (url == null) return null;
+
     try {
-      await Share.share(
-        'Check out my warranty claim: ${_generatedClaim!.url}',
-        subject: 'Warranty Claim PDF - ${_generatedClaim!.id}',
-      );
+      final documentsDir = await getApplicationDocumentsDirectory();
+      final pdfDir = Directory('${documentsDir.path}/claim_pdfs');
+      if (!await pdfDir.exists()) {
+        await pdfDir.create(recursive: true);
+      }
+
+      final filePath = '${pdfDir.path}/claim_${_generatedClaim!.id}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+      await Dio().download(url, filePath);
+
+      if (showSuccessMessage && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('PDF downloaded successfully.')),
+        );
+      }
+
+      return filePath;
     } catch (e) {
-      logger.e('Error sharing PDF: $e');
+      logger.e('Error downloading PDF file: $e');
+      if (!mounted) return null;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to download PDF. Please try again.')),
+      );
+      return null;
     }
   }
 
-  Future<void> _copyLink() async {
-    if (_generatedClaim?.url == null) return;
-    await Clipboard.setData(ClipboardData(text: _generatedClaim!.url!));
+  Future<String?> _downloadPdfToPublicDownloads() async {
+    final url = await _getFreshClaimUrl();
+    if (url == null) return null;
+
+    try {
+      if (Platform.isAndroid) {
+        final fileName = 'claim_${_generatedClaim!.id}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+        await AndroidDownloadManagerService.enqueuePdfDownload(
+          url: url,
+          fileName: fileName,
+          title: 'Claim PDF',
+          description: 'Downloading document. Open notification to view when complete.',
+        );
+
+        if (mounted) {
+          _showDownloadStartedMessage();
+        }
+
+        return fileName;
+      } else {
+        final documentsDir = await getApplicationDocumentsDirectory();
+        final downloadsDir = Directory('${documentsDir.path}/Downloads');
+        if (!await downloadsDir.exists()) {
+          await downloadsDir.create(recursive: true);
+        }
+
+        final filePath = '${downloadsDir.path}/claim_${_generatedClaim!.id}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+        await Dio().download(url, filePath);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('PDF saved to Downloads folder.')),
+          );
+        }
+
+        return filePath;
+      }
+    } catch (e) {
+      logger.e('Error saving PDF to Downloads: $e');
+      if (!mounted) return null;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to save to Downloads. Please check storage permissions.')),
+      );
+      return null;
+    }
+  }
+
+  void _showDownloadStartedMessage() {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Link copied to clipboard'),
-        duration: Duration(seconds: 2),
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+
+    messenger.showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        elevation: 0,
+        duration: const Duration(seconds: 4),
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        backgroundColor: AppColors.card(isDark),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: BorderSide(color: AppColors.border(isDark)),
+        ),
+        content: Row(
+          children: [
+            Icon(
+              Symbols.download_rounded,
+              size: 18,
+              color: AppColors.primary,
+              weight: 800.0,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Download started. Open notification to view file.',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.textPrimary(isDark),
+                  fontWeight: FontWeight.w500,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  Future<String?> _getFreshClaimUrl() async {
+    if (_generatedClaim == null) return null;
+
+    try {
+      final claimService = ref.read(claimServiceProvider);
+      final refreshedClaim = await claimService.accessClaimPdf(_generatedClaim!.id);
+
+      if (!mounted) return refreshedClaim.url;
+      setState(() => _generatedClaim = refreshedClaim);
+
+      if (refreshedClaim.url == null || refreshedClaim.url!.trim().isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Claim PDF is not available yet. Try again shortly.')),
+        );
+        return null;
+      }
+
+      return refreshedClaim.url;
+    } catch (e) {
+      logger.e('Error refreshing claim PDF URL: $e');
+      if (!mounted) return null;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not fetch PDF link. Please try again.')),
+      );
+      return null;
+    }
   }
 
   @override
@@ -392,150 +670,335 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
     final cardColor = AppColors.card(isDark);
     final textColor = AppColors.textPrimary(isDark);
     final secondaryColor = AppColors.textSecondary(isDark);
+    final dateFormat = DateFormat('MMM dd, yyyy');
+    final receiptAsync = ref.watch(receiptProvider(widget.receiptId));
+
+    final productName = receiptAsync.maybeWhen(
+      data: (receipt) {
+        if (receipt.productName != null && receipt.productName!.trim().isNotEmpty) {
+          return receipt.productName!;
+        }
+        if (receipt.lineItems.isNotEmpty) {
+          return receipt.lineItems.first.displayName;
+        }
+        return 'Unknown Product';
+      },
+      orElse: () => 'Unknown Product',
+    );
+
+    final receiptDate = receiptAsync.maybeWhen(
+      data: (receipt) => receipt.purchaseDate != null ? dateFormat.format(receipt.purchaseDate!.toLocal()) : 'Not available',
+      orElse: () => 'Not available',
+    );
+
+    final warrantyExpiryDate = receiptAsync.maybeWhen(
+      data: (receipt) {
+        ReceiptLineItemModel? lineItem;
+        if (widget.lineItemId != null) {
+          for (var item in receipt.lineItems) {
+            if (item.id == widget.lineItemId) {
+              lineItem = item;
+              break;
+            }
+          }
+        }
+        lineItem ??= receipt.lineItems.isNotEmpty ? receipt.lineItems.first : null;
+
+        if (lineItem != null && lineItem.warrantyExpiryDate != null) {
+          return dateFormat.format(lineItem.warrantyExpiryDate!.toLocal());
+        }
+        return 'Not available';
+      },
+      orElse: () => 'Not available',
+    );
+
+    final returnExpiryDate = receiptAsync.maybeWhen(
+      data: (receipt) {
+        ReceiptLineItemModel? lineItem;
+        if (widget.lineItemId != null) {
+          for (var item in receipt.lineItems) {
+            if (item.id == widget.lineItemId) {
+              lineItem = item;
+              break;
+            }
+          }
+        }
+        lineItem ??= receipt.lineItems.isNotEmpty ? receipt.lineItems.first : null;
+
+        if (lineItem != null && lineItem.returnExpiryDate != null) {
+          return dateFormat.format(lineItem.returnExpiryDate!.toLocal());
+        }
+        return 'Not available';
+      },
+      orElse: () => 'Not available',
+    );
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Generate Claim PDF'),
-        backgroundColor: AppColors.card(isDark),
-        elevation: 0,
-      ),
+      appBar: _buildStyledAppBar('New Claim', isDark),
       backgroundColor: AppColors.background(isDark),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppDimensions.paddingPage),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Store info
+              // Product Header Card
+              Text(
+                'Claim Information',
+                style: AppTextStyles.formLabel.copyWith(
+                  color: secondaryColor,
+                ),
+              ),
+              const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: cardColor,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
                   border: Border.all(color: AppColors.border(isDark)),
                 ),
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      Symbols.storefront,
-                      color: AppColors.primary,
-                      size: 24,
+                    _buildStackedDetailItem(
+                      icon: Symbols.storefront_rounded,
+                      label: 'Store',
+                      value: widget.receiptStoreName,
+                      isDark: isDark,
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        widget.receiptStoreName,
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: textColor,
-                          fontWeight: FontWeight.w600,
+                    const SizedBox(height: 6),
+                    _buildStackedDetailItem(
+                      icon: Symbols.shopping_bag_rounded,
+                      label: 'Product',
+                      value: productName,
+                      isDark: isDark,
+                      maxLines: 2,
+                    ),
+                    const SizedBox(height: 6),
+                    _buildStackedDetailItem(
+                      icon: Symbols.calendar_today_rounded,
+                      label: 'Purchase Date',
+                      value: receiptDate,
+                      isDark: isDark,
+                    ),
+                    const SizedBox(height: 6),
+                    _buildStackedDetailItem(
+                      icon: Symbols.verified_user_rounded,
+                      label: 'Warranty Expires',
+                      value: warrantyExpiryDate,
+                      isDark: isDark,
+                    ),
+                    const SizedBox(height: 6),
+                    _buildStackedDetailItem(
+                      icon: Symbols.undo_rounded,
+                      label: 'Return Expires',
+                      value: returnExpiryDate,
+                      isDark: isDark,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Issue Description
+              Text(
+                'Issue Description',
+                style: AppTextStyles.formLabel.copyWith(
+                  color: secondaryColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _issueController,
+                enabled: !_isLoading,
+                maxLines: 8,
+                minLines: 6,
+                onChanged: (_) => setState(() {}),
+                decoration: InputDecoration(
+                  hintText: 'E.g., Screen has dead pixels, battery not holding charge, damage on arrival',
+                  hintStyle: AppTextStyles.bodySmall.copyWith(color: secondaryColor.withValues(alpha: 0.5)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
+                    borderSide: BorderSide(color: AppColors.border(isDark)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
+                    borderSide: BorderSide(
+                      color: AppColors.primary,
+                      width: 2,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
+                    borderSide: BorderSide(color: AppColors.border(isDark)),
+                  ),
+                  filled: true,
+                  fillColor: cardColor,
+                  contentPadding: const EdgeInsets.all(12),
+                ),
+                style: AppTextStyles.bodySmall.copyWith(color: textColor),
+              ),
+              const SizedBox(height: 24),
+
+              // Claim Type
+              Text(
+                'Claim Type',
+                style: AppTextStyles.formLabel.copyWith(
+                  color: secondaryColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                decoration: BoxDecoration(
+                  color: cardColor,
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+                  border: Border.all(color: AppColors.border(isDark)),
+                ),
+                child: Column(
+                  children: [
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: _isLoading ? null : () => setState(() => _isClaimTypeExpanded = !_isClaimTypeExpanded),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    _getClaimTypeIcon(_selectedClaimType),
+                                    size: 20,
+                                    weight: 600.0,
+                                    color: AppColors.textPrimary(isDark),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    _formatClaimTypeText(_selectedClaimType),
+                                    style: AppTextStyles.bodyMedium.copyWith(
+                                      color: AppColors.textPrimary(isDark),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              AnimatedRotation(
+                                turns: _isClaimTypeExpanded ? 0.5 : 0,
+                                duration: const Duration(milliseconds: 200),
+                                child: Icon(
+                                  Symbols.expand_more,
+                                  color: AppColors.textSecondary(isDark),
+                                  size: 20,
+                                  weight: 800.0,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
+                    ),
+                    AnimatedSize(
+                      duration: const Duration(milliseconds: 200),
+                      child: _isClaimTypeExpanded
+                          ? Column(
+                              children: [
+                                Divider(
+                                  height: 1,
+                                  color: AppColors.border(isDark),
+                                ),
+                                ListView.separated(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: _claimTypeOptions.length,
+                                  separatorBuilder: (context, index) => Divider(
+                                    height: 1,
+                                    color: AppColors.border(isDark),
+                                  ),
+                                  itemBuilder: (context, index) {
+                                    final type = _claimTypeOptions[index];
+                                    final isSelected = _selectedClaimType == type;
+                                    return GestureDetector(
+                                      onTap: () {
+                                        setState(() {
+                                          _isClaimTypeExpanded = false;
+                                          _selectedClaimType = type;
+                                        });
+                                      },
+                                      child: Container(
+                                        color: isSelected
+                                            ? AppColors.primary.withValues(alpha: 0.10)
+                                            : Colors.transparent,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 10,
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              _getClaimTypeIcon(type),
+                                              size: 20,
+                                              weight: 600.0,
+                                              color: isSelected
+                                                  ? AppColors.primary
+                                                  : AppColors.textSecondary(isDark),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Text(
+                                              _formatClaimTypeText(type),
+                                              style: AppTextStyles.bodyMedium.copyWith(
+                                                color: isSelected
+                                                    ? AppColors.primary
+                                                    : AppColors.textSecondary(isDark),
+                                                fontWeight: isSelected
+                                                    ? FontWeight.w700
+                                                    : FontWeight.w500,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ],
+                            )
+                          : const SizedBox.shrink(),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 28),
 
-              // Issue description
-              Text(
-                'Issue Description *',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: secondaryColor,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _issueController,
-                enabled: !_isLoading,
-                maxLines: 4,
-                minLines: 3,
-                decoration: InputDecoration(
-                  hintText: 'Describe the issue or reason for the claim...\n\nE.g., Screen has dead pixels, battery not holding charge, product damaged on arrival',
-                  hintStyle: TextStyle(color: secondaryColor.withValues(alpha: 0.5)),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: AppColors.border(isDark)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: AppColors.primary,
-                      width: 2,
-                    ),
-                  ),
-                  filled: true,
-                  fillColor: cardColor,
-                ),
-                style: TextStyle(color: textColor),
-              ),
-              const SizedBox(height: 24),
-
-              // Claim type
-              Text(
-                'Claim Type',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: secondaryColor,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: AppColors.border(isDark)),
-                  borderRadius: BorderRadius.circular(12),
-                  color: cardColor,
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: DropdownButton<String>(
-                  isExpanded: true,
-                  value: _selectedClaimType,
-                  onChanged: _isLoading ? null : (value) {
-                    if (value != null) {
-                      setState(() => _selectedClaimType = value);
-                    }
-                  },
-                  underline: const SizedBox(),
-                  items: AppConstants.claimTypes
-                      .map((type) => DropdownMenuItem(
-                        value: type,
-                        child: Text(
-                          type.replaceFirst(
-                            type[0],
-                            type[0].toUpperCase(),
-                          ),
-                          style: TextStyle(color: textColor),
-                        ),
-                      ))
-                      .toList(),
-                ),
-              ),
-
-              // Error message
+              // Error Message
               if (_error != null) ...[
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
+                    color: AppColors.error.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
                     border: Border.all(
-                      color: Colors.red.withValues(alpha: 0.3),
+                      color: AppColors.error.withValues(alpha: 0.3),
                     ),
                   ),
                   child: Row(
                     children: [
-                      Icon(Symbols.error, color: Colors.red, size: 20),
+                      Icon(Symbols.error_rounded, color: AppColors.error, size: 20, weight: 800.0),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           _error!,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.red.shade700,
+                          style: AppTextStyles.bodyXSmall.copyWith(
+                            color: AppColors.error,
                           ),
-                          maxLines: 2,
+                          maxLines: 3,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -543,40 +1006,48 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                   ),
                 ),
               ],
-              const SizedBox(height: 32),
-
-              // Generate button
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton.icon(
-                  onPressed: _isLoading ? null : _generateClaim,
-                  icon: _isLoading
-                      ? SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            isDark ? Colors.white : Colors.black,
-                          ),
-                        ),
-                      )
-                      : const Icon(Symbols.file_download),
-                  label: Text(
-                    _isLoading ? 'Generating PDF...' : 'Generate PDF',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: AppColors.onPrimary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+            ],
+          ),
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppDimensions.paddingPage,
+            16,
+            AppDimensions.paddingPage,
+            16,
+          ),
+          child: SizedBox(
+            width: double.infinity,
+            height: AppDimensions.buttonHeight,
+            child: ElevatedButton.icon(
+              onPressed: _isLoading ? null : _generateClaim,
+              icon: _isLoading
+                  ? SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        isDark ? Colors.white : Colors.black,
+                      ),
                     ),
-                  ),
+                  )
+                  : const Icon(Symbols.file_download_rounded, weight: 800.0),
+              label: Text(
+                _isLoading ? 'Generating PDF...' : 'Generate Claim PDF',
+                style: AppTextStyles.button,
+              ),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.onPrimary,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -587,21 +1058,31 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
     final cardColor = AppColors.card(isDark);
     final textColor = AppColors.textPrimary(isDark);
     final secondaryColor = AppColors.textSecondary(isDark);
+    final dateFormat = DateFormat('MMM dd, yyyy • HH:mm');
+    final receiptAsync = ref.watch(receiptProvider(widget.receiptId));
+    final productName = receiptAsync.maybeWhen(
+      data: (receipt) {
+        if (receipt.productName != null && receipt.productName!.trim().isNotEmpty) {
+          return receipt.productName!;
+        }
+        if (receipt.lineItems.isNotEmpty) {
+          return receipt.lineItems.first.displayName;
+        }
+        return 'Unknown Product';
+      },
+      orElse: () => 'Unknown Product',
+    );
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Claim PDF Generated'),
-        backgroundColor: AppColors.card(isDark),
-        elevation: 0,
-      ),
+      appBar: _buildStyledAppBar('Claim Created', isDark),
       backgroundColor: AppColors.background(isDark),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppDimensions.paddingPage),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Success icon
+              // Success State
               Center(
                 child: Container(
                   width: 80,
@@ -612,292 +1093,431 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                   ),
                   child: Center(
                     child: Icon(
-                      Symbols.check_circle,
+                      Symbols.check_circle_rounded,
                       color: AppColors.primary,
                       size: 48,
+                      weight: 800.0,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
-
-              // Title
+              const SizedBox(height: 20),
               Center(
                 child: Text(
-                  'Claim PDF Ready!',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: textColor,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  'Claim PDF Ready',
+                  style: AppTextStyles.headingSmall.copyWith(color: textColor),
                   textAlign: TextAlign.center,
                 ),
               ),
               const SizedBox(height: 8),
-
-              // Subtitle
               Center(
                 child: Text(
-                  'Your warranty claim document has been generated',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: secondaryColor,
-                  ),
+                  'Your claim document has been generated successfully',
+                  style: AppTextStyles.bodySmall.copyWith(color: secondaryColor),
                   textAlign: TextAlign.center,
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
 
-              // Claim details card
+              // Claim Details Card
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: cardColor,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
                   border: Border.all(color: AppColors.border(isDark)),
-                ),
-                child: Column(
-                  children: [
-                    _buildDetailRow('Claim ID', _generatedClaim!.id.substring(0, 12) + '...', isDark),
-                    const SizedBox(height: 12),
-                    _buildDetailRow('Type', _generatedClaim!.claimType?.toUpperCase() ?? 'UNKNOWN', isDark),
-                    const SizedBox(height: 12),
-                    _buildDetailRow('Store', widget.receiptStoreName, isDark),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Status', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary(isDark))),
-                        _isUpdating ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) :
-                        DropdownButton<String>(
-                          value: _generatedClaim!.status,
-                          items: _statusOptions.map((s) => DropdownMenuItem(value: s, child: Text(s, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textPrimary(isDark))))).toList(),
-                          onChanged: (val) { 
-                            if (val == null) return;
-                            if (val == 'RESOLVED') {
-                              _showResolutionOutcomeDialog();
-                            } else {
-                              _updateClaimStatus(val); 
-                            }
-                          },
-                          underline: const SizedBox(),
-                          alignment: Alignment.centerRight,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Notes field
-              Text('Resolution Notes', style: Theme.of(context).textTheme.labelSmall?.copyWith(color: secondaryColor, fontWeight: FontWeight.w600)),
-              const SizedBox(height: 8),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _notesController,
-                      maxLines: 3,
-                      minLines: 2,
-                      enabled: !_isUpdating,
-                      style: TextStyle(color: textColor, fontSize: 14),
-                      decoration: InputDecoration(
-                        hintText: 'Add tracking numbers, support ticket IDs, or resolution notes...',
-                        hintStyle: TextStyle(color: secondaryColor.withValues(alpha: 0.5)),
-                        filled: true,
-                        fillColor: cardColor,
-                        contentPadding: const EdgeInsets.all(12),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: AppColors.border(isDark))),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    onPressed: _isUpdating ? null : _updateClaimNotes,
-                    icon: const Icon(Symbols.save),
-                    color: AppColors.primary,
-                    tooltip: 'Save Notes',
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-
-              // Download link section
-              Text(
-                'Download Link',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: secondaryColor,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: cardColor,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // URL display (selectable)
-                    SelectableText(
-                      _generatedClaim!.url ?? 'No download link available',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.primary,
-                        fontFamily: 'monospace',
-                      ),
-                      maxLines: 3,
-                      onTap: () {
-                        if (_generatedClaim!.url != null) {
-                          _copyLink();
-                        }
-                      },
+                    _buildStackedDetailItem(
+                      icon: Symbols.confirmation_number_rounded,
+                      label: 'Claim ID',
+                      value: _shortId(_generatedClaim!.id),
+                      isDark: isDark,
                     ),
-                    const SizedBox(height: 12),
-                    // Copy button
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: _generatedClaim?.url != null ? _copyLink : null,
-                        icon: const Icon(Symbols.content_copy, size: 18),
-                        label: const Text('Copy Link'),
-                      ),
+                    const SizedBox(height: 6),
+                    _buildStackedDetailItem(
+                      icon: Symbols.shopping_bag_rounded,
+                      label: 'Product',
+                      value: productName,
+                      isDark: isDark,
+                      maxLines: 2,
+                    ),
+                    const SizedBox(height: 6),
+                    _buildStackedDetailItem(
+                      icon: Symbols.storefront_rounded,
+                      label: 'Store',
+                      value: widget.receiptStoreName,
+                      isDark: isDark,
+                    ),
+                    const SizedBox(height: 6),
+                    _buildStackedDetailItem(
+                      icon: Symbols.event_available_rounded,
+                      label: 'Created',
+                      value: dateFormat.format(_generatedClaim!.createdAt.toLocal()),
+                      isDark: isDark,
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
 
-              // Action buttons
+              // Actions Section
               Text(
                 'Actions',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: secondaryColor,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: AppTextStyles.formLabel.copyWith(color: secondaryColor),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
 
-              // Download button
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton.icon(
-                  onPressed: _generatedClaim?.url != null ? _downloadPdf : null,
-                  icon: const Icon(Symbols.file_download),
-                  label: const Text('Download PDF'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: AppColors.onPrimary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              // Share button
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: OutlinedButton.icon(
-                  onPressed: _generatedClaim?.url != null ? _sharePdf : null,
-                  icon: const Icon(Symbols.share),
-                  label: const Text('Share'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.primary,
-                    side: BorderSide(color: AppColors.primary),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 32),
-
-              // Info box
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.3),
-                  ),
+                  color: cardColor,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppColors.border(isDark)),
                 ),
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Icon(
-                      Symbols.info,
-                      color: AppColors.primary,
-                      size: 20,
+                    // Download button (primary)
+                    SizedBox(
+                      height: 48,
+                      child: ElevatedButton.icon(
+                        onPressed: _generatedClaim != null ? _downloadPdf : null,
+                        icon: const Icon(Symbols.file_download_rounded, weight: 800.0),
+                        label: const Text('Download PDF'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: AppColors.onPrimary,
+                          elevation: 0,
+                          shadowColor: Colors.transparent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+                          ),
+                        ),
+                      ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'Download link expires in 1 hour. Save the PDF or screenshot for later access.',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: textColor,
+                    const SizedBox(height: 12),
+
+                    // Open button
+                    SizedBox(
+                      height: 48,
+                      child: OutlinedButton.icon(
+                        onPressed: _generatedClaim != null ? _openPdf : null,
+                        icon: const Icon(Symbols.open_in_new_rounded, weight: 800.0,),
+                        label: const Text('Open PDF'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.textSecondary(isDark),
+                          side: BorderSide(color: AppColors.border(isDark)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Share button
+                    SizedBox(
+                      height: 48,
+                      child: OutlinedButton.icon(
+                        onPressed: _generatedClaim != null ? _sharePdf : null,
+                        icon: const Icon(Symbols.share_rounded, weight: 800.0,),
+                        label: const Text('Share PDF'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.textSecondary(isDark),
+                          side: BorderSide(color: AppColors.border(isDark)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+                          ),
                         ),
                       ),
                     ),
                   ],
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Status Section
+              Row(
+                children: [
+                  Text(
+                    'Status',
+                    style: AppTextStyles.formLabel.copyWith(
+                      color: secondaryColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+
+                  IconButton(
+                    onPressed: _showStatusInfoDialog,
+                    icon: Icon(
+                      Symbols.info_rounded,
+                      size: 16,
+                      color: AppColors.textSecondary(isDark),
+                      weight: 700.0,
+                    ),
+                    tooltip: 'Status info',
+                    constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                    padding: EdgeInsets.zero,
+                    visualDensity: const VisualDensity(horizontal: -2, vertical: -2),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 0),
+              Container(
+                decoration: BoxDecoration(
+                  color: cardColor,
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+                  border: Border.all(color: AppColors.border(isDark)),
+                ),
+                child: Column(
+                  children: [
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: _isUpdating ? null : () => setState(() => _isStatusExpanded = !_isStatusExpanded),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    _getStatusIcon(_generatedClaim!.status),
+                                    size: 20,
+                                    weight: 600.0,
+                                    color: AppColors.textPrimary(isDark),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  _isUpdating
+                                    ? SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(strokeWidth: 2),
+                                      )
+                                    : Text(
+                                        _formatStatusText(_generatedClaim!.status),
+                                        style: AppTextStyles.bodyMedium.copyWith(
+                                          color: AppColors.textPrimary(isDark),
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                ],
+                              ),
+                              if (!_isUpdating)
+                                AnimatedRotation(
+                                  turns: _isStatusExpanded ? 0.5 : 0,
+                                  duration: const Duration(milliseconds: 200),
+                                  child: Icon(
+                                    Symbols.expand_more,
+                                    color: AppColors.textSecondary(isDark),
+                                    size: 20,
+                                    weight: 800.0,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    AnimatedSize(
+                      duration: const Duration(milliseconds: 200),
+                      child: _isStatusExpanded
+                          ? Column(
+                              children: [
+                                Divider(
+                                  height: 1,
+                                  color: AppColors.border(isDark),
+                                ),
+                                ListView.separated(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: _statusOptions.length,
+                                  separatorBuilder: (context, index) => Divider(
+                                    height: 1,
+                                    color: AppColors.border(isDark),
+                                  ),
+                                  itemBuilder: (context, index) {
+                                    final status = _statusOptions[index];
+                                    final isSelected = _generatedClaim!.status == status;
+                                    return GestureDetector(
+                                      onTap: () {
+                                        setState(() => _isStatusExpanded = false);
+                                        if (status == 'RESOLVED') {
+                                          _showResolutionOutcomeDialog();
+                                        } else {
+                                          _updateClaimStatus(status);
+                                        }
+                                      },
+                                      child: Container(
+                                        color: isSelected
+                                            ? AppColors.primary.withValues(alpha: 0.10)
+                                            : Colors.transparent,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 10,
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              _getStatusIcon(status),
+                                              size: 20,
+                                              weight: 600.0,
+                                              color: isSelected
+                                                  ? AppColors.primary
+                                                  : AppColors.textSecondary(isDark),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Text(
+                                              _formatStatusText(status),
+                                              style: AppTextStyles.bodyMedium.copyWith(
+                                                color: isSelected
+                                                    ? AppColors.primary
+                                                    : AppColors.textSecondary(isDark),
+                                                fontWeight: isSelected
+                                                    ? FontWeight.w700
+                                                    : FontWeight.w500,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ],
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Issue Description
+              Text(
+                'Issue Description',
+                style: AppTextStyles.formLabel.copyWith(color: secondaryColor),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: cardColor,
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+                  border: Border.all(color: AppColors.border(isDark)),
+                ),
+                child: Text(
+                  _generatedClaim!.issueDescription,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: textColor,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Notes Section
+              Text(
+                'Notes',
+                style: AppTextStyles.formLabel.copyWith(color: secondaryColor),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _notesController,
+                focusNode: _notesFocusNode,
+                maxLines: 4,
+                minLines: 1,
+                enabled: !_isUpdating,
+                style: AppTextStyles.bodySmall.copyWith(color: textColor),
+                decoration: InputDecoration(
+                  hintText: 'Add tracking numbers, support ticket IDs, or resolution notes...',
+                  hintStyle: AppTextStyles.bodySmall.copyWith(
+                    color: secondaryColor.withValues(alpha: 0.5),
+                  ),
+                  filled: true,
+                  fillColor: cardColor,
+                  contentPadding: const EdgeInsets.all(12),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppDimensions.radiusXL), borderSide: BorderSide(color: AppColors.border(isDark))),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppDimensions.radiusXL), borderSide: BorderSide(color: AppColors.border(isDark))),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppDimensions.radiusXL), borderSide: BorderSide(color: AppColors.primary)),
                 ),
               ),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: ElevatedButton(
-              onPressed: () => Navigator.pop(context),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.card(isDark),
-                foregroundColor: AppColors.primary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: AppColors.primary),
-                ),
-              ),
-              child: const Text(
-                'Back to Receipt',
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 
-  Widget _buildDetailRow(String label, String value, bool isDark) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  PreferredSizeWidget _buildStyledAppBar(String title, bool isDark) {
+    return AppBar(
+      backgroundColor: AppColors.background(isDark),
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      toolbarHeight: 64,
+      leading: IconButton(
+        onPressed: () => Navigator.pop(context),
+        icon: Icon(
+          Symbols.arrow_back_rounded,
+          color: AppColors.textPrimary(isDark),
+          weight: 800.0,
+        ),
+        padding: const EdgeInsets.all(8),
+        style: IconButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          shape: const CircleBorder(),
+        ),
+      ),
+      title: Text(
+        title,
+        style: AppTextStyles.listTitle.copyWith(
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          color: AppColors.textPrimary(isDark),
+        ),
+      ),
+      centerTitle: true,
+    );
+  }
+
+  Widget _buildStackedDetailItem({
+    required IconData icon,
+    required String label,
+    required String value,
+    required bool isDark,
+    int maxLines = 1,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: AppColors.textSecondary(isDark),
-          ),
+        Row(
+          children: [
+            Icon(icon, size: 14, weight: 800.0, color: AppColors.textSecondary(isDark)),
+            const SizedBox(width: 6),
+            Text(label, style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textSecondary(isDark),
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
+            )),
+          ],
         ),
-        Text(
-          value,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: AppColors.textPrimary(isDark),
-            fontWeight: FontWeight.w600,
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
+        const SizedBox(height: 2),
+        Text(value, style: AppTextStyles.bodySmall.copyWith(
+          color: AppColors.textPrimary(isDark),
+          height: 1.2,
+        ), maxLines: maxLines, overflow: TextOverflow.ellipsis),
       ],
     );
   }
+
 }

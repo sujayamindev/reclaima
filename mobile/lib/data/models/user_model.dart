@@ -10,6 +10,8 @@ class UserModel {
   final String email;
   @JsonKey(name: 'displayName')
   final String? displayName;
+  @JsonKey(name: 'contactNumber')
+  final String? contactNumber;
   @JsonKey(name: 'createdAt')
   final DateTime createdAt;
   @JsonKey(name: 'updatedAt')
@@ -20,6 +22,7 @@ class UserModel {
     required this.firebaseUid,
     required this.email,
     this.displayName,
+    this.contactNumber,
     required this.createdAt,
     required this.updatedAt,
   });

@@ -44,7 +44,7 @@ class AppConstants {
   static const int defaultPageSize = 20;
 
   // Claim types for warranty claims
-  static const List<String> claimTypes = ['warranty', 'return', 'repair'];
+  static const List<String> claimTypes = ['warranty', 'return'];
 }
 
 /// Storage keys for shared preferences

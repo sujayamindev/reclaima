@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import '../core/constants/app_constants.dart';
 import 'home/home_screen.dart';
+import 'vault/vault_screen.dart';
+import 'claims/claims_hub_screen.dart';
 import 'settings/settings_screen.dart';
 
 // ── Nav index provider ────────────────────────────────────────────────────────
@@ -16,8 +18,8 @@ class MainShell extends ConsumerWidget {
 
   static const _screens = <Widget>[
     HomeScreen(),
-    _VaultScreen(),
-    _StatsScreen(),
+    VaultScreen(),
+    ClaimsHubScreen(),
     SettingsScreen(),
   ];
 
@@ -54,7 +56,7 @@ class _BottomNavBar extends StatelessWidget {
   static const _items = [
     _NavItem(label: 'Home', symbol: Symbols.home_rounded),
     _NavItem(label: 'Vault', symbol: Symbols.view_object_track_rounded),
-    _NavItem(label: 'Stats', symbol: Symbols.fiber_smart_record_rounded),
+    _NavItem(label: 'Claims', symbol: Symbols.fiber_smart_record_rounded),
     _NavItem(label: 'Settings', symbol: Symbols.menu_rounded),
   ];
 
@@ -127,48 +129,4 @@ class _NavItem {
   const _NavItem({required this.label, required this.symbol});
   final String label;
   final IconData symbol;
-}
-
-// ── Placeholder screens ───────────────────────────────────────────────────────
-
-class _VaultScreen extends StatelessWidget {
-  const _VaultScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Scaffold(
-      backgroundColor: AppColors.background(isDark),
-      body: SafeArea(
-        child: Center(
-          child: Text(
-            'Vault',
-            style: AppTextStyles.headingLarge
-                .copyWith(color: AppColors.textPrimary(isDark)),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _StatsScreen extends StatelessWidget {
-  const _StatsScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Scaffold(
-      backgroundColor: AppColors.background(isDark),
-      body: SafeArea(
-        child: Center(
-          child: Text(
-            'Stats',
-            style: AppTextStyles.headingLarge
-                .copyWith(color: AppColors.textPrimary(isDark)),
-          ),
-        ),
-      ),
-    );
-  }
 }

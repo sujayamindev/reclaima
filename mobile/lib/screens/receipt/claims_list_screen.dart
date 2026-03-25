@@ -3,19 +3,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:intl/intl.dart';
 import '../../core/constants/app_constants.dart';
+import '../../core/utils/formatters.dart';
 import '../../core/utils/logger.dart';
 import '../../services/claim_service.dart';
 import 'claim_detail_screen.dart';
 import 'claim_pdf_screen.dart';
 
-/// Screen that displays all claims for a receipt
+/// Screen that displays claims for a specific product (line item)
 class ClaimsListScreen extends ConsumerStatefulWidget {
   final String receiptId;
+  final String? lineItemId; // Product/line item ID - optional for filtering
   final String receiptStoreName;
 
   const ClaimsListScreen({
     super.key,
     required this.receiptId,
+    this.lineItemId,
     required this.receiptStoreName,
   });
 
@@ -41,9 +44,12 @@ class _ClaimsListScreenState extends ConsumerState<ClaimsListScreen> {
     });
 
     try {
-      logger.i('Loading claims for receipt ${widget.receiptId}');
+      logger.i('Loading claims for product ${widget.lineItemId ?? "all"} in receipt ${widget.receiptId}');
       final claimService = ref.read(claimServiceProvider);
-      final claims = await claimService.getClaims(receiptId: widget.receiptId);
+      final claims = await claimService.getClaims(
+        receiptId: widget.receiptId,
+        lineItemId: widget.lineItemId,
+      );
 
       if (!mounted) return;
       setState(() {
@@ -107,39 +113,6 @@ class _ClaimsListScreenState extends ConsumerState<ClaimsListScreen> {
     }
   }
 
-  Color _getStatusColor(String status, bool isDark) {
-    switch (status.toUpperCase()) {
-      case 'SUBMITTED':
-        return AppColors.primary;
-      case 'IN_PROGRESS':
-        return AppColors.warning;
-      case 'RESOLVED':
-        return Colors.green;
-      case 'DENIED':
-        return Colors.red;
-      case 'DRAFT':
-        return AppColors.textSecondary(isDark);
-      default:
-        return AppColors.textSecondary(isDark);
-    }
-  }
-
-  IconData _getStatusIcon(String status) {
-    switch (status.toUpperCase()) {
-      case 'SUBMITTED':
-        return Symbols.send;
-      case 'IN_PROGRESS':
-        return Symbols.pending;
-      case 'RESOLVED':
-        return Symbols.check_circle;
-      case 'DENIED':
-        return Symbols.cancel;
-      case 'DRAFT':
-        return Symbols.draft;
-      default:
-        return Symbols.help;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -148,47 +121,108 @@ class _ClaimsListScreenState extends ConsumerState<ClaimsListScreen> {
     return Scaffold(
       backgroundColor: AppColors.background(isDark),
       appBar: AppBar(
-        title: const Text('Warranty Claims'),
-        backgroundColor: AppColors.card(isDark),
+        backgroundColor: AppColors.background(isDark),
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
+        scrolledUnderElevation: 0,
+        toolbarHeight: 64,
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: Icon(
+            Symbols.arrow_back_rounded,
+            color: AppColors.textPrimary(isDark),
+            weight: 800.0,
+          ),
+          padding: const EdgeInsets.all(8),
+          style: IconButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            shape: const CircleBorder(),
+          ),
+        ),
+        title: Text(
+          'Manage Claims',
+          style: AppTextStyles.listTitle.copyWith(
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary(isDark),
+          ),
+        ),
+        centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Symbols.refresh),
+            icon: Icon(
+              Symbols.cached_rounded,
+              color: AppColors.textPrimary(isDark),
+              size: 22,
+              weight: 800.0,
+            ),
             onPressed: _loadClaims,
             tooltip: 'Refresh',
+            padding: const EdgeInsets.all(8),
+            style: IconButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              shape: const CircleBorder(),
+            ),
           ),
         ],
       ),
       body: SafeArea(
         child: _isLoading
-            ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
             : _error != null
                 ? _buildErrorState(isDark)
                 : _claims.isEmpty
                     ? _buildEmptyState(isDark)
                     : _buildClaimsList(isDark),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ClaimPdfScreen(
-                receiptId: widget.receiptId,
-                receiptStoreName: widget.receiptStoreName,
-              ),
-            ),
-          );
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppDimensions.paddingPage,
+            16,
+            AppDimensions.paddingPage,
+            16,
+          ),
+          child: SizedBox(
+            width: double.infinity,
+            height: AppDimensions.buttonHeight,
+            child: ElevatedButton.icon(
+              onPressed: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ClaimPdfScreen(
+                      receiptId: widget.receiptId,
+                      lineItemId: widget.lineItemId,
+                      receiptStoreName: widget.receiptStoreName,
+                    ),
+                  ),
+                );
 
-          // Reload claims after generating new one
-          if (result != null || mounted) {
-            _loadClaims();
-          }
-        },
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.onPrimary,
-        icon: const Icon(Symbols.add),
-        label: const Text('New Claim'),
+                // Reload claims after generating new one
+                if (result != null || mounted) {
+                  _loadClaims();
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.onPrimary,
+                elevation: 0,
+                shadowColor: Colors.transparent,
+                surfaceTintColor: Colors.transparent,
+                overlayColor: Colors.transparent,
+                splashFactory: NoSplash.splashFactory,
+                enableFeedback: false,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+                ),
+              ),
+              icon: const Icon(Symbols.add_rounded, weight: 800.0),
+              label: const Text('New Claim'),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -201,22 +235,22 @@ class _ClaimsListScreenState extends ConsumerState<ClaimsListScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Symbols.error,
+              Symbols.error_rounded,
               size: 64,
+              weight: 800.0,
               color: Colors.red.withValues(alpha: 0.7),
             ),
             const SizedBox(height: 16),
             Text(
               'Failed to load claims',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              style: AppTextStyles.titleLarge.copyWith(
                 color: AppColors.textPrimary(isDark),
-                fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               _error ?? 'An unknown error occurred',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.textSecondary(isDark),
               ),
               textAlign: TextAlign.center,
@@ -224,11 +258,15 @@ class _ClaimsListScreenState extends ConsumerState<ClaimsListScreen> {
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: _loadClaims,
-              icon: const Icon(Symbols.refresh),
+              icon: const Icon(Symbols.refresh_rounded, weight: 800.0),
               label: const Text('Try Again'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: AppColors.onPrimary,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
+                ),
               ),
             ),
           ],
@@ -253,8 +291,9 @@ class _ClaimsListScreenState extends ConsumerState<ClaimsListScreen> {
               ),
               child: Center(
                 child: Icon(
-                  Symbols.description,
+                  Symbols.description_rounded,
                   size: 60,
+                  weight: 800.0,
                   color: AppColors.primary,
                 ),
               ),
@@ -262,15 +301,14 @@ class _ClaimsListScreenState extends ConsumerState<ClaimsListScreen> {
             const SizedBox(height: 24),
             Text(
               'No Claims Yet',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              style: AppTextStyles.titleLarge.copyWith(
                 color: AppColors.textPrimary(isDark),
-                fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              'You haven\'t submitted any warranty claims for this receipt yet.',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              'You haven\'t submitted any claims for this product yet.',
+              style: AppTextStyles.bodyMedium.copyWith(
                 color: AppColors.textSecondary(isDark),
               ),
               textAlign: TextAlign.center,
@@ -278,7 +316,7 @@ class _ClaimsListScreenState extends ConsumerState<ClaimsListScreen> {
             const SizedBox(height: 24),
             Text(
               'Tap the + button below to create your first claim',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              style: AppTextStyles.bodySmall.copyWith(
                 color: AppColors.textSecondary(isDark),
                 fontStyle: FontStyle.italic,
               ),
@@ -291,70 +329,210 @@ class _ClaimsListScreenState extends ConsumerState<ClaimsListScreen> {
   }
 
   Widget _buildClaimsList(bool isDark) {
+    final ongoingClaims = _claims
+        .where((claim) {
+          final status = claim.status.toUpperCase();
+          return status != 'RESOLVED' && status != 'DENIED';
+        })
+        .toList();
+    final closedClaims = _claims
+        .where((claim) {
+          final status = claim.status.toUpperCase();
+          return status == 'RESOLVED' || status == 'DENIED';
+        })
+        .toList();
+
     return RefreshIndicator(
       onRefresh: _loadClaims,
       child: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppDimensions.paddingPage),
         children: [
-          // Header
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.card(isDark),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.border(isDark)),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Symbols.storefront,
-                  color: AppColors.primary,
-                  size: 24,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.receiptStoreName,
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: AppColors.textPrimary(isDark),
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${_claims.length} ${_claims.length == 1 ? 'claim' : 'claims'}',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.textSecondary(isDark),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // Claims list
-          ..._claims.map((claim) => _buildClaimCard(claim, isDark)),
+          if (ongoingClaims.isNotEmpty) ...[
+            _buildSectionLabel('ONGOING CLAIMS', isDark),
+            const SizedBox(height: 10),
+            ...ongoingClaims.map((claim) => _buildClaimCard(claim, isDark)),
+          ],
+          if (closedClaims.isNotEmpty) ...[
+            if (ongoingClaims.isNotEmpty) const SizedBox(height: 8),
+            _buildSectionLabel('CLOSED CLAIMS', isDark),
+            const SizedBox(height: 10),
+            ...closedClaims.map((claim) => _buildClaimCard(claim, isDark)),
+          ],
         ],
       ),
     );
   }
 
+  Widget _buildSectionLabel(String label, bool isDark) {
+    return Row(
+      children: [
+        Text(
+          label,
+          style: AppTextStyles.capsLabel.copyWith(
+            color: AppColors.textSecondary(isDark),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _normalizeTimelineStatus(String status) {
+    final normalized = status.toUpperCase();
+    if (normalized == 'RESOLVED' || normalized == 'DENIED') {
+      return 'CLOSED';
+    }
+    if (normalized == 'SUBMITTED' || normalized == 'IN_PROGRESS') {
+      return normalized;
+    }
+    return 'DRAFT';
+  }
+
+  int _timelineIndex(String status) {
+    switch (status) {
+      case 'DRAFT':
+        return 0;
+      case 'SUBMITTED':
+        return 1;
+      case 'IN_PROGRESS':
+        return 2;
+      case 'CLOSED':
+        return 3;
+      default:
+        return 0;
+    }
+  }
+
+  Widget _buildClaimProgressTimeline(
+    String status,
+    bool isDark,
+  ) {
+    const steps = ['Draft', 'Submitted', 'In Progress', 'Closed'];
+    const stepFlex = [2, 3, 3, 2];
+    final normalized = _normalizeTimelineStatus(status);
+    final activeIndex = _timelineIndex(normalized);
+    final isDenied = status.toUpperCase() == 'DENIED';
+
+    return Column(
+      children: [
+        Row(
+          children: [
+            for (int i = 0; i < steps.length; i++)
+              Expanded(
+                flex: stepFlex[i],
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        height: 2,
+                        decoration: BoxDecoration(
+                          color: i == 0
+                              ? Colors.transparent
+                              : (i - 1) < activeIndex
+                                  ? AppColors.primary.withValues(alpha: 0.9)
+                                  : AppColors.border(isDark),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                      ),
+                    ),
+                    Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: i < activeIndex
+                            ? AppColors.primary
+                            : i == activeIndex
+                            ? (isDenied ? AppColors.primary : AppColors.primary)
+                                : Colors.transparent,
+                        border: Border.all(
+                          color: i <= activeIndex
+                              ? (i == activeIndex && isDenied ? AppColors.primary: AppColors.primary)
+                              : AppColors.border(isDark),
+                          width: 1.3,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Container(
+                        height: 2,
+                        decoration: BoxDecoration(
+                          color: i == steps.length - 1
+                              ? Colors.transparent
+                              : i < activeIndex
+                                  ? AppColors.primary.withValues(alpha: 0.9)
+                                  : AppColors.border(isDark),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            for (int i = 0; i < steps.length; i++)
+              Expanded(
+                flex: stepFlex[i],
+                child: Text(
+                  steps[i],
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.caption.copyWith(
+                    color: i == activeIndex
+                        ? (isDenied ? AppColors.textPrimary(isDark): AppColors.textPrimary(isDark))
+                        : AppColors.textSecondary(isDark),
+                    fontWeight: i == activeIndex ? FontWeight.w700 : FontWeight.w500,
+                    fontSize: 10,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoRow({
+    required IconData icon,
+    required String text,
+    required bool isDark,
+    TextStyle? textStyle,
+    int maxLines = 1,
+  }) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          size: 13,
+          weight: 800.0,
+          color: AppColors.textSecondary(isDark),
+        ),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            text,
+            style: textStyle ?? AppTextStyles.caption.copyWith(color: AppColors.textSecondary(isDark)),
+            maxLines: maxLines,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildClaimCard(ClaimDocumentResponse claim, bool isDark) {
-    final dateFormat = DateFormat('MMM dd, yyyy • HH:mm');
+    final claimType = (claim.claimType ?? 'warranty').toUpperCase();
+    final shortClaimId = claim.id.length > 10 ? claim.id.substring(0, 10) : claim.id;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: Material(
         color: AppColors.card(isDark),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
         child: InkWell(
           onTap: () async {
             final result = await Navigator.push(
@@ -372,11 +550,11 @@ class _ClaimsListScreenState extends ConsumerState<ClaimsListScreen> {
               _loadClaims();
             }
           },
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
           child: Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppDimensions.paddingCardSmall),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
               border: Border.all(color: AppColors.border(isDark)),
             ),
             child: Column(
@@ -384,127 +562,87 @@ class _ClaimsListScreenState extends ConsumerState<ClaimsListScreen> {
               children: [
                 // Header row
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Status badge
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: _getStatusColor(claim.status, isDark).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(
-                            _getStatusIcon(claim.status),
-                            size: 14,
-                            color: _getStatusColor(claim.status, isDark),
+                          _buildInfoRow(
+                            icon: Symbols.confirmation_number_rounded,
+                            text: 'Claim #$shortClaimId',
+                            isDark: isDark,
+                            textStyle: AppTextStyles.caption.copyWith(
+                              color: AppColors.textSecondary(isDark),
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                          const SizedBox(width: 6),
-                          Text(
-                            claim.status.toUpperCase(),
-                            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: _getStatusColor(claim.status, isDark),
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.5,
+                          _buildInfoRow(
+                            icon: Symbols.calendar_month_rounded,
+                            text: DateFormatter.formatDate(claim.createdAt.toLocal()),
+                            isDark: isDark,
+                            textStyle: AppTextStyles.caption.copyWith(
+                              color: AppColors.textSecondary(isDark),
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const Spacer(),
-                    // Claim type
+                    const SizedBox(width: 8),
+                    // Claim type badge
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(6),
+                        color: AppColors.primary.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(AppDimensions.radiusSmall),
                       ),
                       child: Text(
-                        (claim.claimType ?? 'warranty').toUpperCase(),
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        claimType,
+                        style: AppTextStyles.badgeText.copyWith(
                           color: AppColors.primary,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 11,
+                          letterSpacing: 0.35,
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
 
                 // Issue description
-                Text(
-                  claim.issueDescription,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                _buildInfoRow(
+                  icon: Symbols.report_problem_rounded,
+                  text: claim.issueDescription,
+                  isDark: isDark,
+                  maxLines: 2,
+                  textStyle: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.textPrimary(isDark),
                     fontWeight: FontWeight.w500,
+                    height: 1.3,
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 8),
+
+                const SizedBox(height: 12),
 
                 // Notes (if any)
                 if (claim.notes != null && claim.notes!.isNotEmpty) ...[
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppColors.background(isDark),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Symbols.note,
-                          size: 14,
-                          color: AppColors.textSecondary(isDark),
-                        ),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            claim.notes!,
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.textSecondary(isDark),
-                              fontStyle: FontStyle.italic,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
+                  _buildInfoRow(
+                    icon: Symbols.sticky_note_2_rounded,
+                    text: claim.notes!,
+                    isDark: isDark,
+                    maxLines: 2,
+                    textStyle: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.textPrimary(isDark),
+                      fontWeight: FontWeight.w500,
+                      height: 1.3,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                 ],
 
-                // Date and actions
-                Row(
-                  children: [
-                    Icon(
-                      Symbols.schedule,
-                      size: 14,
-                      color: AppColors.textSecondary(isDark),
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      dateFormat.format(claim.createdAt.toLocal()),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary(isDark),
-                      ),
-                    ),
-                    const Spacer(),
-                    // Delete button
-                    IconButton(
-                      icon: const Icon(Symbols.delete, size: 18),
-                      color: Colors.red.withValues(alpha: 0.7),
-                      onPressed: () => _deleteClaim(claim.id),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                      tooltip: 'Delete claim',
-                    ),
-                  ],
-                ),
+                const SizedBox(height: 12),
+
+                _buildClaimProgressTimeline(claim.status, isDark),
               ],
             ),
           ),

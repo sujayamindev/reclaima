@@ -61,20 +61,22 @@ class ProductDetailScreen extends ConsumerWidget {
                 ProductViewModel(receipt: receipt, lineItem: item);
             return _buildBody(context, ref, product, imageUrlAsync, isDark);
           },
-          loading: () => Column(
-            children: [
-              _buildTopBar(context, ref, null, isDark),
-              const Expanded(
+          loading: () => CustomScrollView(
+            slivers: [
+              _buildStickyAppBar(context, ref, null, isDark),
+              const SliverFillRemaining(
+                hasScrollBody: false,
                 child: Center(
                   child: CircularProgressIndicator(color: AppColors.primary),
                 ),
               ),
             ],
           ),
-          error: (err, _) => Column(
-            children: [
-              _buildTopBar(context, ref, null, isDark),
-              Expanded(
+          error: (err, _) => CustomScrollView(
+            slivers: [
+              _buildStickyAppBar(context, ref, null, isDark),
+              SliverFillRemaining(
+                hasScrollBody: false,
                 child: Center(
                   child: Padding(
                     padding: const EdgeInsets.all(AppDimensions.paddingPage),
@@ -88,8 +90,12 @@ class ProductDetailScreen extends ConsumerWidget {
                             color: AppColors.error.withValues(alpha: 0.12),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Symbols.error,
-                              size: 32, color: AppColors.error),
+                          child: const Icon(
+                            Symbols.error_rounded,
+                            size: 32,
+                            color: AppColors.error,
+                            weight: 800.0,
+                          ),
                         ),
                         const SizedBox(height: 16),
                         Text(
@@ -130,7 +136,7 @@ class ProductDetailScreen extends ConsumerWidget {
 
     return CustomScrollView(
       slivers: [
-        SliverToBoxAdapter(child: _buildTopBar(context, ref, product, isDark)),
+        _buildStickyAppBar(context, ref, product, isDark),
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(p, 4, p, 36),
           sliver: SliverList(
@@ -177,7 +183,7 @@ class ProductDetailScreen extends ConsumerWidget {
                 _buildSection(
                   isDark,
                   'Product Info',
-                  Symbols.info,
+                  Symbols.info_rounded,
                   [
                     if (product.lineItem!.quantity != null)
                       _buildInfoRow(
@@ -217,7 +223,7 @@ class ProductDetailScreen extends ConsumerWidget {
                 _buildSection(
                   isDark,
                   'Vendor Contact',
-                  Symbols.store,
+                  Symbols.contact_support_rounded,
                   [
                     if (product.receipt.vendorAddress != null)
                       _buildInfoRow(
@@ -241,7 +247,7 @@ class ProductDetailScreen extends ConsumerWidget {
                 _buildSection(
                   isDark,
                   'Warranty Terms',
-                  Symbols.policy,
+                  Symbols.policy_rounded,
                   [
                     Text(
                       product.receipt.warrantyNotes!,
@@ -260,7 +266,7 @@ class ProductDetailScreen extends ConsumerWidget {
                 _buildSection(
                   isDark,
                   'Additional Details',
-                  Symbols.info,
+                  Symbols.info_rounded,
                   [
                     Text(
                       product.receipt.remarks!,
@@ -279,7 +285,7 @@ class ProductDetailScreen extends ConsumerWidget {
                 _buildSection(
                   isDark,
                   'Notes',
-                  Symbols.notes,
+                  Symbols.notes_rounded,
                   [
                     Text(
                       product.receipt.notes!,
@@ -297,7 +303,7 @@ class ProductDetailScreen extends ConsumerWidget {
               _buildSection(
                 isDark,
                 'Processing Status',
-                Symbols.cloud_done,
+                Symbols.cloud_done_rounded,
                 [
                   _buildInfoRow(
                       'OCR Status', product.receipt.status.name, isDark),
@@ -334,108 +340,135 @@ class ProductDetailScreen extends ConsumerWidget {
 
   // ── Top bar ──────────────────────────────────────────────────────────────
 
-  Widget _buildTopBar(
+  /// Sticky app bar that stays pinned at the top while scrolling
+  Widget _buildStickyAppBar(
     BuildContext context,
     WidgetRef ref,
     ProductViewModel? product,
     bool isDark,
   ) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: Icon(Symbols.arrow_back,
-                color: AppColors.textPrimary(isDark)),
-            padding: const EdgeInsets.all(8),
-            style: IconButton.styleFrom(
-              backgroundColor: Colors.transparent,
-              shape: const CircleBorder(),
+    return SliverAppBar(
+      backgroundColor: AppColors.background(isDark),
+      surfaceTintColor: Colors.transparent,
+      pinned: true,
+      toolbarHeight: 64,
+      leading: IconButton(
+        onPressed: () => Navigator.pop(context),
+        icon: Icon(Symbols.arrow_back_rounded, color: AppColors.textPrimary(isDark), weight: 600.0,),
+        padding: const EdgeInsets.all(8),
+        style: IconButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          shape: const CircleBorder(),
+        ),
+      ),
+      title: Text(
+        'Product Details',
+        style: AppTextStyles.listTitle.copyWith(
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          color: AppColors.textPrimary(isDark),
+        ),
+      ),
+      centerTitle: true,
+      actions: [
+        if (product != null)
+          PopupMenuButton<String>(
+            icon: Icon(Symbols.more_horiz_rounded,
+              color: AppColors.textPrimary(isDark), size: 22, weight: 600.0, grade: 200.0),
+            padding: EdgeInsets.zero,
+            position: PopupMenuPosition.under,
+            offset: const Offset(0, 8),
+            menuPadding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 124, maxWidth: 124),
+            color: AppColors.card(isDark),
+            elevation: 4,
+            shadowColor: Colors.black.withValues(alpha: 0.12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
+              side: BorderSide(color: AppColors.border(isDark)),
             ),
-          ),
-          Expanded(
-            child: Text(
-              'Product Details',
-              textAlign: TextAlign.center,
-              style: AppTextStyles.listTitle.copyWith(
-                fontSize: 17,
-                color: AppColors.textPrimary(isDark),
-              ),
-            ),
-          ),
-          if (product != null)
-            PopupMenuButton<String>(
-              icon: Icon(Symbols.more_horiz,
-                  color: AppColors.textPrimary(isDark), size: 22),
-              padding: EdgeInsets.zero,
-              color: AppColors.card(isDark),
-              elevation: 4,
-              shadowColor: Colors.black.withValues(alpha: 0.12),
-              shape: RoundedRectangleBorder(
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.radiusLarge),
-                side: BorderSide(color: AppColors.border(isDark)),
-              ),
-              onSelected: (value) async {
-                if (value == 'edit') {
-                  // TODO: navigate to edit screen
-                } else if (value == 'delete') {
-                  final confirmed = await _showDeleteDialog(context);
-                  if (confirmed == true && context.mounted) {
-                    final ok = await ref
-                        .read(receiptControllerProvider.notifier)
-                        .deleteReceipt(product.receiptId);
-                    if (ok && context.mounted) Navigator.pop(context);
-                  }
+            onSelected: (value) async {
+              if (value == 'edit') {
+                // TODO: navigate to edit screen
+              } else if (value == 'delete') {
+                final confirmed = await _showDeleteDialog(context);
+                if (confirmed == true && context.mounted) {
+                  final ok = await ref
+                      .read(receiptControllerProvider.notifier)
+                      .deleteReceipt(product.receiptId);
+                  if (ok && context.mounted) Navigator.pop(context);
                 }
-              },
-              itemBuilder: (_) => [
-                PopupMenuItem(
-                  value: 'edit',
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 4),
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        width: 30,
-                        height: 30,
-                        child: const Icon(Symbols.edit,
-                            size: 15, color: AppColors.primary),
-                      ),
-                      const SizedBox(width: 6),
-                      Text('Edit',
-                          style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.textPrimary(isDark),
-                              fontWeight: FontWeight.w500)),
-                    ],
+              }
+            },
+            itemBuilder: (_) => [_buildActionsMenuEntry(context, isDark)],
+          )
+        else
+          const SizedBox(width: 48),
+      ],
+    );
+  }
+
+  PopupMenuEntry<String> _buildActionsMenuEntry(
+    BuildContext context,
+    bool isDark,
+  ) {
+    return PopupMenuItem<String>(
+      value: '_noop',
+      height: 52,
+      padding: EdgeInsets.zero,
+      child: SizedBox(
+        width: 124,
+        height: 52,
+        child: Row(
+          children: [
+            Expanded(
+              child: Center(
+                child: InkWell(
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.radiusPill),
+                  onTap: () => Navigator.of(context).pop('edit'),
+                  child: const SizedBox(
+                    width: 40,
+                    height: 40,
+                    child: Icon(
+                      Symbols.edit_rounded,
+                      size: 20,
+                      color: AppColors.primary,
+                      weight: 800.0,
+                    ),
                   ),
                 ),
-                PopupMenuItem(
-                  value: 'delete',
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 4),
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        width: 30,
-                        height: 30,
-                        child: const Icon(Symbols.delete,
-                            size: 15, color: AppColors.error),
-                      ),
-                      const SizedBox(width: 6),
-                      Text('Delete',
-                          style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.error,
-                              fontWeight: FontWeight.w500)),
-                    ],
+              ),
+            ),
+            SizedBox(
+              height: 20,
+              child: VerticalDivider(
+                width: 1,
+                thickness: 1,
+                color: AppColors.border(isDark),
+              ),
+            ),
+            Expanded(
+              child: Center(
+                child: InkWell(
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.radiusPill),
+                  onTap: () => Navigator.of(context).pop('delete'),
+                  child: const SizedBox(
+                    width: 40,
+                    height: 40,
+                    child: Icon(
+                      Symbols.delete_rounded,
+                      size: 20,
+                      color: AppColors.error,
+                      weight: 800.0
+                    ),
                   ),
                 ),
-              ],
-            )
-          else
-            const SizedBox(width: 48),
-        ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -537,8 +570,8 @@ class ProductDetailScreen extends ConsumerWidget {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Icon(Symbols.storefront,
-                            size: 14, color: AppColors.muted(isDark)),
+                        Icon(Symbols.storefront_rounded,
+                          size: 14, color: AppColors.muted(isDark), weight: 800.0),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
@@ -612,7 +645,7 @@ class ProductDetailScreen extends ConsumerWidget {
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textPrimary(isDark), fontWeight: FontWeight.w600),
                 ),
               ),
-              Icon(Symbols.chevron_right, color: color, size: 20),
+              Icon(Symbols.chevron_right_rounded, color: color, size: 20, weight: 800.0),
             ],
           ),
         ),
@@ -621,8 +654,8 @@ class ProductDetailScreen extends ConsumerWidget {
     
     return Column(
       children: [
-        if (replacedById != null) buildBanner(id: replacedById, label: 'View Replacement Item', icon: Symbols.autorenew, color: AppColors.primary),
-        if (replacementForId != null) buildBanner(id: replacementForId, label: 'View Original Replaced Item', icon: Symbols.history, color: AppColors.info),
+        if (replacedById != null) buildBanner(id: replacedById, label: 'View Replacement Item', icon: Symbols.autorenew_rounded, color: AppColors.primary),
+        if (replacementForId != null) buildBanner(id: replacementForId, label: 'View Original Replaced Item', icon: Symbols.history_rounded, color: AppColors.info),
       ],
     );
   }
@@ -643,7 +676,7 @@ class ProductDetailScreen extends ConsumerWidget {
         children: [
           _SectionHeader(
             title: 'Warranty & Return',
-            icon: Symbols.verified,
+            icon: Symbols.verified_rounded,
             isDark: isDark,
           ),
           const SizedBox(height: 16),
@@ -657,7 +690,7 @@ class ProductDetailScreen extends ConsumerWidget {
                 Expanded(
                   child: _CountdownTile(
                     label: 'WARRANTY',
-                    icon: Symbols.shield,
+                    icon: Symbols.shield_rounded,
                     expiryDate: product.warrantyExpiryDate,
                     daysRemaining: product.warrantyDaysRemaining,
                     totalDays: product.warrantyPeriodMonths != null
@@ -672,7 +705,7 @@ class ProductDetailScreen extends ConsumerWidget {
                 Expanded(
                   child: _CountdownTile(
                     label: 'RETURN',
-                    icon: Symbols.assignment_return,
+                    icon: Symbols.assignment_return_rounded,
                     expiryDate: product.returnExpiryDate,
                     daysRemaining: product.returnDaysRemaining,
                     totalDays: product.returnPeriodDays,
@@ -713,6 +746,7 @@ class ProductDetailScreen extends ConsumerWidget {
                   MaterialPageRoute(
                     builder: (context) => ClaimsListScreen(
                       receiptId: product.receiptId,
+                      lineItemId: product.lineItemId,
                       receiptStoreName: product.receipt.storeName ?? 'Store',
                     ),
                   ),
@@ -721,12 +755,20 @@ class ProductDetailScreen extends ConsumerWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: AppColors.onPrimary,
+                elevation: 0,
+                shadowColor: Colors.transparent,
+                surfaceTintColor: Colors.transparent,
+                overlayColor: Colors.transparent,
+                splashFactory: NoSplash.splashFactory,
+                enableFeedback: false,
                 shape: RoundedRectangleBorder(
                   borderRadius:
-                      BorderRadius.circular(AppDimensions.radiusPill),
+                      BorderRadius.circular(AppDimensions.radiusXL),
+                  side: BorderSide.none,
                 ),
+                side: BorderSide.none,
               ),
-              icon: const Icon(Symbols.description, size: 20),
+              icon: const Icon(Symbols.description_rounded, size: 20, weight: 800.0),
               label: const Text('Manage Claims'),
             ),
           ),
@@ -776,8 +818,8 @@ class ProductDetailScreen extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(vertical: 12),
         child: Column(
           children: [
-            Icon(Symbols.verified_user,
-                size: 36, color: AppColors.muted(isDark)),
+            Icon(Symbols.verified_user_rounded,
+              size: 36, color: AppColors.muted(isDark), weight: 800.0),
             const SizedBox(height: 10),
             Text(
               'No warranty information tracked',
@@ -812,8 +854,8 @@ class ProductDetailScreen extends ConsumerWidget {
           // Header row: icon + "Purchase Details"
           Row(
             children: [
-              const Icon(Symbols.store,
-                  size: 20, color: AppColors.primary),
+                const Icon(Symbols.storefront_rounded,
+                  size: 20, color: AppColors.primary, weight: 800.0),
               const SizedBox(width: 10),
               Text(
                 'Purchase Details',
@@ -893,8 +935,8 @@ class ProductDetailScreen extends ConsumerWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Symbols.broken_image,
-                    size: 32, color: AppColors.muted(isDark)),
+                Icon(Symbols.broken_image_rounded,
+                  size: 32, color: AppColors.muted(isDark), weight: 800.0),
                 const SizedBox(height: 8),
                 Text('Image unavailable',
                     style: AppTextStyles.caption
@@ -907,8 +949,8 @@ class ProductDetailScreen extends ConsumerWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Symbols.receipt_long,
-                          size: 36, color: AppColors.muted(isDark)),
+                        Icon(Symbols.receipt_long_rounded,
+                          size: 36, color: AppColors.muted(isDark), weight: 800.0),
                       const SizedBox(height: 8),
                       Text('Receipt image',
                           style: AppTextStyles.caption
@@ -931,8 +973,8 @@ class ProductDetailScreen extends ConsumerWidget {
                         ),
                       ),
                       errorWidget: (_, __, ___) => Center(
-                        child: Icon(Symbols.broken_image,
-                            size: 36, color: AppColors.muted(isDark)),
+                        child: Icon(Symbols.broken_image_rounded,
+                          size: 36, color: AppColors.muted(isDark), weight: 800.0),
                       ),
                     ),
                     Positioned(
@@ -949,8 +991,8 @@ class ProductDetailScreen extends ConsumerWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Symbols.fullscreen,
-                                color: Colors.white, size: 15),
+                            const Icon(Symbols.fullscreen_rounded,
+                              color: Colors.white, size: 15, weight: 800.0),
                             const SizedBox(width: 4),
                             Text(
                               'View',
@@ -997,7 +1039,7 @@ class ProductDetailScreen extends ConsumerWidget {
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
-                  icon: const Icon(Symbols.close, color: Colors.white, size: 24),
+                  icon: const Icon(Symbols.close_rounded, color: Colors.white, size: 24, weight: 800.0),
                   onPressed: () => Navigator.pop(context),
                 ),
               ),
@@ -1036,7 +1078,7 @@ class ProductDetailScreen extends ConsumerWidget {
               Expanded(
                 child: _SectionHeader(
                   title: 'Items on This Receipt',
-                  icon: Symbols.shopping_cart,
+                  icon: Symbols.shopping_cart_rounded,
                   isDark: isDark,
                 ),
               ),
@@ -1325,7 +1367,7 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: AppColors.primary),
+        Icon(icon, size: 20, color: AppColors.primary, weight: 800.0),
         const SizedBox(width: 10),
         Text(
           title,
@@ -1443,7 +1485,7 @@ class _CountdownTile extends StatelessWidget {
           // Label row
           Row(
             children: [
-              Icon(icon, size: 13, color: accent),
+              Icon(icon, size: 13, color: accent, weight: 800.0),
               const SizedBox(width: 5),
               Text(
                 label,
@@ -1669,8 +1711,8 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
           // Header
           Row(
             children: [
-              Icon(Symbols.notifications,
-                  size: 20, color: AppColors.primary),
+                Icon(Symbols.notifications_rounded,
+                  size: 20, color: AppColors.primary, weight: 800.0),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -1681,7 +1723,6 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
               ),
             ],
           ),
-          const SizedBox(height: 14),
 
           // Warranty reminder
           if (widget.hasWarranty) ...[
@@ -1742,7 +1783,7 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
                             ),
                           ),
                         )
-                      : const Icon(Symbols.save),
+                      : const Icon(Symbols.save_rounded, weight: 800.0),
                   label: Text(_isSaving
                       ? 'Saving...'
                       : 'Save Notification Settings'),

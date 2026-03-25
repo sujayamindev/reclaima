@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../core/constants/app_constants.dart';
 import '../../providers/receipt_provider.dart';
 import '../../widgets/step_progress_bar.dart';
+import 'image_crop_rotate_screen.dart';
 import 'review_receipt_screen.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
@@ -114,7 +115,19 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
     if (source != null) {
       final image = await _picker.pickImage(source: source);
       if (image != null) {
-        setState(() => _selectedImagePaths.add(image.path));
+        if (!mounted) return;
+
+        // Navigate to crop/rotate screen
+        final croppedImagePath = await Navigator.of(context).push<String>(
+          MaterialPageRoute(
+            builder: (_) => ImageCropRotateScreen(imagePath: image.path),
+          ),
+        );
+
+        // Add cropped image to list if user didn't cancel
+        if (croppedImagePath != null) {
+          setState(() => _selectedImagePaths.add(croppedImagePath));
+        }
       }
     }
   }

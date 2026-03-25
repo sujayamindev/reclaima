@@ -96,6 +96,44 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
     }
   }
   
+  /// Update current user profile
+  Future<void> updateProfile({
+    String? displayName,
+    String? contactNumber,
+  }) async {
+    state = const AsyncValue.loading();
+    try {
+      await _authService.updateProfile(
+        displayName: displayName,
+        contactNumber: contactNumber,
+      );
+      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+      rethrow;
+    }
+  }
+
+  /// Delete user account completely
+  Future<void> deleteAccount() async {
+    state = const AsyncValue.loading();
+    try {
+      // Best effort deregister of FCM tokens before deletion
+      try {
+        await _notifService.deregisterToken();
+      } catch (_) {
+        // Ignore errors, we are deleting the account anyway
+      }
+      await _authService.deleteAccount();
+      // Clearing state and resetting happens via the authState stream yielding null, 
+      // but we set this manually just in case
+      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+      rethrow;
+    }
+  }
+
   /// Sign out — deregisters FCM token first so push stops immediately
   Future<void> signOut() async {
     state = const AsyncValue.loading();
@@ -108,6 +146,26 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
     }
   }
   
+
+  /// Change password
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    state = const AsyncValue.loading();
+    
+    try {
+      await _authService.changePassword(
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+      );
+      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+      rethrow;
+    }
+  }
+
   /// Reset password
   Future<void> resetPassword(String email) async {
     state = const AsyncValue.loading();

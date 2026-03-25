@@ -142,7 +142,78 @@ class AuthService {
       rethrow;
     }
   }
+
+  /// Update current user profile in backend
+  Future<UserModel> updateProfile({
+    String? displayName,
+    String? contactNumber,
+  }) async {
+    try {
+      final data = <String, dynamic>{};
+      if (displayName != null) data['displayName'] = displayName;
+      if (contactNumber != null) data['contactNumber'] = contactNumber;
+
+      final response = await _apiService.patch(
+        ApiConstants.authMe,
+        data: data,
+      );
+      return UserModel.fromJson(response.data);
+    } catch (e) {
+      logger.e('Error updating user profile: $e');
+      rethrow;
+    }
+  }
+
+  /// Delete current user account (Backend + Firebase)
+  Future<void> deleteAccount() async {
+    try {
+      logger.i('Deleting user account...');
+      
+      // 1. Delete from backend using ApiService (DELETE /auth/me)
+      await _apiService.delete(ApiConstants.authMe);
+      
+      // 2. Delete from Firebase Auth
+      final user = _auth.currentUser;
+      if (user != null) {
+        await user.delete();
+        logger.i('User deleted successfully');
+      }
+    } catch (e) {
+      logger.e('Error deleting user account: $e');
+      // If Firebase throws 'requires-recent-login', rethrow it so UI can handle it.
+      rethrow;
+    }
+  }
   
+
+  /// Change password for currently signed-in user
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null || user.email == null) {
+        throw Exception('User not signed in or email not available');
+      }
+      
+      // Re-authenticate user first
+      final AuthCredential credential = EmailAuthProvider.credential(
+        email: user.email!,
+        password: currentPassword,
+      );
+      
+      await user.reauthenticateWithCredential(credential);
+      
+      // Then update password
+      await user.updatePassword(newPassword);
+      logger.i('Password updated successfully');
+    } on FirebaseAuthException catch (e) {
+      logger.e('Error changing password: ');
+      rethrow;
+    }
+  }
+
   /// Send password reset email
   Future<void> resetPassword(String email) async {
     try {

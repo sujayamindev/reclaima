@@ -11,6 +11,7 @@ import '../../providers/receipt_provider.dart';
 import '../receipt/product_detail_screen.dart';
 import '../../services/claim_service.dart';
 import '../../providers/claim_provider.dart';
+import '../../widgets/all_clear_placeholder.dart';
 
 // ── Attention item ─────────────────────────────────────────────────────────────
 
@@ -130,6 +131,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+  Future<void> _refreshHomeData() async {
+    await Future.wait([
+      ref.refresh(receiptsProvider.future),
+      ref.refresh(userClaimsProvider.future),
+    ]);
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -151,8 +159,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           Expanded(
             child: SafeArea(
               bottom: false,
-              child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
+              child: RefreshIndicator(
+                onRefresh: _refreshHomeData,
+                child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
+          ),
           slivers: [
             // ── Top bar ──────────────────────────────────────────────────
             SliverToBoxAdapter(
@@ -238,9 +250,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 return claimsAsync.when(
                   data: (claims) {
                     final attentionItems = _buildAttentionItems(receipts, claims);
-                    if (attentionItems.isEmpty) {
-                      return const SliverToBoxAdapter(child: SizedBox.shrink());
-                    }
                     return SliverToBoxAdapter(
                       child: _AttentionSection(
                         items: attentionItems,
@@ -262,28 +271,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   const SliverToBoxAdapter(child: SizedBox.shrink()),
             ),
 
-            // ── Coverage card ─────────────────────────────────────────────
-            receiptsAsync.when(
-              data: (receipts) => SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                      AppDimensions.paddingPage,
-                      24,
-                      AppDimensions.paddingPage,
-                      0),
-                  child: _CoverageCard(
-                    receipts: receipts,
-                    isDark: isDark,
-                  ),
-                ),
-              ),
-              loading: () =>
-                  const SliverToBoxAdapter(child: SizedBox.shrink()),
-              error: (_, _) =>
-                  const SliverToBoxAdapter(child: SizedBox.shrink()),
-            ),
           ],
         ),
+              ),
             ),
           ),
 
@@ -415,7 +405,7 @@ class _StatsRow extends StatelessWidget {
       children: [
         Expanded(child: _StatCard(value: fmt(total), label: 'Total', isDark: isDark, icon: Symbols.shopping_bag)),
         const SizedBox(width: 10),
-        Expanded(child: _StatCard(value: fmt(protected), label: 'Protected', isDark: isDark, icon: Symbols.shield)),
+        Expanded(child: _StatCard(value: fmt(protected), label: 'Protected', isDark: isDark, icon: Symbols.shield_rounded)),
       ],
     );
   }
@@ -543,44 +533,53 @@ class _AttentionSectionState extends State<_AttentionSection> {
         ),
         const SizedBox(height: 14),
 
-        SizedBox(
-          height: 160,
-          child: PageView.builder(
-            controller: _pageController,
-            itemCount: items.length,
-            onPageChanged: (i) => setState(() => _currentPage = i),
-            itemBuilder: (_, i) => Padding(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.paddingPage),
-              child: _AttentionCard(
-                item: items[i],
-                isDark: isDark,
-                onTap: () => widget.onTap(items[i]),
+        // Show placeholder if no items, otherwise show PageView
+        if (items.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.paddingPage),
+            child: AllClearPlaceholder(isDark: isDark),
+          )
+        else ...[
+          SizedBox(
+            height: 160,
+            child: PageView.builder(
+              controller: _pageController,
+              itemCount: items.length,
+              onPageChanged: (i) => setState(() => _currentPage = i),
+              itemBuilder: (_, i) => Padding(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.paddingPage),
+                child: _AttentionCard(
+                  item: items[i],
+                  isDark: isDark,
+                  onTap: () => widget.onTap(items[i]),
+                ),
               ),
             ),
           ),
-        ),
 
-        if (items.length > 1) ...[
-          const SizedBox(height: 14),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(items.length, (i) {
-              final active = i == _currentPage;
-              return AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                margin: const EdgeInsets.symmetric(horizontal: 3),
-                width: active ? 16 : 6,
-                height: 6,
-                decoration: BoxDecoration(
-                  color: active
-                      ? _accentFor(items[i]).withValues(alpha: 0.8)
-                      : AppColors.border(isDark),
-                  borderRadius: BorderRadius.circular(3),
-                ),
-              );
-            }),
-          ),
+          if (items.length > 1) ...[
+            const SizedBox(height: 14),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(items.length, (i) {
+                final active = i == _currentPage;
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  width: active ? 16 : 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: active
+                        ? _accentFor(items[i]).withValues(alpha: 0.8)
+                        : AppColors.border(isDark),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                );
+              }),
+            ),
+          ],
         ],
       ],
     );
@@ -710,92 +709,6 @@ class _AttentionCard extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-// ── Coverage card ──────────────────────────────────────────────────────────────
-
-class _CoverageCard extends StatelessWidget {
-  const _CoverageCard({required this.receipts, required this.isDark});
-
-  final List<ReceiptModel> receipts;
-  final bool isDark;
-
-  @override
-  Widget build(BuildContext context) {
-    final allItems = receipts.expand((r) => r.lineItems).toList();
-    final total = allItems.length;
-    final protected = allItems
-        .where((i) => i.warrantyExpiryDate != null && !i.isWarrantyExpired)
-        .length;
-
-    if (total == 0) return const SizedBox.shrink();
-
-    final ratio = protected / total;
-    final pct = (ratio * 100).round();
-    final barColor = pct >= 80
-        ? AppColors.success
-        : pct >= 50
-            ? AppColors.warning
-            : AppColors.error;
-
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingCardSmall),
-      decoration: BoxDecoration(
-        color: AppColors.card(isDark),
-        borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
-        border: Border.all(color: AppColors.border(isDark)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                'COVERAGE',
-                style: AppTextStyles.capsLabel
-                    .copyWith(color: AppColors.textSecondary(isDark)),
-              ),
-              Row(
-                children: [
-                  Text(
-                    '$protected',
-                    style: AppTextStyles.headingSmall.copyWith(
-                      color: AppColors.textPrimary(isDark),
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  Text(
-                    ' / $total',
-                    style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textSecondary(isDark)),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(100),
-            child: LinearProgressIndicator(
-              value: ratio,
-              minHeight: 8,
-              backgroundColor:
-                  AppColors.textSecondary(isDark).withValues(alpha: 0.12),
-              valueColor: AlwaysStoppedAnimation<Color>(barColor),
-            ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            '$pct% of your products are actively protected',
-            style: AppTextStyles.caption
-                .copyWith(color: AppColors.textSecondary(isDark)),
-          ),
-        ],
       ),
     );
   }

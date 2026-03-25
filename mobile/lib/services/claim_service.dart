@@ -7,6 +7,7 @@ import '../providers/service_providers.dart';
 class ClaimDocumentResponse {
   final String id;
   final String receiptId;
+  final String? lineItemId;
   final String issueDescription;
   final String? claimType;
   final String status;
@@ -19,6 +20,7 @@ class ClaimDocumentResponse {
   ClaimDocumentResponse({
     required this.id,
     required this.receiptId,
+    this.lineItemId,
     required this.issueDescription,
     this.claimType,
     required this.status,
@@ -33,6 +35,7 @@ class ClaimDocumentResponse {
     return ClaimDocumentResponse(
       id: json['id'] as String,
       receiptId: json['receiptId'] ?? json['receipt_id'] as String,
+      lineItemId: json['lineItemId'] ?? json['line_item_id'] as String?,
       issueDescription: json['issueDescription'] ?? json['issue_description'] as String,
       claimType: json['claimType'] ?? json['claim_type'] as String?,
       status: json['status'] as String? ?? 'SUBMITTED',
@@ -47,6 +50,7 @@ class ClaimDocumentResponse {
   Map<String, dynamic> toJson() => {
     'id': id,
     'receiptId': receiptId,
+    'lineItemId': lineItemId,
     'issueDescription': issueDescription,
     'claimType': claimType,
     'status': status,
@@ -67,12 +71,14 @@ class ClaimService {
   /// Generate a warranty claim PDF for a receipt
   ///
   /// Args:
-  ///   receipted: Receipt ID for which to generate the claim
+  ///   receiptId: Receipt ID for which to generate the claim
   ///   issueDescription: Description of the issue/claim
-  ///   claimType: Type of claim (warranty, return, repair)
+  ///   claimType: Type of claim (warranty, return)
+  ///   lineItemId: Optional line item ID (product) for which to generate the claim
   ///
   /// Returns:
-  ///   ClaimDocumentResponse with claim details and download URL
+  ///   ClaimDocumentResponse with claim metadata.
+  ///   Use [accessClaimPdf] when the user explicitly wants to open/download/share/copy the PDF.
   ///
   /// Throws:
   ///   Exception if generation fails
@@ -80,9 +86,10 @@ class ClaimService {
     required String receiptId,
     required String issueDescription,
     required String claimType,
+    String? lineItemId,
   }) async {
     try {
-      logger.i('Generating claim PDF for receipt $receiptId');
+      logger.i('Generating claim PDF for receipt $receiptId, product ${lineItemId ?? "all"}');
 
       final response = await _apiService.post(
         '/claims',
@@ -90,6 +97,7 @@ class ClaimService {
           'receiptId': receiptId,
           'issueDescription': issueDescription,
           'claimType': claimType,
+          if (lineItemId != null) 'lineItemId': lineItemId,
         },
       );
 
@@ -106,27 +114,37 @@ class ClaimService {
     }
   }
 
-  /// Get all claims (optionally filtered by receipt)
+  /// Get all claims (optionally filtered by receipt or line item)
   ///
   /// Args:
   ///   receiptId: Optional receipt ID to filter claims by
+  ///   lineItemId: Optional line item ID (product) to filter claims by - takes precedence
   ///
   /// Returns:
   ///   List of ClaimDocumentResponse objects
   ///
   /// Throws:
   ///   Exception if retrieval fails
-  Future<List<ClaimDocumentResponse>> getClaims({String? receiptId}) async {
+  Future<List<ClaimDocumentResponse>> getClaims({String? receiptId, String? lineItemId}) async {
     try {
-      if (receiptId != null) {
+      if (lineItemId != null) {
+        logger.i('Fetching claims for product $lineItemId');
+      } else if (receiptId != null) {
         logger.i('Fetching claims for receipt $receiptId');
       } else {
         logger.i('Fetching all claims');
       }
 
+      final queryParams = <String, dynamic>{};
+      if (lineItemId != null) {
+        queryParams['line_item_id'] = lineItemId;
+      } else if (receiptId != null) {
+        queryParams['receipt_id'] = receiptId;
+      }
+
       final response = await _apiService.get(
         '/claims',
-        queryParameters: receiptId != null ? {'receiptId': receiptId} : null,
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
       );
 
       if (response.statusCode == 200) {
@@ -150,7 +168,8 @@ class ClaimService {
   ///   claimId: Claim ID to retrieve
   ///
   /// Returns:
-  ///   ClaimDocumentResponse with claim details and download URL
+  ///   ClaimDocumentResponse with claim metadata.
+  ///   Use [accessClaimPdf] when the user explicitly wants to open/download/share/copy the PDF.
   ///
   /// Throws:
   ///   Exception if retrieval fails
@@ -169,6 +188,28 @@ class ClaimService {
       }
     } catch (e) {
       logger.e('Error retrieving claim: $e');
+      rethrow;
+    }
+  }
+
+  /// Access claim PDF for user-initiated actions (open/download/share/copy).
+  ///
+  /// This endpoint is the only path that may regenerate a missing PDF.
+  Future<ClaimDocumentResponse> accessClaimPdf(String claimId) async {
+    try {
+      logger.i('Accessing claim PDF for $claimId');
+
+      final response = await _apiService.post('/claims/$claimId/pdf-access', data: {});
+
+      if (response.statusCode == 200) {
+        final data = response.data as Map<String, dynamic>;
+        logger.i('Claim PDF access URL generated for $claimId');
+        return ClaimDocumentResponse.fromJson(data);
+      } else {
+        throw Exception('Failed to access claim PDF: ${response.statusCode}');
+      }
+    } catch (e) {
+      logger.e('Error accessing claim PDF: $e');
       rethrow;
     }
   }
