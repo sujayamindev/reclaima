@@ -478,14 +478,22 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
                       ),
                     ),
                   ] else ...[
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: Text(
-                        'You are signed in with a Google account. Password changes are managed through Google.',
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.textSecondary(isDark),
-                        ),
-                      ),
+                    Builder(
+                      builder: (context) {
+                        final authUser = ref.read(currentUserProvider);
+                        final isApple = authUser?.providerData.any((p) => p.providerId.contains('apple')) ?? false;
+                        final providerName = isApple ? 'an Apple' : 'a Google';
+                        final shortName = isApple ? 'Apple' : 'Google';
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Text(
+                            'You are signed in with $providerName account. Password changes are managed through $shortName.',
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: AppColors.textSecondary(isDark),
+                            ),
+                          ),
+                        );
+                      }
                     ),
                   ],
                 ],

@@ -45,6 +45,20 @@ class AuthService {
       return userCredential;
     } on FirebaseAuthException catch (e) {
       logger.e('Firebase signup error: ${e.code}');
+      
+      if (e.code == 'email-already-in-use') {
+        try {
+          final methods = await _auth.fetchSignInMethodsForEmail(email);
+          if (methods.contains('google.com')) {
+            throw 'Looks like you signed up with Google. Please use the "Continue with Google" button.';
+          } else if (methods.contains('apple.com')) {
+            throw 'Looks like you signed up with Apple. Please use the "Continue with Apple" button.';
+          }
+        } catch (_) {
+          // Ignore fetch errors and fallback to original error
+        }
+      }
+      
       rethrow;
     }
   }
@@ -65,6 +79,20 @@ class AuthService {
       return userCredential;
     } on FirebaseAuthException catch (e) {
       logger.e('Firebase signin error: ${e.code}');
+      
+      if (e.code == 'invalid-credential' || e.code == 'wrong-password') {
+        try {
+          final methods = await _auth.fetchSignInMethodsForEmail(email);
+          if (methods.contains('google.com') && !methods.contains('password')) {
+            throw 'Looks like you signed up with Google. Please use the "Continue with Google" button.';
+          } else if (methods.contains('apple.com') && !methods.contains('password')) {
+            throw 'Looks like you signed up with Apple. Please use the "Continue with Apple" button.';
+          }
+        } catch (_) {
+          // Ignore fetch errors and fallback to original error
+        }
+      }
+      
       rethrow;
     }
   }
