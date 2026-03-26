@@ -540,20 +540,12 @@ class _ProductListItem extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '•',
-                            style: AppTextStyles.bodyXSmall.copyWith(
-                              color: textSecondary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
+                          const SizedBox(width: 8),
                         ],
                         if (item.purchaseDate != null) ...[
                           Icon(
                             Symbols.calendar_today_rounded,
-                            size: 10,
+                            size: AppDimensions.iconTiny,
                             color: textSecondary,
                             weight: AppDimensions.iconWeightBold,
                           ),
