@@ -24,6 +24,10 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
   bool _isSaving = false;
   bool _isChangingPassword = false;
 
+  bool _obscureCurrentPassword = true;
+  bool _obscureNewPassword = true;
+  bool _obscureConfirmPassword = true;
+
   @override
   void initState() {
     super.initState();
@@ -231,6 +235,7 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
     TextInputType keyboardType = TextInputType.text,
     bool readOnly = false,
     bool obscureText = false,
+    Widget? suffixIcon,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -274,6 +279,7 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
                     size: 20,
                     weight: 600.0),
               ),
+              suffixIcon: suffixIcon,
               contentPadding:
                   const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               border: OutlineInputBorder(
@@ -433,7 +439,16 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
                       title: 'Current Password',
                       hintText: 'Enter current password',
                       controller: _currentPasswordController,
-                      obscureText: true,
+                      obscureText: _obscureCurrentPassword,
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureCurrentPassword ? Symbols.visibility_rounded : Symbols.visibility_off_rounded,
+                          color: AppColors.textSecondary(isDark),
+                        ),
+                        onPressed: () {
+                          setState(() => _obscureCurrentPassword = !_obscureCurrentPassword);
+                        },
+                      ),
                     ),
                     const SizedBox(height: 6),
                     _buildTextFieldRow(
@@ -442,7 +457,16 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
                       title: 'New Password',
                       hintText: 'Enter new password',
                       controller: _newPasswordController,
-                      obscureText: true,
+                      obscureText: _obscureNewPassword,
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureNewPassword ? Symbols.visibility_rounded : Symbols.visibility_off_rounded,
+                          color: AppColors.textSecondary(isDark),
+                        ),
+                        onPressed: () {
+                          setState(() => _obscureNewPassword = !_obscureNewPassword);
+                        },
+                      ),
                     ),
                     const SizedBox(height: 6),
                     _buildTextFieldRow(
@@ -451,7 +475,16 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
                       title: 'Confirm New Password',
                       hintText: 'Confirm new password',
                       controller: _confirmPasswordController,
-                      obscureText: true,
+                      obscureText: _obscureConfirmPassword,
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureConfirmPassword ? Symbols.visibility_rounded : Symbols.visibility_off_rounded,
+                          color: AppColors.textSecondary(isDark),
+                        ),
+                        onPressed: () {
+                          setState(() => _obscureConfirmPassword = !_obscureConfirmPassword);
+                        },
+                      ),
                     ),
                     const SizedBox(height: 24),
                     SizedBox(

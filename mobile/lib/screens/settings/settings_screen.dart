@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/app_constants.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import '../../providers/auth_provider.dart';
 import 'subscreens/profile_settings_screen.dart';
 import 'subscreens/notification_settings_screen.dart';
 import 'subscreens/privacy_settings_screen.dart';
@@ -116,6 +117,32 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     [
                       _buildInfoRow(isDark, 'App Version', _appVersion),
                     ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  // ── Logout ────────────────────────────────────────────
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          side: BorderSide(color: AppColors.error),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+                          ),
+                        ),
+                        onPressed: () {
+                          ref.read(authControllerProvider.notifier).signOut();
+                        },
+                        icon: Icon(Symbols.logout_rounded, color: AppColors.error),
+                        label: Text(
+                          'Log Out',
+                          style: AppTextStyles.buttonSmall.copyWith(color: AppColors.error),
+                        ),
+                      ),
+                    ),
                   ),
                 ]),
               ),
