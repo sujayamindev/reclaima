@@ -315,43 +315,8 @@ class ProductDetailScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
               ],
 
-              // ── Processing Status ────────────────────────────────
-              _buildSection(
-                isDark,
-                'Processing Status',
-                Symbols.cloud_done_rounded,
-                [
-                  _buildInfoRow(
-                    'OCR Status',
-                    product.receipt.status.name,
-                    isDark,
-                  ),
-                  _buildInfoRow(
-                    'Retry Count',
-                    '${product.receipt.ocrRetryCount}',
-                    isDark,
-                  ),
-                  if (product.receipt.lastOcrAttemptAt != null)
-                    _buildInfoRow(
-                      'Last Attempt',
-                      DateFormatter.formatDateTime(
-                        product.receipt.lastOcrAttemptAt!,
-                      ),
-                      isDark,
-                    ),
-                  _buildInfoRow(
-                    'Added',
-                    DateFormatter.formatDateTime(product.receipt.createdAt),
-                    isDark,
-                  ),
-                  if (product.receipt.syncedAt != null)
-                    _buildInfoRow(
-                      'Last Synced',
-                      DateFormatter.formatDateTime(product.receipt.syncedAt!),
-                      isDark,
-                    ),
-                ],
-              ),
+              
+              
             ]),
           ),
         ),
@@ -1461,6 +1426,7 @@ class ProductDetailScreen extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
+            style: TextButton.styleFrom(foregroundColor: AppColors.onPrimary),
             child: const Text('Cancel'),
           ),
           TextButton(
