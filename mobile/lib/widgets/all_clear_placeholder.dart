@@ -31,7 +31,7 @@ class AllClearPlaceholder extends StatelessWidget {
           // Text content
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.all(AppDimensions.paddingCardSmall),
+              padding: const EdgeInsets.fromLTRB(AppDimensions.paddingCardSmall+12, AppDimensions.paddingCardSmall, AppDimensions.paddingCardSmall, AppDimensions.paddingCardSmall),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -44,7 +44,7 @@ class AllClearPlaceholder extends StatelessWidget {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Text(
                     'No immediate action items at the moment. You\'re all caught up!',
                     style: AppTextStyles.bodySmall.copyWith(
@@ -69,7 +69,7 @@ class AllClearPlaceholder extends StatelessWidget {
               AppDimensions.paddingCardSmall,
             ),
             child: SizedBox(
-              width: 110,
+              width: 100,
               child: Center(
                 child: SvgPicture.asset(
                   'assets/images/all_clear_symbol.svg',

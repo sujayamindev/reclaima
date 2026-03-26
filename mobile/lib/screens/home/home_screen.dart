@@ -530,7 +530,7 @@ class _StatsRow extends StatelessWidget {
         .where((i) => i.warrantyExpiryDate != null && !i.isWarrantyExpired)
         .length;
 
-    String fmt(int n) => n.toString().padLeft(2, '0');
+    String fmt(int n) => n == 0 ? '--' : n.toString().padLeft(2, '0');
 
     return Row(
       children: [
@@ -969,7 +969,7 @@ class _InsightsSection extends StatelessWidget {
         .length;
 
     final currencyFormat = NumberFormat.simpleCurrency(decimalDigits: 0);
-    final formattedValue = currencyFormat.format(valueProtected);
+    final formattedValue = valueProtected == 0.0 ? '--' : currencyFormat.format(valueProtected);
 
     final card = AppColors.card(isDark);
     final border = AppColors.border(isDark);
@@ -1027,7 +1027,7 @@ class _InsightsSection extends StatelessWidget {
                         formattedValue,
                         style: AppTextStyles.headingLarge.copyWith(
                           fontSize: 24,
-                          color: textSecondary,
+                          color: textPrimary,
                         ),
                       ),
                     ],
@@ -1058,10 +1058,10 @@ class _InsightsSection extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        claimsResolved.toString(),
+                        claimsResolved == 0 ? '--' : claimsResolved.toString(),
                         style: AppTextStyles.headingLarge.copyWith(
                           fontSize: 24,
-                          color: textSecondary,
+                          color: textPrimary,
                         ),
                       ),
                     ],

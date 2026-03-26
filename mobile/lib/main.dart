@@ -9,6 +9,7 @@ import 'core/utils/navigation.dart';
 import 'providers/auth_provider.dart';
 import 'providers/service_providers.dart';
 import 'screens/auth/login_screen.dart';
+import 'screens/auth/verify_email_screen.dart';
 import 'screens/main_shell.dart';
 import 'screens/receipt/product_detail_screen.dart';
 
@@ -76,6 +77,10 @@ class MyApp extends ConsumerWidget {
           if (user == null) {
             FlutterNativeSplash.remove();
             return const LoginScreen();
+          }
+          if (!user.emailVerified && user.providerData.any((p) => p.providerId == 'password')) {
+            FlutterNativeSplash.remove();
+            return const VerifyEmailScreen();
           }
           return const _AuthenticatedRoot();
         },

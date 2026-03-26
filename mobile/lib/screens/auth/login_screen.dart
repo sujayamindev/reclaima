@@ -8,6 +8,7 @@ import '../../widgets/app_text_field.dart';
 import '../../widgets/app_social_button.dart';
 import '../main_shell.dart';
 import 'signup_screen.dart';
+import 'verify_email_screen.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -54,14 +55,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final authState = ref.watch(authControllerProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Listen to auth state changes and navigate directly to MainShell
+    // Listen to auth state changes and navigate directly to MainShell or VerifyEmail
     ref.listen<AsyncValue<dynamic>>(authStateProvider, (previous, next) {
       next.whenData((user) {
         if (user != null && mounted) {
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const MainShell()),
-            (route) => false,
-          );
+          if (!user.emailVerified && user.providerData.any((p) => p.providerId == 'password')) {
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => const VerifyEmailScreen()),
+              (route) => false,
+            );
+          } else {
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => const MainShell()),
+              (route) => false,
+            );
+          }
         }
       });
     });

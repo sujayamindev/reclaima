@@ -18,6 +18,26 @@ class AuthService {
   
   /// Auth state changes stream
   Stream<User?> get authStateChanges => _auth.authStateChanges();
+
+  /// Send email verification
+  Future<void> sendEmailVerification() async {
+    try {
+      if (currentUser != null && !currentUser!.emailVerified) {
+        await currentUser!.sendEmailVerification();
+        logger.i('Verification email sent to ${currentUser!.email}');
+      }
+    } catch (e) {
+      logger.e('Failed to send verification email: $e');
+      rethrow;
+    }
+  }
+
+  /// Reload user and check if email is verified
+  Future<bool> isEmailVerified() async {
+    if (currentUser == null) return false;
+    await currentUser!.reload();
+    return currentUser!.emailVerified;
+  }
   
   /// Sign up with email and password
   Future<UserCredential> signUp({
@@ -32,6 +52,12 @@ class AuthService {
         email: email,
         password: password,
       );
+
+      try {
+        await userCredential.user?.sendEmailVerification();
+      } catch (e) {
+        logger.w('Failed to send verification email during signup: $e');
+      }
       
       // Register user in backend with full name.
       // Non-fatal: Firebase auth is the primary auth source.

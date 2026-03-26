@@ -95,6 +95,22 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
       state = AsyncValue.error(e, st);
     }
   }
+
+  /// Send email verification
+  Future<void> sendEmailVerification() async {
+    state = const AsyncValue.loading();
+    try {
+      await _authService.sendEmailVerification();
+      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  /// Check if email is verified
+  Future<bool> checkEmailVerified() async {
+    return await _authService.isEmailVerified();
+  }
   
   /// Update current user profile
   Future<void> updateProfile({
