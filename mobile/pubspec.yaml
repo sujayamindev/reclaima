@@ -74,6 +74,7 @@ dependencies:
   google_sign_in: ^7.2.0
   open_filex: ^4.7.0
   permission_handler: ^12.0.1
+  flutter_native_splash: ^2.4.7
 
 dev_dependencies:
   flutter_test:
@@ -86,6 +87,7 @@ dev_dependencies:
   drift_dev: ^2.18.0
   riverpod_generator: ^2.4.0
   json_serializable: ^6.8.0
+  flutter_launcher_icons: ^0.14.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -127,3 +129,31 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  image_path: "assets/icon/app_icon.png"
+  # Optional: You can specify different images for Android and iOS
+  # image_path_android: "assets/icon/app_icon_android.png"
+  # image_path_ios: "assets/icon/app_icon_ios.png"
+  # Optionally configure a background color for Android adaptive icons
+  # min_sdk_android: 21
+
+flutter_native_splash:
+  # The color of the splash screen background
+  color: "#12E28C"
+  # The path to your splash screen logo (needs to be added to your assets folder)
+  image: "assets/images/splash_logo.png"
+
+  # Optional dark mode settings
+  color_dark: "#12E28C"
+  image_dark: "assets/images/splash_logo.png"
+
+  android_12:
+    # Android 12+ requires a separate configuration for the newer splash screen API
+    image: "assets/images/splash_logo.png"
+    image_dark: "assets/images/splash_logo.png"
+    color: "#12E28C"
+    color_dark: "#12E28C"

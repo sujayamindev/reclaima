@@ -62,7 +62,7 @@ class _BottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = isDark ? const Color(0xFF1A2F27) : Colors.white;
+    final bg = AppColors.navBar(isDark);
 
     return Container(
       decoration: BoxDecoration(

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../receipt/add_receipt_screen.dart';
@@ -201,6 +202,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Watch providers that need to load data
+    final receiptState = ref.watch(receiptsProvider);
+    final claimState = ref.watch(userClaimsProvider);
+    
+    // Check if both data sets have loaded
+    if (receiptState.hasValue && claimState.hasValue) {
+      // Remove splash screen once the initial API calls are completed.
+      // This is safe to call multiple times.
+      FlutterNativeSplash.remove();
+    }
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final greeting = ref.watch(greetingProvider);
     final userName = ref.watch(displayNameProvider);

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'core/constants/app_theme.dart';
 import 'core/utils/logger.dart';
 import 'core/utils/navigation.dart';
@@ -22,7 +23,8 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
   try {
     await Firebase.initializeApp();
@@ -49,7 +51,7 @@ class MyApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
+      themeMode: ThemeMode.light,
       navigatorKey: navigatorKey,
       // Named route used by NotificationService to deep-link into a product
       onGenerateRoute: (settings) {
@@ -69,12 +71,21 @@ class MyApp extends ConsumerWidget {
         return null;
       },
       home: authState.when(
-        data: (user) =>
-            user != null ? const _AuthenticatedRoot() : const LoginScreen(),
+        data: (user) {
+          // Do not remove splash here if logged in; let MainShell/HomeScreen remove it.
+          if (user == null) {
+            FlutterNativeSplash.remove();
+            return const LoginScreen();
+          }
+          return const _AuthenticatedRoot();
+        },
         loading: () => const Scaffold(
           body: Center(child: CircularProgressIndicator()),
         ),
-        error: (_, _) => const LoginScreen(),
+        error: (_, _) {
+          FlutterNativeSplash.remove();
+          return const LoginScreen();
+        },
       ),
     );
   }

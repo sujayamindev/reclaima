@@ -20,7 +20,7 @@ abstract final class AppColors {
 
   // ── Backgrounds ────────────────────────────────────────────────────────────
 
-  static const Color _backgroundDark = Color(0xFF10221B);
+  static const Color _backgroundDark = Color(0xFF151515);
   static const Color _backgroundLight = Color(0xFFF6F8F7);
 
   /// Page / scaffold background.
@@ -29,7 +29,7 @@ abstract final class AppColors {
 
   // ── Cards / Surfaces ───────────────────────────────────────────────────────
 
-  static const Color _cardDark = Color(0xFF1E3A32);
+  static const Color _cardDark = Colors.black;
   static const Color _cardLight = Colors.white;
 
   /// Card / sheet / input fill background.
@@ -82,8 +82,8 @@ abstract final class AppColors {
 
   // ── Navigation bar ─────────────────────────────────────────────────────────
 
-  static const Color _navBarDark = Color(0xFF1E293B);
-  static const Color _navBarLight = Color(0xFF0F172A);
+  static const Color _navBarDark = Color(0xFF000000);
+  static const Color _navBarLight = Colors.white;
 
   /// Background of the bottom navigation pill.
   static Color navBar(bool isDark) => isDark ? _navBarDark : _navBarLight;
