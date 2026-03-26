@@ -123,6 +123,124 @@ class _ClaimsHubScreenState extends ConsumerState<ClaimsHubScreen> {
     await ref.refresh(userClaimsProvider.future);
   }
 
+  Future<void> _showClaimsInfoDialog() async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.card(isDark),
+        title: Text(
+          'How to Use Claims',
+          style: AppTextStyles.titleLarge.copyWith(
+            color: AppColors.textPrimary(isDark),
+          ),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildInfoSection(
+                icon: Symbols.add_circle_rounded,
+                title: 'Creating a Claim PDF',
+                steps: [
+                  'Select the product you want to file a claim for from the Vault',
+                  'Tap on the "Manage Claims" button',
+                  'Tap "New Claim" button',
+                  'Fill in the issue description and select claim type',
+                  'Tap "Generate Claim PDF" to create your claim document',
+                ],
+                isDark: isDark,
+              ),
+              const SizedBox(height: 20),
+              _buildInfoSection(
+                icon: Symbols.edit_rounded,
+                title: 'Updating Claim Status',
+                steps: [
+                  'Open the claim you want to update',
+                  'Tap on the status dropdown (e.g., "DRAFT", "SUBMITTED")',
+                  'Select the new status from the list',
+                  'Tap the "Done" button',
+                  'Status options: DRAFT → SUBMITTED → IN_PROGRESS → RESOLVED/DENIED',
+                ],
+                isDark: isDark,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Got it',
+              style: AppTextStyles.buttonSmall.copyWith(color: AppColors.primary),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoSection({
+    required IconData icon,
+    required String title,
+    required List<String> steps,
+    required bool isDark,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(
+              icon,
+              color: AppColors.primary,
+              size: AppDimensions.iconMedium,
+              weight: AppDimensions.iconWeightBold,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                title,
+                style: AppTextStyles.bodyLarge.copyWith(
+                  color: AppColors.textPrimary(isDark),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ...steps.asMap().entries.map((entry) {
+          return Padding(
+            padding: const EdgeInsets.only(left: 8, top: 4),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${entry.key + 1}. ',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textSecondary(isDark),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    entry.value,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.textSecondary(isDark),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -155,11 +273,36 @@ class _ClaimsHubScreenState extends ConsumerState<ClaimsHubScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Claims',
-                            style: AppTextStyles.headingLarge.copyWith(
-                              color: textPrimary,
-                            ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Claims',
+                                style: AppTextStyles.headingLarge.copyWith(
+                                  color: textPrimary,
+                                ),
+                              ),
+                              SizedBox(
+                                width: 32,
+                                height: 32,
+                                child: IconButton(
+                                  icon: Icon(
+                                    Symbols.info_rounded,
+                                    color: AppColors.textSecondary(isDark),
+                                    size: AppDimensions.iconNormal,
+                                    weight: AppDimensions.iconWeightBold,
+                                  ),
+                                  onPressed: () => _showClaimsInfoDialog(),
+                                  tooltip: 'How to use claims',
+                                  padding: EdgeInsets.zero,
+                                  style: IconButton.styleFrom(
+                                    backgroundColor: Colors.transparent,
+                                    shape: const CircleBorder(),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 16),
                           // Search Bar
