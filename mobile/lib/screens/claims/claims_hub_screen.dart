@@ -58,8 +58,8 @@ class _ClaimsHubScreenState extends ConsumerState<ClaimsHubScreen> {
   ) {
     // Apply search
     var searchFiltered = allClaims.where((claim) {
-      if (_searchQuery.isEmpty) return true;
-      final q = _searchQuery.toLowerCase();
+      if (_searchQuery.trim().isEmpty) return true;
+      final q = _searchQuery.trim().toLowerCase();
       final idMatches = claim.id.toLowerCase().contains(q);
       final descMatches = claim.issueDescription.toLowerCase().contains(q);
       return idMatches || descMatches;

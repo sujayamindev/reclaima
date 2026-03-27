@@ -108,7 +108,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
 
   Future<void> _saveNotesIfChanged() async {
     if (_generatedClaim == null) return;
-    final currentNotes = _notesController.text;
+    final currentNotes = _notesController.text.trim();
     final previousNotes = _generatedClaim!.notes ?? '';
 
     if (currentNotes == previousNotes) return;
@@ -140,7 +140,8 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
 
   Future<void> _generateClaim() async {
     // Validate input
-    if (_issueController.text.isEmpty) {
+    final issueDesc = _issueController.text.trim();
+    if (issueDesc.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please describe the issue')),
       );
@@ -158,7 +159,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
 
       final claim = await claimService.generateClaimPdf(
         receiptId: widget.receiptId,
-        issueDescription: _issueController.text,
+        issueDescription: issueDesc,
         claimType: _selectedClaimType,
         lineItemId: widget.lineItemId,
       );

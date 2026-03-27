@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import '../../../core/constants/app_constants.dart';
@@ -290,6 +291,7 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
     bool readOnly = false,
     bool obscureText = false,
     Widget? suffixIcon,
+    List<TextInputFormatter>? inputFormatters,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -308,6 +310,7 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
           TextFormField(
             controller: controller,
             keyboardType: keyboardType,
+            inputFormatters: inputFormatters,
             readOnly: readOnly,
             obscureText: obscureText,
             style: AppTextStyles.bodyMedium.copyWith(
@@ -439,6 +442,9 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
                     hintText: '+1 234 567 8900',
                     controller: _contactController,
                     keyboardType: TextInputType.phone,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-9+\\- ()]')),
+                    ],
                   ),
                   const SizedBox(height: 6),
                   _buildTextFieldRow(

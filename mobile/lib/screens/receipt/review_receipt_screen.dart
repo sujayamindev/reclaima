@@ -322,44 +322,54 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
 
     // ── Receipt-level fields (go to PATCH /receipts/{id}) ────────────────
     final receiptData = <String, dynamic>{};
-    if (_invoiceNumberCtrl.text.isNotEmpty) {
-      receiptData['invoiceNumber'] = _invoiceNumberCtrl.text;
+    final invoiceNumber = _invoiceNumberCtrl.text.trim();
+    if (invoiceNumber.isNotEmpty) {
+      receiptData['invoiceNumber'] = invoiceNumber;
     }
-    if (_storeNameCtrl.text.isNotEmpty) {
-      receiptData['storeName'] = _storeNameCtrl.text;
+    final storeName = _storeNameCtrl.text.trim();
+    if (storeName.isNotEmpty) {
+      receiptData['storeName'] = storeName;
     }
     if (_purchaseDate != null) {
       receiptData['purchaseDate'] = _formatDate(_purchaseDate!);
     }
-    if (_totalAmountCtrl.text.isNotEmpty) {
-      final amount = double.tryParse(_totalAmountCtrl.text);
+    final totalAmountText = _totalAmountCtrl.text.trim();
+    if (totalAmountText.isNotEmpty) {
+      final amount = double.tryParse(totalAmountText);
       if (amount != null) receiptData['totalAmount'] = amount;
     }
-    if (_currencyCtrl.text.isNotEmpty) {
-      receiptData['currency'] = _currencyCtrl.text;
+    final currency = _currencyCtrl.text.trim();
+    if (currency.isNotEmpty) {
+      receiptData['currency'] = currency;
     }
-    if (_vendorAddressCtrl.text.isNotEmpty) {
-      receiptData['vendorAddress'] = _vendorAddressCtrl.text;
+    final vendorAddress = _vendorAddressCtrl.text.trim();
+    if (vendorAddress.isNotEmpty) {
+      receiptData['vendorAddress'] = vendorAddress;
     }
-    if (_vendorPhoneCtrl.text.isNotEmpty) {
-      receiptData['vendorPhone'] = _vendorPhoneCtrl.text;
+    final vendorPhone = _vendorPhoneCtrl.text.trim();
+    if (vendorPhone.isNotEmpty) {
+      receiptData['vendorPhone'] = vendorPhone;
     }
-    if (_vendorEmailCtrl.text.isNotEmpty) {
-      receiptData['vendorEmail'] = _vendorEmailCtrl.text;
+    final vendorEmail = _vendorEmailCtrl.text.trim();
+    if (vendorEmail.isNotEmpty) {
+      receiptData['vendorEmail'] = vendorEmail;
     }
-    if (_remarksCtrl.text.isNotEmpty) {
-      receiptData['remarks'] = _remarksCtrl.text;
+    final remarks = _remarksCtrl.text.trim();
+    if (remarks.isNotEmpty) {
+      receiptData['remarks'] = remarks;
     }
-    if (_warrantyNotesCtrl.text.isNotEmpty) {
-      receiptData['warrantyNotes'] = _warrantyNotesCtrl.text;
+    final warrantyNotes = _warrantyNotesCtrl.text.trim();
+    if (warrantyNotes.isNotEmpty) {
+      receiptData['warrantyNotes'] = warrantyNotes;
     }
 
     // ── Line-item fields (go to PATCH/POST /receipts/{id}/items/{itemId}) ─
     final lineItemData = <String, dynamic>{};
-    if (_productNameCtrl.text.isNotEmpty) {
-      lineItemData['productName'] = _productNameCtrl.text;
+    final productName = _productNameCtrl.text.trim();
+    if (productName.isNotEmpty) {
+      lineItemData['productName'] = productName;
       // Also keep in receiptData purely for confirmation screen display
-      receiptData['productName'] = _productNameCtrl.text;
+      receiptData['productName'] = productName;
     }
     if (_selectedCategory.isNotEmpty) {
       lineItemData['productCategory'] = _selectedCategory;
@@ -857,6 +867,11 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                         controller: _vendorPhoneCtrl,
                         hint: 'e.g. +94 77 123 4567',
                         keyboardType: TextInputType.phone,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(
+                            RegExp(r'[0-9+\\- ()]'),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 14),
                       _buildTextField(

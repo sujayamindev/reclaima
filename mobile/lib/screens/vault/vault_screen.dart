@@ -82,8 +82,8 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
   ) {
     // Apply search
     var searchFiltered = allProducts.where((item) {
-      if (_searchQuery.isEmpty) return true;
-      final q = _searchQuery.toLowerCase();
+      if (_searchQuery.trim().isEmpty) return true;
+      final q = _searchQuery.trim().toLowerCase();
       final nameMatches = item.lineItem.displayName.toLowerCase().contains(q);
       final storeMatches = item.storeName?.toLowerCase().contains(q) ?? false;
       return nameMatches || storeMatches;

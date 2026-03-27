@@ -86,7 +86,7 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
     if (_claim == null || _isUpdating) return;
 
     final pendingStatus = _pendingStatus ?? _claim!.status;
-    final notesText = _notesController.text;
+    final notesText = _notesController.text.trim();
     final statusChanged = pendingStatus != _claim!.status;
     final notesChanged = notesText != (_claim!.notes ?? '');
 
