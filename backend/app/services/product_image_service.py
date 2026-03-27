@@ -302,6 +302,20 @@ class BraveProductImageService(BaseProductImageService):
             if not results:
                 return None
 
+            # 1. Prefer images from trusted domains
+            for item in results:
+                image_url = self._extract_image_url(item)
+                if not image_url:
+                    continue
+                source_url = item.get("url", image_url)
+                if _is_trusted(source_url) or _is_trusted(image_url):
+                    return {
+                        "imageUrl": image_url,
+                        "title": item.get("title", query),
+                        "source": item.get("source", ""),
+                    }
+
+            # 2. Fall back to any non-blocked domains
             for item in results:
                 image_url = self._extract_image_url(item)
                 if not image_url:
