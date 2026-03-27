@@ -174,7 +174,9 @@ class _ClaimsHubScreenState extends ConsumerState<ClaimsHubScreen> {
             onPressed: () => Navigator.pop(ctx),
             child: Text(
               'Got it',
-              style: AppTextStyles.buttonSmall.copyWith(color: AppColors.primary),
+              style: AppTextStyles.buttonSmall.copyWith(
+                color: AppColors.primary,
+              ),
             ),
           ),
         ],
@@ -622,12 +624,22 @@ class _ClaimCard extends StatelessWidget {
   String _getProductNames() {
     try {
       final receipt = allReceipts.firstWhere((r) => r.id == claim.receiptId);
+
+      if (claim.lineItemId != null) {
+        try {
+          final item = receipt.lineItems.firstWhere(
+            (i) => i.id == claim.lineItemId,
+          );
+          return item.displayName;
+        } catch (_) {}
+      }
+
       final productNames = receipt.lineItems
           .map((item) => item.displayName)
           .toList();
       if (productNames.isEmpty) return 'Unknown Product';
       if (productNames.length == 1) return productNames.first;
-      return ' +  more';
+      return '${productNames.first} + ${productNames.length - 1} more';
     } catch (e) {
       return 'Unknown Product';
     }

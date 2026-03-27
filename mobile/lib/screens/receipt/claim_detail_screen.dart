@@ -39,7 +39,13 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
 
   bool _isStatusExpanded = false;
 
-  final List<String> _statusOptions = ['DRAFT', 'SUBMITTED', 'IN_PROGRESS', 'RESOLVED', 'DENIED'];
+  final List<String> _statusOptions = [
+    'DRAFT',
+    'SUBMITTED',
+    'IN_PROGRESS',
+    'RESOLVED',
+    'DENIED',
+  ];
 
   @override
   void initState() {
@@ -118,16 +124,18 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
     } catch (e) {
       logger.e('Error saving claim changes: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed: $e')));
       }
     } finally {
       if (mounted) setState(() => _isUpdating = false);
     }
   }
 
-  Future<void> _showResolutionOutcomeDialog({bool closeOnSuccess = false}) async {
+  Future<void> _showResolutionOutcomeDialog({
+    bool closeOnSuccess = false,
+  }) async {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardColor = AppColors.card(isDark);
     final textColor = AppColors.textPrimary(isDark);
@@ -135,12 +143,17 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: cardColor,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       isScrollControlled: true,
       builder: (BuildContext ctx) {
         return SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24.0,
+              vertical: 32.0,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -167,7 +180,10 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
                   subtitle: 'Item will be archived and stop tracking warranty.',
                   onTap: () {
                     Navigator.pop(ctx);
-                    _resolveClaimOutcome('REFUNDED', closeOnSuccess: closeOnSuccess);
+                    _resolveClaimOutcome(
+                      'REFUNDED',
+                      closeOnSuccess: closeOnSuccess,
+                    );
                   },
                   isDark: isDark,
                 ),
@@ -177,10 +193,14 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
                 _buildOutcomeOption(
                   icon: Symbols.build_rounded,
                   title: 'Repaired',
-                  subtitle: 'Item stays active. You can update its details if needed.',
+                  subtitle:
+                      'Item stays active. You can update its details if needed.',
                   onTap: () {
                     Navigator.pop(ctx);
-                    _resolveClaimOutcome('REPAIRED', closeOnSuccess: closeOnSuccess);
+                    _resolveClaimOutcome(
+                      'REPAIRED',
+                      closeOnSuccess: closeOnSuccess,
+                    );
                   },
                   isDark: isDark,
                 ),
@@ -190,10 +210,13 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
                 _buildOutcomeOption(
                   icon: Symbols.autorenew_rounded,
                   title: 'Replaced with New Item',
-                  subtitle: 'Archive old item and prepare a new digital record.',
+                  subtitle:
+                      'Archive old item and prepare a new digital record.',
                   onTap: () {
                     Navigator.pop(ctx);
-                    _showReplacementStrategyDialog(closeOnSuccess: closeOnSuccess);
+                    _showReplacementStrategyDialog(
+                      closeOnSuccess: closeOnSuccess,
+                    );
                   },
                   isDark: isDark,
                 ),
@@ -201,11 +224,17 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
             ),
           ),
         );
-      }
+      },
     );
   }
 
-  Widget _buildOutcomeOption({required IconData icon, required String title, required String subtitle, required VoidCallback onTap, required bool isDark}) {
+  Widget _buildOutcomeOption({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+    required bool isDark,
+  }) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
@@ -219,8 +248,15 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
           children: [
             Container(
               padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.1), shape: BoxShape.circle),
-              child: Icon(icon, color: AppColors.primary, weight: AppDimensions.iconWeightBold),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                color: AppColors.primary,
+                weight: AppDimensions.iconWeightBold,
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -250,7 +286,9 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
     );
   }
 
-  Future<void> _showReplacementStrategyDialog({bool closeOnSuccess = false}) async {
+  Future<void> _showReplacementStrategyDialog({
+    bool closeOnSuccess = false,
+  }) async {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     showDialog(
@@ -275,27 +313,39 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
               onPressed: () {
                 Navigator.pop(ctx);
                 // Implementation for Phase 4 linking will go here shortly.
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Upload a new receipt to link it (Coming soon)')));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'Upload a new receipt to link it (Coming soon)',
+                    ),
+                  ),
+                );
               },
               child: Text(
                 'Scan New Receipt',
-                style: AppTextStyles.buttonSmall.copyWith(color: AppColors.primary),
+                style: AppTextStyles.buttonSmall.copyWith(
+                  color: AppColors.primary,
+                ),
               ),
             ),
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(ctx);
-                _resolveClaimOutcome('REPLACED', duplicateDetails: true, closeOnSuccess: closeOnSuccess);
+                _resolveClaimOutcome(
+                  'REPLACED',
+                  duplicateDetails: true,
+                  closeOnSuccess: closeOnSuccess,
+                );
               },
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: AppColors.onPrimary),
-              child: Text(
-                'Duplicate Old Details',
-                style: AppTextStyles.button,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.onPrimary,
               ),
+              child: Text('Duplicate Old Details', style: AppTextStyles.button),
             ),
           ],
         );
-      }
+      },
     );
   }
 
@@ -316,15 +366,35 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildStatusInfoItem('DRAFT', 'Claim document is created but not submitted yet.', isDark),
+            _buildStatusInfoItem(
+              'DRAFT',
+              'Claim document is created but not submitted yet.',
+              isDark,
+            ),
             const SizedBox(height: 16),
-            _buildStatusInfoItem('SUBMITTED', 'Claim is sent and awaiting processing.', isDark),
+            _buildStatusInfoItem(
+              'SUBMITTED',
+              'Claim is sent and awaiting processing.',
+              isDark,
+            ),
             const SizedBox(height: 16),
-            _buildStatusInfoItem('IN_PROGRESS', 'Claim is currently being worked on.', isDark),
+            _buildStatusInfoItem(
+              'IN_PROGRESS',
+              'Claim is currently being worked on.',
+              isDark,
+            ),
             const SizedBox(height: 16),
-            _buildStatusInfoItem('RESOLVED', 'Claim has been completed successfully.', isDark),
+            _buildStatusInfoItem(
+              'RESOLVED',
+              'Claim has been completed successfully.',
+              isDark,
+            ),
             const SizedBox(height: 16),
-            _buildStatusInfoItem('DENIED', 'Claim was reviewed and rejected.', isDark),
+            _buildStatusInfoItem(
+              'DENIED',
+              'Claim was reviewed and rejected.',
+              isDark,
+            ),
           ],
         ),
         actions: [
@@ -332,7 +402,9 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
             onPressed: () => Navigator.pop(ctx),
             child: Text(
               'Close',
-              style: AppTextStyles.buttonSmall.copyWith(color: AppColors.primary),
+              style: AppTextStyles.buttonSmall.copyWith(
+                color: AppColors.primary,
+              ),
             ),
           ),
         ],
@@ -376,7 +448,11 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
     );
   }
 
-  Future<void> _resolveClaimOutcome(String outcome, {bool duplicateDetails = false, bool closeOnSuccess = false}) async {
+  Future<void> _resolveClaimOutcome(
+    String outcome, {
+    bool duplicateDetails = false,
+    bool closeOnSuccess = false,
+  }) async {
     if (_claim == null) return;
     setState(() => _isUpdating = true);
     try {
@@ -393,22 +469,30 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
 
       if (!mounted) return;
       if (outcome == 'REFUNDED') {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Item successfully archived.')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Item successfully archived.')),
+        );
       } else if (outcome == 'REPAIRED') {
         showDialog(
           context: context,
           builder: (ctx) => AlertDialog(
-            backgroundColor: AppColors.card(Theme.of(context).brightness == Brightness.dark),
+            backgroundColor: AppColors.card(
+              Theme.of(context).brightness == Brightness.dark,
+            ),
             title: Text(
               'Claim Resolved',
               style: AppTextStyles.titleLarge.copyWith(
-                color: AppColors.textPrimary(Theme.of(context).brightness == Brightness.dark),
+                color: AppColors.textPrimary(
+                  Theme.of(context).brightness == Brightness.dark,
+                ),
               ),
             ),
             content: Text(
               'Please check your warranty and return coverages and update them if they got extended.',
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary(Theme.of(context).brightness == Brightness.dark),
+                color: AppColors.textSecondary(
+                  Theme.of(context).brightness == Brightness.dark,
+                ),
               ),
             ),
             actions: [
@@ -416,14 +500,20 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
                 onPressed: () => Navigator.pop(ctx),
                 child: Text(
                   'OK',
-                  style: AppTextStyles.buttonSmall.copyWith(color: AppColors.primary),
+                  style: AppTextStyles.buttonSmall.copyWith(
+                    color: AppColors.primary,
+                  ),
                 ),
-              )
-            ]
-          )
+              ),
+            ],
+          ),
         );
       } else if (outcome == 'REPLACED') {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Replacement item created successfully.')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Replacement item created successfully.'),
+          ),
+        );
       }
 
       if (closeOnSuccess && mounted) {
@@ -432,9 +522,9 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
     } catch (e) {
       logger.e('Error resolving claim: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to resolve claim: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to resolve claim: $e')));
       }
     } finally {
       if (mounted) setState(() => _isUpdating = false);
@@ -450,17 +540,28 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
     if (filePath == null) return;
 
     try {
-      final openResult = await OpenFilex.open(filePath, type: 'application/pdf');
+      final openResult = await OpenFilex.open(
+        filePath,
+        type: 'application/pdf',
+      );
       if (openResult.type != ResultType.done && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(openResult.message.isNotEmpty ? openResult.message : 'No PDF app found on this device.')),
+          SnackBar(
+            content: Text(
+              openResult.message.isNotEmpty
+                  ? openResult.message
+                  : 'No PDF app found on this device.',
+            ),
+          ),
         );
       }
     } catch (e) {
       logger.e('Error opening PDF: $e');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Unable to open PDF. Please try Download instead.')),
+        const SnackBar(
+          content: Text('Unable to open PDF. Please try Download instead.'),
+        ),
       );
     }
   }
@@ -491,7 +592,8 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
         await pdfDir.create(recursive: true);
       }
 
-      final filePath = '${pdfDir.path}/claim_${_claim!.id}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+      final filePath =
+          '${pdfDir.path}/claim_${_claim!.id}_${DateTime.now().millisecondsSinceEpoch}.pdf';
       await Dio().download(url, filePath);
 
       if (showSuccessMessage && mounted) {
@@ -505,7 +607,9 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
       logger.e('Error downloading PDF file: $e');
       if (!mounted) return null;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Unable to download PDF. Please try again.')),
+        const SnackBar(
+          content: Text('Unable to download PDF. Please try again.'),
+        ),
       );
       return null;
     }
@@ -517,12 +621,14 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
 
     try {
       if (Platform.isAndroid) {
-        final fileName = 'claim_${_claim!.id}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+        final fileName =
+            'claim_${_claim!.id}_${DateTime.now().millisecondsSinceEpoch}.pdf';
         await AndroidDownloadManagerService.enqueuePdfDownload(
           url: url,
           fileName: fileName,
           title: 'Claim PDF',
-          description: 'Downloading document. Open notification to view when complete.',
+          description:
+              'Downloading document. Open notification to view when complete.',
         );
 
         if (mounted) {
@@ -537,7 +643,8 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
           await downloadsDir.create(recursive: true);
         }
 
-        final filePath = '${downloadsDir.path}/claim_${_claim!.id}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+        final filePath =
+            '${downloadsDir.path}/claim_${_claim!.id}_${DateTime.now().millisecondsSinceEpoch}.pdf';
         await Dio().download(url, filePath);
 
         if (mounted) {
@@ -552,7 +659,11 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
       logger.e('Error saving PDF to Downloads: $e');
       if (!mounted) return null;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Unable to save to Downloads. Please check storage permissions.')),
+        const SnackBar(
+          content: Text(
+            'Unable to save to Downloads. Please check storage permissions.',
+          ),
+        ),
       );
       return null;
     }
@@ -606,7 +717,9 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
 
       if (refreshedClaim.url == null || refreshedClaim.url!.trim().isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Claim PDF is not available yet. Try again shortly.')),
+          const SnackBar(
+            content: Text('Claim PDF is not available yet. Try again shortly.'),
+          ),
         );
         return null;
       }
@@ -616,7 +729,9 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
       logger.e('Error refreshing claim URL: $e');
       if (!mounted) return null;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not refresh PDF link. Please try again.')),
+        const SnackBar(
+          content: Text('Could not refresh PDF link. Please try again.'),
+        ),
       );
       return null;
     }
@@ -723,10 +838,7 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
                     backgroundColor: AppColors.primary,
                     foregroundColor: AppColors.onPrimary,
                   ),
-                  child: Text(
-                    'Go Back',
-                    style: AppTextStyles.button,
-                  ),
+                  child: Text('Go Back', style: AppTextStyles.button),
                 ),
               ],
             ),
@@ -743,7 +855,10 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
     final textColor = AppColors.textPrimary(isDark);
     final secondaryColor = AppColors.textSecondary(isDark);
     final receiptAsync = ref.watch(receiptProvider(_claim!.receiptId));
-    final receipt = receiptAsync.maybeWhen(data: (value) => value, orElse: () => null);
+    final receipt = receiptAsync.maybeWhen(
+      data: (value) => value,
+      orElse: () => null,
+    );
     final productName = _getProductName(receipt);
     final receiptDate = _getFormattedDate(receipt?.purchaseDate);
     final createdDate = _getFormattedDate(_claim!.createdAt);
@@ -759,9 +874,7 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
             children: [
               Text(
                 'Claim Summary',
-                style: AppTextStyles.formLabel.copyWith(
-                  color: secondaryColor,
-                ),
+                style: AppTextStyles.formLabel.copyWith(color: secondaryColor),
               ),
               const SizedBox(height: 8),
 
@@ -820,10 +933,10 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
                     ),
                     const SizedBox(height: 6),
                     _buildStackedDetailItem(
-                      icon: Symbols.description_rounded, 
-                      label: 'Issue Description', 
-                      value: _claim!.issueDescription, 
-                      isDark: isDark
+                      icon: Symbols.description_rounded,
+                      label: 'Issue Description',
+                      value: _claim!.issueDescription,
+                      isDark: isDark,
                     ),
                   ],
                 ),
@@ -840,7 +953,7 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  
+
                   IconButton(
                     onPressed: _showStatusInfoDialog,
                     icon: Icon(
@@ -850,13 +963,19 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
                       weight: 700.0,
                     ),
                     tooltip: 'Status info',
-                    constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                    constraints: const BoxConstraints(
+                      minWidth: 28,
+                      minHeight: 28,
+                    ),
                     padding: EdgeInsets.zero,
-                    visualDensity: const VisualDensity(horizontal: -2, vertical: -2),
+                    visualDensity: const VisualDensity(
+                      horizontal: -2,
+                      vertical: -2,
+                    ),
                   ),
                 ],
               ),
-              
+
               Container(
                 decoration: BoxDecoration(
                   color: cardColor,
@@ -868,7 +987,9 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
                     Material(
                       color: Colors.transparent,
                       child: InkWell(
-                        onTap: () => setState(() => _isStatusExpanded = !_isStatusExpanded),
+                        onTap: () => setState(
+                          () => _isStatusExpanded = !_isStatusExpanded,
+                        ),
                         child: Container(
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(
@@ -881,14 +1002,18 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
                               Row(
                                 children: [
                                   Icon(
-                                    _getStatusIcon(_pendingStatus ?? _claim!.status),
+                                    _getStatusIcon(
+                                      _pendingStatus ?? _claim!.status,
+                                    ),
                                     size: 20,
                                     weight: 600.0,
                                     color: AppColors.textPrimary(isDark),
                                   ),
                                   const SizedBox(width: 12),
                                   Text(
-                                    _formatStatusText(_pendingStatus ?? _claim!.status),
+                                    _formatStatusText(
+                                      _pendingStatus ?? _claim!.status,
+                                    ),
                                     style: AppTextStyles.bodyMedium.copyWith(
                                       color: AppColors.textPrimary(isDark),
                                       fontWeight: FontWeight.w500,
@@ -930,7 +1055,9 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
                                   ),
                                   itemBuilder: (context, index) {
                                     final status = _statusOptions[index];
-                                    final isSelected = (_pendingStatus ?? _claim?.status) == status;
+                                    final isSelected =
+                                        (_pendingStatus ?? _claim?.status) ==
+                                        status;
                                     return GestureDetector(
                                       onTap: () {
                                         setState(() {
@@ -940,7 +1067,9 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
                                       },
                                       child: Container(
                                         color: isSelected
-                                            ? AppColors.primary.withValues(alpha: 0.10)
+                                            ? AppColors.primary.withValues(
+                                                alpha: 0.10,
+                                              )
                                             : Colors.transparent,
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 12,
@@ -954,19 +1083,24 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
                                               weight: 600.0,
                                               color: isSelected
                                                   ? AppColors.primary
-                                                  : AppColors.textSecondary(isDark),
+                                                  : AppColors.textSecondary(
+                                                      isDark,
+                                                    ),
                                             ),
                                             const SizedBox(width: 12),
                                             Text(
                                               _formatStatusText(status),
-                                              style: AppTextStyles.bodyMedium.copyWith(
-                                                color: isSelected
-                                                    ? AppColors.primary
-                                                    : AppColors.textSecondary(isDark),
-                                                fontWeight: isSelected
-                                                    ? FontWeight.w700
-                                                    : FontWeight.w500,
-                                              ),
+                                              style: AppTextStyles.bodyMedium
+                                                  .copyWith(
+                                                    color: isSelected
+                                                        ? AppColors.primary
+                                                        : AppColors.textSecondary(
+                                                            isDark,
+                                                          ),
+                                                    fontWeight: isSelected
+                                                        ? FontWeight.w700
+                                                        : FontWeight.w500,
+                                                  ),
                                             ),
                                           ],
                                         ),
@@ -999,16 +1133,26 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
                 enabled: !_isUpdating,
                 style: AppTextStyles.bodySmall.copyWith(color: textColor),
                 decoration: InputDecoration(
-                  hintText: 'Add tracking numbers, support ticket IDs, or resolution notes...',
+                  hintText:
+                      'Add tracking numbers, support ticket IDs, or resolution notes...',
                   hintStyle: AppTextStyles.bodySmall.copyWith(
                     color: secondaryColor.withValues(alpha: 0.5),
                   ),
                   filled: true,
                   fillColor: cardColor,
                   contentPadding: const EdgeInsets.all(12),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppDimensions.radiusXL), borderSide: BorderSide(color: AppColors.border(isDark))),
-                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppDimensions.radiusXL), borderSide: BorderSide(color: AppColors.border(isDark))),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppDimensions.radiusXL), borderSide: BorderSide(color: AppColors.primary)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+                    borderSide: BorderSide(color: AppColors.border(isDark)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+                    borderSide: BorderSide(color: AppColors.border(isDark)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+                    borderSide: BorderSide(color: AppColors.primary),
+                  ),
                 ),
               ),
 
@@ -1030,13 +1174,18 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
                       height: 48,
                       child: OutlinedButton.icon(
                         onPressed: _claim != null ? _openPdf : null,
-                        icon: const Icon(Symbols.open_in_new_rounded, weight: AppDimensions.iconWeightHeavy,),
+                        icon: const Icon(
+                          Symbols.open_in_new_rounded,
+                          weight: AppDimensions.iconWeightHeavy,
+                        ),
                         label: const Text('Open PDF'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.textSecondary(isDark),
                           side: BorderSide(color: AppColors.border(isDark)),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+                            borderRadius: BorderRadius.circular(
+                              AppDimensions.radiusXL,
+                            ),
                           ),
                         ),
                       ),
@@ -1048,13 +1197,18 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
                       height: 48,
                       child: OutlinedButton.icon(
                         onPressed: _claim != null ? _downloadPdf : null,
-                        icon: const Icon(Symbols.file_download_rounded, weight: AppDimensions.iconWeightHeavy,),
+                        icon: const Icon(
+                          Symbols.file_download_rounded,
+                          weight: AppDimensions.iconWeightHeavy,
+                        ),
                         label: const Text('Download PDF'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.textSecondary(isDark),
                           side: BorderSide(color: AppColors.border(isDark)),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+                            borderRadius: BorderRadius.circular(
+                              AppDimensions.radiusXL,
+                            ),
                           ),
                         ),
                       ),
@@ -1066,13 +1220,18 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
                       height: 48,
                       child: OutlinedButton.icon(
                         onPressed: _claim != null ? _sharePdf : null,
-                        icon: const Icon(Symbols.share_rounded, weight: AppDimensions.iconWeightHeavy,),
+                        icon: const Icon(
+                          Symbols.share_rounded,
+                          weight: AppDimensions.iconWeightHeavy,
+                        ),
                         label: const Text('Share PDF'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.textSecondary(isDark),
                           side: BorderSide(color: AppColors.border(isDark)),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+                            borderRadius: BorderRadius.circular(
+                              AppDimensions.radiusXL,
+                            ),
                           ),
                         ),
                       ),
@@ -1100,7 +1259,10 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
               onPressed: () async {
                 await _saveChangesAndClose();
               },
-              icon: const Icon(Symbols.done_all_rounded, weight: AppDimensions.iconWeightHeavy),
+              icon: const Icon(
+                Symbols.done_all_rounded,
+                weight: AppDimensions.iconWeightHeavy,
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: AppColors.onPrimary,
@@ -1109,10 +1271,7 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
                   borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
                 ),
               ),
-              label: Text(
-                'Done',
-                style: AppTextStyles.button,
-              ),
+              label: Text('Done', style: AppTextStyles.button),
             ),
           ),
         ),
@@ -1121,11 +1280,21 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
   }
 
   String? _getProductName(ReceiptModel? receipt) {
-    if (receipt?.productName != null && receipt!.productName!.trim().isNotEmpty) {
+    if (receipt != null && _claim?.lineItemId != null) {
+      try {
+        final item = receipt.lineItems.firstWhere(
+          (i) => i.id == _claim!.lineItemId,
+        );
+        return item.displayName;
+      } catch (_) {}
+    }
+
+    if (receipt?.productName != null &&
+        receipt!.productName!.trim().isNotEmpty) {
       return receipt.productName!;
     }
     if (receipt != null && receipt.lineItems.isNotEmpty) {
-      return receipt.lineItems.first.productName ?? receipt.lineItems.first.itemDescription;
+      return receipt.lineItems.first.displayName;
     }
     return null;
   }
