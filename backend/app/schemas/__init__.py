@@ -103,6 +103,9 @@ class ReceiptLineItemUpdate(BaseModel):
     """Partial update schema for a single line item."""
     product_code: Optional[str] = None
     item_description: Optional[str] = None
+    quantity: Optional[str] = None
+    unit_price: Optional[float] = None
+    amount: Optional[float] = None
     product_name: Optional[str] = None
     product_category: Optional[str] = None
     warranty_period_months: Optional[int] = None

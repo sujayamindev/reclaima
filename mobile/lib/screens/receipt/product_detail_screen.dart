@@ -1166,15 +1166,10 @@ class ProductDetailScreen extends ConsumerWidget {
             (item) => Container(
               margin: const EdgeInsets.symmetric(vertical: 2),
               padding: item.id == highlightId
-                  ? const EdgeInsets.symmetric(vertical: 4, horizontal: 6)
+                  ? EdgeInsets.zero
                   : EdgeInsets.zero,
               decoration: item.id == highlightId
-                  ? BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.07),
-                      borderRadius: BorderRadius.circular(
-                        AppDimensions.radiusSmall,
-                      ),
-                    )
+                  ? null
                   : null,
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 5),
@@ -1195,7 +1190,11 @@ class ProductDetailScreen extends ConsumerWidget {
                         Expanded(
                           flex: 3,
                           child: Text(
-                            item.itemDescription ?? '—',
+                            (item.itemDescription?.isNotEmpty == true) 
+                                ? item.itemDescription! 
+                                : (item.productName?.isNotEmpty == true) 
+                                    ? item.productName! 
+                                    : '—',
                             style: cellStyle,
                           ),
                         ),
