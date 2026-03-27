@@ -44,6 +44,11 @@ class LineItemFormState {
   final TextEditingController productNameCtrl = TextEditingController();
   final TextEditingController productCodeCtrl = TextEditingController();
   String selectedCategory = 'Electronics';
+
+  String? quantity;
+  double? unitPrice;
+  double? amount;
+  String? itemDescription;
   
   final TextEditingController warrantyPeriodCtrl = TextEditingController();
   DateTime? warrantyExpiryDate;
@@ -164,6 +169,10 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
       for (final item in receipt.lineItems) {
         final form = LineItemFormState();
         form.existingId = item.id;
+        form.itemDescription = item.itemDescription;
+        form.quantity = item.quantity;
+        form.unitPrice = item.unitPrice;
+        form.amount = item.amount;
         form.productNameCtrl.text = item.productName ?? item.itemDescription ?? '';
         form.productCodeCtrl.text = item.productCode ?? '';
         final cat = item.productCategory ?? '';
@@ -216,6 +225,10 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
       _itemForms.clear();
       for (final item in _ocrLineItems) {
         final form = LineItemFormState();
+        form.itemDescription = item.itemDescription;
+        form.quantity = item.quantity;
+        form.unitPrice = item.unitPrice;
+        form.amount = item.amount;
         form.productNameCtrl.text = item.productName ?? item.itemDescription ?? '';
         form.productCodeCtrl.text = item.productCode ?? '';
         final cat = item.productCategory ?? '';
@@ -380,6 +393,10 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     for (final form in _itemForms) {
         final liData = <String, dynamic>{};
         if (form.existingId != null) liData['_existingId'] = form.existingId;
+        if (form.itemDescription != null) liData['itemDescription'] = form.itemDescription;
+        if (form.quantity != null) liData['quantity'] = form.quantity;
+        if (form.unitPrice != null) liData['unitPrice'] = form.unitPrice;
+        if (form.amount != null) liData['amount'] = form.amount;
         
         final productName = form.productNameCtrl.text.trim();
         if (productName.isNotEmpty) liData['productName'] = productName;
