@@ -72,7 +72,7 @@ class ReceiptController extends StateNotifier<AsyncValue<void>> {
   }
   
   /// Delete receipt
-  Future<bool> deleteReceipt(String id, Ref ref) async {
+  Future<bool> deleteReceipt(String id, WidgetRef ref) async {
     state = const AsyncValue.loading();
     
     try {
