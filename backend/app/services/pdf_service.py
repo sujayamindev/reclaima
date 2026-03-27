@@ -44,9 +44,9 @@ class PdfGenerationService:
 
     def __init__(self):
         """Initialize PDF service."""
-        self.page_size = letter
-        self.left_margin = 0.5 * inch
-        self.right_margin = 0.5 * inch
+        self.page_size = A4  # Changed to A4 for international standard
+        self.left_margin = 0.75 * inch
+        self.right_margin = 0.75 * inch
         self.top_margin = 0.75 * inch
         self.bottom_margin = 0.75 * inch
 
@@ -131,6 +131,9 @@ class PdfGenerationService:
             f"claim_type={claim_type}"
         )
 
+        # Dynamic PDF metadata title based on claim type
+        pdf_title = "Return Request Document" if claim_type and claim_type.lower() == "return" else "Warranty Claim Document"
+
         # Create PDF in memory
         pdf_buffer = BytesIO()
         doc = SimpleDocTemplate(
@@ -140,7 +143,7 @@ class PdfGenerationService:
             rightMargin=self.right_margin,
             topMargin=self.top_margin,
             bottomMargin=self.bottom_margin,
-            title="Warranty Claim Document"
+            title=pdf_title
         )
 
         # Build PDF elements
@@ -151,71 +154,176 @@ class PdfGenerationService:
         title_style = ParagraphStyle(
             'CustomTitle',
             parent=styles['Heading1'],
-            fontSize=24,
+            fontSize=26,
             textColor=ACCENT_DARK,
-            spaceAfter=6,
+            spaceAfter=8,
             alignment=TA_CENTER,
             fontName='Helvetica-Bold'
+        )
+        
+        subtitle_style = ParagraphStyle(
+            'SubTitle',
+            parent=styles['Normal'],
+            fontSize=10,
+            textColor=TEXT_SECONDARY,
+            spaceAfter=4,
+            alignment=TA_CENTER,
+            fontName='Helvetica'
         )
 
         heading_style = ParagraphStyle(
             'SectionHeading',
             parent=styles['Heading2'],
-            fontSize=12,
+            fontSize=11,
             textColor=PRIMARY_COLOR,
             spaceAfter=8,
-            spaceBefore=12,
-            fontName='Helvetica-Bold'
+            spaceBefore=14,
+            fontName='Helvetica-Bold',
+            borderWidth=0,
+            borderColor=PRIMARY_COLOR,
+            borderPadding=4
         )
 
         normal_style = ParagraphStyle(
             'CustomNormal',
             parent=styles['Normal'],
-            fontSize=10,
+            fontSize=9,
             textColor=TEXT_PRIMARY,
-            leading=14
+            leading=13
         )
 
-        label_style = ParagraphStyle(
-            'Label',
+        # Dynamic title based on claim type
+        if claim_type and claim_type.lower() == "return":
+            doc_title = "RETURN REQUEST DOCUMENT"
+            footer_claim_type = "return request"
+        else:
+            doc_title = "WARRANTY CLAIM DOCUMENT"
+            footer_claim_type = "warranty claim"
+
+        # ── Header Section ──────────────────────────────────────────────
+        import os
+        logo_path = os.path.join(os.path.dirname(__file__), "..", "..", "assets", "receipta_logo.png")
+        if os.path.exists(logo_path):
+            try:
+                logo = RLImage(logo_path, width=1.5*inch, height=0.5*inch)
+                # Center the logo
+                logo_table = Table([[logo]], colWidths=[6*inch])
+                logo_table.setStyle(TableStyle([
+                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ]))
+                story.append(logo_table)
+                story.append(Spacer(1, 0.15 * inch))
+            except Exception as e:
+                logger.warning(f"Failed to load logo: {e}")
+        
+        story.append(Paragraph(doc_title, title_style))
+        story.append(Paragraph("Receipta", subtitle_style))
+        story.append(Spacer(1, 0.15 * inch))
+
+        # Document ID and date (centered)
+        generation_date = created_at or datetime.now(timezone.utc)
+        display_claim_id = claim_id if claim_id else receipt.id
+        
+        claim_id_style = ParagraphStyle(
+            'ClaimID',
             parent=styles['Normal'],
             fontSize=9,
             textColor=TEXT_SECONDARY,
-            fontName='Helvetica-Bold'
+            alignment=TA_CENTER,
+            fontName='Helvetica-Bold',
+            spaceAfter=2
         )
+        
+        timestamp_style = ParagraphStyle(
+            'Timestamp',
+            parent=styles['Normal'],
+            fontSize=8,
+            textColor=TEXT_SECONDARY,
+            alignment=TA_CENTER,
+            fontName='Helvetica'
+        )
+        
+        story.append(Paragraph(f"Claim ID: {display_claim_id}", claim_id_style))
+        story.append(Paragraph(
+            f"Generated: {generation_date.strftime('%B %d, %Y at %I:%M %p UTC')}",
+            timestamp_style
+        ))
+        story.append(Spacer(1, 0.25 * inch))
 
-        # ── Header Section ──────────────────────────────────────────────
-        story.append(Paragraph("WARRANTY CLAIM DOCUMENT", title_style))
-        story.append(Spacer(1, 0.1 * inch))
+        # ── Claim Details (Priority - Top Section) ─────────────────────
+        story.append(Paragraph("CLAIM DETAILS", heading_style))
 
-        # Document ID and date
-        generation_date = created_at or datetime.now(timezone.utc)
-        display_claim_id = claim_id if claim_id else receipt.id
-        doc_info = f"Claim ID: {display_claim_id} | Generated: {generation_date.strftime('%B %d, %Y at %I:%M %p')}"
-        story.append(Paragraph(doc_info, label_style))
+        claim_data = [
+            ["Claim Type:", claim_type.upper() if claim_type else "WARRANTY"],
+            ["Issue Description:", issue_description],
+        ]
+
+        claim_table = Table(claim_data, colWidths=[1.8 * inch, 4.2 * inch])
+        claim_table.setStyle(TableStyle([
+            ('ALIGN', (0, 0), (0, -1), 'LEFT'),
+            ('ALIGN', (1, 0), (1, -1), 'LEFT'),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('FONT', (0, 0), (0, -1), 'Helvetica-Bold', 10),
+            ('FONT', (1, 0), (1, -1), 'Helvetica', 9),
+            ('TEXTCOLOR', (0, 0), (0, -1), TEXT_SECONDARY),
+            ('TEXTCOLOR', (1, 0), (1, -1), TEXT_PRIMARY),
+            ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor("#F9FAFB")),
+            ('BOX', (0, 0), (-1, -1), 1, BORDER_COLOR),
+            ('TOPPADDING', (0, 0), (-1, -1), 8),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+            ('LEFTPADDING', (0, 0), (-1, -1), 10),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 10),
+        ]))
+        story.append(claim_table)
         story.append(Spacer(1, 0.2 * inch))
 
-        # ── Receipt Image ───────────────────────────────────────────────
-        if receipt.s3_object_key and s3_service:
-            try:
-                image_bytes = s3_service.get_file(receipt.s3_object_key)
-                if image_bytes:
-                    receipt_image = self._get_scaled_image(image_bytes)
-                    if receipt_image:
-                        story.append(Paragraph("RECEIPT IMAGE", heading_style))
-                        # Center the image by wrapping in a table
-                        image_table = Table(
-                            [[receipt_image]],
-                            colWidths=[6 * inch]
-                        )
-                        image_table.setStyle(TableStyle([
-                            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-                        ]))
-                        story.append(image_table)
-                        story.append(Spacer(1, 0.15 * inch))
-            except Exception as e:
-                logger.warning(f"Failed to include receipt image in PDF: {e}")
+        # ── Claimed Item (Priority - Top Section) ──────────────────────
+        story.append(Paragraph("CLAIMED ITEM", heading_style))
+
+        # Filter line items if specific line_item_id is provided
+        if line_item_id and receipt.line_items:
+            items_to_show = [item for item in receipt.line_items if item.id == line_item_id]
+        elif receipt.line_items:
+            items_to_show = receipt.line_items
+        else:
+            items_to_show = []
+
+        if items_to_show:
+            line_items_data = [
+                ["Product", "Category", "Qty", "Unit Price", "Amount"]
+            ]
+
+            for item in items_to_show:
+                line_items_data.append([
+                    item.product_name or item.item_description or "N/A",
+                    item.product_category or "N/A",
+                    str(item.quantity or "N/A"),
+                    f"{receipt.currency} {float(item.unit_price or 0):.2f}" if item.unit_price else "N/A",
+                    f"{receipt.currency} {float(item.amount or 0):.2f}" if item.amount else "N/A",
+                ])
+
+            items_table = Table(
+                line_items_data,
+                colWidths=[2.2 * inch, 1.2 * inch, 0.6 * inch, 1 * inch, 1 * inch]
+            )
+            items_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), PRIMARY_COLOR),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                ('ALIGN', (2, 0), (2, -1), 'CENTER'),
+                ('FONT', (0, 0), (-1, 0), 'Helvetica-Bold', 10),
+                ('FONT', (0, 1), (-1, -1), 'Helvetica', 9),
+                ('GRID', (0, 0), (-1, -1), 1, BORDER_COLOR),
+                ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor("#F9FAFB")]),
+                ('TOPPADDING', (0, 0), (-1, -1), 6),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ]))
+            story.append(items_table)
+        else:
+            story.append(Paragraph("No line items found.", normal_style))
+
+        story.append(Spacer(1, 0.2 * inch))
 
         # ── Customer Information ────────────────────────────────────────
         story.append(Paragraph("CUSTOMER INFORMATION", heading_style))
@@ -224,7 +332,7 @@ class PdfGenerationService:
             ["Contact:", user.contact_number or "Not Provided"],
             ["Email:", user.email],
         ]
-        customer_table = Table(customer_data, colWidths=[1.5 * inch, 4 * inch])
+        customer_table = Table(customer_data, colWidths=[1.8 * inch, 4.2 * inch])
         customer_table.setStyle(TableStyle([
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
             ('VALIGN', (0, 0), (-1, -1), 'TOP'),
@@ -232,9 +340,11 @@ class PdfGenerationService:
             ('FONT', (1, 0), (1, -1), 'Helvetica', 9),
             ('TEXTCOLOR', (0, 0), (0, -1), TEXT_SECONDARY),
             ('TEXTCOLOR', (1, 0), (1, -1), TEXT_PRIMARY),
+            ('TOPPADDING', (0, 0), (-1, -1), 5),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
         ]))
         story.append(customer_table)
-        story.append(Spacer(1, 0.15 * inch))
+        story.append(Spacer(1, 0.2 * inch))
 
         # ── Receipt Information ─────────────────────────────────────────
         story.append(Paragraph("RECEIPT INFORMATION", heading_style))
@@ -244,7 +354,7 @@ class PdfGenerationService:
             ["Invoice Number:", receipt.invoice_number or "N/A"],
             ["Total Amount:", f"{receipt.currency} {receipt.total_amount:.2f}" if receipt.total_amount else "Not Available"],
         ]
-        receipt_table = Table(receipt_data, colWidths=[1.5 * inch, 4 * inch])
+        receipt_table = Table(receipt_data, colWidths=[1.8 * inch, 4.2 * inch])
         receipt_table.setStyle(TableStyle([
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
             ('VALIGN', (0, 0), (-1, -1), 'TOP'),
@@ -252,9 +362,11 @@ class PdfGenerationService:
             ('FONT', (1, 0), (1, -1), 'Helvetica', 9),
             ('TEXTCOLOR', (0, 0), (0, -1), TEXT_SECONDARY),
             ('TEXTCOLOR', (1, 0), (1, -1), TEXT_PRIMARY),
+            ('TOPPADDING', (0, 0), (-1, -1), 5),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
         ]))
         story.append(receipt_table)
-        story.append(Spacer(1, 0.15 * inch))
+        story.append(Spacer(1, 0.2 * inch))
 
         # ── Vendor Contact Information ──────────────────────────────────
         story.append(Paragraph("VENDOR CONTACT INFORMATION", heading_style))
@@ -264,75 +376,8 @@ class PdfGenerationService:
             ["Email:", receipt.vendor_email or "Not Available"],
             ["Website:", receipt.vendor_url or "Not Available"],
         ]
-        vendor_table = Table(vendor_data, colWidths=[1.5 * inch, 4 * inch])
+        vendor_table = Table(vendor_data, colWidths=[1.8 * inch, 4.2 * inch])
         vendor_table.setStyle(TableStyle([
-            ('ALIGN', (0, 0), (0, -1), 'LEFT'),
-            ('ALIGN', (1, 0), (1, -1), 'LEFT'),
-            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-            ('FONT', (0, 0), (0, -1), 'Helvetica-Bold', 9),
-            ('FONT', (1, 0), (1, -1), 'Helvetica', 8),
-            ('TEXTCOLOR', (0, 0), (0, -1), TEXT_SECONDARY),
-            ('TEXTCOLOR', (1, 0), (1, -1), TEXT_PRIMARY),
-        ]))
-        story.append(vendor_table)
-        story.append(Spacer(1, 0.15 * inch))
-
-        # ── Products / Line Items ───────────────────────────────────────
-        story.append(Paragraph("CLAIMED ITEM", heading_style))
-
-        # Filter line items if specific line_item_id is provided
-        if line_item_id and receipt.line_items:
-            # Show only the claimed product
-            items_to_show = [item for item in receipt.line_items if item.id == line_item_id]
-        elif receipt.line_items:
-            # Fallback: show all items if no specific item specified
-            items_to_show = receipt.line_items
-        else:
-            items_to_show = []
-
-        if items_to_show:
-            line_items_data = [
-                ["Product", "Category", "Quantity", "Unit Price", "Amount"]
-            ]
-
-            for item in items_to_show:
-                line_items_data.append([
-                    item.product_name or item.item_description or "N/A",
-                    item.product_category or "N/A",
-                    item.quantity or "N/A",
-                    f"{receipt.currency} {float(item.unit_price or 0):.2f}" if item.unit_price else "N/A",
-                    f"{receipt.currency} {float(item.amount or 0):.2f}" if item.amount else "N/A",
-                ])
-
-            items_table = Table(
-                line_items_data,
-                colWidths=[2 * inch, 1.2 * inch, 0.8 * inch, 1 * inch, 1 * inch]
-            )
-            items_table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), PRIMARY_COLOR),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-                ('FONT', (0, 0), (-1, 0), 'Helvetica-Bold', 9),
-                ('FONT', (0, 1), (-1, -1), 'Helvetica', 8),
-                ('GRID', (0, 0), (-1, -1), 0.5, BORDER_COLOR),
-                ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor("#F9FAFB")]),
-            ]))
-            story.append(items_table)
-        else:
-            story.append(Paragraph("No line items found.", normal_style))
-
-        story.append(Spacer(1, 0.15 * inch))
-
-        # ── Claim Details ───────────────────────────────────────────────
-        story.append(Paragraph("CLAIM DETAILS", heading_style))
-
-        claim_data = [
-            ["Claim Type:", claim_type.capitalize()],
-            ["Issue Description:", issue_description],
-        ]
-
-        claim_table = Table(claim_data, colWidths=[1.5 * inch, 4 * inch])
-        claim_table.setStyle(TableStyle([
             ('ALIGN', (0, 0), (0, -1), 'LEFT'),
             ('ALIGN', (1, 0), (1, -1), 'LEFT'),
             ('VALIGN', (0, 0), (-1, -1), 'TOP'),
@@ -340,15 +385,52 @@ class PdfGenerationService:
             ('FONT', (1, 0), (1, -1), 'Helvetica', 9),
             ('TEXTCOLOR', (0, 0), (0, -1), TEXT_SECONDARY),
             ('TEXTCOLOR', (1, 0), (1, -1), TEXT_PRIMARY),
+            ('TOPPADDING', (0, 0), (-1, -1), 5),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
         ]))
-        story.append(claim_table)
-        story.append(Spacer(1, 0.2 * inch))
+        story.append(vendor_table)
+        story.append(Spacer(1, 0.3 * inch))
+
+        # ── Receipt Image (Separate Full Page) ─────────────────────────
+        if receipt.s3_object_key and s3_service:
+            try:
+                image_bytes = s3_service.get_file(receipt.s3_object_key)
+                if image_bytes:
+                    # Add page break before receipt image
+                    story.append(PageBreak())
+                    
+                    story.append(Paragraph("ORIGINAL RECEIPT", heading_style))
+                    story.append(Spacer(1, 0.2 * inch))
+                    
+                    # Full page image - use larger dimensions for better visibility
+                    receipt_image = self._get_scaled_image(
+                        image_bytes,
+                        max_width=6.5 * inch,
+                        max_height=9 * inch
+                    )
+                    if receipt_image:
+                        # Center the image
+                        image_table = Table(
+                            [[receipt_image]],
+                            colWidths=[6.5 * inch]
+                        )
+                        image_table.setStyle(TableStyle([
+                            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                        ]))
+                        story.append(image_table)
+            except Exception as e:
+                logger.warning(f"Failed to include receipt image in PDF: {e}")
+
+        # Add page break after receipt image if it exists
+        if receipt.s3_object_key and s3_service:
+            story.append(PageBreak())
 
         # ── Footer ──────────────────────────────────────────────────────
         footer_text = (
-            "This is an official warranty claim document generated by Smart Receipt & Warranty Manager. "
-            "Please retain a copy for your records. Submit this document along with the original receipt "
-            "and any supporting documentation when filing your warranty claim."
+            f"This is an official {footer_claim_type} document generated by Receipta. "
+            "Please retain this document for your records. Submit this along with the original receipt "
+            f"and any supporting documentation when filing your {footer_claim_type}."
         )
         story.append(Paragraph(footer_text, ParagraphStyle(
             'Footer',
@@ -356,7 +438,8 @@ class PdfGenerationService:
             fontSize=8,
             textColor=TEXT_SECONDARY,
             alignment=TA_CENTER,
-            leading=10
+            leading=11,
+            spaceBefore=15
         )))
 
         # Build PDF
