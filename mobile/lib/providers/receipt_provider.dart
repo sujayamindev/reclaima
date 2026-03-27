@@ -12,9 +12,10 @@ import 'service_providers.dart';
 /// 500 race-condition where the HomeScreen loads and hits GET /receipts before
 /// POST /auth/register has finished creating the user row.
 final receiptsProvider = FutureProvider<List<ReceiptModel>>((ref) async {
-  // Block until the user profile is confirmed (or confirmed absent).
+  // Block until the user profile is confirmed.
   // userProfileProvider already handles auto-registration internally.
-  await ref.watch(userProfileProvider.future);
+  final profile = await ref.watch(userProfileProvider.future);
+  if (profile == null) return [];
 
   final receiptService = ref.watch(receiptServiceProvider);
   return await receiptService.getReceipts();

@@ -59,8 +59,8 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  static const int _warrantyAlertDays = 30;
-  static const int _returnAlertDays = 3;
+  static const int _warrantyAlertDays = 90;
+  static const int _returnAlertDays = 14;
 
   @override
   void initState() {
@@ -84,43 +84,47 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     List<ReceiptModel> receipts,
     List<ClaimDocumentResponse> claims,
   ) {
-    final items = <_AttentionItem>[];
+    final alertItems = <_AttentionItem>[];
+    final allUpcomingItems = <_AttentionItem>[];
+
     for (final receipt in receipts) {
       for (final item in receipt.lineItems) {
         if (item.status == 'ARCHIVED') continue;
 
         final returnDays = item.returnDaysRemaining;
-        if (returnDays != null &&
-            !item.isReturnExpired &&
-            returnDays <= _returnAlertDays) {
-          items.add(
-            _AttentionItem(
-              receiptId: receipt.id,
-              lineItemId: item.id,
-              productName: item.displayName,
-              storeName: receipt.storeName,
-              productImageUrl: item.productImageUrl,
-              daysRemaining: returnDays,
-              isReturn: true,
-            ),
+        if (returnDays != null && !item.isReturnExpired) {
+          final attentionItem = _AttentionItem(
+            receiptId: receipt.id,
+            lineItemId: item.id,
+            productName: item.displayName,
+            storeName: receipt.storeName,
+            productImageUrl: item.productImageUrl,
+            daysRemaining: returnDays,
+            isReturn: true,
           );
+          allUpcomingItems.add(attentionItem);
+          
+          if (returnDays <= _returnAlertDays) {
+            alertItems.add(attentionItem);
+          }
         }
 
         final warrantyDays = item.warrantyDaysRemaining;
-        if (warrantyDays != null &&
-            !item.isWarrantyExpired &&
-            warrantyDays <= _warrantyAlertDays) {
-          items.add(
-            _AttentionItem(
-              receiptId: receipt.id,
-              lineItemId: item.id,
-              productName: item.displayName,
-              storeName: receipt.storeName,
-              productImageUrl: item.productImageUrl,
-              daysRemaining: warrantyDays,
-              isReturn: false,
-            ),
+        if (warrantyDays != null && !item.isWarrantyExpired) {
+          final attentionItem = _AttentionItem(
+            receiptId: receipt.id,
+            lineItemId: item.id,
+            productName: item.displayName,
+            storeName: receipt.storeName,
+            productImageUrl: item.productImageUrl,
+            daysRemaining: warrantyDays,
+            isReturn: false,
           );
+          allUpcomingItems.add(attentionItem);
+          
+          if (warrantyDays <= _warrantyAlertDays) {
+            alertItems.add(attentionItem);
+          }
         }
       }
     }
@@ -143,8 +147,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               : receipt.lineItems.firstOrNull;
 
           // Even if line item is archived, we still show the claim because it's active.
-          // Note: if lineItem is entirely null, we can still fall back to receipt data.
-          items.add(
+          alertItems.add(
             _AttentionItem(
               receiptId: receipt.id,
               lineItemId: lineItem?.id,
@@ -167,8 +170,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       }
     }
 
-    items.sort((a, b) => a.daysRemaining.compareTo(b.daysRemaining));
-    return items;
+    // Determine final list of items to show
+    List<_AttentionItem> finalItems;
+    if (alertItems.isNotEmpty) {
+      // Option 1: Show threshold-based items (and claims) if there's at least one
+      finalItems = alertItems;
+    } else {
+      // Option 2: Fallback to the closest upcoming items across all receipts
+      allUpcomingItems.sort((a, b) => a.daysRemaining.compareTo(b.daysRemaining));
+      finalItems = allUpcomingItems.take(5).toList();
+    }
+
+    finalItems.sort((a, b) => a.daysRemaining.compareTo(b.daysRemaining));
+    return finalItems;
   }
 
   void _goToDetail(_AttentionItem item) {
@@ -262,7 +276,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Recepta.',
+                              'Receipta.',
                               style: AppTextStyles.appName.copyWith(
                                 color: textPrimary,
                               ),
@@ -976,6 +990,8 @@ class _InsightsSection extends StatelessWidget {
     final textPrimary = AppColors.textPrimary(isDark);
     final textSecondary = AppColors.textSecondary(isDark);
 
+    final hasItems = receipts.isNotEmpty;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1000,7 +1016,40 @@ class _InsightsSection extends StatelessWidget {
               borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
               border: Border.all(color: border),
             ),
-            child: Row(
+            child: !hasItems
+                ? SizedBox(
+                    height: 64,
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 42,
+                          height: 42,
+                          decoration: BoxDecoration(
+                            color: textSecondary.withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Symbols.wallet_rounded,
+                            size: 24,
+                            color: textSecondary,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Text(
+                            "Add your first receipt to start tracking your protected value",
+                            style: AppTextStyles.bodyXSmall.copyWith(
+                              color: textSecondary,
+                              height: 1.4,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : Row(
               children: [
                 Expanded(
                   child: Column(

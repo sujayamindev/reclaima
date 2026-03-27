@@ -7,8 +7,9 @@ import 'auth_provider.dart';
 /// Waits for [userProfileProvider] to resolve first so that the backend user
 /// record is guaranteed to exist.
 final userClaimsProvider = FutureProvider<List<ClaimDocumentResponse>>((ref) async {
-  // Block until the user profile is confirmed (or confirmed absent).
-  await ref.watch(userProfileProvider.future);
+  // Block until the user profile is confirmed.
+  final profile = await ref.watch(userProfileProvider.future);
+  if (profile == null) return [];
 
   final claimService = ref.watch(claimServiceProvider);
   return await claimService.getClaims();

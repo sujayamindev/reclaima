@@ -84,26 +84,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Back button
+            // Header
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: IconButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: Icon(Symbols.arrow_back_rounded, color: textPrimaryColor),
-                  padding: const EdgeInsets.all(8),
-                  style: IconButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    shape: const CircleBorder(),
-                  ),
+              padding: const EdgeInsets.fromLTRB(AppDimensions.paddingPage, 20, AppDimensions.paddingPage, 0,),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Receipta.',
+                      style: AppTextStyles.appName.copyWith(
+                        color: AppColors.textPrimary(isDark),
+                      ),
+                    ), 
+                  ],
                 ),
               ),
-            ),
 
             // Header
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

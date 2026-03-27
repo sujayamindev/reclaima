@@ -37,11 +37,21 @@ class UserService:
         Returns:
             User instance
         """
-        # Check if user exists
-        user = db.query(User).filter(User.firebase_uid == firebase_uid).first()
+        # Check if user exists (including soft-deleted)
+        user = db.query(User).filter(User.email == email).first()
         
         if user:
-            logger.info(f"Existing user found: {user.id}")
+            logger.info(f"Existing user found by email: {user.id}")
+            # If the user was soft-deleted, we might want to un-delete them and update their firebase_uid
+            # if they registered again with the same email but a different firebase_uid.
+            # But here we'll just return the existing user and let the auth token handle the current session.
+            # Update firebase_uid in case it changed (e.g. they deleted their firebase account and re-created it with the same email)
+            if user.firebase_uid != firebase_uid or user.deleted_at is not None:
+                user.firebase_uid = firebase_uid
+                user.deleted_at = None
+                db.commit()
+                db.refresh(user)
+                logger.info(f"Updated firebase_uid and restored user: {user.id}")
             return user
         
         # Create new user

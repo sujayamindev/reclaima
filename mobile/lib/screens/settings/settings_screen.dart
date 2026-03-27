@@ -130,13 +130,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           side: BorderSide(color: AppColors.error),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+                            borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
                           ),
                         ),
                         onPressed: () {
                           ref.read(authControllerProvider.notifier).signOut();
                         },
-                        icon: Icon(Symbols.logout_rounded, color: AppColors.error),
+                        icon: Icon(Symbols.door_open_rounded, color: AppColors.error, weight: AppDimensions.iconWeightBold),
                         label: Text(
                           'Log Out',
                           style: AppTextStyles.buttonSmall.copyWith(color: AppColors.error),

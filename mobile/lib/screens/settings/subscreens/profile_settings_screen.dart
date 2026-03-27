@@ -211,14 +211,63 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
       } catch (e) {
         logger.e('Delete account error: $e');
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text(
-                  'Failed to delete account. Try logging in again first.'),
-              behavior: SnackBarBehavior.floating,
-              backgroundColor: AppColors.error,
-            ),
-          );
+          final isRequiresRecentLogin = e.toString().contains('requires-recent-login');
+          if (isRequiresRecentLogin) {
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                backgroundColor: AppColors.card(isDark),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+                ),
+                title: Text(
+                  'Re-authentication Required',
+                  style: AppTextStyles.titleLarge.copyWith(color: AppColors.textPrimary(isDark)),
+                ),
+                content: Text(
+                  'For security reasons, your account needs recent authentication before it can be deleted. Please log out and log back in, then try again.',
+                  style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary(isDark)),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text(
+                      'Cancel',
+                      style: AppTextStyles.buttonSmall.copyWith(color: AppColors.textPrimary(isDark)),
+                    ),
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
+                      ),
+                    ),
+                    onPressed: () async {
+                      Navigator.of(context).pop();
+                      await ref.read(authControllerProvider.notifier).signOut();
+                      if (mounted) {
+                        Navigator.of(context).popUntil((route) => route.isFirst);
+                      }
+                    },
+                    child: Text(
+                      'Log Out Now',
+                      style: AppTextStyles.buttonSmall.copyWith(color: AppColors.onPrimary),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text(
+                    'Failed to delete account. Please try again later.'),
+                behavior: SnackBarBehavior.floating,
+                backgroundColor: AppColors.error,
+              ),
+            );
+          }
         }
       } finally {
         if (mounted) setState(() => _isSaving = false);
@@ -521,7 +570,7 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
                           padding: const EdgeInsets.symmetric(vertical: 8.0),
                           child: Text(
                             'You are signed in with $providerName account. Password changes are managed through $shortName.',
-                            style: AppTextStyles.bodyMedium.copyWith(
+                            style: AppTextStyles.bodySmall.copyWith(
                               color: AppColors.textSecondary(isDark),
                             ),
                           ),
