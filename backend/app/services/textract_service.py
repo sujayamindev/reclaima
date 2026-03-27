@@ -87,18 +87,20 @@ Warranty: {random.choice([6, 12, 24])} months
 class RealTextractService:
     """Real AWS Textract service using boto3."""
     
-    def __init__(self, s3_bucket: str, region: str = 'us-east-1'):
+    def __init__(self, s3_bucket: str, region: str = 'us-east-1', llm_service=None):
         """
         Initialize real Textract service.
         
         Args:
             s3_bucket: S3 bucket name for document location
             region: AWS region (default: us-east-1)
+            llm_service: LLM service for cleaning extracted text (optional)
         """
         import boto3
         from botocore.exceptions import ClientError
         
         self.s3_bucket = s3_bucket
+        self.llm_service = llm_service
         self.textract_client = boto3.client(
             'textract',
             region_name=region
@@ -442,7 +444,12 @@ class RealTextractService:
                             item['product_code'] = lf_value.strip()
 
                         elif lf_type == 'ITEM':
-                            item['item_description'] = lf_value.strip()
+                            raw_desc = lf_value.strip()
+                            # Use LLM to clean product name if available
+                            if self.llm_service:
+                                item['item_description'] = self.llm_service.extract_product_name(raw_desc)
+                            else:
+                                item['item_description'] = raw_desc
 
                         elif lf_type == 'QUANTITY':
                             item['quantity'] = lf_value.strip()
@@ -496,6 +503,40 @@ class RealTextractService:
             if warranty_from_rows and not extracted.get('warranty_period_months'):
                 extracted['warranty_period_months'] = warranty_from_rows
 
+        # ────────────────────────────────────────────────────────────────
+        # 4. LLM Cleanup — Clean vendor fields using LLM if available
+        # ────────────────────────────────────────────────────────────────
+        if self.llm_service:
+            logger.debug("Applying LLM cleanup to vendor fields")
+            
+            # Clean store name
+            if extracted.get('store_name'):
+                original = extracted['store_name']
+                extracted['store_name'] = self.llm_service.clean_store_name(original)
+                if original != extracted['store_name']:
+                    logger.info(f"LLM cleaned store_name: '{original}' → '{extracted['store_name']}'")
+            
+            # Clean phone number
+            if extracted.get('vendor_phone'):
+                original = extracted['vendor_phone']
+                extracted['vendor_phone'] = self.llm_service.clean_phone_number(original)
+                if original != extracted['vendor_phone']:
+                    logger.info(f"LLM cleaned vendor_phone: '{original}' → '{extracted['vendor_phone']}'")
+            
+            # Clean email
+            if extracted.get('vendor_email'):
+                original = extracted['vendor_email']
+                extracted['vendor_email'] = self.llm_service.clean_email(original)
+                if original != extracted['vendor_email']:
+                    logger.info(f"LLM cleaned vendor_email: '{original}' → '{extracted['vendor_email']}'")
+            
+            # Clean address
+            if extracted.get('vendor_address'):
+                original = extracted['vendor_address']
+                extracted['vendor_address'] = self.llm_service.clean_address(original)
+                if original != extracted['vendor_address']:
+                    logger.info(f"LLM cleaned vendor_address: '{original[:50]}...' → '{extracted['vendor_address'][:50]}...'")
+
         logger.debug(f"Textract extracted fields: {list(extracted.keys())}")
         return extracted
     
@@ -513,7 +554,7 @@ class RealTextractService:
         return self.analyze_document(s3_object_key)
 
 
-def get_textract_service(s3_bucket: str, use_mock: bool = True, region: str = 'us-east-1'):
+def get_textract_service(s3_bucket: str, use_mock: bool = True, region: str = 'us-east-1', llm_service=None):
     """
     Factory function to get Textract service (mock or real).
     
@@ -521,6 +562,7 @@ def get_textract_service(s3_bucket: str, use_mock: bool = True, region: str = 'u
         s3_bucket: S3 bucket name
         use_mock: If True, return mock service; if False, return real service
         region: AWS region (default: us-east-1)
+        llm_service: LLM service for cleaning extracted text (optional)
         
     Returns:
         Textract service instance (mock or real)
@@ -528,4 +570,4 @@ def get_textract_service(s3_bucket: str, use_mock: bool = True, region: str = 'u
     if use_mock:
         return MockTextractService()
     else:
-        return RealTextractService(s3_bucket, region)
+        return RealTextractService(s3_bucket, region, llm_service)

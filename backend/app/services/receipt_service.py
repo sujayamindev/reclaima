@@ -30,6 +30,13 @@ class ReceiptService:
     
     def __init__(self):
         """Initialize receipt service with AWS services."""
+        # Initialize LLM service first (needed by textract)
+        self.llm_service = create_llm_service(
+            use_mock=settings.USE_MOCK_AWS,
+            region=settings.AWS_REGION,
+            model_id=settings.BEDROCK_MODEL_ID,
+        )
+        
         self.s3_service = get_s3_service(
             bucket_name=settings.AWS_S3_BUCKET,
             use_mock=settings.USE_MOCK_AWS,
@@ -38,13 +45,10 @@ class ReceiptService:
         self.textract_service = get_textract_service(
             s3_bucket=settings.AWS_S3_BUCKET,
             use_mock=settings.USE_MOCK_AWS,
-            region=settings.AWS_REGION
-        )
-        self.llm_service = create_llm_service(
-            use_mock=settings.USE_MOCK_AWS,
             region=settings.AWS_REGION,
-            model_id=settings.BEDROCK_MODEL_ID,
+            llm_service=self.llm_service  # Pass LLM service for product name extraction
         )
+        
         from app.services.product_image_service import create_product_image_service
         self.product_image_service = create_product_image_service(
             use_mock=settings.USE_MOCK_AWS,
@@ -826,6 +830,49 @@ class ReceiptService:
         )
         return line_item
 
+    def delete_line_item(
+        self,
+        db: Session,
+        receipt_id: str,
+        item_id: str,
+        user_id: str,
+    ) -> bool:
+        """
+        Soft delete a single line item.
+        
+        Returns:
+            True if deleted, False if not found or unauthorized.
+        """
+        receipt = self.get_receipt(db, receipt_id, user_id)
+        if not receipt:
+            return False
+
+        line_item = (
+            db.query(ReceiptLineItem)
+            .filter(
+                ReceiptLineItem.id == item_id,
+                ReceiptLineItem.receipt_id == receipt_id,
+                ReceiptLineItem.deleted_at.is_(None),
+            )
+            .first()
+        )
+        if not line_item:
+            return False
+
+        now = datetime.now(timezone.utc)
+        line_item.deleted_at = now
+        
+        # Soft delete claims linked specifically to this line item
+        db.query(ClaimDocument).filter(
+            ClaimDocument.line_item_id == item_id,
+            ClaimDocument.deleted_at.is_(None)
+        ).update({"deleted_at": now})
+
+        db.commit()
+        logger.info(
+            f"Soft-deleted line item {item_id} on receipt {receipt_id} for user {user_id}"
+        )
+        return True
 
 # Global service instance
 receipt_service = ReceiptService()
