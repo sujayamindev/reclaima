@@ -15,6 +15,7 @@ from sqlalchemy import and_
 
 from app.models import Receipt, ReceiptStatus, User
 from app.models.receipt_line_item import ReceiptLineItem
+from app.models.claim_document import ClaimDocument
 from app.schemas import ReceiptCreate, ReceiptUpdate, ReceiptLineItemUpdate
 from app.services.s3_service import get_s3_service
 from app.services.textract_service import get_textract_service
@@ -302,7 +303,7 @@ class ReceiptService:
         user_id: str
     ) -> bool:
         """
-        Soft delete receipt.
+        Soft delete receipt and cascade to line items and claim documents.
         
         Args:
             db: Database session
@@ -317,12 +318,33 @@ class ReceiptService:
         if not receipt:
             return False
         
-        receipt.deleted_at = datetime.now(timezone.utc)
-        db.commit()
+        now = datetime.now(timezone.utc)
         
-        logger.info(f"Soft deleted receipt: {receipt_id}")
-        
-        return True
+        try:
+            # Soft delete receipt
+            receipt.deleted_at = now
+            
+            # Cascade soft delete to line items
+            db.query(ReceiptLineItem).filter(
+                ReceiptLineItem.receipt_id == receipt_id,
+                ReceiptLineItem.deleted_at.is_(None)
+            ).update({ReceiptLineItem.deleted_at: now}, synchronize_session=False)
+            
+            # Cascade soft delete to claim documents
+            db.query(ClaimDocument).filter(
+                ClaimDocument.receipt_id == receipt_id,
+                ClaimDocument.deleted_at.is_(None)
+            ).update({ClaimDocument.deleted_at: now}, synchronize_session=False)
+            
+            db.commit()
+            
+            logger.info(f"Soft deleted receipt and cascaded to children: {receipt_id}")
+            
+            return True
+        except Exception as e:
+            db.rollback()
+            logger.error(f"Failed to soft delete receipt {receipt_id}: {e}")
+            raise
 
     def get_receipt_image_url(
         self,

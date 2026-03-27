@@ -111,6 +111,25 @@ class MockS3Service:
             logger.warning(f"[MOCK] File not found for deletion: {object_key}")
             return False
     
+    def delete_files_bulk(self, object_keys: list[str]) -> dict[str, bool]:
+        """
+        Mock delete multiple files from S3.
+        
+        Args:
+            object_keys: List of S3 object keys to delete
+            
+        Returns:
+            Dictionary mapping object_key -> success status
+        """
+        results = {}
+        for key in object_keys:
+            results[key] = self.delete_file(key)
+        
+        successful = sum(1 for v in results.values() if v)
+        logger.info(f"[MOCK] Bulk delete: {successful}/{len(object_keys)} files deleted")
+        
+        return results
+    
     def file_exists(self, object_key: str) -> bool:
         """
         Check if file exists in mock S3.
@@ -246,6 +265,63 @@ class RealS3Service:
         except self.ClientError as e:
             logger.error(f"Failed to delete file from S3: {e}")
             raise
+    
+    def delete_files_bulk(self, object_keys: list[str]) -> dict[str, bool]:
+        """
+        Delete multiple files from S3 in bulk.
+        
+        Args:
+            object_keys: List of S3 object keys to delete
+            
+        Returns:
+            Dictionary mapping object_key -> success status
+        """
+        if not object_keys:
+            return {}
+        
+        results = {}
+        
+        try:
+            # S3 allows batch delete of up to 1000 objects
+            # Split into chunks if needed
+            chunk_size = 1000
+            for i in range(0, len(object_keys), chunk_size):
+                chunk = object_keys[i:i + chunk_size]
+                
+                # Prepare delete request
+                delete_request = {
+                    'Objects': [{'Key': key} for key in chunk]
+                }
+                
+                response = self.s3_client.delete_objects(
+                    Bucket=self.bucket_name,
+                    Delete=delete_request
+                )
+                
+                # Mark successful deletions
+                for deleted in response.get('Deleted', []):
+                    results[deleted['Key']] = True
+                
+                # Mark failed deletions
+                for error in response.get('Errors', []):
+                    results[error['Key']] = False
+                    logger.error(f"Failed to delete {error['Key']}: {error.get('Message', 'Unknown error')}")
+            
+            # Mark any keys not in response as failed
+            for key in object_keys:
+                if key not in results:
+                    results[key] = False
+            
+            successful = sum(1 for v in results.values() if v)
+            logger.info(f"Bulk delete: {successful}/{len(object_keys)} files deleted from S3")
+            
+        except self.ClientError as e:
+            logger.error(f"Failed to bulk delete files from S3: {e}")
+            # Mark all as failed
+            for key in object_keys:
+                results[key] = False
+        
+        return results
     
     def file_exists(self, object_key: str) -> bool:
         """

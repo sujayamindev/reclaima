@@ -225,10 +225,10 @@ class ClaimService {
     try {
       logger.i('Deleting claim $claimId');
 
-      final response = await _apiService.patch('/claims/$claimId', data: {});
+      final response = await _apiService.delete('/claims/$claimId');
 
       if (response.statusCode == 204 || response.statusCode == 200) {
-        logger.i('Claim $claimId deleted');
+        logger.i('Claim $claimId deleted successfully');
       } else {
         throw Exception('Failed to delete claim: ${response.statusCode}');
       }

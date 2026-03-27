@@ -180,40 +180,32 @@ class NotificationService:
     # ── APScheduler Job: Hard-delete cleanup ─────────────────────────────────
 
     def run_hard_delete_cleanup(self) -> None:
-        """Daily scheduler job — permanently delete records soft-deleted 30+ days ago."""
+        """
+        Daily scheduler job — permanently delete records soft-deleted 30+ days ago.
+        Includes S3 file cleanup for GDPR compliance.
+        """
         from app.db.session import SessionLocal
+        from app.services.deletion_service import DeletionService
+        from app.services.s3_service import get_s3_service
+        from app.core.config import settings
 
         db = SessionLocal()
         try:
-            cutoff = datetime.now(timezone.utc) - timedelta(days=30)
-            deleted_items = (
-                db.query(ReceiptLineItem)
-                .filter(
-                    ReceiptLineItem.deleted_at.isnot(None),
-                    ReceiptLineItem.deleted_at < cutoff,
-                )
-                .delete(synchronize_session=False)
+            # Get S3 service
+            s3_service = get_s3_service(
+                bucket_name=settings.AWS_S3_BUCKET_NAME,
+                use_mock=settings.USE_MOCK_S3,
+                region=settings.AWS_REGION
             )
-            deleted_receipts = (
-                db.query(Receipt)
-                .filter(
-                    Receipt.deleted_at.isnot(None),
-                    Receipt.deleted_at < cutoff,
-                )
-                .delete(synchronize_session=False)
-            )
-            deleted_users = (
-                db.query(User)
-                .filter(
-                    User.deleted_at.isnot(None),
-                    User.deleted_at < cutoff,
-                )
-                .delete(synchronize_session=False)
-            )
-            db.commit()
+            
+            # Create deletion service and run job
+            deletion_service = DeletionService(s3_service)
+            results = deletion_service.run_hard_delete_job(db)
+            
             logger.info(
-                f"Hard-delete cleanup: {deleted_items} items, "
-                f"{deleted_receipts} receipts, {deleted_users} users removed"
+                f"Hard-delete cleanup: {results['total']} total records removed "
+                f"({results['users']} users, {results['receipts']} receipts, "
+                f"{results['line_items']} line items, {results['claims']} claims)"
             )
         except Exception as exc:
             db.rollback()

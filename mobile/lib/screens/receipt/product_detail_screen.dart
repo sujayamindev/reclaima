@@ -388,7 +388,7 @@ class ProductDetailScreen extends ConsumerWidget {
                 if (confirmed == true && context.mounted) {
                   final ok = await ref
                       .read(receiptControllerProvider.notifier)
-                      .deleteReceipt(product.receiptId);
+                      .deleteReceipt(product.receiptId, ref);
                   if (ok && context.mounted) Navigator.pop(context);
                 }
               }
@@ -1381,9 +1381,9 @@ class ProductDetailScreen extends ConsumerWidget {
     return showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete Product'),
+        title: const Text('Delete Receipt'),
         content: const Text(
-          'This will delete the receipt and all its items. This cannot be undone.',
+          'This will delete the entire receipt including all items and any associated warranty claims. This action cannot be undone.',
         ),
         actions: [
           TextButton(

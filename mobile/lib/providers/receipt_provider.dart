@@ -72,11 +72,16 @@ class ReceiptController extends StateNotifier<AsyncValue<void>> {
   }
   
   /// Delete receipt
-  Future<bool> deleteReceipt(String id) async {
+  Future<bool> deleteReceipt(String id, Ref ref) async {
     state = const AsyncValue.loading();
     
     try {
       await _receiptService.deleteReceipt(id);
+      
+      // Invalidate providers to refresh UI
+      ref.invalidate(receiptsProvider);
+      ref.invalidate(receiptProvider(id));
+      
       state = const AsyncValue.data(null);
       return true;
     } catch (e, st) {
