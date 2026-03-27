@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import '../../core/constants/app_constants.dart';
 
@@ -68,27 +69,18 @@ class _ImageCropRotateScreenState extends State<ImageCropRotateScreen> {
     setState(() => _isProcessing = true);
 
     try {
-      // ImageCropper v12.0.0 has built-in rotation support
-      final croppedFile = await ImageCropper().cropImage(
-        sourcePath: _currentImagePath,
-        compressFormat: ImageCompressFormat.jpg,
-        compressQuality: 90,
-        uiSettings: [
-          AndroidUiSettings(
-            toolbarTitle: 'Rotate Receipt Image',
-            toolbarColor: AppColors.primary,
-            toolbarWidgetColor: Colors.white,
-            initAspectRatio: CropAspectRatioPreset.original,
-            lockAspectRatio: false,
-          ),
-          IOSUiSettings(
-            title: 'Rotate Receipt Image',
-          ),
-        ],
+      final dir = File(_currentImagePath).parent.path;
+      final targetPath = '$dir/img_${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+      final result = await FlutterImageCompress.compressAndGetFile(
+        _currentImagePath,
+        targetPath,
+        quality: 100,
+        rotate: degrees,
       );
 
-      if (croppedFile != null) {
-        setState(() => _currentImagePath = croppedFile.path);
+      if (result != null) {
+        setState(() => _currentImagePath = result.path);
       }
     } catch (e) {
       if (mounted) {
@@ -113,17 +105,21 @@ class _ImageCropRotateScreenState extends State<ImageCropRotateScreen> {
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: backgroundColor,
+        title: Text(
+          'Crop & Rotate',
+          style: AppTextStyles.headingLarge.copyWith(
+            color: textPrimary,
+            fontSize: 20,
+          ),
+        ),
+        backgroundColor: Colors.transparent,
         elevation: 0,
+        scrolledUnderElevation: 0,
+        iconTheme: IconThemeData(color: textPrimary),
         leading: IconButton(
           onPressed: () => Navigator.of(context).pop(),
           icon: Icon(Symbols.arrow_back_rounded, color: textPrimary),
-        ),
-        title: Text(
-          'Crop & Rotate',
-          style: AppTextStyles.headingSmall.copyWith(color: textPrimary),
-        ),
-        centerTitle: true,
+        )
       ),
       body: _isProcessing
           ? Center(
@@ -175,15 +171,15 @@ class _ImageCropRotateScreenState extends State<ImageCropRotateScreen> {
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             side: BorderSide(color: borderColor),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
                             ),
                           ),
                           icon: Icon(Symbols.crop_rounded,
-                              color: AppColors.primary, size: AppDimensions.iconMedium),
+                              color: AppColors.onPrimary, size: AppDimensions.iconMedium, weight: AppDimensions.iconWeightBold),
                           label: Text(
                             'Crop Image',
                             style: AppTextStyles.button.copyWith(
-                              color: AppColors.primary,
+                              color: AppColors.onPrimary,
                               fontSize: 14,
                             ),
                           ),
@@ -197,21 +193,21 @@ class _ImageCropRotateScreenState extends State<ImageCropRotateScreen> {
                         children: [
                           Expanded(
                             child: OutlinedButton.icon(
-                              onPressed: _isProcessing ? null : () => _rotateImage(90),
+                              onPressed: _isProcessing ? null : () => _rotateImage(-90),
                               style: OutlinedButton.styleFrom(
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 12),
                                 side: BorderSide(color: borderColor),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
                                 ),
                               ),
-                              icon: Icon(Symbols.rotate_right_rounded,
-                                  color: AppColors.primary, size: AppDimensions.iconMedium),
+                              icon: Icon(Symbols.rotate_left_rounded,
+                                  color: AppColors.onPrimary, size: AppDimensions.iconMedium, weight: AppDimensions.iconWeightBold),
                               label: Text(
-                                'Rotate 90°',
+                                'Rotate Left',
                                 style: AppTextStyles.button.copyWith(
-                                  color: AppColors.primary,
+                                  color: AppColors.onPrimary,
                                   fontSize: 13,
                                 ),
                               ),
@@ -222,52 +218,21 @@ class _ImageCropRotateScreenState extends State<ImageCropRotateScreen> {
                             child: OutlinedButton.icon(
                               onPressed: _isProcessing
                                   ? null
-                                  : () => _rotateImage(180),
+                                  : () => _rotateImage(90),
                               style: OutlinedButton.styleFrom(
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 12),
                                 side: BorderSide(color: borderColor),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
                                 ),
                               ),
-                              icon: Icon(Symbols.rotate_left_rounded,
-                                  color: AppColors.primary, size: AppDimensions.iconMedium),
+                              icon: Icon(Symbols.rotate_right_rounded,
+                                  color: AppColors.onPrimary, size: AppDimensions.iconMedium, weight: AppDimensions.iconWeightBold),
                               label: Text(
-                                'Rotate 180°',
+                                'Rotate Right',
                                 style: AppTextStyles.button.copyWith(
-                                  color: AppColors.primary,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: _isProcessing
-                                  ? null
-                                  : () => _rotateImage(270),
-                              style: OutlinedButton.styleFrom(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 12),
-                                side: BorderSide(color: borderColor),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              icon: Icon(Symbols.flip_to_front_rounded,
-                                  color: AppColors.primary, size: AppDimensions.iconMedium),
-                              label: Text(
-                                'Rotate 270°',
-                                style: AppTextStyles.button.copyWith(
-                                  color: AppColors.primary,
+                                  color: AppColors.onPrimary,
                                   fontSize: 13,
                                 ),
                               ),
@@ -279,7 +244,7 @@ class _ImageCropRotateScreenState extends State<ImageCropRotateScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 12),
 
                 // Action buttons
                 Padding(
@@ -295,14 +260,13 @@ class _ImageCropRotateScreenState extends State<ImageCropRotateScreen> {
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             side: BorderSide(color: borderColor),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
                             ),
                           ),
                           child: Text(
                             'Cancel',
                             style: AppTextStyles.button.copyWith(
                               color: textPrimary,
-                              fontSize: 14,
                             ),
                           ),
                         ),
@@ -318,14 +282,14 @@ class _ImageCropRotateScreenState extends State<ImageCropRotateScreen> {
                             backgroundColor: AppColors.primary,
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
                             ),
                           ),
                           child: Text(
                             'Done',
                             style: AppTextStyles.button.copyWith(
                               color: AppColors.onPrimary,
-                              fontSize: 14,
+                              fontSize: AppTextStyles.button.fontSize,
                             ),
                           ),
                         ),

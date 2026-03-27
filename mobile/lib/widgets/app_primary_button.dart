@@ -64,7 +64,7 @@ class AppPrimaryButton extends StatelessWidget {
           elevation: 0,
           shadowColor: Colors.transparent,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
             side: side ?? BorderSide.none,
           ),
           padding: const EdgeInsets.symmetric(horizontal: 24),
