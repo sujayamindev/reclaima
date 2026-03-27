@@ -26,11 +26,21 @@ _BRAVE_IMAGE_ENDPOINT = "https://api.search.brave.com/res/v1/images/search"
 # Domains that typically serve low-quality, watermarked, or cluttered images.
 _BLOCKED_DOMAINS = {
     "ebay.com", "ebay.co.uk", "ebay.de", "ebay.fr",
-    "aliexpress.com", "alibaba.com", "amazon.com"
+    "aliexpress.com", "alibaba.com",
     "wish.com", "temu.com", "dhgate.com",
     "facebook.com", "pinterest.com", "instagram.com",
     "reddit.com", "twitter.com", "x.com",
     "shutterstock.com", "gettyimages.com", "alamy.com",  # stock-photo paywalls
+}
+
+# Domains that provide high quality official product images.
+_TRUSTED_DOMAINS = {
+    "apple.com", "samsung.com", "sony.com", "lg.com", "panasonic.com",
+    "bose.com", "dell.com", "hp.com", "lenovo.com", "asus.com", "acer.com",
+    "microsoft.com", "bestbuy.com", "target.com", "walmart.com",
+    "homedepot.com", "lowes.com", "ikea.com", "canadiantire.ca",
+    "costco.com", "costco.ca", "bjs.com", "samsclub.com",
+    "bhphotovideo.com", "adorama.com", "officedepot.com", "staples.com", "amazon.com"
 }
 
 
@@ -70,6 +80,18 @@ def _is_blocked(url: str) -> bool:
         # Match "ebay.com" and "i.ebay.com", etc.
         for blocked in _BLOCKED_DOMAINS:
             if host == blocked or host.endswith("." + blocked):
+                return True
+    except Exception:
+        pass
+    return False
+
+def _is_trusted(url: str) -> bool:
+    """Return True if the image URL is hosted on a trusted domain."""
+    try:
+        from urllib.parse import urlparse
+        host = urlparse(url).hostname or ""
+        for trusted in _TRUSTED_DOMAINS:
+            if host == trusted or host.endswith("." + trusted):
                 return True
     except Exception:
         pass
@@ -174,7 +196,26 @@ class BraveProductImageService(BaseProductImageService):
                 logger.info(f"No image results for: {search_query!r}")
                 return None
 
-            # Walk results, pick the first one from a non-blocked domain
+            # 1. Prefer images from trusted domains
+            for item in results:
+                image_url = self._extract_image_url(item)
+                if not image_url:
+                    continue
+
+                source_url = item.get("url", image_url)
+                if _is_trusted(source_url) or _is_trusted(image_url):
+                    result = {
+                        "imageUrl": image_url,
+                        "title": item.get("title", query),
+                        "source": item.get("source", ""),
+                    }
+                    logger.info(
+                        f"Brave selected trusted image for {search_query!r}: "
+                        f"{result['imageUrl'][:80]}..."
+                    )
+                    return result
+
+            # 2. Fall back to any non-blocked domains
             for item in results:
                 image_url = self._extract_image_url(item)
                 if not image_url:
@@ -191,7 +232,7 @@ class BraveProductImageService(BaseProductImageService):
                     "source": item.get("source", ""),
                 }
                 logger.info(
-                    f"Brave selected image for {search_query!r}: "
+                    f"Brave selected generic image for {search_query!r}: "
                     f"{result['imageUrl'][:80]}..."
                 )
                 return result
