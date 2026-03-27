@@ -443,7 +443,7 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
                     controller: _contactController,
                     keyboardType: TextInputType.phone,
                     inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'[0-9+\\- ()]')),
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-9+\- ()]')),
                     ],
                   ),
                   const SizedBox(height: 6),

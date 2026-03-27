@@ -869,7 +869,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                         keyboardType: TextInputType.phone,
                         inputFormatters: [
                           FilteringTextInputFormatter.allow(
-                            RegExp(r'[0-9+\\- ()]'),
+                            RegExp(r'[0-9+\- ()]'),
                           ),
                         ],
                       ),
