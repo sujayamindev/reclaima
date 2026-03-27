@@ -106,7 +106,9 @@ class PdfGenerationService:
         issue_description: str,
         claim_type: str,
         created_at: Optional[datetime] = None,
-        s3_service: Optional[object] = None
+        s3_service: Optional[object] = None,
+        claim_id: Optional[str] = None,
+        line_item_id: Optional[str] = None
     ) -> bytes:
         """
         Generate a warranty claim PDF document.
@@ -118,6 +120,8 @@ class PdfGenerationService:
             claim_type: Type of claim (warranty, return)
             created_at: Original claim creation timestamp (for regenerated PDFs)
             s3_service: S3 service for retrieving receipt image
+            claim_id: Full claim ID to display in PDF header
+            line_item_id: Specific line item ID if claim is for single product
 
         Returns:
             PDF document as bytes
@@ -186,7 +190,8 @@ class PdfGenerationService:
 
         # Document ID and date
         generation_date = created_at or datetime.now(timezone.utc)
-        doc_info = f"Claim ID: {receipt.id[:8]}... | Generated: {generation_date.strftime('%B %d, %Y at %I:%M %p')}"
+        display_claim_id = claim_id if claim_id else receipt.id
+        doc_info = f"Claim ID: {display_claim_id} | Generated: {generation_date.strftime('%B %d, %Y at %I:%M %p')}"
         story.append(Paragraph(doc_info, label_style))
         story.append(Spacer(1, 0.2 * inch))
 
@@ -227,7 +232,6 @@ class PdfGenerationService:
             ('FONT', (1, 0), (1, -1), 'Helvetica', 9),
             ('TEXTCOLOR', (0, 0), (0, -1), TEXT_SECONDARY),
             ('TEXTCOLOR', (1, 0), (1, -1), TEXT_PRIMARY),
-            ('LINEBELOW', (0, -1), (-1, -1), 1, BORDER_COLOR),
         ]))
         story.append(customer_table)
         story.append(Spacer(1, 0.15 * inch))
@@ -248,7 +252,6 @@ class PdfGenerationService:
             ('FONT', (1, 0), (1, -1), 'Helvetica', 9),
             ('TEXTCOLOR', (0, 0), (0, -1), TEXT_SECONDARY),
             ('TEXTCOLOR', (1, 0), (1, -1), TEXT_PRIMARY),
-            ('LINEBELOW', (0, -1), (-1, -1), 1, BORDER_COLOR),
         ]))
         story.append(receipt_table)
         story.append(Spacer(1, 0.15 * inch))
@@ -270,20 +273,29 @@ class PdfGenerationService:
             ('FONT', (1, 0), (1, -1), 'Helvetica', 8),
             ('TEXTCOLOR', (0, 0), (0, -1), TEXT_SECONDARY),
             ('TEXTCOLOR', (1, 0), (1, -1), TEXT_PRIMARY),
-            ('LINEBELOW', (0, -1), (-1, -1), 1, BORDER_COLOR),
         ]))
         story.append(vendor_table)
         story.append(Spacer(1, 0.15 * inch))
 
         # ── Products / Line Items ───────────────────────────────────────
-        story.append(Paragraph("PURCHASED ITEMS", heading_style))
+        story.append(Paragraph("CLAIMED ITEM", heading_style))
 
-        if receipt.line_items:
+        # Filter line items if specific line_item_id is provided
+        if line_item_id and receipt.line_items:
+            # Show only the claimed product
+            items_to_show = [item for item in receipt.line_items if item.id == line_item_id]
+        elif receipt.line_items:
+            # Fallback: show all items if no specific item specified
+            items_to_show = receipt.line_items
+        else:
+            items_to_show = []
+
+        if items_to_show:
             line_items_data = [
                 ["Product", "Category", "Quantity", "Unit Price", "Amount"]
             ]
 
-            for item in receipt.line_items:
+            for item in items_to_show:
                 line_items_data.append([
                     item.product_name or item.item_description or "N/A",
                     item.product_category or "N/A",
@@ -311,81 +323,6 @@ class PdfGenerationService:
 
         story.append(Spacer(1, 0.15 * inch))
 
-        # ── Warranty & Return Terms ─────────────────────────────────────
-        story.append(Paragraph("WARRANTY & RETURN TERMS", heading_style))
-
-        warranty_data = []
-        for item in receipt.line_items:
-            warranty_str = f"{item.warranty_period_months} months" if item.warranty_period_months else "Not specified"
-            warranty_expiry = item.warranty_expiry_date.strftime('%B %d, %Y') if item.warranty_expiry_date else "N/A"
-
-            return_str = f"{item.return_period_days} days" if item.return_period_days else "Not specified"
-            return_expiry = item.return_expiry_date.strftime('%B %d, %Y') if item.return_expiry_date else "N/A"
-
-            warranty_data.append([
-                item.product_name or item.item_description or "Item",
-                warranty_str,
-                warranty_expiry,
-                return_str,
-                return_expiry,
-            ])
-
-        if warranty_data:
-            warranty_table_data = [
-                ["Product", "Warranty", "Expiry Date", "Return Period", "Return Expiry"]
-            ] + warranty_data
-
-            warranty_table = Table(
-                warranty_table_data,
-                colWidths=[1.5 * inch, 1 * inch, 1.2 * inch, 1 * inch, 1.2 * inch]
-            )
-            warranty_table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), PRIMARY_COLOR),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-                ('FONT', (0, 0), (-1, 0), 'Helvetica-Bold', 8),
-                ('FONT', (0, 1), (-1, -1), 'Helvetica', 7),
-                ('GRID', (0, 0), (-1, -1), 0.5, BORDER_COLOR),
-                ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor("#F9FAFB")]),
-            ]))
-            story.append(warranty_table)
-        else:
-            story.append(Paragraph("No warranty information available.", normal_style))
-
-        story.append(Spacer(1, 0.15 * inch))
-
-        # ── Notification Status ─────────────────────────────────────────
-        story.append(Paragraph("NOTIFICATION STATUS", heading_style))
-
-        notification_data = [
-            ["Product", "Warranty Reminders", "Return Reminders"]
-        ]
-
-        for item in receipt.line_items:
-            warranty_status = "Enabled" if (item.warranty_reminder_enabled if item.warranty_reminder_enabled is not None else True) else "Disabled"
-            return_status = "Enabled" if (item.return_reminder_enabled if item.return_reminder_enabled is not None else True) else "Disabled"
-
-            notification_data.append([
-                item.product_name or item.item_description or "Item",
-                warranty_status,
-                return_status,
-            ])
-
-        if len(notification_data) > 1:
-            notif_table = Table(notification_data, colWidths=[2 * inch, 1.5 * inch, 1.5 * inch])
-            notif_table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), PRIMARY_COLOR),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-                ('FONT', (0, 0), (-1, 0), 'Helvetica-Bold', 9),
-                ('FONT', (0, 1), (-1, -1), 'Helvetica', 8),
-                ('GRID', (0, 0), (-1, -1), 0.5, BORDER_COLOR),
-                ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor("#F9FAFB")]),
-            ]))
-            story.append(notif_table)
-
-        story.append(Spacer(1, 0.15 * inch))
-
         # ── Claim Details ───────────────────────────────────────────────
         story.append(Paragraph("CLAIM DETAILS", heading_style))
 
@@ -403,7 +340,6 @@ class PdfGenerationService:
             ('FONT', (1, 0), (1, -1), 'Helvetica', 9),
             ('TEXTCOLOR', (0, 0), (0, -1), TEXT_SECONDARY),
             ('TEXTCOLOR', (1, 0), (1, -1), TEXT_PRIMARY),
-            ('LINEBELOW', (0, -1), (-1, -1), 1, BORDER_COLOR),
         ]))
         story.append(claim_table)
         story.append(Spacer(1, 0.2 * inch))

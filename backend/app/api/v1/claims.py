@@ -113,6 +113,9 @@ async def create_claim(
             region=settings.AWS_REGION
         )
 
+        # Generate claim ID first (need it for PDF)
+        claim_id = str(uuid.uuid4())
+
         # Generate PDF
         pdf_service = get_pdf_service()
         pdf_bytes = pdf_service.generate_claim_pdf(
@@ -120,12 +123,11 @@ async def create_claim(
             user=db_user,
             issue_description=claim_data.issue_description,
             claim_type=claim_data.claim_type or "warranty",
-            s3_service=s3_service
+            s3_service=s3_service,
+            claim_id=claim_id,
+            line_item_id=claim_data.line_item_id
         )
         logger.info(f"Generated claim PDF: {len(pdf_bytes)} bytes")
-
-        # Upload PDF to S3
-        claim_id = str(uuid.uuid4())
         s3_object_key = f"users/{db_user.id}/claims/{claim_id}.pdf"
 
         s3_service.upload_file(
@@ -538,7 +540,9 @@ async def access_claim_pdf(
                 issue_description=claim.issue_description,
                 claim_type=claim.claim_type or "warranty",
                 created_at=claim.created_at,
-                s3_service=s3_service
+                s3_service=s3_service,
+                claim_id=claim.id,
+                line_item_id=claim.line_item_id
             )
             s3_service.upload_file(
                 file_content=pdf_bytes,
