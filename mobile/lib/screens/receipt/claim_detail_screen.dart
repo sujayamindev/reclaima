@@ -654,13 +654,15 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
       actions: [
         IconButton(
           icon: Icon(
-            Symbols.cached_rounded,
+            Symbols.delete_rounded,
             color: AppColors.textPrimary(isDark),
             size: 22,
             weight: 800.0,
           ),
-          onPressed: _loadClaim,
-          tooltip: 'Refresh',
+          onPressed: () {
+            // TODO: Implement delete functionality
+          },
+          tooltip: 'Delete',
           padding: const EdgeInsets.all(8),
           style: IconButton.styleFrom(
             backgroundColor: Colors.transparent,

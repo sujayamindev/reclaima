@@ -101,6 +101,7 @@ class ReceiptLineItemResponse(BaseModel):
 
 class ReceiptLineItemUpdate(BaseModel):
     """Partial update schema for a single line item."""
+    product_code: Optional[str] = None
     item_description: Optional[str] = None
     product_name: Optional[str] = None
     product_category: Optional[str] = None

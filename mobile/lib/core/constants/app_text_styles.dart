@@ -142,9 +142,9 @@ abstract final class AppTextStyles {
 
   // ── Countdown ─────────────────────────────────────────────────────────────
 
-  /// 56 / bold / height 1.0 — expiry countdown hero number.
+  /// 52 / bold / height 1.0 — expiry countdown hero number.
   static TextStyle get countdownHero => GoogleFonts.inter(
-        fontSize: 56,
+        fontSize: 52,
         fontWeight: FontWeight.bold,
         height: 1.0,
       );

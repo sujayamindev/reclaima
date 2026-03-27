@@ -374,7 +374,7 @@ class ProductDetailScreen extends ConsumerWidget {
             position: PopupMenuPosition.under,
             offset: const Offset(0, 8),
             menuPadding: EdgeInsets.zero,
-            constraints: const BoxConstraints(minWidth: 124, maxWidth: 124),
+            constraints: const BoxConstraints(minWidth: 64, maxWidth: 64),
             color: AppColors.card(isDark),
             elevation: 4,
             shadowColor: Colors.black.withValues(alpha: 0.12),
@@ -383,9 +383,7 @@ class ProductDetailScreen extends ConsumerWidget {
               side: BorderSide(color: AppColors.border(isDark)),
             ),
             onSelected: (value) async {
-              if (value == 'edit') {
-                // TODO: navigate to edit screen
-              } else if (value == 'delete') {
+              if (value == 'delete') {
                 final confirmed = await _showDeleteDialog(context);
                 if (confirmed == true && context.mounted) {
                   final ok = await ref
@@ -409,58 +407,22 @@ class ProductDetailScreen extends ConsumerWidget {
   ) {
     return PopupMenuItem<String>(
       value: '_noop',
-      height: 52,
+      height: 48,
       padding: EdgeInsets.zero,
-      child: SizedBox(
-        width: 124,
-        height: 52,
-        child: Row(
-          children: [
-            Expanded(
-              child: Center(
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
-                  onTap: () => Navigator.of(context).pop('edit'),
-                  child: const SizedBox(
-                    width: 40,
-                    height: 40,
-                    child: Icon(
-                      Symbols.edit_rounded,
-                      size: AppDimensions.iconMedium,
-                      color: AppColors.primary,
-                      weight: AppDimensions.iconWeightHeavy,
-                    ),
-                  ),
-                ),
-              ),
+      child: Center(
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
+          onTap: () => Navigator.of(context).pop('delete'),
+          child: const SizedBox(
+            width: 40,
+            height: 40,
+            child: Icon(
+              Symbols.delete_rounded,
+              size: AppDimensions.iconMedium,
+              color: AppColors.error,
+              weight: AppDimensions.iconWeightHeavy,
             ),
-            SizedBox(
-              height: 20,
-              child: VerticalDivider(
-                width: 1,
-                thickness: 1,
-                color: AppColors.border(isDark),
-              ),
-            ),
-            Expanded(
-              child: Center(
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
-                  onTap: () => Navigator.of(context).pop('delete'),
-                  child: const SizedBox(
-                    width: 40,
-                    height: 40,
-                    child: Icon(
-                      Symbols.delete_rounded,
-                      size: AppDimensions.iconMedium,
-                      color: AppColors.error,
-                      weight: AppDimensions.iconWeightHeavy,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

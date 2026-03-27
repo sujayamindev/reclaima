@@ -17,11 +17,8 @@ class ReceiptConfirmationScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic> formData;
   final DateTime? warrantyExpiryDate;
   final DateTime? returnExpiryDate;
-  /// ID of the existing primary line item to PATCH with product/warranty data.
-  /// Null for new manual-entry receipts (a new line item is created instead).
-  final String? primaryLineItemId;
-  /// Product / warranty fields destined for the line-item PATCH/POST.
-  final Map<String, dynamic> lineItemData;
+  final List<Map<String, dynamic>> itemsPayload;
+  final List<dynamic>? itemForms;
   /// S3 key of the image pre-uploaded via POST /receipts/ocr-extract.
   /// When set, the receipt is created with this image key already attached
   /// and the status is set to COMPLETED server-side.
@@ -34,8 +31,8 @@ class ReceiptConfirmationScreen extends ConsumerStatefulWidget {
     required this.formData,
     this.warrantyExpiryDate,
     this.returnExpiryDate,
-    this.primaryLineItemId,
-    this.lineItemData = const {},
+    this.itemsPayload = const [],
+    this.itemForms,
     this.stagingS3Key,
   });
 
@@ -131,28 +128,44 @@ class _ReceiptConfirmationScreenState
     }
 
     // ── 3. Save product / warranty data to the line item ────────────────
-    final liData = Map<String, dynamic>.from(widget.lineItemData)
-      ..removeWhere((_, v) => v == null);  // drop explicit nulls for create
-    if (liData.isNotEmpty) {
-      // Prefer the line item ID we already know; fall back to first on result.
-      final itemId = widget.primaryLineItemId
-          ?? (result.lineItems.isNotEmpty ? result.lineItems.first.id : null);
+    final ocrLineItems = result.lineItems;
+    int index = 0;
+    
+    // Create an explicit list of futures for creating/updating line items
+    final futures = <Future>[];
+    String? firstProcessedItemId;
 
-      if (itemId != null) {
-        await controller.updateLineItem(result.id, itemId, liData);
-      } else {
-        // Manual entry: no OCR line items yet — create a new one.
-        await controller.createLineItem(result.id, liData);
+    for (final rawItemData in widget.itemsPayload) {
+      final liData = Map<String, dynamic>.from(rawItemData)..removeWhere((_, v) => v == null);
+      if (liData.isEmpty) {
+        index++;
+        continue;
       }
+      
+      final existingId = liData.remove('_existingId') as String?;
+      final itemId = existingId ?? (index < ocrLineItems.length ? ocrLineItems[index].id : null);
+      
+      if (itemId == null && firstProcessedItemId == null && result.lineItems.isNotEmpty) {
+           firstProcessedItemId = result.lineItems.first.id;
+      }
+      
+      if (itemId != null) {
+        firstProcessedItemId ??= itemId;
+        futures.add(controller.updateLineItem(result.id, itemId, liData));
+      } else {
+        futures.add(controller.createLineItem(result.id, liData));
+      }
+      index++;
     }
+    
+    await Future.wait(futures);
 
     // ── 4. Handle Pending Replacement Links ─────────────────────────────────
     final pendingClaimId = ref.read(pendingReplacementClaimIdProvider);
     if (pendingClaimId != null) {
       try {
         final claimService = ref.read(claimServiceProvider);
-        final newLineItemId = widget.primaryLineItemId ?? 
-            (result.lineItems.isNotEmpty ? result.lineItems.first.id : null);
+        final newLineItemId = firstProcessedItemId;
             
         if (newLineItemId != null) {
           await claimService.resolveClaim(
@@ -291,74 +304,98 @@ class _ReceiptConfirmationScreenState
                             'Total',
                             '$currency ${totalAmount.toStringAsFixed(2)}'
                           ),
-                        if (productName != null)
-                          _buildDetailRow(isDark, 'Product', productName),
-                        if (productCategory != null)
-                          _buildDetailRow(isDark, 'Category', productCategory),
+                        _buildDetailRow(isDark, 'Tracked Items', '${widget.itemsPayload.length}'),
                       ],
                     ),
                     const SizedBox(height: 16),
-
-                    // ── Warranty Coverage ──────────────────────────────────
-                    if (widget.warrantyExpiryDate != null ||
-                        warrantyMonths != null) ...[
-                      _buildSection(
-                        isDark: isDark,
-                        textPrimary: textPrimary,
-                        title: 'Warranty Coverage',
-                        icon: Symbols.verified_rounded,
-                        children: [
-                          if (widget.warrantyExpiryDate != null)
-                            _buildExpiryBanner(
-                              isDark: isDark,
-                              textPrimary: textPrimary,
-                              expiryDate: widget.warrantyExpiryDate!,
-                              periodLabel: warrantyMonths != null
-                                  ? '$warrantyMonths-month warranty'
-                                  : null,
-                              soonThreshold: 30,
-                              soonLabel: 'Expiring Soon',
-                              expiredLabel: 'Expired',
-                              activeLabel: 'Active',
-                              activeColor: AppColors.primary,
+                    
+                    if (widget.itemForms != null) ...List.generate(widget.itemForms!.length, (index) {
+                        final form = widget.itemForms![index];
+                        final productName = form.productNameCtrl.text.trim();
+                        final displayName = productName.isNotEmpty ? productName : 'Item ${index + 1}';
+                        
+                        final warrantyMonths = int.tryParse(form.warrantyPeriodCtrl.text);
+                        final returnDays = int.tryParse(form.returnPeriodCtrl.text);
+                        final hasWarranty = form.warrantyExpiryDate != null || warrantyMonths != null;
+                        final hasReturn = form.returnExpiryDate != null || returnDays != null;
+                        
+                        if (!hasWarranty && !hasReturn) return const SizedBox.shrink();
+                        
+                        return Container(
+                            margin: const EdgeInsets.only(bottom: 16),
+                            child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                    Padding(
+                                        padding: const EdgeInsets.only(left: 8, bottom: 8),
+                                        child: Text(displayName, style: AppTextStyles.titleLarge.copyWith(color: AppColors.primary)),
+                                    ),
+                                    _buildSection(
+                                      isDark: isDark,
+                                      textPrimary: textPrimary,
+                                      title: 'Coverage & Returns',
+                                      icon: Symbols.shield_rounded,
+                                      children: [
+                                        if (hasWarranty) ...[
+                                          Row(
+                                            children: [
+                                              Text('Warranty', style: AppTextStyles.formLabel.copyWith(color: AppColors.textPrimary(isDark))),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 6),
+                                          if (form.warrantyExpiryDate != null)
+                                            _buildExpiryBanner(
+                                              isDark: isDark,
+                                              textPrimary: textPrimary,
+                                              expiryDate: form.warrantyExpiryDate!,
+                                              periodLabel: warrantyMonths != null
+                                                  ? '$warrantyMonths-month warranty'
+                                                  : null,
+                                              soonThreshold: 30,
+                                              soonLabel: 'Expiring Soon',
+                                              expiredLabel: 'Expired',
+                                              activeLabel: 'Active',
+                                              activeColor: AppColors.primary,
+                                            )
+                                          else
+                                            _buildNoInfoRow(isDark, 'No warranty information added.'),
+                                        ],
+                                        if (hasWarranty && hasReturn) ...[
+                                          const SizedBox(height: 16),
+                                          Divider(color: AppColors.border(isDark)),
+                                          const SizedBox(height: 16),
+                                        ],
+                                        if (hasReturn) ...[
+                                          Row(
+                                            children: [
+                                              Text('Return Policy', style: AppTextStyles.formLabel.copyWith(color: AppColors.textPrimary(isDark))),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 6),
+                                          if (form.returnExpiryDate != null)
+                                            _buildExpiryBanner(
+                                              isDark: isDark,
+                                              textPrimary: textPrimary,
+                                              expiryDate: form.returnExpiryDate!,
+                                              periodLabel: returnDays != null
+                                                  ? '$returnDays-day return window'
+                                                  : null,
+                                              soonThreshold: 3,
+                                              soonLabel: 'Closing Soon',
+                                              expiredLabel: 'Closed',
+                                              activeLabel: 'Open',
+                                              activeColor: AppColors.info,
+                                            )
+                                          else
+                                            _buildNoInfoRow(isDark, 'No return policy information added.'),
+                                        ],
+                                      ],
+                                    ),
+                                    const SizedBox(height: 16),
+                                ]
                             )
-                          else
-                            _buildNoInfoRow(isDark, 'No warranty information added.'),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                    ],
-
-                    // ── Return Window ──────────────────────────────────────
-                    if (widget.returnExpiryDate != null ||
-                        returnDays != null) ...[
-                      _buildSection(
-                        isDark: isDark,
-                        textPrimary: textPrimary,
-                        title: 'Return Window',
-                        icon: Symbols.assignment_return_rounded,
-                        children: [
-                          if (widget.returnExpiryDate != null)
-                            _buildExpiryBanner(
-                              isDark: isDark,
-                              textPrimary: textPrimary,
-                              expiryDate: widget.returnExpiryDate!,
-                              periodLabel: returnDays != null
-                                  ? '$returnDays-day return window'
-                                  : null,
-                              soonThreshold: 3,
-                              soonLabel: 'Closing Soon',
-                              expiredLabel: 'Closed',
-                              activeLabel: 'Open',
-                              activeColor: AppColors.info,
-                            )
-                          else
-                            _buildNoInfoRow(
-                                isDark, 'No return policy information added.'),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                    ],
+                        );
+                    }),
                   ],
                 ),
               ),
@@ -405,7 +442,7 @@ class _ReceiptConfirmationScreenState
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
           ...children,
         ],
       ),
@@ -515,19 +552,13 @@ class _ReceiptConfirmationScreenState
     }
 
     final labelColor = AppColors.label(isDark);
-
     final duration = _formatDuration(daysLeft);
     final unitSuffix = isExpired ? 'ago' : 'left';
-    final unitLabel = duration.unit.isNotEmpty
-        ? '${duration.unit} $unitSuffix'
-        : unitSuffix;
+    final unitLabel = duration.unit.isNotEmpty ? '${duration.unit} $unitSuffix' : unitSuffix;
 
-    // Compute progress ring fraction
-    // We need the purchase date to determine total period
+    // Progress fraction
     final purchaseDateStr = widget.formData['purchaseDate'] as String?;
-    final purchaseDate =
-        purchaseDateStr != null ? DateTime.tryParse(purchaseDateStr) : null;
-
+    final purchaseDate = purchaseDateStr != null ? DateTime.tryParse(purchaseDateStr) : null;
     double progressFraction = 0.0;
     if (purchaseDate != null) {
       final totalDays = expiryDate.difference(purchaseDate).inDays;
@@ -537,158 +568,108 @@ class _ReceiptConfirmationScreenState
             : (1.0 - (daysLeft / totalDays)).clamp(0.0, 1.0);
       }
     }
-
     final percentLeft = isExpired
         ? 0
-        : (progressFraction * 100).round() > 100
-            ? 100
-            : (100 - (progressFraction * 100).round());
+        : (100 - (progressFraction * 100).round()).clamp(0, 100);
 
-    return Row(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Left side — countdown + status + date
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Big countdown number + status badge
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
+        // ── Top row: countdown + status (left) · percentage (right) ──────
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            // Big number
+            Text(
+              duration.value,
+              style: AppTextStyles.countdownHero.copyWith(color: statusColor),
+            ),
+            const SizedBox(width: 10),
+            // Unit + status chip
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    duration.value,
-                    style: AppTextStyles.countdownHero.copyWith(
-                      color: statusColor,
+                    unitLabel,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: labelColor,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          unitLabel,
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: labelColor,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: statusColor.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                                color: statusColor.withValues(alpha: 0.35)),
-                          ),
-                          child: Text(
-                            statusLabel,
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              color: statusColor,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ),
-                      ],
+                  const SizedBox(height: 0),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: statusColor.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: statusColor.withValues(alpha: 0.35)),
+                    ),
+                    child: Text(
+                      statusLabel,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: statusColor,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 14),
-              // Expiry date row
-              Row(
-                children: [
-                  Icon(Symbols.event_rounded, size: AppDimensions.iconTiny, color: labelColor),
-                  const SizedBox(width: 5),
-                  Text(
-                    'Expires ${_displayDate(expiryDate)}',
-                    style: TextStyle(fontSize: 13, color: labelColor),
-                  ),
-                ],
-              ),
-              if (periodLabel != null) ...[
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Icon(Symbols.info_rounded, size: AppDimensions.iconTiny, color: labelColor),
-                    const SizedBox(width: 5),
-                    Text(
-                      periodLabel,
-                      style: TextStyle(fontSize: 13, color: labelColor),
-                    ),
-                  ],
+            ),
+            const Spacer(),
+            // Percentage badge on the right
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Text(
+                '$percentLeft% left',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: statusColor,
                 ),
-              ],
-            ],
+              ),
+            ),
+          ],
+        ),
+
+        // ── Linear progress bar ───────────────────────────────────────────
+        const SizedBox(height: 10),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: LinearProgressIndicator(
+            value: (1.0 - progressFraction).clamp(0.0, 1.0),
+            minHeight: 6,
+            backgroundColor: statusColor.withValues(alpha: 0.12),
+            valueColor: AlwaysStoppedAnimation<Color>(statusColor),
           ),
         ),
 
-        // Right side — circular progress ring
-        if (purchaseDate != null) ...[
-          const SizedBox(width: 16),
-          SizedBox(
-            width: 72,
-            height: 72,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                // Background track
-                SizedBox(
-                  width: 72,
-                  height: 72,
-                  child: CircularProgressIndicator(
-                    value: 1.0,
-                    strokeWidth: 6,
-                    strokeCap: StrokeCap.round,
-                    color: statusColor.withValues(alpha: 0.12),
-                  ),
-                ),
-                // Filled arc
-                SizedBox(
-                  width: 72,
-                  height: 72,
-                  child: CircularProgressIndicator(
-                    value: (1.0 - progressFraction).clamp(0.0, 1.0),
-                    strokeWidth: 6,
-                    strokeCap: StrokeCap.round,
-                    color: statusColor,
-                  ),
-                ),
-                // Percentage text
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '$percentLeft%',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                        color: statusColor,
-                      ),
-                    ),
-                    Text(
-                      'left',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: labelColor,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+        // ── Meta info ─────────────────────────────────────────────────────
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Icon(Symbols.event_rounded, size: AppDimensions.iconTiny, color: labelColor),
+            const SizedBox(width: 5),
+            Text(
+              'Expires ${_displayDate(expiryDate)}',
+              style: TextStyle(fontSize: 13, color: labelColor),
             ),
-          ),
-        ],
+            if (periodLabel != null) ...[
+              const Spacer(),
+              Text(
+                periodLabel,
+                style: TextStyle(fontSize: 13, color: labelColor),
+              ),
+            ],
+          ],
+        ),
       ],
     );
   }
+
 
   // ─── Save footer (matches review_receipt_screen style) ─────────────────────
 
@@ -715,7 +696,7 @@ class _ReceiptConfirmationScreenState
                   ),
                 )
               : const Icon(Symbols.check_circle_rounded,
-                  size: AppDimensions.iconMedium, color: AppColors.onPrimary),
+                  size: AppDimensions.iconMedium, color: AppColors.onPrimary, weight: AppDimensions.iconWeightBold),
           label: const Text(
             'Save Receipt',
             style: TextStyle(

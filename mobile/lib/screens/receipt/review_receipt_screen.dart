@@ -40,6 +40,31 @@ class ReviewReceiptScreen extends ConsumerStatefulWidget {
       _ReviewReceiptScreenState();
 }
 
+class LineItemFormState {
+  final TextEditingController productNameCtrl = TextEditingController();
+  final TextEditingController productCodeCtrl = TextEditingController();
+  String selectedCategory = 'Electronics';
+  
+  final TextEditingController warrantyPeriodCtrl = TextEditingController();
+  DateTime? warrantyExpiryDate;
+  int? warrantyLeadDaysOverride;
+  bool warrantyReminderEnabled = true;
+
+  final TextEditingController returnPeriodCtrl = TextEditingController();
+  DateTime? returnExpiryDate;
+  int? returnLeadDaysOverride;
+  bool returnReminderEnabled = true;
+
+  String? existingId;
+
+  void dispose() {
+    productNameCtrl.dispose();
+    productCodeCtrl.dispose();
+    warrantyPeriodCtrl.dispose();
+    returnPeriodCtrl.dispose();
+  }
+}
+
 class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
   // OCR polling
   Timer? _pollTimer;
@@ -62,14 +87,9 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
   final _vendorPhoneCtrl = TextEditingController();
   final _vendorEmailCtrl = TextEditingController();
 
-  // 📦 Product Info
-  final _productNameCtrl = TextEditingController();
-  String _selectedCategory = 'Electronics';
-  List<ReceiptLineItemModel> _lineItems = [];
-
-  /// ID of the primary (first) OCR-generated line item, if one exists.
-  /// Used to PATCH the line item rather than the receipt for warranty data.
-  String? _primaryLineItemId;
+  // 📦 Line Items Form State
+  List<LineItemFormState> _itemForms = [LineItemFormState()];
+  List<ReceiptLineItemModel> _ocrLineItems = [];
 
   static const List<String> _categories = [
     'Electronics',
@@ -89,17 +109,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     'Other',
   ];
 
-  // 🛡️ Warranty Info
-  final _warrantyPeriodCtrl = TextEditingController();
-  DateTime? _warrantyExpiryDate;
-  int? _warrantyLeadDaysOverride;
-  bool _warrantyReminderEnabled = true;
 
-  // 💵 Return Policy
-  final _returnPeriodCtrl = TextEditingController();
-  DateTime? _returnExpiryDate;
-  int? _returnLeadDaysOverride;
-  bool _returnReminderEnabled = true;
 
   // 📝 Remarks & Notes
   final _remarksCtrl = TextEditingController();
@@ -147,34 +157,27 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     _vendorEmailCtrl.text = receipt.vendorEmail ?? '';
     _remarksCtrl.text = receipt.remarks ?? '';
     _warrantyNotesCtrl.text = receipt.warrantyNotes ?? '';
-    _lineItems = receipt.lineItems;
+    _ocrLineItems = receipt.lineItems;
 
-    // Product / warranty fields come from the primary line item
     if (receipt.lineItems.isNotEmpty) {
-      final primary = receipt.lineItems.first;
-      _primaryLineItemId = primary.id;
-      _productNameCtrl.text =
-          primary.productName ?? primary.itemDescription ?? '';
-      final ocrCategory = primary.productCategory ?? '';
-      _selectedCategory = _categories.contains(ocrCategory)
-          ? ocrCategory
-          : 'Electronics';
-      _warrantyPeriodCtrl.text = primary.warrantyPeriodMonths?.toString() ?? '';
-      _warrantyExpiryDate = primary.warrantyExpiryDate;
-      _warrantyLeadDaysOverride = primary.warrantyLeadDaysOverride;
-      _returnPeriodCtrl.text = primary.returnPeriodDays?.toString() ?? '';
-      _returnExpiryDate = primary.returnExpiryDate;
-      _returnLeadDaysOverride = primary.returnLeadDaysOverride;
-    } else {
-      _primaryLineItemId = null;
-      _productNameCtrl.text = '';
-      _selectedCategory = 'Electronics';
-      _warrantyPeriodCtrl.text = '';
-      _returnPeriodCtrl.text = '';
-      _warrantyExpiryDate = null;
-      _returnExpiryDate = null;
-      _warrantyLeadDaysOverride = null;
-      _returnLeadDaysOverride = null;
+      _itemForms.clear();
+      for (final item in receipt.lineItems) {
+        final form = LineItemFormState();
+        form.existingId = item.id;
+        form.productNameCtrl.text = item.productName ?? item.itemDescription ?? '';
+        form.productCodeCtrl.text = item.productCode ?? '';
+        final cat = item.productCategory ?? '';
+        form.selectedCategory = _categories.contains(cat) ? cat : 'Electronics';
+        form.warrantyPeriodCtrl.text = item.warrantyPeriodMonths?.toString() ?? '';
+        form.warrantyExpiryDate = item.warrantyExpiryDate;
+        form.warrantyLeadDaysOverride = item.warrantyLeadDaysOverride;
+        form.warrantyReminderEnabled = item.warrantyReminderEnabled ?? true;
+        form.returnPeriodCtrl.text = item.returnPeriodDays?.toString() ?? '';
+        form.returnExpiryDate = item.returnExpiryDate;
+        form.returnLeadDaysOverride = item.returnLeadDaysOverride;
+        form.returnReminderEnabled = item.returnReminderEnabled ?? true;
+        _itemForms.add(form);
+      }
     }
   }
 
@@ -202,34 +205,34 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     _remarksCtrl.text = (data['remarks'] as String?) ?? '';
     _warrantyNotesCtrl.text = (data['warrantyNotes'] as String?) ?? '';
 
-    // Build display-only line items (no DB IDs yet).
     final rawItems = data['lineItems'] as List<dynamic>? ?? [];
-    _lineItems = rawItems
+    _ocrLineItems = rawItems
         .map(
           (e) => ReceiptLineItemModel.fromOcrExtract(e as Map<String, dynamic>),
         )
         .toList();
-
-    // Primary product info: prefer the first line item, fall back to
-    // receipt-level product hint (single-product receipts / mock data).
-    _primaryLineItemId =
-        null; // no DB item yet — confirmation screen creates it
-    if (_lineItems.isNotEmpty) {
-      final first = _lineItems.first;
-      _productNameCtrl.text = first.productName ?? first.itemDescription ?? '';
-      final ocrCategory = first.productCategory ?? '';
-      _selectedCategory = _categories.contains(ocrCategory)
-          ? ocrCategory
-          : 'Electronics';
-      _warrantyPeriodCtrl.text = first.warrantyPeriodMonths?.toString() ?? '';
+    
+    if (_ocrLineItems.isNotEmpty) {
+      _itemForms.clear();
+      for (final item in _ocrLineItems) {
+        final form = LineItemFormState();
+        form.productNameCtrl.text = item.productName ?? item.itemDescription ?? '';
+        form.productCodeCtrl.text = item.productCode ?? '';
+        final cat = item.productCategory ?? '';
+        form.selectedCategory = _categories.contains(cat) ? cat : 'Electronics';
+        form.warrantyPeriodCtrl.text = item.warrantyPeriodMonths?.toString() ?? '';
+        _itemForms.add(form);
+      }
     } else {
-      _productNameCtrl.text = (data['productName'] as String?) ?? '';
-      _warrantyPeriodCtrl.text = data['warrantyPeriodMonths']?.toString() ?? '';
+      _itemForms.first.productNameCtrl.text = (data['productName'] as String?) ?? '';
+      _itemForms.first.warrantyPeriodCtrl.text = data['warrantyPeriodMonths']?.toString() ?? '';
     }
 
     if (_purchaseDate != null) {
-      _autoComputeWarrantyExpiry();
-      _autoComputeReturnExpiry();
+      for (int i = 0; i < _itemForms.length; i++) {
+        _autoComputeWarrantyExpiry(i);
+        _autoComputeReturnExpiry(i);
+      }
     }
   }
 
@@ -243,9 +246,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     _vendorAddressCtrl.dispose();
     _vendorPhoneCtrl.dispose();
     _vendorEmailCtrl.dispose();
-    _productNameCtrl.dispose();
-    _warrantyPeriodCtrl.dispose();
-    _returnPeriodCtrl.dispose();
+    for (var form in _itemForms) { form.dispose(); }
     _remarksCtrl.dispose();
     _warrantyNotesCtrl.dispose();
     super.dispose();
@@ -287,24 +288,36 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     }
   }
 
-  void _autoComputeWarrantyExpiry() {
-    final months = int.tryParse(_warrantyPeriodCtrl.text);
+  void _autoComputeWarrantyExpiry(int index) {
+    if (index >= _itemForms.length) return;
+    final form = _itemForms[index];
+    final months = int.tryParse(form.warrantyPeriodCtrl.text);
     if (months != null && _purchaseDate != null) {
       setState(() {
-        _warrantyExpiryDate = DateTime(
+        form.warrantyExpiryDate = DateTime(
           _purchaseDate!.year,
           _purchaseDate!.month + months,
           _purchaseDate!.day,
         );
       });
+    } else {
+      setState(() {
+        form.warrantyExpiryDate = null;
+      });
     }
   }
 
-  void _autoComputeReturnExpiry() {
-    final days = int.tryParse(_returnPeriodCtrl.text);
+  void _autoComputeReturnExpiry(int index) {
+    if (index >= _itemForms.length) return;
+    final form = _itemForms[index];
+    final days = int.tryParse(form.returnPeriodCtrl.text);
     if (days != null && _purchaseDate != null) {
       setState(() {
-        _returnExpiryDate = _purchaseDate!.add(Duration(days: days));
+        form.returnExpiryDate = _purchaseDate!.add(Duration(days: days));
+      });
+    } else {
+      setState(() {
+        form.returnExpiryDate = null;
       });
     }
   }
@@ -363,48 +376,44 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
       receiptData['warrantyNotes'] = warrantyNotes;
     }
 
-    // ── Line-item fields (go to PATCH/POST /receipts/{id}/items/{itemId}) ─
-    final lineItemData = <String, dynamic>{};
-    final productName = _productNameCtrl.text.trim();
-    if (productName.isNotEmpty) {
-      lineItemData['productName'] = productName;
-      // Also keep in receiptData purely for confirmation screen display
-      receiptData['productName'] = productName;
+    final List<Map<String, dynamic>> itemsPayload = [];
+    for (final form in _itemForms) {
+        final liData = <String, dynamic>{};
+        if (form.existingId != null) liData['_existingId'] = form.existingId;
+        
+        final productName = form.productNameCtrl.text.trim();
+        if (productName.isNotEmpty) liData['productName'] = productName;
+        
+        final productCode = form.productCodeCtrl.text.trim();
+        if (productCode.isNotEmpty) liData['productCode'] = productCode;
+        
+        liData['productCategory'] = form.selectedCategory;
+        
+        if (form.warrantyPeriodCtrl.text.isNotEmpty) {
+            final months = int.tryParse(form.warrantyPeriodCtrl.text);
+            if (months != null) liData['warrantyPeriodMonths'] = months;
+        } else {
+            liData['warrantyPeriodMonths'] = null;
+        }
+        
+        if (form.returnPeriodCtrl.text.isNotEmpty) {
+            final days = int.tryParse(form.returnPeriodCtrl.text);
+            if (days != null) liData['returnPeriodDays'] = days;
+        } else {
+            liData['returnPeriodDays'] = null;
+        }
+        
+        if (form.warrantyLeadDaysOverride != null) liData['warrantyLeadDaysOverride'] = form.warrantyLeadDaysOverride;
+        if (form.returnLeadDaysOverride != null) liData['returnLeadDaysOverride'] = form.returnLeadDaysOverride;
+        liData['warrantyReminderEnabled'] = form.warrantyReminderEnabled;
+        liData['returnReminderEnabled'] = form.returnReminderEnabled;
+        itemsPayload.add(liData);
     }
-    if (_selectedCategory.isNotEmpty) {
-      lineItemData['productCategory'] = _selectedCategory;
-      receiptData['productCategory'] = _selectedCategory;
+    
+    // Pass the first item's name to receiptData for display
+    if (itemsPayload.isNotEmpty && itemsPayload.first['productName'] != null) {
+        receiptData['productName'] = itemsPayload.first['productName'];
     }
-    if (_warrantyPeriodCtrl.text.isNotEmpty) {
-      final months = int.tryParse(_warrantyPeriodCtrl.text);
-      if (months != null) {
-        lineItemData['warrantyPeriodMonths'] = months;
-        receiptData['warrantyPeriodMonths'] = months;
-      }
-    } else {
-      lineItemData['warrantyPeriodMonths'] = null;
-    }
-    if (_returnPeriodCtrl.text.isNotEmpty) {
-      final days = int.tryParse(_returnPeriodCtrl.text);
-      if (days != null) {
-        lineItemData['returnPeriodDays'] = days;
-        receiptData['returnPeriodDays'] = days;
-      }
-    } else {
-      lineItemData['returnPeriodDays'] = null;
-    }
-
-    // ── Notification lead time overrides ────────────────────────────────────
-    if (_warrantyLeadDaysOverride != null) {
-      lineItemData['warrantyLeadDaysOverride'] = _warrantyLeadDaysOverride;
-    }
-    if (_returnLeadDaysOverride != null) {
-      lineItemData['returnLeadDaysOverride'] = _returnLeadDaysOverride;
-    }
-
-    // ── Notification reminder on/off ────────────────────────────────────────
-    lineItemData['warrantyReminderEnabled'] = _warrantyReminderEnabled;
-    lineItemData['returnReminderEnabled'] = _returnReminderEnabled;
 
     Navigator.push(
       context,
@@ -413,15 +422,9 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
           receiptId: widget.receiptId,
           isManualEntry: widget.isManualEntry,
           formData: receiptData,
-          primaryLineItemId: _primaryLineItemId,
-          lineItemData: lineItemData,
+          itemsPayload: itemsPayload,
+          itemForms: _itemForms, // Pass for UI logic
           stagingS3Key: widget.stagingS3Key,
-          warrantyExpiryDate: _warrantyPeriodCtrl.text.isNotEmpty
-              ? _warrantyExpiryDate
-              : null,
-          returnExpiryDate: _returnPeriodCtrl.text.isNotEmpty
-              ? _returnExpiryDate
-              : null,
         ),
       ),
     );
@@ -803,8 +806,10 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                           current: _purchaseDate,
                           onPicked: (d) {
                             _purchaseDate = d;
-                            _autoComputeWarrantyExpiry();
-                            _autoComputeReturnExpiry();
+                            for (int i = 0; i < _itemForms.length; i++) {
+                              _autoComputeWarrantyExpiry(i);
+                              _autoComputeReturnExpiry(i);
+                            }
                           },
                         ),
                       ),
@@ -885,100 +890,151 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Product Info
-                  _buildSection(
-                    isDark: isDark,
-                    textPrimary: textPrimary,
-                    title: 'Product Info',
-                    icon: Symbols.inventory_2_rounded,
-                    iconColor: AppColors.primary,
-                    children: [
-                      _buildTextField(
-                        isDark: isDark,
-                        label: 'Product Name',
-                        controller: _productNameCtrl,
-                        hint: 'e.g. MacBook Pro 14"',
-                      ),
-                      const SizedBox(height: 14),
-                      _buildCategoryDropdown(isDark: isDark),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
                   // Items (read-only, from OCR line items)
-                  if (_lineItems.isNotEmpty)
+                  if (_ocrLineItems.isNotEmpty)
                     _buildLineItemsCard(isDark, textPrimary),
-                  if (_lineItems.isNotEmpty) const SizedBox(height: 16),
+                  if (_ocrLineItems.isNotEmpty) const SizedBox(height: 16),
 
-                  // Warranty Info
-                  _buildSection(
-                    isDark: isDark,
-                    textPrimary: textPrimary,
-                    title: 'Warranty Info',
-                    icon: Symbols.verified_rounded,
-                    iconColor: AppColors.primary,
-                    children: [
-                      _buildTextField(
-                        isDark: isDark,
-                        label: 'Warranty Period (months)',
-                        controller: _warrantyPeriodCtrl,
-                        hint: 'e.g. 12',
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                        ],
-                        onChanged: (_) => _autoComputeWarrantyExpiry(),
-                      ),
-                      const SizedBox(height: 14),
-                      _buildLeadTimeDropdown(
-                        isDark: isDark,
-                        label: 'Remind me before warranty expires (optional)',
-                        hint: 'Default: use my default setting',
-                        options: const [7, 14, 30, 60, 90],
-                        selectedValue: _warrantyLeadDaysOverride,
-                        reminderEnabled: _warrantyReminderEnabled,
-                        onChanged: (value) =>
-                            setState(() => _warrantyLeadDaysOverride = value),
-                        onReminderEnabledChanged: (value) =>
-                            setState(() => _warrantyReminderEnabled = value),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Return Policy
-                  _buildSection(
-                    isDark: isDark,
-                    textPrimary: textPrimary,
-                    title: 'Return Policy',
-                    icon: Symbols.assignment_return_rounded,
-                    iconColor: AppColors.primary,
-                    children: [
-                      _buildTextField(
-                        isDark: isDark,
-                        label: 'Return Period (days)',
-                        controller: _returnPeriodCtrl,
-                        hint: 'e.g. 30',
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                        ],
-                        onChanged: (_) => _autoComputeReturnExpiry(),
-                      ),
-                      const SizedBox(height: 14),
-                      _buildLeadTimeDropdown(
-                        isDark: isDark,
-                        label: 'Remind me before return deadline (optional)',
-                        hint: 'Default: use my default setting',
-                        options: const [1, 2, 3, 5, 7],
-                        selectedValue: _returnLeadDaysOverride,
-                        reminderEnabled: _returnReminderEnabled,
-                        onChanged: (value) =>
-                            setState(() => _returnLeadDaysOverride = value),
-                        onReminderEnabledChanged: (value) =>
-                            setState(() => _returnReminderEnabled = value),
-                      ),
-                    ],
+                  ...List.generate(_itemForms.length, (index) {
+                      final form = _itemForms[index];
+                      return Container(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          decoration: BoxDecoration(
+                              color: AppColors.card(isDark).withValues(alpha: 0.5),
+                              borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+                              border: Border.all(color: AppColors.border(isDark)),
+                          ),
+                          child: Column(
+                              children: [
+                                  Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                              Text('Item ${index + 1}', style: AppTextStyles.titleLarge.copyWith(color: AppColors.textPrimary(isDark))),
+                                              if (_itemForms.length > 1) 
+                                                IconButton(
+                                                    icon: const Icon(Symbols.delete_rounded, color: AppColors.error),
+                                                    onPressed: () {
+                                                        setState(() { _itemForms.removeAt(index); });
+                                                    }
+                                                )
+                                          ]
+                                      )
+                                  ),
+                                  // Product Info
+                                  _buildSection(
+                                    isDark: isDark,
+                                    textPrimary: textPrimary,
+                                    title: 'Product Info',
+                                    icon: Symbols.inventory_2_rounded,
+                                    iconColor: AppColors.primary,
+                                    children: [
+                                      _buildTextField(
+                                        isDark: isDark,
+                                        label: 'Product Name',
+                                        controller: form.productNameCtrl,
+                                        hint: 'e.g. MacBook Pro 14"',
+                                        validator: (v) => (v == null || v.trim().isEmpty)
+                                            ? 'Product name is required'
+                                            : null,
+                                      ),
+                                      const SizedBox(height: 14),
+                                      _buildTextField(
+                                        isDark: isDark,
+                                        label: 'SKU / Product Code',
+                                        controller: form.productCodeCtrl,
+                                        hint: 'e.g. MK1234',
+                                      ),
+                                      const SizedBox(height: 14),
+                                      _buildCategoryDropdown(isDark: isDark, form: form),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  // Warranty Info
+                                  _buildSection(
+                                    isDark: isDark,
+                                    textPrimary: textPrimary,
+                                    title: 'Warranty Info',
+                                    icon: Symbols.verified_rounded,
+                                    iconColor: AppColors.primary,
+                                    children: [
+                                      _buildTextField(
+                                        isDark: isDark,
+                                        label: 'Warranty Period (months)',
+                                        controller: form.warrantyPeriodCtrl,
+                                        hint: 'e.g. 12',
+                                        keyboardType: TextInputType.number,
+                                        inputFormatters: [
+                                          FilteringTextInputFormatter.digitsOnly,
+                                        ],
+                                        onChanged: (_) => _autoComputeWarrantyExpiry(index),
+                                      ),
+                                      const SizedBox(height: 14),
+                                      _buildLeadTimeDropdown(
+                                        isDark: isDark,
+                                        label: 'Remind me before warranty expires (optional)',
+                                        hint: 'Default: use my default setting',
+                                        options: const [7, 14, 30, 60, 90],
+                                        selectedValue: form.warrantyLeadDaysOverride,
+                                        reminderEnabled: form.warrantyReminderEnabled,
+                                        onChanged: (value) =>
+                                            setState(() => form.warrantyLeadDaysOverride = value),
+                                        onReminderEnabledChanged: (value) =>
+                                            setState(() => form.warrantyReminderEnabled = value),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  // Return Policy
+                                  _buildSection(
+                                    isDark: isDark,
+                                    textPrimary: textPrimary,
+                                    title: 'Return Policy',
+                                    icon: Symbols.assignment_return_rounded,
+                                    iconColor: AppColors.primary,
+                                    children: [
+                                      _buildTextField(
+                                        isDark: isDark,
+                                        label: 'Return Period (days)',
+                                        controller: form.returnPeriodCtrl,
+                                        hint: 'e.g. 30',
+                                        keyboardType: TextInputType.number,
+                                        inputFormatters: [
+                                          FilteringTextInputFormatter.digitsOnly,
+                                        ],
+                                        onChanged: (_) => _autoComputeReturnExpiry(index),
+                                      ),
+                                      const SizedBox(height: 14),
+                                      _buildLeadTimeDropdown(
+                                        isDark: isDark,
+                                        label: 'Remind me before return deadline (optional)',
+                                        hint: 'Default: use my default setting',
+                                        options: const [1, 2, 3, 5, 7],
+                                        selectedValue: form.returnLeadDaysOverride,
+                                        reminderEnabled: form.returnReminderEnabled,
+                                        onChanged: (value) =>
+                                            setState(() => form.returnLeadDaysOverride = value),
+                                        onReminderEnabledChanged: (value) =>
+                                            setState(() => form.returnReminderEnabled = value),
+                                      ),
+                                    ],
+                                  ),
+                              ]
+                          )
+                      );
+                  }),
+                  
+                  // Add Another Item Button
+                  Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: TextButton.icon(
+                          onPressed: () {
+                              setState(() { _itemForms.add(LineItemFormState()); });
+                          },
+                          icon: const Icon(Symbols.add_rounded),
+                          label: const Text('Add Another Item')
+                      )
                   ),
                   const SizedBox(height: 16),
 
@@ -1132,7 +1188,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     );
   }
 
-  Widget _buildCategoryDropdown({required bool isDark}) {
+  Widget _buildCategoryDropdown({required bool isDark, required LineItemFormState form}) {
     final labelColor = AppColors.label(isDark);
     final borderColor = AppColors.border(isDark);
     final fillColor = AppColors.card(isDark);
@@ -1149,7 +1205,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
         ),
         const SizedBox(height: 6),
         DropdownButtonFormField<String>(
-          value: _selectedCategory,
+          value: form.selectedCategory,
           dropdownColor: AppColors.card(isDark),
           style: AppTextStyles.bodyMedium.copyWith(color: textPrimary),
           icon: Icon(Symbols.keyboard_arrow_down_rounded, color: labelColor, size: AppDimensions.iconMedium),
@@ -1177,7 +1233,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
               .map((c) => DropdownMenuItem(value: c, child: Text(c)))
               .toList(),
           onChanged: (value) {
-            if (value != null) setState(() => _selectedCategory = value);
+            if (value != null) setState(() => form.selectedCategory = value);
           },
         ),
       ],
@@ -1370,7 +1426,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                   ),
                 ),
                 child: Text(
-                  '${_lineItems.length} item${_lineItems.length == 1 ? '' : 's'}',
+                  '${_ocrLineItems.length} item${_ocrLineItems.length == 1 ? '' : 's'}',
                   style: AppTextStyles.badgeText.copyWith(
                     color: AppColors.primary,
                   ),
@@ -1380,10 +1436,9 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
           ),
           const SizedBox(height: 4),
           Text(
-            'Extracted from receipt — edit via Receipt Details if needed.',
+            'Extracted from receipt - edit via Receipt Details if needed.',
             style: AppTextStyles.caption.copyWith(
               color: labelColor,
-              fontStyle: FontStyle.italic,
             ),
           ),
           const SizedBox(height: 12),
@@ -1418,7 +1473,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
           ),
           Divider(height: 8, color: borderColor),
           // Item rows
-          ..._lineItems.map(
+          ..._ocrLineItems.map(
             (item) => Padding(
               padding: const EdgeInsets.symmetric(vertical: 6),
               child: Row(
@@ -1426,15 +1481,14 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                 children: [
                   Expanded(
                     flex: 3,
-                    child: Text(item.itemDescription ?? '—', style: cellStyle),
+                    child: Text(item.itemDescription ?? '—', style: cellStyle, maxLines: 1, overflow: TextOverflow.ellipsis),
                   ),
                   SizedBox(
-                    width: 52,
+                    width: 64,
                     child: Text(
                       item.productCode ?? '—',
                       style: AppTextStyles.caption.copyWith(
                         color: labelColor,
-                        fontFamily: 'monospace',
                       ),
                     ),
                   ),

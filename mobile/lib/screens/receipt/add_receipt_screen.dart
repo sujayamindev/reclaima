@@ -113,9 +113,12 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
           ),
         );
 
-        // Add cropped image to list if user didn't cancel
+        // Add cropped image (replacing any existing to limit to 1)
         if (croppedImagePath != null) {
-          setState(() => _selectedImagePaths.add(croppedImagePath));
+          setState(() {
+            _selectedImagePaths.clear();
+            _selectedImagePaths.add(croppedImagePath);
+          });
         }
       }
     }
@@ -155,7 +158,41 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
     );
   }
 
-  void _manualEntry() {
+  void _manualEntry() async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final proceed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.card(isDark),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            const Icon(Symbols.warning_rounded, color: AppColors.warning),
+            const SizedBox(width: 8),
+            Text('Missing Image', style: AppTextStyles.titleLarge.copyWith(color: AppColors.textPrimary(isDark))),
+          ],
+        ),
+        content: Text(
+          'If you don\'t upload a receipt image, it will not be included in generated Claim Documents, and you cannot attach an image later.\n\nWe highly recommend uploading an image even if you enter details manually.',
+          style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary(isDark)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Go Back & Upload', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.textSecondary(isDark)),
+            child: const Text('Proceed Manually'),
+          ),
+        ],
+      ),
+    );
+
+    if (proceed != true) return;
+    if (!mounted) return;
+
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -309,85 +346,79 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                       ),
                     ),
 
-                    // -- Thumbnail preview
-                    const SizedBox(height: 24),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Row(
-                        
-                        children: [
-                          Text(
-                            'SELECTED IMAGES ',
-                            style: AppTextStyles.capsLabel.copyWith(
-                              color: mutedText,
-                            ),
-                          ),
-                          Text(
-                            '(${_selectedImagePaths.length})',
-                            style: AppTextStyles.capsLabel.copyWith(
-                              color: mutedText,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      height: 128,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
+                    if (_selectedImagePaths.isNotEmpty) ...[
+                      const SizedBox(height: 24),
+                      Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 24),
-                        itemCount: _selectedImagePaths.length,
-                        itemBuilder: (context, index) {
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 10),
-                            child: Stack(
-                              clipBehavior: Clip.none,
-                              children: [
-                                Container(
-                                  width: 108,
-                                  height: 108,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(color: borderColor),
-                                    image: DecorationImage(
-                                      image: FileImage(
-                                        File(_selectedImagePaths[index]),
+                        child: Row(
+                          children: [
+                            Text(
+                              'SELECTED RECEIPT PREVIEW',
+                              style: AppTextStyles.capsLabel.copyWith(
+                                color: mutedText,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        height: 128,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          itemCount: _selectedImagePaths.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 10),
+                              child: Stack(
+                                clipBehavior: Clip.none,
+                                children: [
+                                  Container(
+                                    width: 108,
+                                    height: 108,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(color: borderColor),
+                                      image: DecorationImage(
+                                        image: FileImage(
+                                          File(_selectedImagePaths[index]),
+                                        ),
+                                        fit: BoxFit.cover,
                                       ),
-                                      fit: BoxFit.cover,
                                     ),
                                   ),
-                                ),
-                                Positioned(
-                                  top: -5,
-                                  right: -5,
-                                  child: GestureDetector(
-                                    onTap: () => _removeImage(index),
-                                    child: Container(
-                                      width: 24,
-                                      height: 24,
-                                      decoration: BoxDecoration(
-                                        color: AppColors.onPrimary,
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: backgroundColor,
-                                          width: 2,
+                                  Positioned(
+                                    top: -5,
+                                    right: -5,
+                                    child: GestureDetector(
+                                      onTap: () => _removeImage(index),
+                                      child: Container(
+                                        width: 24,
+                                        height: 24,
+                                        decoration: BoxDecoration(
+                                          color: AppColors.onPrimary,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: backgroundColor,
+                                            width: 2,
+                                          ),
+                                        ),
+                                        child: const Icon(
+                                          Symbols.close_rounded,
+                                          color: Colors.white,
+                                          size: AppDimensions.iconTiny,
                                         ),
                                       ),
-                                      child: const Icon(
-                                        Symbols.close_rounded,
-                                        color: Colors.white,
-                                        size: AppDimensions.iconTiny,
-                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
+                                ],
+                              ),
+                            );
+                          },
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
@@ -450,7 +481,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
             isLoading: controllerState.isLoading,
             text: _selectedImagePaths.isEmpty
                 ? 'Add a photo to continue'
-                : 'Upload ${_selectedImagePaths.length} ${_selectedImagePaths.length == 1 ? "image" : "images"}',
+                : 'Upload Receipt',
           ),
         ],
       ),

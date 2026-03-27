@@ -668,31 +668,22 @@ class _ClaimsListScreenState extends ConsumerState<ClaimsListScreen> {
 
                 const SizedBox(height: 12),
 
-                // Notes (always reserve space to keep card height uniform)
-                _buildInfoRow(
-                  icon: Symbols.sticky_note_2_rounded,
-                  text: (claim.notes != null && claim.notes!.isNotEmpty)
-                      ? claim.notes!
-                      : 'No additional notes provided.',
-                  isDark: isDark,
-                  maxLines: 1,
-                  fixedHeight: 20, // Exact height for 1 line of text
-                  textStyle: AppTextStyles.bodySmall.copyWith(
-                    color: (claim.notes != null && claim.notes!.isNotEmpty)
-                        ? AppColors.textPrimary(isDark)
-                        : AppColors.textSecondary(
-                            isDark,
-                          ).withValues(alpha: 0.5),
-                    fontWeight: FontWeight.w500,
-                    fontStyle: (claim.notes != null && claim.notes!.isNotEmpty)
-                        ? FontStyle.normal
-                        : FontStyle.italic,
-                    height: 1.3,
+                // Notes — only shown when present
+                if (claim.notes != null && claim.notes!.isNotEmpty) ...[
+                  _buildInfoRow(
+                    icon: Symbols.sticky_note_2_rounded,
+                    text: claim.notes!,
+                    isDark: isDark,
+                    maxLines: 1,
+                    fixedHeight: 20,
+                    textStyle: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.textPrimary(isDark),
+                      fontWeight: FontWeight.w500,
+                      height: 1.3,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 12),
-
-                const SizedBox(height: 12),
+                  const SizedBox(height: 12),
+                ],
 
                 _buildClaimProgressTimeline(claim.status, isDark),
               ],
