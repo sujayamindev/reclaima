@@ -4,6 +4,7 @@ import 'package:material_symbols_icons/symbols.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/logger.dart';
 import '../../../providers/auth_provider.dart';
+import '../../auth/login_screen.dart';
 
 class ProfileSettingsScreen extends ConsumerStatefulWidget {
   const ProfileSettingsScreen({super.key});
@@ -247,7 +248,11 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
                       Navigator.of(context).pop();
                       await ref.read(authControllerProvider.notifier).signOut();
                       if (mounted) {
-                        Navigator.of(context).popUntil((route) => route.isFirst);
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (context) => const LoginScreen()),
+                          (route) => false,
+                        );
                       }
                     },
                     child: Text(
@@ -431,7 +436,7 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
                     isDark,
                     icon: Symbols.phone_rounded,
                     title: 'Contact Number',
-                    hintText: 'Enter your contact number',
+                    hintText: '+1 234 567 8900',
                     controller: _contactController,
                     keyboardType: TextInputType.phone,
                   ),
@@ -588,6 +593,31 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
                 'Danger Zone',
                 Symbols.warning_rounded,
                 [
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    horizontalTitleGap: 12,
+                    leading: Icon(Symbols.door_open_rounded, color: AppColors.error, weight: AppDimensions.iconWeightBold),
+                    title: Text(
+                      'Log Out',
+                      style: AppTextStyles.listTitle.copyWith(color: AppColors.error),
+                    ),
+                    subtitle: Text(
+                      'Sign out of your account on this device',
+                      style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary(isDark)),
+                    ),
+                    trailing: Icon(Symbols.chevron_right_rounded, size: AppDimensions.iconMedium, color: AppColors.muted(isDark)),
+                    onTap: () async {
+                      await ref.read(authControllerProvider.notifier).signOut();
+                      if (mounted) {
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (context) => const LoginScreen()),
+                          (route) => false,
+                        );
+                      }
+                    },
+                  ),
+                  Divider(color: AppColors.border(isDark), height: 1),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     horizontalTitleGap: 12,

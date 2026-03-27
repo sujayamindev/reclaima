@@ -168,6 +168,18 @@ class AuthService {
   /// Sign out
   Future<void> signOut() async {
     logger.i('Signing out user');
+    if (_isGoogleInitialized) {
+      try {
+        await GoogleSignIn.instance.disconnect();
+      } catch (e) {
+        logger.w('Failed to disconnect GoogleSignIn: $e');
+      }
+      try {
+        await GoogleSignIn.instance.signOut();
+      } catch (e) {
+        logger.w('Failed to sign out from GoogleSignIn: $e');
+      }
+    }
     await _auth.signOut();
   }
   
