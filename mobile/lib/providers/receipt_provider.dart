@@ -89,6 +89,25 @@ class ReceiptController extends StateNotifier<AsyncValue<void>> {
       return false;
     }
   }
+
+  /// Delete a single line item
+  Future<bool> deleteLineItem(String receiptId, String itemId, WidgetRef ref) async {
+    state = const AsyncValue.loading();
+    
+    try {
+      await _receiptService.deleteLineItem(receiptId, itemId);
+      
+      // Invalidate providers to refresh UI
+      ref.invalidate(receiptsProvider);
+      ref.invalidate(receiptProvider(receiptId));
+      
+      state = const AsyncValue.data(null);
+      return true;
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+      return false;
+    }
+  }
   
   /// Upload receipt file
   Future<ReceiptModel?> uploadReceipt(

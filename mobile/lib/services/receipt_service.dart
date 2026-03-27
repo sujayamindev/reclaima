@@ -104,6 +104,16 @@ class ReceiptService {
       rethrow;
     }
   }
+
+  /// Delete a specific line item
+  Future<void> deleteLineItem(String receiptId, String itemId) async {
+    try {
+      await _apiService.delete('${ApiConstants.receipts}/$receiptId/items/$itemId');
+    } catch (e) {
+      logger.e('Error deleting line item $itemId from receipt $receiptId: $e');
+      rethrow;
+    }
+  }
   
   /// Upload receipt file
   Future<ReceiptModel> uploadReceipt(

@@ -384,11 +384,21 @@ class ProductDetailScreen extends ConsumerWidget {
             ),
             onSelected: (value) async {
               if (value == 'delete') {
-                final confirmed = await _showDeleteDialog(context);
+                final isLastItem = product.receipt.lineItems.length <= 1;
+                final deleteReceiptLevel = isLastItem || product.lineItem == null;
+                
+                final confirmed = await _showDeleteDialog(context, deleteReceiptLevel);
                 if (confirmed == true && context.mounted) {
-                  final ok = await ref
-                      .read(receiptControllerProvider.notifier)
-                      .deleteReceipt(product.receiptId, ref);
+                  bool ok = false;
+                  if (deleteReceiptLevel) {
+                    ok = await ref
+                        .read(receiptControllerProvider.notifier)
+                        .deleteReceipt(product.receiptId, ref);
+                  } else {
+                    ok = await ref
+                        .read(receiptControllerProvider.notifier)
+                        .deleteLineItem(product.receiptId, product.lineItem!.id, ref);
+                  }
                   if (ok && context.mounted) Navigator.pop(context);
                 }
               }
@@ -1377,13 +1387,15 @@ class ProductDetailScreen extends ConsumerWidget {
     }
   }
 
-  Future<bool?> _showDeleteDialog(BuildContext context) {
+  Future<bool?> _showDeleteDialog(BuildContext context, bool isReceiptLevel) {
     return showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete Receipt'),
-        content: const Text(
-          'This will delete the entire receipt including all items and any associated warranty claims. This action cannot be undone.',
+        title: Text(isReceiptLevel ? 'Delete Receipt' : 'Delete Item'),
+        content: Text(
+          isReceiptLevel 
+            ? 'This will delete the entire receipt including all items and any associated warranty claims. This action cannot be undone.'
+            : 'This will delete this specific item and its associated warranty claims. Other items on the receipt will be preserved. This action cannot be undone.',
         ),
         actions: [
           TextButton(

@@ -454,6 +454,38 @@ async def update_line_item(
     return line_item
 
 
+@router.delete("/{receipt_id}/items/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_line_item(
+    receipt_id: str,
+    item_id: str,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Soft delete a specific line item.
+    """
+    firebase_uid = current_user.get("uid")
+    db_user = user_service.get_user_by_firebase_uid(db, firebase_uid)
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+
+    success = receipt_service.delete_line_item(
+        db=db,
+        receipt_id=receipt_id,
+        item_id=item_id,
+        user_id=db_user.id,
+    )
+
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Receipt or line item not found",
+        )
+
+
 @router.post("/{receipt_id}/retry-ocr", response_model=ReceiptResponse, response_model_by_alias=True)
 async def retry_ocr_processing(
     receipt_id: str,
