@@ -148,4 +148,8 @@ abstract final class AppTextStyles {
         fontWeight: FontWeight.bold,
         height: 1.0,
       );
+
+
+  static TextStyle get spaceGrotesk => GoogleFonts.spaceGrotesk(
+      );
 }

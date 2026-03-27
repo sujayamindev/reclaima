@@ -371,7 +371,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     isDark: isDark,
                                     onTap: _goToDetail,
                                   ),
-                                  const SizedBox(height: 28),
+                                  const SizedBox(height: 32),
                                   _InsightsSection(
                                     receipts: receipts,
                                     claims: claims,
@@ -966,161 +966,160 @@ class _InsightsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double valueProtected = 0.0;
+    int totalEligible = 0;
+    int protectedCount = 0;
+
     for (final r in receipts) {
       for (final item in r.lineItems) {
-        if (item.status != 'ARCHIVED' &&
-            item.warrantyExpiryDate != null &&
-            !item.isWarrantyExpired) {
-          valueProtected +=
-              (item.amount ?? item.unitPrice ?? r.totalAmount ?? 0.0);
+        // Find claims specific to this item (or receipt-wide claims if no line item specified)
+        final itemClaims = claims.where((c) =>
+            c.receiptId == r.id &&
+            (c.lineItemId == item.id || c.lineItemId == null || c.lineItemId!.isEmpty)
+        ).toList();
+
+        // A successful claim that is NOT a return/refund
+        final hasResolvedWarrantyClaim = itemClaims.any((c) {
+          final claimType = c.claimType?.toLowerCase() ?? '';
+          return c.status.toUpperCase() == 'RESOLVED' && 
+                 claimType != 'return' && 
+                 claimType != 'refund';
+        });
+
+        // Skip archived items that don't contribute to a successful outcome 
+        // to avoid diluting the score negatively
+        if (item.status == 'ARCHIVED' && !hasResolvedWarrantyClaim) {
+          continue;
+        }
+
+        totalEligible++;
+
+        // Item is protected if it still has an active warranty, OR it was already 
+        // successfully resolved by a past claim
+        final hasActiveWarranty = item.warrantyExpiryDate != null && !item.isWarrantyExpired;
+
+        if (hasActiveWarranty || hasResolvedWarrantyClaim) {
+          protectedCount++;
         }
       }
     }
 
-    final claimsResolved = claims
-        .where((c) => c.status.toUpperCase() == 'RESOLVED')
-        .length;
+    final double scorePercentage = totalEligible == 0 ? 0.0 : (protectedCount / totalEligible);
+    final int scoreDisplay = (scorePercentage * 100).round();
 
-    final currencyFormat = NumberFormat.simpleCurrency(decimalDigits: 0);
-    final formattedValue = valueProtected == 0.0 ? '--' : currencyFormat.format(valueProtected);
+    // Determine the color of the bar indicator
+    Color barColor = AppColors.success;
+    if (scorePercentage < 0.5) {
+      barColor = AppColors.error;
+    } else if (scorePercentage < 0.8) {
+      barColor = AppColors.warning;
+    }
 
     final card = AppColors.card(isDark);
     final border = AppColors.border(isDark);
     final textPrimary = AppColors.textPrimary(isDark);
     final textSecondary = AppColors.textSecondary(isDark);
 
-    final hasItems = receipts.isNotEmpty;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.paddingPage,
-          ),
-          child: Text(
-            'LIFETIME VALUE',
-            style: AppTextStyles.capsLabel.copyWith(color: textSecondary),
-          ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.paddingPage,
+      ),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(
+          AppDimensions.paddingCardSmall, 
+          AppDimensions.paddingCardSmall, 
+          AppDimensions.paddingCardSmall, 
+          AppDimensions.paddingCardSmall
         ),
-        const SizedBox(height: 14),
-        Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.paddingPage,
-          ),
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: card,
-              borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
-              border: Border.all(color: border),
-            ),
-            child: !hasItems
-                ? SizedBox(
-                    height: 64,
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 42,
-                          height: 42,
-                          decoration: BoxDecoration(
-                            color: textSecondary.withValues(alpha: 0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Symbols.wallet_rounded,
-                            size: 24,
-                            color: textSecondary,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Text(
-                            "Add your first receipt to start tracking your protected value",
-                            style: AppTextStyles.bodyXSmall.copyWith(
-                              color: textSecondary,
-                              height: 1.4,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : Row(
+        decoration: BoxDecoration(
+          color: card,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+          border: Border.all(color: border),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const SizedBox(width: 6),
-                          Flexible(
-                            child: Text(
-                              'Value Protected',
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: textSecondary,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        formattedValue,
-                        style: AppTextStyles.headingLarge.copyWith(
-                          fontSize: 24,
-                          color: textPrimary,
-                        ),
-                      ),
-                    ],
+                Padding(
+                  padding: const EdgeInsets.only(top: 4.0),
+                  child: Text(
+                    'COVERAGE',
+                    style: AppTextStyles.capsLabel.copyWith(
+                      color: textSecondary,
+                      letterSpacing: 1.2,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
-                const SizedBox(width: 10),
-                Container(width: 1, height: 48, color: border),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const SizedBox(width: 6),
-                          Flexible(
-                            child: Text(
-                              'Claims Resolved',
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: textSecondary,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    Text(
+                      '$protectedCount',
+                      style: AppTextStyles.headingLarge.copyWith(
+                        color: textPrimary,
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
+                        height: 1.0,
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        claimsResolved == 0 ? '--' : claimsResolved.toString(),
-                        style: AppTextStyles.headingLarge.copyWith(
-                          fontSize: 24,
-                          color: textPrimary,
-                        ),
+                    ),
+                    Text(
+                      ' / $totalEligible',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: textSecondary,
+                        fontWeight: FontWeight.w500,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ),
+            const SizedBox(height: 16),
+            // Custom linear progress bar
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final maxWidth = constraints.maxWidth;
+                final fillWidth = totalEligible == 0 ? 0.0 : (maxWidth * scorePercentage);
+                return Container(
+                  height: 8,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: AppColors.border(isDark),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 500),
+                      curve: Curves.fastOutSlowIn,
+                      height: 8,
+                      width: fillWidth,
+                      decoration: BoxDecoration(
+                        color: barColor,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 12),
+            Text(
+              totalEligible == 0
+                  ? "Add your first receipt to start tracking your coverage."
+                  : '$scoreDisplay% of your products are actively protected',
+              style: AppTextStyles.spaceGrotesk.copyWith(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: textSecondary, 
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
