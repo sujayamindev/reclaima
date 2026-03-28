@@ -4,6 +4,10 @@ part 'receipt_line_item_model.g.dart';
 
 /// A single product / service line item on a receipt or invoice.
 ///
+/// Each line item represents exactly 1 physical unit (implicit quantity=1).
+/// For multi-quantity items (e.g., "3× Laptop"), the backend creates 3 separate
+/// records with the same rowIndex for grouped display.
+///
 /// Warranty and return tracking lives here (not on [ReceiptModel]) so that
 /// multi-product receipts can track each item's warranty independently.
 @JsonSerializable()
@@ -13,9 +17,7 @@ class ReceiptLineItemModel {
   final int rowIndex;
   final String? productCode;
   final String? itemDescription;
-  final String? quantity;
   final double? unitPrice;
-  final double? amount;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -49,9 +51,7 @@ class ReceiptLineItemModel {
     required this.rowIndex,
     this.productCode,
     this.itemDescription,
-    this.quantity,
     this.unitPrice,
-    this.amount,
     required this.createdAt,
     required this.updatedAt,
     this.productName,
@@ -78,6 +78,9 @@ class ReceiptLineItemModel {
   /// Used to populate the read-only items-table in [ReviewReceiptScreen] for
   /// receipts that have not been saved to the database yet. The [id] and
   /// [receiptId] fields are intentionally empty strings.
+  ///
+  /// Note: OCR response may include quantity for display purposes, but each
+  /// line item represents 1 physical unit.
   factory ReceiptLineItemModel.fromOcrExtract(Map<String, dynamic> json) {
     final now = DateTime.now();
     return ReceiptLineItemModel(
@@ -86,9 +89,7 @@ class ReceiptLineItemModel {
       rowIndex: (json['rowIndex'] as num?)?.toInt() ?? 0,
       productCode: json['productCode'] as String?,
       itemDescription: json['itemDescription'] as String?,
-      quantity: json['quantity'] as String?,
       unitPrice: (json['unitPrice'] as num?)?.toDouble(),
-      amount: (json['amount'] as num?)?.toDouble(),
       createdAt: now,
       updatedAt: now,
       productName: json['productName'] as String?,

@@ -384,32 +384,16 @@ async def create_line_item(
     """
     Create a new line item on a receipt.
 
-    Used for manual-entry receipts that have no OCR-generated line items.
-    Warranty / return expiry dates are computed server-side from the parent
-    receipt's purchase_date.
+    **DEPRECATED**: Line items cannot be added after receipt creation.
+    Users must rescan the receipt to add items.
+    
+    This endpoint is disabled to maintain data integrity and ensure
+    each physical unit is tracked from OCR processing.
     """
-    firebase_uid = current_user.get("uid")
-    db_user = user_service.get_user_by_firebase_uid(db, firebase_uid)
-    if not db_user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
-        )
-
-    line_item = receipt_service.create_line_item(
-        db=db,
-        receipt_id=receipt_id,
-        user_id=db_user.id,
-        item_data=item_data,
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Adding items to existing receipts is not allowed. Please rescan the receipt.",
     )
-
-    if not line_item:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Receipt not found",
-        )
-
-    return line_item
 
 
 @router.patch(
@@ -425,33 +409,17 @@ async def update_line_item(
     db: Session = Depends(get_db),
 ):
     """
-    Partially update a single line item — product name, category, warranty period
-    and/or return period. Expiry dates are computed server-side from the parent
-    receipt's purchase_date.
+    Update an existing line item on a receipt.
+
+    **DEPRECATED**: Line items cannot be updated after receipt creation.
+    Users can only delete items or rescan the receipt.
+    
+    This endpoint is disabled to maintain data integrity.
     """
-    firebase_uid = current_user.get("uid")
-    db_user = user_service.get_user_by_firebase_uid(db, firebase_uid)
-    if not db_user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
-        )
-
-    line_item = receipt_service.update_line_item(
-        db=db,
-        receipt_id=receipt_id,
-        item_id=item_id,
-        user_id=db_user.id,
-        item_data=item_data,
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Updating items on existing receipts is not allowed. You can only delete items.",
     )
-
-    if not line_item:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Receipt or line item not found",
-        )
-
-    return line_item
 
 
 @router.delete("/{receipt_id}/items/{item_id}", status_code=status.HTTP_204_NO_CONTENT)

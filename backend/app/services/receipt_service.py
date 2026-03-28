@@ -533,21 +533,44 @@ class ReceiptService:
 
                 ocr_line_items_data = extracted.get("line_items", [])
                 created_line_items: List[ReceiptLineItem] = []
+                total_item_count = 0
 
+                # Split multi-quantity items into separate records
                 for item_data in ocr_line_items_data:
-                    line_item = ReceiptLineItem(
-                        id=str(uuid.uuid4()),
-                        receipt_id=receipt.id,
-                        row_index=item_data.get("row_index", 0),
-                        product_code=item_data.get("product_code"),
-                        item_description=item_data.get("item_description"),
-                        quantity=item_data.get("quantity"),
-                        unit_price=item_data.get("unit_price"),
-                        amount=item_data.get("amount"),
-                        warranty_period_months=item_data.get("warranty_period_months"),
-                    )
-                    db.add(line_item)
-                    created_line_items.append(line_item)
+                    qty = item_data.get("quantity", 1)
+                    # Default to 1 if quantity is invalid
+                    if not isinstance(qty, int) or qty <= 0:
+                        qty = 1
+                    
+                    row_index = item_data.get("row_index", 0)
+                    
+                    # Create qty separate records, each representing 1 physical unit
+                    for _ in range(qty):
+                        total_item_count += 1
+                        
+                        # Enforce 10-item limit per receipt
+                        if total_item_count > 10:
+                            logger.warning(
+                                f"Receipt {receipt.id} exceeds 10-item limit. "
+                                f"Truncating at 10 items."
+                            )
+                            break
+                        
+                        line_item = ReceiptLineItem(
+                            id=str(uuid.uuid4()),
+                            receipt_id=receipt.id,
+                            row_index=row_index,  # Same row_index for grouped display
+                            product_code=item_data.get("product_code"),
+                            item_description=item_data.get("item_description"),
+                            unit_price=item_data.get("unit_price"),
+                            warranty_period_months=item_data.get("warranty_period_months"),
+                        )
+                        db.add(line_item)
+                        created_line_items.append(line_item)
+                    
+                    # Break outer loop if limit reached
+                    if total_item_count >= 10:
+                        break
 
                 # OCR may emit a receipt-level product_name / warranty hint
                 # (e.g. single-product receipts, mock data, legacy format).

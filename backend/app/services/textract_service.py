@@ -452,7 +452,22 @@ class RealTextractService:
                                 item['item_description'] = raw_desc
 
                         elif lf_type == 'QUANTITY':
-                            item['quantity'] = lf_value.strip()
+                            raw_qty = lf_value.strip()
+                            # Parse quantity as integer only
+                            try:
+                                # Extract numeric value from strings like "3", "2 PC", "1 unit"
+                                qty_num = int(''.join(filter(str.isdigit, raw_qty)) or '1')
+                                # Default 0 to 1, limit max to 10
+                                if qty_num <= 0:
+                                    qty_num = 1
+                                elif qty_num > 10:
+                                    logger.warning(f"Quantity {qty_num} exceeds limit of 10, capping at 10")
+                                    qty_num = 10
+                                item['quantity'] = qty_num
+                            except (ValueError, TypeError):
+                                # If parsing fails, default to 1
+                                logger.warning(f"Failed to parse quantity '{raw_qty}', defaulting to 1")
+                                item['quantity'] = 1
 
                         elif lf_type in ('UNIT_PRICE', 'RATE'):
                             clean = _AMOUNT_JUNK.sub('', lf_value.replace(',', ''))
@@ -462,11 +477,13 @@ class RealTextractService:
                                 item['unit_price_raw'] = lf_value.strip()
 
                         elif lf_type in ('PRICE', 'AMOUNT'):
+                            # Note: amount field is no longer stored per line item
+                            # This is kept for backwards compatibility during OCR parsing
                             clean = _AMOUNT_JUNK.sub('', lf_value.replace(',', ''))
                             try:
-                                item['amount'] = float(clean)
+                                item['_line_total'] = float(clean)  # Temporary for unit price calculation
                             except ValueError:
-                                item['amount_raw'] = lf_value.strip()
+                                pass
 
                         elif lf_type == 'EXPENSE_ROW':
                             # AWS Textract stores the full row text as a typed
@@ -489,8 +506,17 @@ class RealTextractService:
                     # Only append rows that have at least one useful field
                     if any(k in item for k in (
                         'product_code', 'item_description',
-                        'quantity', 'unit_price', 'amount'
+                        'quantity', 'unit_price', '_line_total'
                     )):
+                        # Calculate unit_price from line_total if not already present
+                        if 'unit_price' not in item and '_line_total' in item:
+                            qty = item.get('quantity', 1)
+                            if qty > 0:
+                                item['unit_price'] = round(item['_line_total'] / qty, 2)
+                        
+                        # Remove temporary _line_total field
+                        item.pop('_line_total', None)
+                        
                         line_items.append(item)
 
             if line_items:

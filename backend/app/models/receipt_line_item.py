@@ -12,7 +12,12 @@ from app.db.base import Base
 
 
 class ReceiptLineItem(Base):
-    """A single line item (product / service) on a receipt."""
+    """A single line item (product / service) on a receipt.
+    
+    Each record represents ONE physical unit. For multi-quantity items
+    (e.g., "3× Laptop"), the system creates 3 separate records with the
+    same row_index for grouped display.
+    """
 
     __tablename__ = "receipt_line_items"
 
@@ -34,12 +39,8 @@ class ReceiptLineItem(Base):
     product_code    = Column(String(100),  nullable=True)   # SKU / barcode
     item_description = Column(String(512), nullable=True)   # Product name / description
 
-    # Quantity stored as string to preserve "1 PC", "2.5 KG", "each", etc.
-    quantity = Column(String(50), nullable=True)
-
-    # Pricing
+    # Pricing (each line item represents 1 physical unit)
     unit_price = Column(Numeric(precision=12, scale=2), nullable=True)  # Price per unit
-    amount     = Column(Numeric(precision=12, scale=2), nullable=True)  # Row total (quantity × unit_price)
 
     # Per-item product details (from OCR or user edit)
     product_name      = Column(String(512),  nullable=True)   # Product / brand name

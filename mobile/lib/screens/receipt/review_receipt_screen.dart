@@ -45,9 +45,7 @@ class LineItemFormState {
   final TextEditingController productCodeCtrl = TextEditingController();
   String selectedCategory = 'Electronics';
 
-  String? quantity;
   double? unitPrice;
-  double? amount;
   String? itemDescription;
   
   final TextEditingController warrantyPeriodCtrl = TextEditingController();
@@ -170,9 +168,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
         final form = LineItemFormState();
         form.existingId = item.id;
         form.itemDescription = item.itemDescription;
-        form.quantity = item.quantity;
         form.unitPrice = item.unitPrice;
-        form.amount = item.amount;
         form.productNameCtrl.text = item.productName ?? item.itemDescription ?? '';
         form.productCodeCtrl.text = item.productCode ?? '';
         final cat = item.productCategory ?? '';
@@ -226,9 +222,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
       for (final item in _ocrLineItems) {
         final form = LineItemFormState();
         form.itemDescription = item.itemDescription;
-        form.quantity = item.quantity;
         form.unitPrice = item.unitPrice;
-        form.amount = item.amount;
         form.productNameCtrl.text = item.productName ?? item.itemDescription ?? '';
         form.productCodeCtrl.text = item.productCode ?? '';
         final cat = item.productCategory ?? '';
@@ -394,9 +388,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
         final liData = <String, dynamic>{};
         if (form.existingId != null) liData['_existingId'] = form.existingId;
         if (form.itemDescription != null) liData['itemDescription'] = form.itemDescription;
-        if (form.quantity != null) liData['quantity'] = form.quantity;
         if (form.unitPrice != null) liData['unitPrice'] = form.unitPrice;
-        if (form.amount != null) liData['amount'] = form.amount;
         
         final productName = form.productNameCtrl.text.trim();
         if (productName.isNotEmpty) liData['productName'] = productName;
@@ -1465,22 +1457,14 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
             child: Row(
               children: [
                 Expanded(
-                  flex: 3,
+                  flex: 4,
                   child: Text('Description', style: headerStyle),
                 ),
                 SizedBox(width: 52, child: Text('Code', style: headerStyle)),
                 SizedBox(
-                  width: 36,
+                  width: 90,
                   child: Text(
-                    'Qty',
-                    style: headerStyle,
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                SizedBox(
-                  width: 72,
-                  child: Text(
-                    'Amount',
+                    'Unit Price',
                     style: headerStyle,
                     textAlign: TextAlign.right,
                   ),
@@ -1510,18 +1494,10 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                     ),
                   ),
                   SizedBox(
-                    width: 36,
+                    width: 90,
                     child: Text(
-                      item.quantity ?? '—',
-                      style: cellStyle,
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  SizedBox(
-                    width: 72,
-                    child: Text(
-                      item.amount != null
-                          ? item.amount!.toStringAsFixed(2)
+                      item.unitPrice != null
+                          ? '\$${item.unitPrice!.toStringAsFixed(2)}'
                           : '—',
                       style: cellStyle.copyWith(fontWeight: FontWeight.w600),
                       textAlign: TextAlign.right,

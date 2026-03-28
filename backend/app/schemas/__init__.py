@@ -71,15 +71,17 @@ class UserResponse(UserBase):
 # Receipt Line Item Schema
 # ============================================
 class ReceiptLineItemResponse(BaseModel):
-    """Single line item on a receipt."""
+    """Single line item on a receipt.
+    
+    Each line item represents exactly 1 physical unit (implicit quantity=1).
+    For multi-quantity items, multiple records are created with the same row_index.
+    """
     id: str
     receipt_id: str
     row_index: int
     product_code: Optional[str] = None
     item_description: Optional[str] = None
-    quantity: Optional[str] = None
     unit_price: Optional[float] = None
-    amount: Optional[float] = None
     # Per-item product & warranty fields
     product_name: Optional[str] = None
     product_category: Optional[str] = None
@@ -108,9 +110,7 @@ class ReceiptLineItemUpdate(BaseModel):
     """Partial update schema for a single line item."""
     product_code: Optional[str] = None
     item_description: Optional[str] = None
-    quantity: Optional[str] = None
     unit_price: Optional[float] = None
-    amount: Optional[float] = None
     product_name: Optional[str] = None
     product_category: Optional[str] = None
     warranty_period_months: Optional[int] = None
@@ -226,13 +226,16 @@ class ReceiptListResponse(BaseModel):
 # ============================================
 
 class OcrLineItemResult(BaseModel):
-    """A single line item extracted by OCR (not persisted to DB)."""
+    """A single line item extracted by OCR (not persisted to DB).
+    
+    Note: quantity field is used during processing to split items,
+    but is not persisted to the database.
+    """
     row_index: int = 0
     product_code: Optional[str] = None
     item_description: Optional[str] = None
-    quantity: Optional[str] = None
+    quantity: Optional[int] = None  # Used to split into multiple records
     unit_price: Optional[float] = None
-    amount: Optional[float] = None
     product_name: Optional[str] = None
     product_category: Optional[str] = None
     warranty_period_months: Optional[int] = None
