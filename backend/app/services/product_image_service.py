@@ -215,39 +215,7 @@ class BraveProductImageService(BaseProductImageService):
                     )
                     return result
 
-            # 2. Fall back to any non-blocked domains
-            for item in results:
-                image_url = self._extract_image_url(item)
-                if not image_url:
-                    continue
-
-                source_url = item.get("url", image_url)
-                if _is_blocked(source_url) or _is_blocked(image_url):
-                    logger.debug(f"Skipping blocked source: {source_url[:80]}")
-                    continue
-
-                result = {
-                    "imageUrl": image_url,
-                    "title": item.get("title", query),
-                    "source": item.get("source", ""),
-                }
-                logger.info(
-                    f"Brave selected generic image for {search_query!r}: "
-                    f"{result['imageUrl'][:80]}..."
-                )
-                return result
-
-            # All results were blocked — fall back to the very first result
-            logger.info("All results were from blocked domains, using first result as fallback")
-            fallback_url = self._extract_image_url(results[0])
-            if fallback_url:
-                return {
-                    "imageUrl": fallback_url,
-                    "title": results[0].get("title", query),
-                    "source": results[0].get("source", ""),
-                }
-
-            logger.info(f"No usable image URL for: {search_query!r}")
+            logger.info(f"No trusted image URL found for: {search_query!r}")
             return None
 
         except httpx.HTTPStatusError as exc:
@@ -315,29 +283,6 @@ class BraveProductImageService(BaseProductImageService):
                         "source": item.get("source", ""),
                     }
 
-            # 2. Fall back to any non-blocked domains
-            for item in results:
-                image_url = self._extract_image_url(item)
-                if not image_url:
-                    continue
-                source_url = item.get("url", image_url)
-                if _is_blocked(source_url) or _is_blocked(image_url):
-                    logger.debug(f"Skipping blocked source: {source_url[:80]}")
-                    continue
-                return {
-                    "imageUrl": image_url,
-                    "title": item.get("title", query),
-                    "source": item.get("source", ""),
-                }
-
-            # Fallback: use first result regardless of domain
-            fallback_url = self._extract_image_url(results[0])
-            if fallback_url:
-                return {
-                    "imageUrl": fallback_url,
-                    "title": results[0].get("title", query),
-                    "source": results[0].get("source", ""),
-                }
             return None
 
         except httpx.HTTPStatusError as exc:
