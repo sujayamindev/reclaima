@@ -38,10 +38,10 @@ async def register_user(
     firebase_uid = current_user.get("uid")
     email = current_user.get("email")
     
-    # Extract first name from full name if provided
+    # Use the provided full name if available
     display_name = None
     if full_name:
-        display_name = full_name.split()[0] if full_name.strip() else None
+        display_name = full_name.strip() if full_name.strip() else None
     
     if not firebase_uid or not email:
         raise HTTPException(

@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 # Color palette matching app branding
 PRIMARY_COLOR = colors.HexColor("#12E28C")
-ACCENT_DARK = colors.HexColor("#1F2937")
+ACCENT_DARK = colors.HexColor("#000000")
 TEXT_PRIMARY = colors.HexColor("#111827")
 TEXT_SECONDARY = colors.HexColor("#6B7280")
 BORDER_COLOR = colors.HexColor("#E5E7EB")
@@ -313,7 +313,6 @@ class PdfGenerationService:
             fontName='Helvetica'
         )
         
-        story.append(Paragraph(f"Claim ID: {display_claim_id}", claim_id_style))
         story.append(Paragraph(
             f"Generated: {generation_date.strftime('%B %d, %Y at %I:%M %p UTC')}",
             timestamp_style
@@ -324,6 +323,7 @@ class PdfGenerationService:
         story.append(Paragraph("CLAIM DETAILS", heading_style))
 
         claim_data = [
+            ["Claim ID:", display_claim_id],
             ["Product:", product_name],
             ["Claim Type:", claim_type.upper() if claim_type else "WARRANTY"],
             ["Issue Description:", issue_description],
