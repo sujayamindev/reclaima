@@ -538,13 +538,16 @@ class _StatsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final allItems = receipts.expand((r) => r.lineItems).toList();
-    final total = allItems.length;
-    final protected = allItems
+    final activeItems = receipts
+        .expand((r) => r.lineItems)
+        .where((i) => i.status != 'ARCHIVED')
+        .toList();
+    final total = activeItems.length;
+    final protected = activeItems
         .where((i) => i.warrantyExpiryDate != null && !i.isWarrantyExpired)
         .length;
 
-    String fmt(int n) => n == 0 ? '--' : n.toString().padLeft(2, '0');
+    String fmt(int n) => n == 0 ? '00' : n.toString().padLeft(2, '0');
 
     return Row(
       children: [
@@ -971,33 +974,17 @@ class _InsightsSection extends StatelessWidget {
 
     for (final r in receipts) {
       for (final item in r.lineItems) {
-        // Find claims specific to this item (or receipt-wide claims if no line item specified)
-        final itemClaims = claims.where((c) =>
-            c.receiptId == r.id &&
-            (c.lineItemId == item.id || c.lineItemId == null || c.lineItemId!.isEmpty)
-        ).toList();
-
-        // A successful claim that is NOT a return/refund
-        final hasResolvedWarrantyClaim = itemClaims.any((c) {
-          final claimType = c.claimType?.toLowerCase() ?? '';
-          return c.status.toUpperCase() == 'RESOLVED' && 
-                 claimType != 'return' && 
-                 claimType != 'refund';
-        });
-
-        // Skip archived items that don't contribute to a successful outcome 
-        // to avoid diluting the score negatively
-        if (item.status == 'ARCHIVED' && !hasResolvedWarrantyClaim) {
+        if (item.status == 'ARCHIVED') {
           continue;
         }
 
         totalEligible++;
 
-        // Item is protected if it still has an active warranty, OR it was already 
-        // successfully resolved by a past claim
-        final hasActiveWarranty = item.warrantyExpiryDate != null && !item.isWarrantyExpired;
+        // Item is protected if it still has an active warranty
+        final hasActiveWarranty =
+            item.warrantyExpiryDate != null && !item.isWarrantyExpired;
 
-        if (hasActiveWarranty || hasResolvedWarrantyClaim) {
+        if (hasActiveWarranty) {
           protectedCount++;
         }
       }
