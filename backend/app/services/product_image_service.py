@@ -54,6 +54,9 @@ def _clean_query(raw: str) -> str:
       3. Collapse whitespace
       4. Append bias phrase for cleaner results
     """
+    # Temporarily disabled
+    return raw.strip()
+
     q = raw.strip()
 
     # Remove bracketed noise  e.g.  "(256GB, Space Gray)"
