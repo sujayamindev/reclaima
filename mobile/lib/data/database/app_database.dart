@@ -45,9 +45,7 @@ class ReceiptLineItems extends Table {
   IntColumn get rowIndex => integer().withDefault(const Constant(0))();
   TextColumn get productCode => text().nullable()();
   TextColumn get itemDescription => text().nullable()();
-  TextColumn get quantity => text().nullable()();
   RealColumn get unitPrice => real().nullable()();
-  RealColumn get amount => real().nullable()();
   // Per-item product & warranty fields
   TextColumn get productName => text().nullable()();
   TextColumn get productCategory => text().nullable()();
@@ -56,6 +54,14 @@ class ReceiptLineItems extends Table {
   DateTimeColumn get warrantyExpiryDate => dateTime().nullable()();
   IntColumn get returnPeriodDays => integer().nullable()();
   DateTimeColumn get returnExpiryDate => dateTime().nullable()();
+  // Reminder settings
+  IntColumn get warrantyLeadDaysOverride => integer().nullable()();
+  IntColumn get returnLeadDaysOverride => integer().nullable()();
+  BoolColumn get warrantyReminderEnabled => boolean().nullable()();
+  BoolColumn get returnReminderEnabled => boolean().nullable()();
+  TextColumn get status => text().withDefault(const Constant('ACTIVE'))();
+  TextColumn get replacementForId => text().nullable()();
+  TextColumn get replacedById => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
 
@@ -82,7 +88,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -103,6 +109,16 @@ class AppDatabase extends _$AppDatabase {
             // productName, productCategory, warrantyPeriodMonths,
             // warrantyExpiryDate, returnPeriodDays, returnExpiryDate columns
             // will remain in the physical table but are no longer mapped.
+          }
+          if (from < 3) {
+            // v2 → v3: Schema change - quantity and amount removed
+            // For fresh databases, onCreate handles this.
+            // For existing v2 databases, we recreate the table to match new schema.
+            // This is acceptable since the database is fresh (confirmed by user).
+            
+            // Drop and recreate ReceiptLineItems table with new schema
+            await m.deleteTable('receipt_line_items');
+            await m.createTable(receiptLineItems);
           }
         },
       );

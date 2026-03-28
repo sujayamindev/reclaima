@@ -189,26 +189,11 @@ class ProductDetailScreen extends ConsumerWidget {
                   product.receipt.lineItems.length <= 1 &&
                   _hasProductInfo(product.lineItem!)) ...[
                 _buildSection(isDark, 'Product Info', Symbols.info_rounded, [
-                  if (product.lineItem!.quantity != null)
-                    _buildInfoRow(
-                      'Quantity',
-                      product.lineItem!.quantity!,
-                      isDark,
-                    ),
                   if (product.lineItem!.unitPrice != null)
                     _buildInfoRow(
                       'Unit Price',
                       CurrencyFormatter.format(
                         product.lineItem!.unitPrice!,
-                        currency: product.currency ?? 'USD',
-                      ),
-                      isDark,
-                    ),
-                  if (product.lineItem!.amount != null)
-                    _buildInfoRow(
-                      'Amount',
-                      CurrencyFormatter.format(
-                        product.lineItem!.amount!,
                         currency: product.currency ?? 'USD',
                       ),
                       isDark,
@@ -1141,27 +1126,10 @@ class ProductDetailScreen extends ConsumerWidget {
             child: Row(
               children: [
                 Expanded(
-                  flex: 3,
                   child: Text('Description', style: headerStyle),
                 ),
                 SizedBox(
-                  width: 48,
-                  child: Text(
-                    'Qty',
-                    style: headerStyle,
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                SizedBox(
-                  width: 64,
-                  child: Text(
-                    'Unit',
-                    style: headerStyle,
-                    textAlign: TextAlign.right,
-                  ),
-                ),
-                SizedBox(
-                  width: 72,
+                  width: 90,
                   child: Text(
                     'Amount',
                     style: headerStyle,
@@ -1203,35 +1171,16 @@ class ProductDetailScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
-                          flex: 3,
                           child: Text(
                             item.itemDescription ?? '—',
                             style: cellStyle,
                           ),
                         ),
                         SizedBox(
-                          width: 48,
-                          child: Text(
-                            item.quantity ?? '—',
-                            style: cellStyle,
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                        SizedBox(
-                          width: 64,
+                          width: 90,
                           child: Text(
                             item.unitPrice != null
-                                ? item.unitPrice!.toStringAsFixed(2)
-                                : '—',
-                            style: cellStyle,
-                            textAlign: TextAlign.right,
-                          ),
-                        ),
-                        SizedBox(
-                          width: 72,
-                          child: Text(
-                            item.amount != null
-                                ? item.amount!.toStringAsFixed(2)
+                                ? '\$${item.unitPrice!.toStringAsFixed(2)}'
                                 : '—',
                             style: cellStyle.copyWith(
                               fontWeight: FontWeight.w600,
@@ -1350,9 +1299,7 @@ class ProductDetailScreen extends ConsumerWidget {
 
   bool _hasProductInfo(ReceiptLineItemModel item) =>
       item.productCode != null ||
-      item.quantity != null ||
-      item.unitPrice != null ||
-      item.amount != null;
+      item.unitPrice != null;
 
   Color _statusColor(ReceiptModel receipt, bool isDark) {
     switch (receipt.status) {

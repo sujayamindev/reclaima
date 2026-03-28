@@ -547,7 +547,7 @@ class _StatsRow extends StatelessWidget {
         .where((i) => i.warrantyExpiryDate != null && !i.isWarrantyExpired)
         .length;
 
-    String fmt(int n) => n == 0 ? '00' : n.toString().padLeft(2, '0');
+    String fmt(int n) => n == 0 ? '0' : n.toString().padLeft(2, '0');
 
     return Row(
       children: [

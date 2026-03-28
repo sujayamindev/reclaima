@@ -40,8 +40,8 @@ class ProductViewModel {
   bool get isPending => lineItem == null;
 
   /// The amount to show on the card.
-  /// Uses the line item's own amount when available, otherwise the receipt total.
-  double? get itemAmount => lineItem?.amount ?? receipt.totalAmount;
+  /// Uses the line item's unit price when available, otherwise the receipt total.
+  double? get itemAmount => lineItem?.unitPrice ?? receipt.totalAmount;
 
   String? get currency => receipt.currency;
 

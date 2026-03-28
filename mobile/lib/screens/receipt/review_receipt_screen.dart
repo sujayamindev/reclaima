@@ -1497,7 +1497,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                     width: 90,
                     child: Text(
                       item.unitPrice != null
-                          ? '\$${item.unitPrice!.toStringAsFixed(2)}'
+                          ? item.unitPrice!.toStringAsFixed(2)
                           : '—',
                       style: cellStyle.copyWith(fontWeight: FontWeight.w600),
                       textAlign: TextAlign.right,

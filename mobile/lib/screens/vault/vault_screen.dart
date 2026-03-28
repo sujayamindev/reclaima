@@ -423,41 +423,43 @@ class _ProductListItem extends StatelessWidget {
   });
 
   Color _statusColor() {
-    if (item.isWarrantyExpired || item.isReturnExpired) {
-      return AppColors.error;
-    } else if (item.lineItem.returnDaysRemaining != null &&
-        item.lineItem.returnDaysRemaining! <= 7) {
-      return AppColors.error;
-    } else if (item.lineItem.warrantyDaysRemaining != null &&
-        item.lineItem.warrantyDaysRemaining! <= 30) {
-      return AppColors.warning;
+    if (!item.isWarrantyExpired && !item.isReturnExpired) {
+      return AppColors.success;
     }
-    return AppColors.success;
+    return AppColors.error;
   }
 
   String _expiryLabel() {
     final returnDays = item.lineItem.returnDaysRemaining;
     final warrantyDays = item.lineItem.warrantyDaysRemaining;
 
-    if (item.isReturnExpired) return 'Return expired';
+    // Priority 1: Warranty expired (show this even if return also expired)
     if (item.isWarrantyExpired) return 'Warranty expired';
+    
+    // Priority 2: Warranty active but return expired
+    if (item.isReturnExpired && !item.isWarrantyExpired) return 'Active warranty';
 
+    // Priority 3: Return expires today (urgent)
     if (returnDays != null && returnDays == 0) {
       return 'Return expires today';
     }
 
+    // Priority 4: Return expiring soon (within 7 days)
     if (returnDays != null && returnDays <= 7 && !item.isReturnExpired) {
       return 'Return in $returnDays day${returnDays != 1 ? 's' : ''}';
     }
 
+    // Priority 5: Warranty expires today
     if (warrantyDays != null && warrantyDays == 0) {
       return 'Warranty expires today';
     }
 
+    // Priority 6: Warranty expiring soon (within 30 days)
     if (warrantyDays != null && warrantyDays <= 30 && !item.isWarrantyExpired) {
       return 'Warranty in $warrantyDays day${warrantyDays != 1 ? 's' : ''}';
     }
 
+    // Default: Both active
     return 'Active';
   }
 

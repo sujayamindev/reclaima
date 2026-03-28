@@ -129,5 +129,5 @@ Thumbs.db
 .DS_Store
 
 TODOS.md
-*backup.sql
+*.sql
 /docs
