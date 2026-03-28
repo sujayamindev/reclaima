@@ -383,17 +383,27 @@ async def create_line_item(
 ):
     """
     Create a new line item on a receipt.
-
-    **DEPRECATED**: Line items cannot be added after receipt creation.
-    Users must rescan the receipt to add items.
-    
-    This endpoint is disabled to maintain data integrity and ensure
-    each physical unit is tracked from OCR processing.
     """
-    raise HTTPException(
-        status_code=status.HTTP_403_FORBIDDEN,
-        detail="Adding items to existing receipts is not allowed. Please rescan the receipt.",
-    )
+    firebase_uid = current_user.get("uid")
+    db_user = user_service.get_user_by_firebase_uid(db, firebase_uid)
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+        
+    try:
+        line_item = receipt_service.create_line_item(
+            db, receipt_id, db_user.id, item_data
+        )
+        if not line_item:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Receipt not found"
+            )
+        return line_item
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.patch(
@@ -410,16 +420,25 @@ async def update_line_item(
 ):
     """
     Update an existing line item on a receipt.
-
-    **DEPRECATED**: Line items cannot be updated after receipt creation.
-    Users can only delete items or rescan the receipt.
-    
-    This endpoint is disabled to maintain data integrity.
     """
-    raise HTTPException(
-        status_code=status.HTTP_403_FORBIDDEN,
-        detail="Updating items on existing receipts is not allowed. You can only delete items.",
+    firebase_uid = current_user.get("uid")
+    db_user = user_service.get_user_by_firebase_uid(db, firebase_uid)
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+        
+    line_item = receipt_service.update_line_item(
+        db, receipt_id, item_id, db_user.id, item_data
     )
+    if not line_item:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Line item not found or you do not have permission to update it."
+        )
+        
+    return line_item
 
 
 @router.delete("/{receipt_id}/items/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
