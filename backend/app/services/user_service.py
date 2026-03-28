@@ -46,12 +46,22 @@ class UserService:
             # if they registered again with the same email but a different firebase_uid.
             # But here we'll just return the existing user and let the auth token handle the current session.
             # Update firebase_uid in case it changed (e.g. they deleted their firebase account and re-created it with the same email)
+            # Check if we should update display_name (e.g. it was missing and now provided)
+            needs_update = False
+            if display_name and not user.display_name:
+                user.display_name = display_name
+                needs_update = True
+                
             if user.firebase_uid != firebase_uid or user.deleted_at is not None:
                 user.firebase_uid = firebase_uid
                 user.deleted_at = None
+                needs_update = True
+                logger.info(f"Updated firebase_uid and restored user: {user.id}")
+                
+            if needs_update:
                 db.commit()
                 db.refresh(user)
-                logger.info(f"Updated firebase_uid and restored user: {user.id}")
+                
             return user
         
         # Create new user

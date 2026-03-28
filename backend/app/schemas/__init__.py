@@ -47,6 +47,11 @@ class UserUpdate(BaseModel):
     display_name: Optional[str] = None
     contact_number: Optional[str] = None
 
+    model_config = ConfigDict(
+        populate_by_name=True,
+        alias_generator=to_camel
+    )
+
 
 class UserResponse(UserBase):
     """User response schema."""
