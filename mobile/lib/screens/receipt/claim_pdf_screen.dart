@@ -9,6 +9,7 @@ import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../core/constants/app_constants.dart';
+import '../receipt/add_receipt_screen.dart';
 import '../../providers/receipt_provider.dart';
 import '../../services/android_download_manager_service.dart';
 import '../../services/claim_service.dart';
@@ -395,24 +396,31 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
           backgroundColor: AppColors.card(isDark),
           title: Text('Add Replacement', style: AppTextStyles.titleLarge.copyWith(color: AppColors.textPrimary(isDark))),
           content: Text(
-            'How would you like to add the new replacement item to your inventory?',
+            'Scan or upload the receipt for your new replacement item to track its warranty.',
             style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary(isDark)),
           ),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Upload a new receipt to link it (Coming soon)')));
               },
-              child: Text('Scan New Receipt', style: AppTextStyles.buttonSmall.copyWith(color: AppColors.primary)),
+              child: Text('Cancel', style: AppTextStyles.buttonSmall.copyWith(color: AppColors.textSecondary(isDark))),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 Navigator.pop(ctx);
-                _resolveClaimOutcome('REPLACED', duplicateDetails: true);
+                await _resolveClaimOutcome('REPLACED');
+                if (context.mounted) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AddReceiptScreen(),
+                    ),
+                  );
+                }
               },
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: AppColors.onPrimary),
-              child: Text('Duplicate Old Details', style: AppTextStyles.button),
+              child: Text('Scan New Receipt', style: AppTextStyles.button),
             ),
           ],
         );
@@ -451,7 +459,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
           )
         );
       } else if (outcome == 'REPLACED') {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Replacement item created successfully.')));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Item successfully archived.')));
       }
     } catch (e) {
       logger.e('Error resolving claim: $e');

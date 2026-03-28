@@ -315,7 +315,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                                   child: Icon(
                                     Symbols.add_a_photo_rounded,
                                     color: AppColors.onPrimary,
-                                    size: AppDimensions.iconNormal,
+                                    size: AppDimensions.iconLarge,
                                     fill: 0,
                                     weight: AppDimensions.iconWeightBold,
                                   ),
@@ -324,20 +324,10 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                                 Text(
                                   'Snap or Upload',
                                   style: AppTextStyles.button.copyWith(
-                                    fontSize: 16,
+                                    fontSize: 20,
                                     fontWeight: FontWeight.bold,
                                     color: AppColors.onPrimary,
                                   ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Any receipt, warranty card,\nor invoice',
-                                  style: AppTextStyles.bodySmall.copyWith(
-                                    color: AppColors.onPrimary.withValues(
-                                      alpha: 0.6,
-                                    ),
-                                  ),
-                                  textAlign: TextAlign.center,
                                 ),
                               ],
                             ),

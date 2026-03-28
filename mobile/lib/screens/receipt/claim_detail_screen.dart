@@ -11,6 +11,7 @@ import '../../core/utils/formatters.dart';
 import '../../data/models/receipt_model.dart';
 import '../../providers/receipt_provider.dart';
 import '../../services/android_download_manager_service.dart';
+import '../receipt/add_receipt_screen.dart';
 import '../../services/claim_service.dart';
 import '../../core/utils/logger.dart';
 
@@ -303,7 +304,7 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
             ),
           ),
           content: Text(
-            'How would you like to add the new replacement item to your inventory?',
+            'Scan or upload the receipt for your new replacement item to track its warranty.',
             style: AppTextStyles.bodySmall.copyWith(
               color: AppColors.textSecondary(isDark),
             ),
@@ -312,36 +313,35 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
             TextButton(
               onPressed: () {
                 Navigator.pop(ctx);
-                // Implementation for Phase 4 linking will go here shortly.
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'Upload a new receipt to link it (Coming soon)',
-                    ),
-                  ),
-                );
               },
               child: Text(
-                'Scan New Receipt',
+                'Cancel',
                 style: AppTextStyles.buttonSmall.copyWith(
-                  color: AppColors.primary,
+                  color: AppColors.textSecondary(isDark),
                 ),
               ),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 Navigator.pop(ctx);
-                _resolveClaimOutcome(
+                await _resolveClaimOutcome(
                   'REPLACED',
-                  duplicateDetails: true,
                   closeOnSuccess: closeOnSuccess,
                 );
+                if (context.mounted) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AddReceiptScreen(),
+                    ),
+                  );
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: AppColors.onPrimary,
               ),
-              child: Text('Duplicate Old Details', style: AppTextStyles.button),
+              child: Text('Scan New Receipt', style: AppTextStyles.button),
             ),
           ],
         );
@@ -511,7 +511,7 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
       } else if (outcome == 'REPLACED') {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Replacement item created successfully.'),
+            content: Text('Item successfully archived.'),
           ),
         );
       }
