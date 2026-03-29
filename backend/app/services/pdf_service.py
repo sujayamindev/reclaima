@@ -412,7 +412,11 @@ class PdfGenerationService:
         story.append(vendor_table)
         story.append(Spacer(1, 0.3 * inch))
 
-        # ── Receipt Image (Separate Full Page) ─────────────────────────
+        # ── Receipt Images (Separate Full Pages) ─────────────────────────
+        # Include both front (s3_object_key) and back images from receipt_images
+        receipt_images_added = False
+        
+        # Front image (from receipt.s3_object_key)
         if receipt.s3_object_key and s3_service:
             try:
                 image_bytes = s3_service.get_file(receipt.s3_object_key)
@@ -420,7 +424,7 @@ class PdfGenerationService:
                     # Add page break before receipt image
                     story.append(PageBreak())
                     
-                    story.append(Paragraph("ORIGINAL RECEIPT", heading_style))
+                    story.append(Paragraph("ORIGINAL RECEIPT - FRONT", heading_style))
                     story.append(Spacer(1, 0.2 * inch))
                     
                     # Full page image - use larger dimensions for better visibility
@@ -440,8 +444,40 @@ class PdfGenerationService:
                             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
                         ]))
                         story.append(image_table)
+                        receipt_images_added = True
             except Exception as e:
-                logger.warning(f"Failed to include receipt image in PDF: {e}")
+                logger.warning(f"Failed to include front receipt image in PDF: {e}")
+        
+        # Back image (from receipt.images relationship)
+        if hasattr(receipt, 'images') and receipt.images and s3_service:
+            for img in receipt.images:
+                if img.image_type == 'BACK' and img.s3_object_key:
+                    try:
+                        back_image_bytes = s3_service.get_file(img.s3_object_key)
+                        if back_image_bytes:
+                            story.append(PageBreak())
+                            
+                            story.append(Paragraph("ORIGINAL RECEIPT - BACK", heading_style))
+                            story.append(Spacer(1, 0.2 * inch))
+                            
+                            back_receipt_image = self._get_scaled_image(
+                                back_image_bytes,
+                                max_width=6.5 * inch,
+                                max_height=9 * inch
+                            )
+                            if back_receipt_image:
+                                image_table = Table(
+                                    [[back_receipt_image]],
+                                    colWidths=[6.5 * inch]
+                                )
+                                image_table.setStyle(TableStyle([
+                                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                                ]))
+                                story.append(image_table)
+                                receipt_images_added = True
+                    except Exception as e:
+                        logger.warning(f"Failed to include back receipt image in PDF: {e}")
 
         # ── Defect Images (Full Page Each with Auto-Rotation) ──────────
         if defect_image_s3_keys and s3_service:
@@ -494,7 +530,7 @@ class PdfGenerationService:
                     logger.warning(f"Failed to include defect image {idx} in PDF: {e}")
 
         # Add page break after images if they exist
-        if (receipt.s3_object_key and s3_service) or (defect_image_s3_keys and s3_service):
+        if receipt_images_added or (defect_image_s3_keys and s3_service):
             story.append(PageBreak())
 
         # Build PDF with footer on every page

@@ -19,10 +19,12 @@ class ReceiptConfirmationScreen extends ConsumerStatefulWidget {
   final DateTime? returnExpiryDate;
   final List<Map<String, dynamic>> itemsPayload;
   final List<dynamic>? itemForms;
-  /// S3 key of the image pre-uploaded via POST /receipts/ocr-extract.
+  /// S3 key of the front image pre-uploaded via POST /receipts/ocr-extract.
   /// When set, the receipt is created with this image key already attached
   /// and the status is set to COMPLETED server-side.
   final String? stagingS3Key;
+  /// S3 key of the back image pre-uploaded via POST /receipts/ocr-extract.
+  final String? backImageS3Key;
 
   const ReceiptConfirmationScreen({
     super.key,
@@ -34,6 +36,7 @@ class ReceiptConfirmationScreen extends ConsumerStatefulWidget {
     this.itemsPayload = const [],
     this.itemForms,
     this.stagingS3Key,
+    this.backImageS3Key,
   });
 
   @override
@@ -108,10 +111,13 @@ class _ReceiptConfirmationScreenState
     // them now, but guard against a stale call being sent accidentally).
     recData.remove('warrantyExpiryDate');
     recData.remove('returnExpiryDate');
-    // Attach pre-uploaded image to the new receipt (OCR path).
+    // Attach pre-uploaded images to the new receipt (OCR path).
     // The backend sets status = COMPLETED when s3ObjectKey is provided.
     if (widget.stagingS3Key != null) {
       recData['s3ObjectKey'] = widget.stagingS3Key;
+    }
+    if (widget.backImageS3Key != null) {
+      recData['backImageS3Key'] = widget.backImageS3Key;
     }
     // ── 2. Create / update the receipt ───────────────────────────────
     final result = widget.receiptId == null

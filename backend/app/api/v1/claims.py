@@ -30,9 +30,10 @@ router = APIRouter(prefix="/claims", tags=["Claims"])
 
 
 def _get_receipt_with_line_items(db: Session, receipt_id: str) -> Optional[Receipt]:
-    """Helper to get receipt with line items eagerly loaded."""
+    """Helper to get receipt with line items and images eagerly loaded."""
     return db.query(Receipt).options(
-        selectinload(Receipt.line_items)
+        selectinload(Receipt.line_items),
+        selectinload(Receipt.images)
     ).filter(
         and_(
             Receipt.id == receipt_id,

@@ -18,10 +18,9 @@ class AddReceiptScreen extends ConsumerStatefulWidget {
 }
 
 class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
-  final List<String> _selectedImagePaths = [];
+  String? _frontImagePath;
+  String? _backImagePath;
   final _picker = ImagePicker();
-
-  
 
   Future<void> _pickImage() async {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -113,28 +112,40 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
           ),
         );
 
-        // Add cropped image (replacing any existing to limit to 1)
+        // Add cropped image - first to front, then to back
         if (croppedImagePath != null) {
           setState(() {
-            _selectedImagePaths.clear();
-            _selectedImagePaths.add(croppedImagePath);
+            if (_frontImagePath == null) {
+              _frontImagePath = croppedImagePath;
+            } else if (_backImagePath == null) {
+              _backImagePath = croppedImagePath;
+            } else {
+              // Both filled, replace front
+              _frontImagePath = croppedImagePath;
+            }
           });
         }
       }
     }
   }
 
-  void _removeImage(int index) {
-    setState(() => _selectedImagePaths.removeAt(index));
+  void _removeImage(String imageType) {
+    setState(() {
+      if (imageType == 'FRONT') {
+        _frontImagePath = null;
+      } else {
+        _backImagePath = null;
+      }
+    });
   }
 
   Future<void> _upload() async {
-    if (_selectedImagePaths.isEmpty) return;
+    if (_frontImagePath == null && _backImagePath == null) return;
     final controller = ref.read(receiptControllerProvider.notifier);
 
-    // Upload image → S3 + run OCR without creating a DB record.
-    // On failure the image is still preserved (permanent S3 path).
-    final ocrData = await controller.extractOcr(_selectedImagePaths.first);
+    // Upload images → S3 + run OCR without creating a DB record.
+    // On failure the images are still preserved (permanent S3 path).
+    final ocrData = await controller.extractOcr(_frontImagePath, _backImagePath);
 
     if (!mounted) return;
 
@@ -146,6 +157,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
     }
 
     final stagingKey = ocrData['s3ObjectKey'] as String?;
+    final backKey = ocrData['backImageS3Key'] as String?;
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -153,6 +165,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
           isManualEntry: false,
           ocrData: ocrData,
           stagingS3Key: stagingKey,
+          backImageS3Key: backKey,
         ),
       ),
     );
@@ -272,9 +285,9 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                       ),
                     ),
 
-                    // -- Pick image button
+                    // -- Pick image button (original star design)
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+                      padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
                       child: Center(
                         child: GestureDetector(
                           onTap: _pickImage,
@@ -329,6 +342,14 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                                     color: AppColors.onPrimary,
                                   ),
                                 ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Upload front, then back',
+                                  style: AppTextStyles.caption.copyWith(
+                                    fontSize: 12,
+                                    color: AppColors.onPrimary.withValues(alpha: 0.7),
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -336,7 +357,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                       ),
                     ),
 
-                    if (_selectedImagePaths.isNotEmpty) ...[
+                    if (_frontImagePath != null || _backImagePath != null) ...[
                       const SizedBox(height: 24),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -357,37 +378,40 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                         child: ListView.builder(
                           scrollDirection: Axis.horizontal,
                           padding: const EdgeInsets.symmetric(horizontal: 24),
-                          itemCount: _selectedImagePaths.length,
+                          itemCount: (_frontImagePath != null ? 1 : 0) + (_backImagePath != null ? 1 : 0),
                           itemBuilder: (context, index) {
+                            final isFirst = index == 0;
+                            final imagePath = isFirst 
+                                ? _frontImagePath! 
+                                : _backImagePath!;
+                            final label = (isFirst && _frontImagePath != null) ? 'Front' : 'Back';
+                            final imageType = (isFirst && _frontImagePath != null) ? 'FRONT' : 'BACK';
+                            
                             return Padding(
                               padding: const EdgeInsets.only(right: 10),
                               child: Stack(
                                 clipBehavior: Clip.none,
                                 children: [
-                                  Container(
-                                    width: 108,
-                                    height: 108,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(16),
-                                      border: Border.all(color: borderColor),
-                                      image: DecorationImage(
-                                        image: FileImage(
-                                          File(_selectedImagePaths[index]),
-                                        ),
-                                        fit: BoxFit.cover,
-                                      ),
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(16),
+                                    child: Image.file(
+                                      File(imagePath),
+                                      width: 108,
+                                      height: 108,
+                                      fit: BoxFit.cover,
                                     ),
                                   ),
+                                  // Close button
                                   Positioned(
                                     top: -5,
                                     right: -5,
                                     child: GestureDetector(
-                                      onTap: () => _removeImage(index),
+                                      onTap: () => _removeImage(imageType),
                                       child: Container(
                                         width: 24,
                                         height: 24,
                                         decoration: BoxDecoration(
-                                          color: AppColors.onPrimary,
+                                          color: Colors.black.withValues(alpha: 0.6),
                                           shape: BoxShape.circle,
                                           border: Border.all(
                                             color: backgroundColor,
@@ -398,6 +422,26 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                                           Symbols.close_rounded,
                                           color: Colors.white,
                                           size: AppDimensions.iconTiny,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  // Front/Back label
+                                  Positioned(
+                                    bottom: 24,
+                                    left: 4,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withValues(alpha: 0.6),
+                                        borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+                                      ),
+                                      child: Text(
+                                        label,
+                                        style: AppTextStyles.caption.copyWith(
+                                          color: Colors.white,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
                                         ),
                                       ),
                                     ),
@@ -465,12 +509,12 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
           ),
           AppPrimaryButton.dark(
             onPressed:
-                  (controllerState.isLoading || _selectedImagePaths.isEmpty)
+                  (controllerState.isLoading || (_frontImagePath == null && _backImagePath == null))
                   ? null
                   : _upload,
             isLoading: controllerState.isLoading,
-            text: _selectedImagePaths.isEmpty
-                ? 'Add a photo to continue'
+            text: (_frontImagePath == null && _backImagePath == null)
+                ? 'Add at least one image'
                 : 'Upload Receipt',
           ),
         ],

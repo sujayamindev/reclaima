@@ -22,10 +22,13 @@ class ReviewReceiptScreen extends ConsumerStatefulWidget {
   /// polling the receipt provider.
   final Map<String, dynamic>? ocrData;
 
-  /// S3 key of the image uploaded during OCR extract.
+  /// S3 key of the front image uploaded during OCR extract.
   /// Passed through to [ReceiptConfirmationScreen] so the final save can
   /// attach the image to the new receipt record.
   final String? stagingS3Key;
+
+  /// S3 key of the back image uploaded during OCR extract (optional).
+  final String? backImageS3Key;
 
   const ReviewReceiptScreen({
     super.key,
@@ -33,6 +36,7 @@ class ReviewReceiptScreen extends ConsumerStatefulWidget {
     required this.isManualEntry,
     this.ocrData,
     this.stagingS3Key,
+    this.backImageS3Key,
   });
 
   @override
@@ -434,6 +438,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
           itemsPayload: itemsPayload,
           itemForms: _itemForms, // Pass for UI logic
           stagingS3Key: widget.stagingS3Key,
+          backImageS3Key: widget.backImageS3Key,
         ),
       ),
     );
