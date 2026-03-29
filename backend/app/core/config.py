@@ -75,7 +75,7 @@ class Settings(BaseSettings):
 
     # Scheduler
     ENABLE_SCHEDULER: bool = True
-    REMINDER_CHECK_HOUR: int = 11  # 11:30 AM UTC for notification sending
+    REMINDER_CHECK_HOUR: int = 3  # 3:00 AM UTC for notification sending
     CLEANUP_HOUR: int = 2
     
     # Reminders
