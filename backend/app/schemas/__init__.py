@@ -329,6 +329,20 @@ class ClaimStatusEnum(str, Enum):
     DENIED = "DENIED"
 
 
+class ClaimDefectImageResponse(BaseModel):
+    """Defect image reference in claim response."""
+    id: str
+    s3_object_key: str
+    display_order: int
+    created_at: datetime
+    
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True,
+        alias_generator=to_camel
+    )
+
+
 class ClaimDocumentBase(BaseModel):
     """Base claim document schema."""
     issue_description: str
@@ -367,6 +381,7 @@ class ClaimDocumentResponse(ClaimDocumentBase):
     notes: Optional[str] = None
     generated_pdf_s3_key: Optional[str]
     url: Optional[str] = None  # Pre-signed S3 URL for downloading the PDF
+    defect_images: List[ClaimDefectImageResponse] = []
     created_at: datetime
     updated_at: datetime
 

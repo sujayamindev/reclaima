@@ -5,7 +5,7 @@ Claims routes - Generate and manage warranty claim PDFs.
 import logging
 import uuid
 from typing import Optional, List
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, File, UploadFile, Form
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import and_
 from datetime import datetime, timezone
@@ -16,7 +16,7 @@ from app.services.pdf_service import get_pdf_service
 from app.services.s3_service import get_s3_service
 from app.core.config import settings
 from app.db.session import get_db
-from app.models import ClaimDocument, Receipt, ReceiptLineItem
+from app.models import ClaimDocument, Receipt, ReceiptLineItem, ClaimDefectImage
 from app.schemas import (
     ClaimDocumentCreate,
     ClaimDocumentResponse,
@@ -48,12 +48,16 @@ def _get_receipt_with_line_items(db: Session, receipt_id: str) -> Optional[Recei
     response_model_by_alias=True
 )
 async def create_claim(
-    claim_data: ClaimDocumentCreate,
+    receipt_id: str = Form(...),
+    issue_description: str = Form(...),
+    claim_type: str = Form("warranty"),
+    line_item_id: Optional[str] = Form(None),
+    defect_images: List[UploadFile] = File(default=[]),
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
-    Generate a warranty claim PDF document.
+    Generate a warranty claim PDF document with optional defect images.
 
     The PDF includes:
     - Customer information (name, email)
@@ -63,21 +67,55 @@ async def create_claim(
     - Warranty and return terms
     - Notification status
     - Claim details (issue description, claim type)
+    - Defect images (appended as full-page attachments)
 
     The generated PDF is stored in S3 and a ClaimDocument record is created.
 
     Args:
-        claim_data: Claim creation data (receipt_id, issue_description, claim_type)
+        receipt_id: Receipt ID for the claim
+        issue_description: Description of the issue/defect
+        claim_type: Type of claim ("warranty" or "return")
+        line_item_id: Optional specific line item (product) ID
+        defect_images: List of defect image files (max 10, 5MB each, JPG/PNG)
         current_user: Current authenticated user
         db: Database session
 
     Returns:
-        ClaimDocumentResponse with claim metadata
+        ClaimDocumentResponse with claim metadata and defect images
 
     Raises:
+        400: If validation fails (too many images, invalid format, too large)
         404: If receipt or user not found
         403: If user doesn't own the receipt
     """
+    # Validate defect images
+    if len(defect_images) > 10:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Maximum 10 defect images allowed per claim"
+        )
+    
+    # Validate each image
+    ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/jpg", "image/png"}
+    MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
+    
+    for idx, img in enumerate(defect_images):
+        if img.content_type not in ALLOWED_CONTENT_TYPES:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Image {idx + 1}: Invalid format. Only JPG and PNG allowed."
+            )
+        
+        # Read file to check size
+        img_content = await img.read()
+        if len(img_content) > MAX_FILE_SIZE:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Image {idx + 1}: File too large. Maximum 5MB per image."
+            )
+        # Reset file pointer for later reading
+        await img.seek(0)
+    
     # Get internal database user ID
     firebase_uid = current_user.get("uid")
     db_user = user_service.get_user_by_firebase_uid(db, firebase_uid)
@@ -88,7 +126,7 @@ async def create_claim(
         )
 
     # Get receipt and verify ownership (already loads line items)
-    receipt = _get_receipt_with_line_items(db, claim_data.receipt_id)
+    receipt = _get_receipt_with_line_items(db, receipt_id)
     if not receipt:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -113,22 +151,41 @@ async def create_claim(
             region=settings.AWS_REGION
         )
 
-        # Generate claim ID first (need it for PDF)
+        # Generate claim ID first (need it for PDF and S3 paths)
         claim_id = str(uuid.uuid4())
+        
+        # Upload defect images to S3 and collect their S3 keys
+        defect_image_s3_keys = []
+        for idx, img in enumerate(defect_images):
+            img_content = await img.read()
+            # Extract file extension
+            ext = img.filename.split('.')[-1] if '.' in img.filename else 'jpg'
+            img_uuid = str(uuid.uuid4())
+            s3_key = f"users/{db_user.id}/claims/{claim_id}/defects/defect_{idx + 1}_{img_uuid}.{ext}"
+            
+            s3_service.upload_file(
+                file_content=img_content,
+                object_key=s3_key,
+                content_type=img.content_type
+            )
+            defect_image_s3_keys.append(s3_key)
+            logger.info(f"Uploaded defect image {idx + 1} to S3: {s3_key}")
+            await img.seek(0)  # Reset for potential reuse
 
-        # Generate PDF
+        # Generate PDF with defect images
         pdf_service = get_pdf_service()
         pdf_bytes = pdf_service.generate_claim_pdf(
             receipt=receipt,
             user=db_user,
-            issue_description=claim_data.issue_description,
-            claim_type=claim_data.claim_type or "warranty",
+            issue_description=issue_description,
+            claim_type=claim_type,
             s3_service=s3_service,
             claim_id=claim_id,
-            line_item_id=claim_data.line_item_id
+            line_item_id=line_item_id,
+            defect_image_s3_keys=defect_image_s3_keys
         )
         logger.info(f"Generated claim PDF: {len(pdf_bytes)} bytes")
-        s3_object_key = f"users/{db_user.id}/claims/{claim_id}.pdf"
+        s3_object_key = f"users/{db_user.id}/claims/{claim_id}/claim.pdf"
 
         s3_service.upload_file(
             file_content=pdf_bytes,
@@ -141,21 +198,38 @@ async def create_claim(
         claim_document = ClaimDocument(
             id=claim_id,
             receipt_id=receipt.id,
-            line_item_id=claim_data.line_item_id,
-            issue_description=claim_data.issue_description,
-            claim_type=claim_data.claim_type or "warranty",
+            line_item_id=line_item_id,
+            issue_description=issue_description,
+            claim_type=claim_type,
             status="DRAFT",
             generated_pdf_s3_key=s3_object_key,
         )
         db.add(claim_document)
+        
+        # Create defect image records
+        for idx, s3_key in enumerate(defect_image_s3_keys):
+            defect_img = ClaimDefectImage(
+                id=str(uuid.uuid4()),
+                claim_id=claim_id,
+                s3_object_key=s3_key,
+                display_order=idx
+            )
+            db.add(defect_img)
+        
         db.commit()
         db.refresh(claim_document)
-        logger.info(f"Created claim document record: {claim_id}")
+        logger.info(f"Created claim document record: {claim_id} with {len(defect_image_s3_keys)} defect images")
 
-        # Build response
-        response = ClaimDocumentResponse.model_validate(claim_document)
+        # Build response with defect images loaded
+        claim_with_images = db.query(ClaimDocument).options(
+            selectinload(ClaimDocument.defect_images)
+        ).filter(ClaimDocument.id == claim_id).first()
+        
+        response = ClaimDocumentResponse.model_validate(claim_with_images)
         return response
 
+    except HTTPException:
+        raise
     except Exception as exc:
         logger.error(f"Error creating claim: {exc}", exc_info=True)
         raise HTTPException(

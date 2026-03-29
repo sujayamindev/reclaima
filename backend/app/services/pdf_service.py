@@ -6,7 +6,7 @@ Creates professional PDFs with receipt details, warranty information, and user d
 import logging
 from io import BytesIO
 from datetime import datetime, timezone
-from typing import Optional, Tuple, TYPE_CHECKING
+from typing import Optional, Tuple, List, TYPE_CHECKING
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter, A4
@@ -167,10 +167,11 @@ class PdfGenerationService:
         created_at: Optional[datetime] = None,
         s3_service: Optional[object] = None,
         claim_id: Optional[str] = None,
-        line_item_id: Optional[str] = None
+        line_item_id: Optional[str] = None,
+        defect_image_s3_keys: Optional[List[str]] = None
     ) -> bytes:
         """
-        Generate a warranty claim PDF document.
+        Generate a warranty claim PDF document with optional defect images.
 
         Args:
             receipt: Receipt object with all details
@@ -181,13 +182,14 @@ class PdfGenerationService:
             s3_service: S3 service for retrieving receipt image
             claim_id: Full claim ID to display in PDF header
             line_item_id: Specific line item ID if claim is for single product
+            defect_image_s3_keys: List of S3 keys for defect images to append
 
         Returns:
             PDF document as bytes
         """
         logger.info(
             f"Generating claim PDF for receipt {receipt.id}, "
-            f"claim_type={claim_type}"
+            f"claim_type={claim_type}, defect_images={len(defect_image_s3_keys or [])}"
         )
 
         # Dynamic PDF metadata title based on claim type
@@ -441,8 +443,60 @@ class PdfGenerationService:
             except Exception as e:
                 logger.warning(f"Failed to include receipt image in PDF: {e}")
 
-        # Add page break after receipt image if it exists
-        if receipt.s3_object_key and s3_service:
+        # ── Defect Images (Full Page Each with Auto-Rotation) ──────────
+        if defect_image_s3_keys and s3_service:
+            total_defect_images = len(defect_image_s3_keys)
+            for idx, defect_s3_key in enumerate(defect_image_s3_keys, start=1):
+                try:
+                    defect_image_bytes = s3_service.get_file(defect_s3_key)
+                    if defect_image_bytes:
+                        # Add page break before each defect image
+                        story.append(PageBreak())
+                        
+                        # Caption for defect image
+                        caption_text = f"DEFECT EVIDENCE - IMAGE {idx} OF {total_defect_images}"
+                        story.append(Paragraph(caption_text, heading_style))
+                        story.append(Spacer(1, 0.2 * inch))
+                        
+                        # Process image: check orientation and rotate if landscape
+                        try:
+                            pil_image = PILImage.open(BytesIO(defect_image_bytes))
+                            width, height = pil_image.size
+                            
+                            # If landscape, rotate 90 degrees clockwise to portrait
+                            if width > height:
+                                logger.info(f"Defect image {idx} is landscape ({width}x{height}), rotating 90° for full-page display")
+                                pil_image = pil_image.rotate(-90, expand=True)
+                                
+                                # Convert back to bytes
+                                rotated_buffer = BytesIO()
+                                pil_image.save(rotated_buffer, format='JPEG', quality=95)
+                                defect_image_bytes = rotated_buffer.getvalue()
+                        except Exception as rot_err:
+                            logger.warning(f"Could not rotate defect image {idx}: {rot_err}")
+                        
+                        # Full page image for defect - maximize size
+                        defect_image = self._get_scaled_image(
+                            defect_image_bytes,
+                            max_width=7.0 * inch,
+                            max_height=10.0 * inch
+                        )
+                        if defect_image:
+                            # Center the defect image
+                            defect_table = Table(
+                                [[defect_image]],
+                                colWidths=[7.0 * inch]
+                            )
+                            defect_table.setStyle(TableStyle([
+                                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                            ]))
+                            story.append(defect_table)
+                except Exception as e:
+                    logger.warning(f"Failed to include defect image {idx} in PDF: {e}")
+
+        # Add page break after images if they exist
+        if (receipt.s3_object_key and s3_service) or (defect_image_s3_keys and s3_service):
             story.append(PageBreak())
 
         # Build PDF with footer on every page

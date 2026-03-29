@@ -6,6 +6,7 @@ from app.models.user import User
 from app.models.receipt import Receipt, ReceiptStatus
 from app.models.receipt_line_item import ReceiptLineItem
 from app.models.claim_document import ClaimDocument
+from app.models.claim_defect_image import ClaimDefectImage
 from app.models.notification_preference import UserNotificationPreferences
 
 __all__ = [
@@ -14,5 +15,6 @@ __all__ = [
     "ReceiptStatus",
     "ReceiptLineItem",
     "ClaimDocument",
+    "ClaimDefectImage",
     "UserNotificationPreferences",
 ]

@@ -1,7 +1,34 @@
+import 'dart:io';
+
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/utils/logger.dart';
 import 'api_service.dart';
 import '../providers/service_providers.dart';
+
+/// Defect image reference in claim response
+class ClaimDefectImageResponse {
+  final String id;
+  final String s3ObjectKey;
+  final int displayOrder;
+  final DateTime createdAt;
+
+  ClaimDefectImageResponse({
+    required this.id,
+    required this.s3ObjectKey,
+    required this.displayOrder,
+    required this.createdAt,
+  });
+
+  factory ClaimDefectImageResponse.fromJson(Map<String, dynamic> json) {
+    return ClaimDefectImageResponse(
+      id: json['id'] as String,
+      s3ObjectKey: json['s3ObjectKey'] ?? json['s3_object_key'] as String,
+      displayOrder: json['displayOrder'] ?? json['display_order'] as int,
+      createdAt: DateTime.parse(json['createdAt'] ?? json['created_at'] as String),
+    );
+  }
+}
 
 /// Response model for claim document operations
 class ClaimDocumentResponse {
@@ -14,6 +41,7 @@ class ClaimDocumentResponse {
   final String? notes;
   final String? generatedPdfS3Key;
   final String? url; // Pre-signed S3 URL for downloading
+  final List<ClaimDefectImageResponse> defectImages;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -27,11 +55,13 @@ class ClaimDocumentResponse {
     this.notes,
     this.generatedPdfS3Key,
     this.url,
+    this.defectImages = const [],
     required this.createdAt,
     required this.updatedAt,
   });
 
   factory ClaimDocumentResponse.fromJson(Map<String, dynamic> json) {
+    final defectImagesList = json['defectImages'] ?? json['defect_images'] ?? [];
     return ClaimDocumentResponse(
       id: json['id'] as String,
       receiptId: json['receiptId'] ?? json['receipt_id'] as String,
@@ -42,6 +72,9 @@ class ClaimDocumentResponse {
       notes: json['notes'] as String?,
       generatedPdfS3Key: json['generatedPdfS3Key'] ?? json['generated_pdf_s3_key'] as String?,
       url: json['url'] as String?,
+      defectImages: (defectImagesList as List)
+          .map((img) => ClaimDefectImageResponse.fromJson(img as Map<String, dynamic>))
+          .toList(),
       createdAt: DateTime.parse(json['createdAt'] ?? json['created_at'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] ?? json['updated_at'] as String),
     );
@@ -57,6 +90,12 @@ class ClaimDocumentResponse {
     'notes': notes,
     'generatedPdfS3Key': generatedPdfS3Key,
     'url': url,
+    'defectImages': defectImages.map((img) => {
+      'id': img.id,
+      's3ObjectKey': img.s3ObjectKey,
+      'displayOrder': img.displayOrder,
+      'createdAt': img.createdAt.toIso8601String(),
+    }).toList(),
     'createdAt': createdAt.toIso8601String(),
     'updatedAt': updatedAt.toIso8601String(),
   };
@@ -68,16 +107,17 @@ class ClaimService {
 
   ClaimService(this._apiService);
 
-  /// Generate a warranty claim PDF for a receipt
+  /// Generate a warranty claim PDF for a receipt with optional defect images
   ///
   /// Args:
   ///   receiptId: Receipt ID for which to generate the claim
   ///   issueDescription: Description of the issue/claim
   ///   claimType: Type of claim (warranty, return)
   ///   lineItemId: Optional line item ID (product) for which to generate the claim
+  ///   defectImages: Optional list of defect image files (max 10, 5MB each)
   ///
   /// Returns:
-  ///   ClaimDocumentResponse with claim metadata.
+  ///   ClaimDocumentResponse with claim metadata and defect images.
   ///   Use [accessClaimPdf] when the user explicitly wants to open/download/share/copy the PDF.
   ///
   /// Throws:
@@ -87,23 +127,41 @@ class ClaimService {
     required String issueDescription,
     required String claimType,
     String? lineItemId,
+    List<File>? defectImages,
   }) async {
     try {
-      logger.i('Generating claim PDF for receipt $receiptId, product ${lineItemId ?? "all"}');
+      logger.i('Generating claim PDF for receipt $receiptId, product ${lineItemId ?? "all"}, defect images: ${defectImages?.length ?? 0}');
+
+      // Create multipart form data
+      final formData = FormData.fromMap({
+        'receipt_id': receiptId,
+        'issue_description': issueDescription,
+        'claim_type': claimType,
+        if (lineItemId != null) 'line_item_id': lineItemId,
+      });
+      
+      // Add defect images if provided
+      if (defectImages != null && defectImages.isNotEmpty) {
+        for (final imageFile in defectImages) {
+          final fileName = imageFile.path.split('/').last;
+          formData.files.add(MapEntry(
+            'defect_images',
+            await MultipartFile.fromFile(
+              imageFile.path,
+              filename: fileName,
+            ),
+          ));
+        }
+      }
 
       final response = await _apiService.post(
         '/claims',
-        data: {
-          'receiptId': receiptId,
-          'issueDescription': issueDescription,
-          'claimType': claimType,
-          if (lineItemId != null) 'lineItemId': lineItemId,
-        },
+        data: formData,
       );
 
       if (response.statusCode == 201) {
         final data = response.data as Map<String, dynamic>;
-        logger.i('Claim PDF generated successfully: ${data['id']}');
+        logger.i('Claim PDF generated successfully: ${data['id']} with ${data['defectImages']?.length ?? 0} defect images');
         return ClaimDocumentResponse.fromJson(data);
       } else {
         throw Exception('Failed to generate claim PDF: ${response.statusCode}');

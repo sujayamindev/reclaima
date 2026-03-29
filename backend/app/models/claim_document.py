@@ -40,6 +40,7 @@ class ClaimDocument(Base):
     
     # Relationships
     receipt = relationship("Receipt", back_populates="claim_documents")
+    defect_images = relationship("ClaimDefectImage", back_populates="claim", cascade="all, delete-orphan", order_by="ClaimDefectImage.display_order")
     
     def __repr__(self):
         return f"<ClaimDocument(id={self.id}, receipt_id={self.receipt_id}, line_item_id={self.line_item_id})>"

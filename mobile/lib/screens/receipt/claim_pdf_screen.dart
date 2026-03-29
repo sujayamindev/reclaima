@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:open_filex/open_filex.dart';
@@ -10,6 +11,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../core/constants/app_constants.dart';
 import '../receipt/add_receipt_screen.dart';
+import '../receipt/image_crop_rotate_screen.dart';
 import '../../providers/receipt_provider.dart';
 import '../../services/android_download_manager_service.dart';
 import '../../services/claim_service.dart';
@@ -44,6 +46,9 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
   bool _isUpdating = false;
   ClaimDocumentResponse? _generatedClaim;
   String? _error;
+  
+  // Defect images
+  final List<String> _defectImagePaths = [];
 
   final List<String> _statusOptions = ['DRAFT', 'SUBMITTED', 'IN_PROGRESS', 'RESOLVED', 'DENIED'];
   List<String> get _claimTypeOptions => AppConstants.claimTypes
@@ -139,6 +144,93 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
     super.dispose();
   }
 
+  Future<void> _pickDefectImages() async {
+    final ImagePicker picker = ImagePicker();
+    
+    // Show source selection dialog
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (ctx) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        return Container(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Add Defect Image',
+                style: AppTextStyles.titleLarge.copyWith(
+                  color: AppColors.textPrimary(isDark),
+                ),
+              ),
+              const SizedBox(height: 24),
+              ListTile(
+                leading: Icon(Symbols.camera_alt_rounded, color: AppColors.primary),
+                title: const Text('Take Photo'),
+                onTap: () => Navigator.pop(ctx, ImageSource.camera),
+              ),
+              ListTile(
+                leading: Icon(Symbols.photo_library_rounded, color: AppColors.primary),
+                title: const Text('Choose from Gallery'),
+                onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    
+    if (source == null) return;
+    
+    try {
+      final XFile? image = await picker.pickImage(source: source);
+      if (image != null) {
+        // Navigate to crop/rotate screen
+        if (!mounted) return;
+        final result = await Navigator.push<String>(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ImageCropRotateScreen(imagePath: image.path),
+          ),
+        );
+        
+        if (result != null) {
+          setState(() {
+            _defectImagePaths.add(result);
+          });
+        }
+      }
+    } catch (e) {
+      logger.e('Error picking defect image: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to pick image: $e')),
+        );
+      }
+    }
+  }
+
+  void _removeDefectImage(int index) {
+    setState(() {
+      _defectImagePaths.removeAt(index);
+    });
+  }
+
+  Future<void> _editDefectImage(int index) async {
+    final result = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ImageCropRotateScreen(imagePath: _defectImagePaths[index]),
+      ),
+    );
+    
+    if (result != null) {
+      setState(() {
+        _defectImagePaths[index] = result;
+      });
+    }
+  }
+
   Future<void> _generateClaim() async {
     // Validate input
     final issueDesc = _issueController.text.trim();
@@ -148,6 +240,24 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
       );
       return;
     }
+    
+    // Validate defect images file sizes
+    for (int i = 0; i < _defectImagePaths.length; i++) {
+      final file = File(_defectImagePaths[i]);
+      final fileSize = await file.length();
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      
+      if (fileSize > maxSize) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Image ${i + 1} is too large. Maximum size is 5MB.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+    }
 
     setState(() {
       _isLoading = true;
@@ -155,22 +265,36 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
     });
 
     try {
-      logger.i('Generating claim PDF...');
+      logger.i('Generating claim PDF with ${_defectImagePaths.length} defect images...');
       final claimService = ref.read(claimServiceProvider);
+      
+      // Convert paths to File objects
+      final defectImageFiles = _defectImagePaths.map((path) => File(path)).toList();
 
       final claim = await claimService.generateClaimPdf(
         receiptId: widget.receiptId,
         issueDescription: issueDesc,
         claimType: _selectedClaimType,
         lineItemId: widget.lineItemId,
+        defectImages: defectImageFiles.isNotEmpty ? defectImageFiles : null,
       );
 
-      logger.i('Claim PDF generated successfully: ${claim.id}');
+      logger.i('Claim PDF generated successfully: ${claim.id} with ${claim.defectImages.length} defect images');
 
       setState(() {
         _generatedClaim = claim;
         _notesController.text = claim.notes ?? '';
       });
+      
+      if (!mounted) return;
+      
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Claim generated successfully with ${claim.defectImages.length} defect images'),
+          backgroundColor: Colors.green,
+        ),
+      );
     } catch (e) {
       logger.e('Error generating claim: $e');
       setState(() {
@@ -983,6 +1107,142 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                   ],
                 ),
               ),
+              const SizedBox(height: 24),
+
+              // Defect Images Section
+              Text(
+                'Defect Images (Optional)',
+                style: AppTextStyles.formLabel.copyWith(
+                  color: secondaryColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Add photos showing the defect or issue (max 10)',
+                style: AppTextStyles.caption.copyWith(
+                  color: secondaryColor.withValues(alpha: 0.7),
+                ),
+              ),
+              const SizedBox(height: 12),
+              
+              if (_defectImagePaths.isNotEmpty)
+                Container(
+                  height: 100,
+                  margin: const EdgeInsets.only(bottom: 12),
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _defectImagePaths.length,
+                    itemBuilder: (context, index) {
+                      return Container(
+                        margin: const EdgeInsets.only(right: 12),
+                        width: 100,
+                        child: Stack(
+                          children: [
+                            GestureDetector(
+                              onTap: () => _editDefectImage(index),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+                                child: Image.file(
+                                  File(_defectImagePaths[index]),
+                                  width: 100,
+                                  height: 100,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              top: 4,
+                              right: 4,
+                              child: GestureDetector(
+                                onTap: () => _removeDefectImage(index),
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.6),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Symbols.close_rounded,
+                                    size: 16,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              bottom: 4,
+                              left: 4,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.6),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  '${index + 1}',
+                                  style: AppTextStyles.caption.copyWith(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              
+              if (_defectImagePaths.length < 10)
+                OutlinedButton.icon(
+                  onPressed: _isLoading ? null : _pickDefectImages,
+                  icon: Icon(
+                    Symbols.add_a_photo_rounded,
+                    size: 20,
+                    color: AppColors.primary,
+                  ),
+                  label: Text(
+                    _defectImagePaths.isEmpty ? 'Add Defect Images' : 'Add More',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: AppColors.primary),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  ),
+                ),
+              
+              if (_defectImagePaths.length >= 10)
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.warning.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+                    border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Symbols.info_rounded, size: 16, color: AppColors.warning),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Maximum of 10 defect images reached',
+                          style: AppTextStyles.caption.copyWith(
+                            color: AppColors.warning,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               const SizedBox(height: 28),
 
               // Error Message
