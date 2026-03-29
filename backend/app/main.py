@@ -45,8 +45,7 @@ async def lifespan(app: FastAPI):
             from app.services.notification_service import notification_service
 
             scheduler = BackgroundScheduler(timezone="UTC")
-            # Warranty reminders — daily at REMINDER_CHECK_HOUR UTC
-            # TODO: Change minute back to 0 after testing. Currently set to 30 for IST+5:30 testing at 8 AM (2:30 AM UTC)
+            # Warranty reminders — daily at 11:30 AM UTC
             scheduler.add_job(
                 notification_service.run_warranty_reminders,
                 "cron",
@@ -54,7 +53,7 @@ async def lifespan(app: FastAPI):
                 minute=30,
                 id="warranty_reminders",
             )
-            # Return deadline reminders — daily, 5 min after warranty job
+            # Return deadline reminders — daily at 11:35 AM UTC (5 min after warranty job)
             scheduler.add_job(
                 notification_service.run_return_reminders,
                 "cron",
@@ -72,7 +71,7 @@ async def lifespan(app: FastAPI):
             )
             scheduler.start()
             logger.info(
-                f"APScheduler started — reminder jobs at {settings.REMINDER_CHECK_HOUR:02d}:30 UTC (08:00 IST for testing), "
+                f"APScheduler started — reminder jobs at {settings.REMINDER_CHECK_HOUR:02d}:30 UTC (11:30 AM UTC), "
                 f"cleanup at {settings.CLEANUP_HOUR:02d}:00 UTC"
             )
         except Exception as exc:

@@ -75,8 +75,7 @@ class Settings(BaseSettings):
 
     # Scheduler
     ENABLE_SCHEDULER: bool = True
-    # TODO: Change back to 9 after testing. Currently set to 2 for IST+5:30 testing at 8 AM (2:30 AM UTC)
-    REMINDER_CHECK_HOUR: int = 2
+    REMINDER_CHECK_HOUR: int = 11  # 11:30 AM UTC for notification sending
     CLEANUP_HOUR: int = 2
     
     # Reminders
