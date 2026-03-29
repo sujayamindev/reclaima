@@ -14,7 +14,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.platypus import (
     SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak,
-    Image as RLImage, PageTemplate, Frame
+    Image as RLImage, PageTemplate, Frame, KeepTogether
 )
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 from reportlab.pdfgen import canvas
@@ -453,11 +453,6 @@ class PdfGenerationService:
                         # Add page break before each defect image
                         story.append(PageBreak())
                         
-                        # Caption for defect image
-                        caption_text = f"DEFECT EVIDENCE - IMAGE {idx} OF {total_defect_images}"
-                        story.append(Paragraph(caption_text, heading_style))
-                        story.append(Spacer(1, 0.2 * inch))
-                        
                         # Process image: check orientation and rotate if landscape
                         try:
                             pil_image = PILImage.open(BytesIO(defect_image_bytes))
@@ -482,16 +477,19 @@ class PdfGenerationService:
                             max_height=10.0 * inch
                         )
                         if defect_image:
-                            # Center the defect image
-                            defect_table = Table(
-                                [[defect_image]],
-                                colWidths=[7.0 * inch]
-                            )
-                            defect_table.setStyle(TableStyle([
-                                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-                            ]))
-                            story.append(defect_table)
+                            # Create elements to keep together (caption + image)
+                            caption_text = f"DEFECT EVIDENCE - IMAGE {idx} OF {total_defect_images}"
+                            defect_elements = [
+                                Paragraph(caption_text, heading_style),
+                                Spacer(1, 0.2 * inch),
+                                Table(
+                                    [[defect_image]],
+                                    colWidths=[7.0 * inch]
+                                )
+                            ]
+                            
+                            # Use KeepTogether to prevent page break between caption and image
+                            story.append(KeepTogether(defect_elements))
                 except Exception as e:
                     logger.warning(f"Failed to include defect image {idx} in PDF: {e}")
 

@@ -49,6 +49,10 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
   
   // Defect images
   final List<String> _defectImagePaths = [];
+  
+  // PDF cache
+  String? _cachedPdfPath;
+  bool _isCachingPdf = false;
 
   final List<String> _statusOptions = ['DRAFT', 'SUBMITTED', 'IN_PROGRESS', 'RESOLVED', 'DENIED'];
   List<String> get _claimTypeOptions => AppConstants.claimTypes
@@ -163,15 +167,15 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                   color: AppColors.textPrimary(isDark),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 12),
               ListTile(
-                leading: Icon(Symbols.camera_alt_rounded, color: AppColors.primary),
-                title: const Text('Take Photo'),
+                leading: Icon(Symbols.camera_alt_rounded, color: AppColors.primary, size: AppDimensions.iconMedium, weight: AppDimensions.iconWeightHeavy),
+                title: const Text('Take Photo', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                 onTap: () => Navigator.pop(ctx, ImageSource.camera),
               ),
               ListTile(
-                leading: Icon(Symbols.photo_library_rounded, color: AppColors.primary),
-                title: const Text('Choose from Gallery'),
+                leading: Icon(Symbols.photo_library_rounded, color: AppColors.primary, size: AppDimensions.iconMedium, weight: AppDimensions.iconWeightHeavy),
+                title: const Text('Choose from Gallery', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                 onTap: () => Navigator.pop(ctx, ImageSource.gallery),
               ),
             ],
@@ -286,13 +290,16 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
         _notesController.text = claim.notes ?? '';
       });
       
+      // Start caching PDF in background (don't await)
+      _cachePdfInBackground();
+      
       if (!mounted) return;
       
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Claim generated successfully with ${claim.defectImages.length} defect images'),
-          backgroundColor: Colors.green,
+          backgroundColor: AppColors.primary,
         ),
       );
     } catch (e) {
@@ -594,15 +601,31 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
   }
 
   Future<void> _openPdf() async {
-    final filePath = await _downloadPdfFile(showSuccessMessage: false);
+    String? filePath;
+    
+    // Check if PDF is already cached
+    if (_cachedPdfPath != null && await File(_cachedPdfPath!).exists()) {
+      filePath = _cachedPdfPath;
+      logger.i('Using cached PDF for opening');
+    } else {
+      filePath = await _downloadPdfFile(showSuccessMessage: false);
+      if (filePath == null) return;
+      
+      // Cache for future use
+      setState(() => _cachedPdfPath = filePath);
+    }
+
+    // Ensure filePath is not null before opening
     if (filePath == null) return;
 
     try {
       final openResult = await OpenFilex.open(filePath, type: 'application/pdf');
       if (openResult.type != ResultType.done && mounted) {
+      if (openResult.type != ResultType.done && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(openResult.message.isNotEmpty ? openResult.message : 'No PDF app found on this device.')),
         );
+      }
       }
     } catch (e) {
       logger.e('Error opening PDF: $e');
@@ -617,8 +640,77 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
     await _downloadPdfToPublicDownloads();
   }
 
+  /// Cache PDF in background after generation
+  Future<void> _cachePdfInBackground() async {
+    if (_isCachingPdf || _cachedPdfPath != null) return;
+    
+    setState(() => _isCachingPdf = true);
+    
+    try {
+      final filePath = await _downloadPdfFile(showSuccessMessage: false);
+      if (filePath != null && mounted) {
+        setState(() {
+          _cachedPdfPath = filePath;
+          _isCachingPdf = false;
+        });
+        logger.i('PDF cached successfully: $filePath');
+      }
+    } catch (e) {
+      logger.e('Error caching PDF: $e');
+      if (mounted) {
+        setState(() => _isCachingPdf = false);
+      }
+    }
+  }
+
   Future<void> _sharePdf() async {
-    final filePath = await _downloadPdfFile(showSuccessMessage: false);
+    String? filePath;
+    
+    // Check if PDF is already cached
+    if (_cachedPdfPath != null) {
+      // Verify cached file still exists
+      if (await File(_cachedPdfPath!).exists()) {
+        filePath = _cachedPdfPath;
+        logger.i('Using cached PDF for sharing');
+      } else {
+        // Cache is stale, clear it
+        setState(() => _cachedPdfPath = null);
+      }
+    }
+    
+    // If no cache, show loading and download
+    if (filePath == null) {
+      // Show loading indicator
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              children: [
+                SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                ),
+                SizedBox(width: 12),
+                Text('Preparing PDF for sharing...'),
+              ],
+            ),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+      
+      filePath = await _downloadPdfFile(showSuccessMessage: false);
+      if (filePath == null) return;
+      
+      // Cache for future use
+      setState(() => _cachedPdfPath = filePath);
+    }
+
+    // Ensure filePath is not null before sharing
     if (filePath == null) return;
 
     try {
@@ -1197,26 +1289,31 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                 ),
               
               if (_defectImagePaths.length < 10)
-                OutlinedButton.icon(
-                  onPressed: _isLoading ? null : _pickDefectImages,
-                  icon: Icon(
-                    Symbols.add_a_photo_rounded,
-                    size: 20,
-                    color: AppColors.primary,
-                  ),
-                  label: Text(
-                    _defectImagePaths.isEmpty ? 'Add Defect Images' : 'Add More',
-                    style: AppTextStyles.bodySmall.copyWith(
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: _isLoading ? null : _pickDefectImages,
+                    icon: Icon(
+                      Symbols.add_a_photo_rounded,
+                      size: AppDimensions.iconMedium,
                       color: AppColors.primary,
-                      fontWeight: FontWeight.w600,
+                      weight: AppDimensions.iconWeightHeavy,
                     ),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: AppColors.primary),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+                    label: Text(
+                      _defectImagePaths.isEmpty ? 'Add Defect Images' : 'Add More',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: AppColors.primary, width: 1.5),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
+
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
                   ),
                 ),
               
@@ -1225,7 +1322,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: AppColors.warning.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
                     border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
                   ),
                   child: Row(
@@ -1252,7 +1349,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: AppColors.error.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
                     border: Border.all(
                       color: AppColors.error.withValues(alpha: 0.3),
                     ),
