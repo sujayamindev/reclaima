@@ -159,12 +159,13 @@ class ReceiptBase(BaseModel):
 class ReceiptCreate(ReceiptBase):
     """Receipt creation schema.
 
-    Accepts an optional ``s3_object_key`` pointing to an image that was
-    already uploaded to S3 via the ``/receipts/ocr-extract`` endpoint.
-    When provided the receipt status is set to COMPLETED on creation instead
-    of MANUAL_ENTRY.
+    Accepts optional ``s3_object_key`` and ``back_image_s3_key`` pointing to 
+    image(s) that were already uploaded to S3 via the ``/receipts/ocr-extract`` 
+    endpoint. When at least one image key is provided, the receipt status is 
+    set to COMPLETED on creation instead of MANUAL_ENTRY.
     """
     s3_object_key: Optional[str] = None
+    back_image_s3_key: Optional[str] = None
 
 
 class ReceiptUpdate(BaseModel):
@@ -249,11 +250,12 @@ class OcrLineItemResult(BaseModel):
 class OcrExtractResponse(BaseModel):
     """Response from POST /receipts/ocr-extract.
 
-    Returns the S3 key of the uploaded image and all OCR-extracted fields.
-    The image is stored under ``users/{user_id}/receipts/{session_id}/`` —
-    a permanent path so the file is preserved even on OCR failure.
+    Returns the S3 keys of the uploaded image(s) and all OCR-extracted fields.
+    Images are stored under ``users/{user_id}/receipts/{session_id}/`` —
+    a permanent path so the files are preserved even on OCR failure.
     """
-    s3_object_key: str
+    s3_object_key: str  # Front image or single image S3 key
+    back_image_s3_key: Optional[str] = None  # Back image S3 key if provided
     ocr_status: str  # "success" | "failed"
     # Receipt-level fields
     store_name: Optional[str] = None

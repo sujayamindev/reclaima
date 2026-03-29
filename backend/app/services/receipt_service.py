@@ -13,7 +13,7 @@ from dateutil.relativedelta import relativedelta
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import and_
 
-from app.models import Receipt, ReceiptStatus, User
+from app.models import Receipt, ReceiptStatus, User, ReceiptImage
 from app.models.receipt_line_item import ReceiptLineItem
 from app.models.claim_document import ClaimDocument
 from app.schemas import ReceiptCreate, ReceiptUpdate, ReceiptLineItemUpdate
@@ -78,7 +78,8 @@ class ReceiptService:
         # /ocr-extract.  Status is COMPLETED (OCR already done) when an image
         # key is present, otherwise MANUAL_ENTRY for purely text-based entries.
         s3_key = getattr(receipt_data, 's3_object_key', None)
-        initial_status = ReceiptStatus.COMPLETED if s3_key else ReceiptStatus.MANUAL_ENTRY
+        back_s3_key = getattr(receipt_data, 'back_image_s3_key', None)
+        initial_status = ReceiptStatus.COMPLETED if (s3_key or back_s3_key) else ReceiptStatus.MANUAL_ENTRY
 
         receipt = Receipt(
             id=receipt_id,
@@ -100,10 +101,31 @@ class ReceiptService:
         )
         
         db.add(receipt)
+        db.flush()  # Flush to get receipt ID for receipt_images
+        
+        # Create ReceiptImage records for front and back images
+        if s3_key:
+            front_image = ReceiptImage(
+                id=str(uuid.uuid4()),
+                receipt_id=receipt_id,
+                s3_object_key=s3_key,
+                image_type='FRONT'
+            )
+            db.add(front_image)
+        
+        if back_s3_key:
+            back_image = ReceiptImage(
+                id=str(uuid.uuid4()),
+                receipt_id=receipt_id,
+                s3_object_key=back_s3_key,
+                image_type='BACK'
+            )
+            db.add(back_image)
+        
         db.commit()
         db.refresh(receipt)
         
-        logger.info(f"Created receipt: {receipt_id} for user: {user_id} (status={initial_status.value})")
+        logger.info(f"Created receipt: {receipt_id} for user: {user_id} (status={initial_status.value}, images={bool(s3_key)}/{bool(back_s3_key)})")
         
         return receipt
     
@@ -262,6 +284,154 @@ class ReceiptService:
                 f"s3_key={s3_object_key}: {exc}"
             )
 
+        return result
+
+    def extract_ocr_from_files(
+        self,
+        user_id: str,
+        front_image_data: Optional[tuple[bytes, str, str]],
+        back_image_data: Optional[tuple[bytes, str, str]],
+    ) -> dict:
+        """
+        Upload front and/or back receipt images to S3, run OCR on both, and merge results.
+        
+        Images are stored at:
+            ``users/{user_id}/receipts/{session_id}/front_{file_name}``
+            ``users/{user_id}/receipts/{session_id}/back_{file_name}``
+        
+        OCR is run on both images and results are merged, with preference given to
+        front image data for main fields. Line items from both images are combined.
+        
+        Args:
+            user_id: User ID
+            front_image_data: Tuple of (file_content, file_name, content_type) for front image, or None
+            back_image_data: Tuple of (file_content, file_name, content_type) for back image, or None
+        
+        Returns:
+            Dict matching OcrExtractResponse schema with merged OCR data
+        """
+        session_id = str(uuid.uuid4())
+        
+        # Process front image
+        front_s3_key = None
+        front_ocr_result = None
+        if front_image_data:
+            file_content, file_name, content_type = front_image_data
+            front_s3_key = f"users/{user_id}/receipts/{session_id}/front_{file_name}"
+            
+            logger.info(f"OCR extract: uploading front image to {front_s3_key}")
+            self.s3_service.upload_file(file_content, front_s3_key, content_type)
+            
+            try:
+                front_ocr_result = self.textract_service.analyze_document(front_s3_key)
+                logger.info(f"OCR extract: front image processed, status={front_ocr_result.get('status')}")
+            except Exception as exc:
+                logger.error(f"OCR extract error for front image: {exc}")
+        
+        # Process back image
+        back_s3_key = None
+        back_ocr_result = None
+        if back_image_data:
+            file_content, file_name, content_type = back_image_data
+            back_s3_key = f"users/{user_id}/receipts/{session_id}/back_{file_name}"
+            
+            logger.info(f"OCR extract: uploading back image to {back_s3_key}")
+            self.s3_service.upload_file(file_content, back_s3_key, content_type)
+            
+            try:
+                back_ocr_result = self.textract_service.analyze_document(back_s3_key)
+                logger.info(f"OCR extract: back image processed, status={back_ocr_result.get('status')}")
+            except Exception as exc:
+                logger.error(f"OCR extract error for back image: {exc}")
+        
+        # Merge OCR results (prefer front image data for main fields)
+        result: dict = {
+            "s3_object_key": front_s3_key or back_s3_key,
+            "back_image_s3_key": back_s3_key,
+            "ocr_status": "failed",
+            "line_items": [],
+        }
+        
+        # Extract data from front image (primary source)
+        front_data = {}
+        if front_ocr_result and front_ocr_result.get("status") == "success":
+            front_data = front_ocr_result.get("extracted_data", {})
+            result["ocr_status"] = "success"
+        
+        # Extract data from back image (secondary source)
+        back_data = {}
+        if back_ocr_result and back_ocr_result.get("status") == "success":
+            back_data = back_ocr_result.get("extracted_data", {})
+            if result["ocr_status"] != "success":
+                result["ocr_status"] = "success"
+        
+        # If both failed, return early
+        if result["ocr_status"] == "failed":
+            logger.warning(f"OCR extract: both images failed OCR for session {session_id}")
+            return result
+        
+        # Merge extracted data (prefer front for main fields, combine line items)
+        extracted = front_data.copy()
+        
+        # Combine line items from both images
+        front_line_items = front_data.get("line_items", [])
+        back_line_items = back_data.get("line_items", [])
+        combined_line_items = front_line_items + back_line_items
+        extracted["line_items"] = combined_line_items
+        
+        # Optional LLM cleanup for long-form text fields
+        if settings.LLM_CLEANUP_ENABLED:
+            for _field in ("warranty_notes", "remarks"):
+                if extracted.get(_field):
+                    extracted[_field] = self.llm_service.clean_receipt_notes(
+                        extracted[_field]
+                    )
+        
+        # Parse purchase_date to a datetime (or None on failure)
+        purchase_date = None
+        if extracted.get("purchase_date"):
+            try:
+                purchase_date = dateutil_parser.parse(
+                    extracted["purchase_date"], dayfirst=False
+                )
+            except (ValueError, TypeError, OverflowError):
+                logger.warning(
+                    f"OCR extract: could not parse purchase_date: "
+                    f"{extracted['purchase_date']!r}"
+                )
+        
+        total_amount = None
+        if extracted.get("total_amount") is not None:
+            try:
+                total_amount = float(extracted["total_amount"])
+            except (TypeError, ValueError):
+                pass
+        
+        result.update(
+            {
+                "ocr_status": "success",
+                "store_name": extracted.get("store_name"),
+                "purchase_date": purchase_date,
+                "total_amount": total_amount,
+                "currency": extracted.get("currency"),
+                "invoice_number": extracted.get("invoice_number"),
+                "vendor_address": extracted.get("vendor_address"),
+                "vendor_phone": extracted.get("vendor_phone"),
+                "vendor_email": extracted.get("vendor_email"),
+                "vendor_url": extracted.get("vendor_url"),
+                "remarks": extracted.get("remarks"),
+                "warranty_notes": extracted.get("warranty_notes"),
+                "product_name": extracted.get("product_name"),
+                "warranty_period_months": extracted.get("warranty_period_months"),
+                "line_items": combined_line_items,
+            }
+        )
+        
+        logger.info(
+            f"OCR extract succeeded for user {user_id}, session={session_id}, "
+            f"front={front_s3_key}, back={back_s3_key}"
+        )
+        
         return result
 
     def update_receipt(

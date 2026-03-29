@@ -3,7 +3,7 @@ Receipt routes - Upload, manage, and process receipts.
 """
 
 import logging
-from typing import Optional
+from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Query
 from sqlalchemy.orm import Session
 
@@ -66,21 +66,25 @@ async def create_receipt(
     response_model_by_alias=True,
 )
 async def ocr_extract(
-    file: UploadFile = File(...),
+    front_image: Optional[UploadFile] = File(None),
+    back_image: Optional[UploadFile] = File(None),
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """
-    Upload a receipt image to S3, run OCR, and return extracted data.
+    Upload receipt image(s) to S3, run OCR, and return extracted data.
+    
+    Accepts optional front and back images for double-sided receipts.
+    Both images are uploaded to S3 and processed. OCR data from both images
+    is merged, with preference given to front image data.
 
     **Does NOT create a receipt record in the database.**
-    The image is stored at ``users/{user_id}/receipts/{session_id}/`` — a
-    permanent path so the file survives even if OCR fails (needed for later
+    The image(s) are stored at ``users/{user_id}/receipts/{session_id}/`` — a
+    permanent path so the files survive even if OCR fails (needed for later
     claim-PDF generation and manual review).
 
-    The ``s3ObjectKey`` in the response must be passed as ``s3ObjectKey`` to
-    ``POST /receipts`` when the user saves the receipt on the confirmation
-    screen.
+    The ``s3ObjectKey`` and ``backImageS3Key`` in the response must be passed to
+    ``POST /receipts`` when the user saves the receipt on the confirmation screen.
     """
     firebase_uid = current_user.get("uid")
     db_user = user_service.get_user_by_firebase_uid(db, firebase_uid)
@@ -90,28 +94,46 @@ async def ocr_extract(
             detail="User not found",
         )
 
-    if file.content_type not in settings.allowed_file_types_list:
+    # Validate at least one image is provided
+    if not front_image and not back_image:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=(
-                f"Invalid file type. Allowed: "
-                f"{', '.join(settings.allowed_file_types_list)}"
-            ),
+            detail="At least one image (front or back) must be provided",
         )
 
-    file_content = await file.read()
+    # Helper to validate and read image
+    async def validate_and_read_image(file: Optional[UploadFile]) -> Optional[tuple[bytes, str, str]]:
+        if not file:
+            return None
+            
+        if file.content_type not in settings.allowed_file_types_list:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=(
+                    f"Invalid file type. Allowed: "
+                    f"{', '.join(settings.allowed_file_types_list)}"
+                ),
+            )
+        
+        content = await file.read()
+        
+        if len(content) > settings.max_file_size_bytes:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail=f"File too large. Maximum: {settings.MAX_FILE_SIZE_MB}MB",
+            )
+        
+        return content, file.filename or "receipt", file.content_type or "image/jpeg"
 
-    if len(file_content) > settings.max_file_size_bytes:
-        raise HTTPException(
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail=f"File too large. Maximum: {settings.MAX_FILE_SIZE_MB}MB",
-        )
+    # Validate and read images
+    front_data = await validate_and_read_image(front_image)
+    back_data = await validate_and_read_image(back_image)
 
-    result = receipt_service.extract_ocr_from_file(
+    # Extract OCR from both images
+    result = receipt_service.extract_ocr_from_files(
         user_id=db_user.id,
-        file_content=file_content,
-        file_name=file.filename or "receipt",
-        content_type=file.content_type or "image/jpeg",
+        front_image_data=front_data,
+        back_image_data=back_data,
     )
     return result
 

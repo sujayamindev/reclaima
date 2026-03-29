@@ -79,6 +79,7 @@ class Receipt(Base):
     user = relationship("User", back_populates="receipts")
     claim_documents = relationship("ClaimDocument", back_populates="receipt", cascade="all, delete-orphan")
     line_items = relationship("ReceiptLineItem", back_populates="receipt", cascade="all, delete-orphan", order_by="ReceiptLineItem.row_index")
+    images = relationship("ReceiptImage", back_populates="receipt", cascade="all, delete-orphan", order_by="ReceiptImage.image_type")
 
     # Composite index for pagination queries (user_id + created_at)
     __table_args__ = (
