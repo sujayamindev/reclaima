@@ -95,8 +95,10 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
         case VaultFilterType.all:
           return true; // Show all products
         case VaultFilterType.active:
-          return !item.isWarrantyExpired &&
-              !item.isReturnExpired &&
+          // Active means at least one of warranty or return is still valid
+          final hasActiveWarranty = item.hasWarranty == true && !item.isWarrantyExpired;
+          final hasActiveReturn = item.lineItem.returnExpiryDate != null && !item.isReturnExpired;
+          return (hasActiveWarranty || hasActiveReturn) &&
               item.lineItem.status != 'ARCHIVED';
         case VaultFilterType.warrantyExpiring:
           return item.hasWarranty! &&
@@ -111,7 +113,10 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
               item.lineItem.returnDaysRemaining! <= 7 &&
               item.lineItem.status != 'ARCHIVED';
         case VaultFilterType.expired:
-          return (item.isWarrantyExpired || item.isReturnExpired) &&
+          // Expired means BOTH warranty AND return periods are expired (or not set)
+          final warrantyExpiredOrNone = item.hasWarranty != true || item.isWarrantyExpired;
+          final returnExpiredOrNone = item.lineItem.returnExpiryDate == null || item.isReturnExpired;
+          return warrantyExpiredOrNone && returnExpiredOrNone &&
               item.lineItem.status != 'ARCHIVED';
         case VaultFilterType.archived:
           return item.lineItem.status == 'ARCHIVED';
@@ -423,7 +428,10 @@ class _ProductListItem extends StatelessWidget {
   });
 
   Color _statusColor() {
-    if (!item.isWarrantyExpired && !item.isReturnExpired) {
+    // Green if at least one of warranty or return is still active
+    final hasActiveWarranty = item.hasWarranty == true && !item.isWarrantyExpired;
+    final hasActiveReturn = item.lineItem.returnExpiryDate != null && !item.isReturnExpired;
+    if (hasActiveWarranty || hasActiveReturn) {
       return AppColors.success;
     }
     return AppColors.error;

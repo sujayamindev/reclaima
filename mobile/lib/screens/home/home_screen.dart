@@ -641,9 +641,12 @@ class _StatCard extends StatelessWidget {
 
 Color _accentFor(_AttentionItem item) {
   if (item.isClaim) return AppColors.info;
-  return (item.isReturn || item.daysRemaining <= 7)
-      ? AppColors.error
-      : AppColors.warning;
+  // Returns or items expiring within 7 days → urgent (red)
+  if (item.isReturn || item.daysRemaining <= 7) return AppColors.error;
+  // Items expiring within 30 days → moderate urgency (yellow/orange)
+  if (item.daysRemaining <= 30) return AppColors.warning;
+  // Items with 31+ days remaining → safe (green/primary)
+  return AppColors.primary;
 }
 
 class _AttentionSection extends StatefulWidget {
