@@ -3,7 +3,7 @@ name: smart-receipt-prod
 x-backend-common: &backend-common
   image: ${BACKEND_IMAGE:?BACKEND_IMAGE is required}
   env_file:
-    - /opt/smart-receipt/.env.prod
+    - /mnt/data/smart-receipt-and-warranty-manager/.env.prod
   restart: unless-stopped
   depends_on:
     postgres:
@@ -11,15 +11,50 @@ x-backend-common: &backend-common
   networks:
     - smart-receipt-network
   volumes:
-    - /opt/smart-receipt/secrets/firebase-service-account.json:/app/firebase-service-account.json:ro
+    - /mnt/data/smart-receipt-and-warranty-manager/secrets/firebase-service-account.json:/app/firebase-service-account.json:ro
+
+# For standalone Docker Compose, mem_reservation is enforced.
+# deploy.resources.reservations is retained for Swarm compatibility.
+x-postgres-resources: &postgres-resources
+  mem_reservation: "${POSTGRES_MEM_RESERVATION:-768M}"
+  deploy:
+    resources:
+      reservations:
+        cpus: "${POSTGRES_CPU_RESERVATION:-0.50}"
+        memory: "${POSTGRES_MEM_RESERVATION:-768M}"
+
+x-api-resources: &api-resources
+  mem_reservation: "${API_MEM_RESERVATION:-1024M}"
+  deploy:
+    resources:
+      reservations:
+        cpus: "${API_CPU_RESERVATION:-1.00}"
+        memory: "${API_MEM_RESERVATION:-1024M}"
+
+x-scheduler-resources: &scheduler-resources
+  mem_reservation: "${SCHEDULER_MEM_RESERVATION:-512M}"
+  deploy:
+    resources:
+      reservations:
+        cpus: "${SCHEDULER_CPU_RESERVATION:-0.25}"
+        memory: "${SCHEDULER_MEM_RESERVATION:-512M}"
+
+x-migrate-resources: &migrate-resources
+  mem_reservation: "${MIGRATE_MEM_RESERVATION:-128M}"
+  deploy:
+    resources:
+      reservations:
+        cpus: "${MIGRATE_CPU_RESERVATION:-0.10}"
+        memory: "${MIGRATE_MEM_RESERVATION:-128M}"
 
 services:
   postgres:
     image: postgres:15-alpine
     container_name: smart-receipt-db
     restart: unless-stopped
+    <<: *postgres-resources
     env_file:
-      - /opt/smart-receipt/.env.prod
+      - /mnt/data/smart-receipt-and-warranty-manager/.env.prod
     environment:
       POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
@@ -35,13 +70,13 @@ services:
       - smart-receipt-network
 
   migrate:
-    <<: *backend-common
+    <<: [*backend-common, *migrate-resources]
     container_name: smart-receipt-migrate
     restart: "no"
     command: ["alembic", "upgrade", "head"]
 
   api:
-    <<: *backend-common
+    <<: [*backend-common, *api-resources]
     container_name: smart-receipt-api
     environment:
       ENABLE_SCHEDULER: "false"
@@ -70,7 +105,7 @@ services:
       start_period: 15s
 
   scheduler:
-    <<: *backend-common
+    <<: [*backend-common, *scheduler-resources]
     container_name: smart-receipt-scheduler
     environment:
       ENABLE_SCHEDULER: "true"

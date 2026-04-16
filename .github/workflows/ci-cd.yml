@@ -216,13 +216,13 @@ jobs:
 
       - name: Sync deployment assets
         run: |
-          ssh "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}" "mkdir -p /opt/smart-receipt/deploy/scripts /opt/smart-receipt/secrets"
-          scp deploy/docker-compose.prod.yml "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}:/opt/smart-receipt/deploy/docker-compose.prod.yml"
-          scp deploy/.env.prod.example "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}:/opt/smart-receipt/deploy/.env.prod.example"
-          scp deploy/scripts/oci_deploy.sh "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}:/opt/smart-receipt/deploy/scripts/oci_deploy.sh"
+          ssh "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}" "mkdir -p /mnt/data/smart-receipt-and-warranty-manager/deploy/scripts /mnt/data/smart-receipt-and-warranty-manager/secrets"
+          scp deploy/docker-compose.prod.yml "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}:/mnt/data/smart-receipt-and-warranty-manager/deploy/docker-compose.prod.yml"
+          scp deploy/.env.prod.example "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}:/mnt/data/smart-receipt-and-warranty-manager/deploy/.env.prod.example"
+          scp deploy/scripts/oci_deploy.sh "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}:/mnt/data/smart-receipt-and-warranty-manager/deploy/scripts/oci_deploy.sh"
 
       - name: Execute deployment
         run: |
-          ssh "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}" "chmod +x /opt/smart-receipt/deploy/scripts/oci_deploy.sh"
+          ssh "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}" "chmod +x /mnt/data/smart-receipt-and-warranty-manager/deploy/scripts/oci_deploy.sh"
           ssh "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}" \
-            "GHCR_USERNAME='${{ secrets.GHCR_USERNAME }}' GHCR_TOKEN='${{ secrets.GHCR_READ_TOKEN }}' IMAGE_REPOSITORY='${{ env.BACKEND_IMAGE_REPOSITORY }}' IMAGE_TAG='${{ needs.backend_image.outputs.image_tag }}' DEPLOY_DIR='/opt/smart-receipt/deploy' ENV_FILE='/opt/smart-receipt/.env.prod' /opt/smart-receipt/deploy/scripts/oci_deploy.sh"
+            "GHCR_USERNAME='${{ secrets.GHCR_USERNAME }}' GHCR_TOKEN='${{ secrets.GHCR_READ_TOKEN }}' IMAGE_REPOSITORY='${{ env.BACKEND_IMAGE_REPOSITORY }}' IMAGE_TAG='${{ needs.backend_image.outputs.image_tag }}' DEPLOY_DIR='/mnt/data/smart-receipt-and-warranty-manager/deploy' ENV_FILE='/mnt/data/smart-receipt-and-warranty-manager/.env.prod' /mnt/data/smart-receipt-and-warranty-manager/deploy/scripts/oci_deploy.sh"

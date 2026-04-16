@@ -6,8 +6,8 @@ set -euo pipefail
 : "${IMAGE_REPOSITORY:?IMAGE_REPOSITORY is required}"
 : "${IMAGE_TAG:?IMAGE_TAG is required}"
 
-DEPLOY_DIR="${DEPLOY_DIR:-/opt/smart-receipt/deploy}"
-ENV_FILE="${ENV_FILE:-/opt/smart-receipt/.env.prod}"
+DEPLOY_DIR="${DEPLOY_DIR:-/mnt/data/smart-receipt-and-warranty-manager/deploy}"
+ENV_FILE="${ENV_FILE:-/mnt/data/smart-receipt-and-warranty-manager/.env.prod}"
 COMPOSE_FILE="${COMPOSE_FILE:-${DEPLOY_DIR}/docker-compose.prod.yml}"
 API_PORT="${API_PORT:-8000}"
 BACKEND_IMAGE="${IMAGE_REPOSITORY}:${IMAGE_TAG}"
