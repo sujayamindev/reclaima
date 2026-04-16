@@ -271,6 +271,15 @@ flutter test
 
 ---
 
+## 🔁 CI/CD and Deployment
+
+- CI/CD runbook: `docs/CI_CD.md`
+- Workflow file: `.github/workflows/ci-cd.yml`
+- OCI production compose: `deploy/docker-compose.prod.yml`
+- OCI deployment script: `deploy/scripts/oci_deploy.sh`
+
+---
+
 ## 🐳 Docker Commands
 
 ```bash
@@ -402,12 +411,13 @@ Once the backend is running, visit:
 - [ ] Return deadline reminders
 
 ### Phase 5: Production
+- [x] CI/CD pipeline for backend and mobile quality gates
+- [x] Automated backend image publish and OCI deployment workflow
 - [ ] Real AWS Textract & S3 integration
 - [ ] Claim PDF generation
 - [ ] Comprehensive testing (coverage ≥ 70%)
 - [ ] Error tracking (Sentry)
 - [ ] Monitoring & logging
-- [ ] Deployment configuration
 - [ ] Security hardening
 
 ---

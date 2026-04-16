@@ -31,6 +31,8 @@ env/
 # FastAPI
 .env
 .env.local
+deploy/.env.prod
+deploy/secrets/
 
 # IDEs (workspace settings are typically shared, but keeping ignored by default)
 .vscode/

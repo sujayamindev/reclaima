@@ -1,0 +1,94 @@
+name: smart-receipt-prod
+
+x-backend-common: &backend-common
+  image: ${BACKEND_IMAGE:?BACKEND_IMAGE is required}
+  env_file:
+    - /opt/smart-receipt/.env.prod
+  restart: unless-stopped
+  depends_on:
+    postgres:
+      condition: service_healthy
+  networks:
+    - smart-receipt-network
+  volumes:
+    - /opt/smart-receipt/secrets/firebase-service-account.json:/app/firebase-service-account.json:ro
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: smart-receipt-db
+    restart: unless-stopped
+    env_file:
+      - /opt/smart-receipt/.env.prod
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - smart-receipt-network
+
+  migrate:
+    <<: *backend-common
+    container_name: smart-receipt-migrate
+    restart: "no"
+    command: ["alembic", "upgrade", "head"]
+
+  api:
+    <<: *backend-common
+    container_name: smart-receipt-api
+    environment:
+      ENABLE_SCHEDULER: "false"
+    command:
+      [
+        "uvicorn",
+        "app.main:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000",
+        "--workers",
+        "${API_WORKERS:-2}"
+      ]
+    ports:
+      - "${API_PORT:-8000}:8000"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health')\""
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  scheduler:
+    <<: *backend-common
+    container_name: smart-receipt-scheduler
+    environment:
+      ENABLE_SCHEDULER: "true"
+    command:
+      [
+        "uvicorn",
+        "app.main:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8010",
+        "--workers",
+        "1"
+      ]
+
+volumes:
+  postgres_data:
+
+networks:
+  smart-receipt-network:
+    driver: bridge
