@@ -422,6 +422,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -449,23 +451,15 @@ jobs:
         env:
           EVENT_NAME: ${{ github.event_name }}
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
-          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || '' }}
           PUSH_BASE_SHA: ${{ github.event.before || '' }}
-          PUSH_HEAD_SHA: ${{ github.sha }}
         run: |
           if [ "$EVENT_NAME" = "pull_request" ]; then
             BASE_SHA="$PR_BASE_SHA"
-            TARGET_SHA="$PR_HEAD_SHA"
           else
             BASE_SHA="$PUSH_BASE_SHA"
-            TARGET_SHA="$PUSH_HEAD_SHA"
           fi
 
           ORIGINAL_SHA="$(git rev-parse HEAD)"
-
-          if [ -n "$TARGET_SHA" ] && [ "$TARGET_SHA" != "$ORIGINAL_SHA" ]; then
-            git checkout --quiet "$TARGET_SHA"
-          fi
 
           set +e
           flutter analyze --machine --fatal-infos --fatal-warnings > /tmp/flutter_analyze_head.txt 2>&1
@@ -473,6 +467,12 @@ jobs:
           set -e
 
           if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            cat /tmp/flutter_analyze_head.txt
+            exit $HEAD_STATUS
+          fi
+
+          if ! git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
+            echo "Base SHA not available locally; running analyze on current revision only."
             cat /tmp/flutter_analyze_head.txt
             exit $HEAD_STATUS
           fi
