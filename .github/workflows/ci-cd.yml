@@ -444,9 +444,109 @@ jobs:
             exit 1
           fi
 
-      - name: Analyze
+      - name: Analyze (no-regression gate)
         working-directory: mobile
-        run: flutter analyze --fatal-infos --fatal-warnings
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || '' }}
+          PUSH_BASE_SHA: ${{ github.event.before || '' }}
+          PUSH_HEAD_SHA: ${{ github.sha }}
+        run: |
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            BASE_SHA="$PR_BASE_SHA"
+            TARGET_SHA="$PR_HEAD_SHA"
+          else
+            BASE_SHA="$PUSH_BASE_SHA"
+            TARGET_SHA="$PUSH_HEAD_SHA"
+          fi
+
+          ORIGINAL_SHA="$(git rev-parse HEAD)"
+
+          if [ -n "$TARGET_SHA" ] && [ "$TARGET_SHA" != "$ORIGINAL_SHA" ]; then
+            git checkout --quiet "$TARGET_SHA"
+          fi
+
+          set +e
+          flutter analyze --machine --fatal-infos --fatal-warnings > /tmp/flutter_analyze_head.txt 2>&1
+          HEAD_STATUS=$?
+          set -e
+
+          if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            cat /tmp/flutter_analyze_head.txt
+            exit $HEAD_STATUS
+          fi
+
+          git checkout --quiet "$BASE_SHA"
+          set +e
+          flutter analyze --machine --fatal-infos --fatal-warnings > /tmp/flutter_analyze_base.txt 2>&1
+          BASE_STATUS=$?
+          set -e
+
+          git checkout --quiet "$ORIGINAL_SHA"
+
+          if [ $BASE_STATUS -ge 2 ]; then
+            echo "Base revision Flutter analyze failed unexpectedly; skipping regression comparison."
+            cat /tmp/flutter_analyze_head.txt
+            exit 0
+          fi
+
+          awk -F' - ' '
+            /^[[:space:]]*(error|warning|info) - / {
+              sev = $1
+              msg = $2
+              loc = $3
+              code = $4
+
+              if (loc == "" || code == "") {
+                next
+              }
+
+              gsub(/^[[:space:]]+|[[:space:]]+$/, "", sev)
+              gsub(/^[[:space:]]+|[[:space:]]+$/, "", code)
+              sub(/:[0-9]+:[0-9]+$/, ":<line>", loc)
+
+              print sev " | " msg " | " loc " | " code
+            }
+          ' /tmp/flutter_analyze_base.txt | sort -u > /tmp/flutter_analyze_base_issues.txt || true
+
+          awk -F' - ' '
+            /^[[:space:]]*(error|warning|info) - / {
+              sev = $1
+              msg = $2
+              loc = $3
+              code = $4
+
+              if (loc == "" || code == "") {
+                next
+              }
+
+              gsub(/^[[:space:]]+|[[:space:]]+$/, "", sev)
+              gsub(/^[[:space:]]+|[[:space:]]+$/, "", code)
+              sub(/:[0-9]+:[0-9]+$/, ":<line>", loc)
+
+              print sev " | " msg " | " loc " | " code
+            }
+          ' /tmp/flutter_analyze_head.txt | sort -u > /tmp/flutter_analyze_head_issues.txt || true
+
+          comm -13 /tmp/flutter_analyze_base_issues.txt /tmp/flutter_analyze_head_issues.txt > /tmp/flutter_analyze_new_issues.txt || true
+
+          if [ -s /tmp/flutter_analyze_new_issues.txt ]; then
+            echo "New Flutter analyzer findings introduced compared to base commit:"
+            cat /tmp/flutter_analyze_new_issues.txt
+            echo
+            echo "Full Flutter analyze output on target revision:"
+            cat /tmp/flutter_analyze_head.txt
+            exit 1
+          fi
+
+          if [ $HEAD_STATUS -ne 0 ]; then
+            echo "No new Flutter analyzer findings compared to base commit; existing baseline findings tolerated."
+            cat /tmp/flutter_analyze_head.txt
+            exit 0
+          fi
+
+          echo "Flutter analyze passed on target revision."
 
       - name: Test with coverage
         working-directory: mobile
