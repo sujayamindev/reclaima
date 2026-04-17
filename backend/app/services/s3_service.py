@@ -11,47 +11,49 @@ logger = logging.getLogger(__name__)
 
 class MockS3Service:
     """Mock S3 service for development without AWS credentials."""
-    
+
     def __init__(self, bucket_name: str):
         """
         Initialize mock S3 service.
-        
+
         Args:
             bucket_name: S3 bucket name (simulated)
         """
         self.bucket_name = bucket_name
         self.storage: dict[str, bytes] = {}  # In-memory storage
         logger.info(f"MockS3Service initialized for bucket: {bucket_name}")
-    
+
     def upload_file(
         self,
         file_content: bytes,
         object_key: str,
-        content_type: str = "application/octet-stream"
+        content_type: str = "application/octet-stream",
     ) -> str:
         """
         Mock upload file to S3.
-        
+
         Args:
             file_content: File content as bytes
             object_key: S3 object key (path)
             content_type: MIME type of the file
-            
+
         Returns:
             Object key of uploaded file
         """
         # Store file in memory
         self.storage[object_key] = file_content
-        
-        logger.info(f"[MOCK] Uploaded file to S3: {object_key} ({len(file_content)} bytes, {content_type})")
-        
+
+        logger.info(
+            f"[MOCK] Uploaded file to S3: {object_key} ({len(file_content)} bytes, {content_type})"
+        )
+
         return object_key
-    
+
     def generate_presigned_url(
         self,
         object_key: str,
         expiration: int = 86400,  # 1 day (24 hours)
-        operation: str = "get_object"
+        operation: str = "get_object",
     ) -> str:
         """
         Mock generate pre-signed URL for S3 object.
@@ -66,37 +68,41 @@ class MockS3Service:
         """
         # Generate mock pre-signed URL
         mock_url = f"https://mock-s3.amazonaws.com/{self.bucket_name}/{object_key}?expires={expiration}"
-        
-        logger.info(f"[MOCK] Generated pre-signed URL for: {object_key} (expires in {expiration}s)")
-        
+
+        logger.info(
+            f"[MOCK] Generated pre-signed URL for: {object_key} (expires in {expiration}s)"
+        )
+
         return mock_url
-    
+
     def get_file(self, object_key: str) -> Optional[bytes]:
         """
         Mock get file from S3.
-        
+
         Args:
             object_key: S3 object key
-            
+
         Returns:
             File content as bytes or None if not found
         """
         file_content = self.storage.get(object_key)
-        
+
         if file_content:
-            logger.info(f"[MOCK] Retrieved file from S3: {object_key} ({len(file_content)} bytes)")
+            logger.info(
+                f"[MOCK] Retrieved file from S3: {object_key} ({len(file_content)} bytes)"
+            )
         else:
             logger.warning(f"[MOCK] File not found in S3: {object_key}")
-        
+
         return file_content
-    
+
     def delete_file(self, object_key: str) -> bool:
         """
         Mock delete file from S3.
-        
+
         Args:
             object_key: S3 object key
-            
+
         Returns:
             True if deleted, False if not found
         """
@@ -107,33 +113,35 @@ class MockS3Service:
         else:
             logger.warning(f"[MOCK] File not found for deletion: {object_key}")
             return False
-    
+
     def delete_files_bulk(self, object_keys: list[str]) -> dict[str, bool]:
         """
         Mock delete multiple files from S3.
-        
+
         Args:
             object_keys: List of S3 object keys to delete
-            
+
         Returns:
             Dictionary mapping object_key -> success status
         """
         results = {}
         for key in object_keys:
             results[key] = self.delete_file(key)
-        
+
         successful = sum(1 for v in results.values() if v)
-        logger.info(f"[MOCK] Bulk delete: {successful}/{len(object_keys)} files deleted")
-        
+        logger.info(
+            f"[MOCK] Bulk delete: {successful}/{len(object_keys)} files deleted"
+        )
+
         return results
-    
+
     def file_exists(self, object_key: str) -> bool:
         """
         Check if file exists in mock S3.
-        
+
         Args:
             object_key: S3 object key
-            
+
         Returns:
             True if file exists, False otherwise
         """
@@ -144,40 +152,39 @@ class MockS3Service:
 
 class RealS3Service:
     """Real AWS S3 service using boto3."""
-    
-    def __init__(self, bucket_name: str, region: str = 'us-east-1'):
+
+    def __init__(self, bucket_name: str, region: str = "us-east-1"):
         """
         Initialize real S3 service with boto3.
-        
+
         Args:
             bucket_name: S3 bucket name
             region: AWS region (default: us-east-1)
         """
         import boto3
         from botocore.exceptions import ClientError
-        
+
         self.bucket_name = bucket_name
-        self.s3_client = boto3.client(
-            's3',
-            region_name=region
-        )
+        self.s3_client = boto3.client("s3", region_name=region)
         self.ClientError = ClientError
-        logger.info(f"RealS3Service initialized for bucket: {bucket_name} in region: {region}")
-    
+        logger.info(
+            f"RealS3Service initialized for bucket: {bucket_name} in region: {region}"
+        )
+
     def upload_file(
         self,
         file_content: bytes,
         object_key: str,
-        content_type: str = "application/octet-stream"
+        content_type: str = "application/octet-stream",
     ) -> str:
         """
         Upload file to real S3.
-        
+
         Args:
             file_content: File content as bytes
             object_key: S3 object key (path)
             content_type: MIME type of the file
-            
+
         Returns:
             Object key of uploaded file
         """
@@ -186,72 +193,76 @@ class RealS3Service:
                 Bucket=self.bucket_name,
                 Key=object_key,
                 Body=file_content,
-                ContentType=content_type
+                ContentType=content_type,
             )
-            logger.info(f"Uploaded file to S3: {object_key} ({len(file_content)} bytes)")
+            logger.info(
+                f"Uploaded file to S3: {object_key} ({len(file_content)} bytes)"
+            )
             return object_key
         except self.ClientError as e:
             logger.error(f"Failed to upload file to S3: {e}")
             raise
-    
+
     def generate_presigned_url(
         self,
         object_key: str,
         expiration: int = 86400,  # 1 day (24 hours)
-        operation: str = "get_object"
+        operation: str = "get_object",
     ) -> str:
         """
         Generate pre-signed URL for S3 object.
-        
+
         Args:
             object_key: S3 object key
             expiration: URL expiration time in seconds
             operation: Operation type (get_object, put_object)
-            
+
         Returns:
             Pre-signed URL
         """
         try:
             url = self.s3_client.generate_presigned_url(
                 operation,
-                Params={'Bucket': self.bucket_name, 'Key': object_key},
-                ExpiresIn=expiration
+                Params={"Bucket": self.bucket_name, "Key": object_key},
+                ExpiresIn=expiration,
             )
             logger.info(f"Generated pre-signed URL for: {object_key}")
             return url
         except self.ClientError as e:
             logger.error(f"Failed to generate pre-signed URL: {e}")
             raise
-    
+
     def get_file(self, object_key: str) -> Optional[bytes]:
         """
         Get file from S3.
-        
+
         Args:
             object_key: S3 object key
-            
+
         Returns:
             File content as bytes or None if not found
         """
         try:
-            response = self.s3_client.get_object(Bucket=self.bucket_name, Key=object_key)
-            content = response['Body'].read()
+            response = self.s3_client.get_object(
+                Bucket=self.bucket_name, Key=object_key
+            )
+            content = response["Body"].read()
             logger.info(f"Retrieved file from S3: {object_key}")
             return content
         except self.ClientError as e:
-            if e.response['Error']['Code'] == 'NoSuchKey':
+            if e.response["Error"]["Code"] == "NoSuchKey":
                 logger.warning(f"File not found in S3: {object_key}")
                 return None
             logger.error(f"Failed to get file from S3: {e}")
             raise
-    
+
     def delete_file(self, object_key: str) -> bool:
         """
         Delete file from S3.
-        
+
         Args:
             object_key: S3 object key
-            
+
         Returns:
             True if deleted
         """
@@ -262,71 +273,72 @@ class RealS3Service:
         except self.ClientError as e:
             logger.error(f"Failed to delete file from S3: {e}")
             raise
-    
+
     def delete_files_bulk(self, object_keys: list[str]) -> dict[str, bool]:
         """
         Delete multiple files from S3 in bulk.
-        
+
         Args:
             object_keys: List of S3 object keys to delete
-            
+
         Returns:
             Dictionary mapping object_key -> success status
         """
         if not object_keys:
             return {}
-        
+
         results = {}
-        
+
         try:
             # S3 allows batch delete of up to 1000 objects
             # Split into chunks if needed
             chunk_size = 1000
             for i in range(0, len(object_keys), chunk_size):
-                chunk = object_keys[i:i + chunk_size]
-                
+                chunk = object_keys[i : i + chunk_size]
+
                 # Prepare delete request
-                delete_request = {
-                    'Objects': [{'Key': key} for key in chunk]
-                }
-                
+                delete_request = {"Objects": [{"Key": key} for key in chunk]}
+
                 response = self.s3_client.delete_objects(
-                    Bucket=self.bucket_name,
-                    Delete=delete_request
+                    Bucket=self.bucket_name, Delete=delete_request
                 )
-                
+
                 # Mark successful deletions
-                for deleted in response.get('Deleted', []):
-                    results[deleted['Key']] = True
-                
+                for deleted in response.get("Deleted", []):
+                    results[deleted["Key"]] = True
+
                 # Mark failed deletions
-                for error in response.get('Errors', []):
-                    results[error['Key']] = False
-                    logger.error(f"Failed to delete {error['Key']}: {error.get('Message', 'Unknown error')}")
-            
+                for error in response.get("Errors", []):
+                    results[error["Key"]] = False
+                    logger.error(
+                        f"Failed to delete {error['Key']}: {error.get('Message', 'Unknown error')}"
+                    )
+
             # Mark any keys not in response as failed
             for key in object_keys:
                 if key not in results:
                     results[key] = False
-            
+
             successful = sum(1 for v in results.values() if v)
-            logger.info(f"Bulk delete: {successful}/{len(object_keys)} files deleted from S3")
-            
+            logger.info(
+                f"Bulk delete: {successful}/{len(object_keys)} files deleted from S3"
+            )
+
         except self.ClientError as e:
             logger.error(f"Failed to bulk delete files from S3: {e}")
             # Mark all as failed
             for key in object_keys:
                 results[key] = False
-        
+
         return results
-    
+
     def file_exists(self, object_key: str) -> bool:
         """
         Check if file exists in S3.
-        
+
         Args:
             object_key: S3 object key
-            
+
         Returns:
             True if file exists
         """
@@ -337,15 +349,15 @@ class RealS3Service:
             return False
 
 
-def get_s3_service(bucket_name: str, use_mock: bool = True, region: str = 'us-east-1'):
+def get_s3_service(bucket_name: str, use_mock: bool = True, region: str = "us-east-1"):
     """
     Factory function to get S3 service (mock or real).
-    
+
     Args:
         bucket_name: S3 bucket name
         use_mock: If True, return mock service; if False, return real service
         region: AWS region (default: us-east-1)
-        
+
     Returns:
         S3 service instance (mock or real)
     """

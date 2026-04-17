@@ -13,15 +13,21 @@ from fastapi.exceptions import RequestValidationError
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.core.config import settings
-from app.api.v1 import auth, receipts, warranties, health, products, notifications, claims
+from app.api.v1 import (
+    auth,
+    receipts,
+    warranties,
+    health,
+    products,
+    notifications,
+    claims,
+)
 
 # Configure logging
 logging.basicConfig(
     level=getattr(logging, settings.LOG_LEVEL),
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(sys.stdout)
-    ]
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)],
 )
 
 logger = logging.getLogger(__name__)
@@ -36,7 +42,9 @@ async def lifespan(app: FastAPI):
     logger.info(f"Starting {settings.PROJECT_NAME} v{settings.VERSION}")
     logger.info(f"Debug mode: {settings.DEBUG}")
     logger.info(f"Using mock AWS services: {settings.USE_MOCK_AWS}")
-    logger.info(f"Database: {settings.DATABASE_URL.split('@')[-1] if '@' in settings.DATABASE_URL else 'configured'}")
+    logger.info(
+        f"Database: {settings.DATABASE_URL.split('@')[-1] if '@' in settings.DATABASE_URL else 'configured'}"
+    )
 
     scheduler = None
     if settings.ENABLE_SCHEDULER:
@@ -94,7 +102,7 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 
@@ -107,7 +115,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"]
+    expose_headers=["*"],
 )
 
 
@@ -123,8 +131,8 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         content={
             "error": "VALIDATION_ERROR",
             "message": "Invalid request data",
-            "details": exc.errors()
-        }
+            "details": exc.errors(),
+        },
     )
 
 
@@ -137,8 +145,8 @@ async def database_exception_handler(request: Request, exc: SQLAlchemyError):
         content={
             "error": "DATABASE_ERROR",
             "message": "A database error occurred",
-            "details": str(exc) if settings.DEBUG else None
-        }
+            "details": str(exc) if settings.DEBUG else None,
+        },
     )
 
 
@@ -151,8 +159,8 @@ async def general_exception_handler(request: Request, exc: Exception):
         content={
             "error": "INTERNAL_ERROR",
             "message": "An internal server error occurred",
-            "details": str(exc) if settings.DEBUG else None
-        }
+            "details": str(exc) if settings.DEBUG else None,
+        },
     )
 
 
@@ -195,7 +203,7 @@ async def root():
         "status": "running",
         "docs": "/docs",
         "health": f"{settings.API_V1_PREFIX}/health",
-        "mock_mode": settings.USE_MOCK_AWS
+        "mock_mode": settings.USE_MOCK_AWS,
     }
 
 
@@ -205,16 +213,18 @@ async def root():
 if settings.DEBUG:
     logger.warning("⚠️  Running in DEBUG mode - Do not use in production!")
     logger.info("📚 API Documentation: http://localhost:8000/docs")
-    logger.info(f"🏥 Health Check: http://localhost:8000{settings.API_V1_PREFIX}/health")
+    logger.info(
+        f"🏥 Health Check: http://localhost:8000{settings.API_V1_PREFIX}/health"
+    )
 
 
 if __name__ == "__main__":
     import uvicorn
-    
+
     uvicorn.run(
         "app.main:app",
         host="0.0.0.0",
         port=8000,
         reload=settings.DEBUG,
-        log_level=settings.LOG_LEVEL.lower()
+        log_level=settings.LOG_LEVEL.lower(),
     )

@@ -13,8 +13,14 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.platypus import (
-    SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak,
-    Image as RLImage, KeepTogether
+    SimpleDocTemplate,
+    Table,
+    TableStyle,
+    Paragraph,
+    Spacer,
+    PageBreak,
+    Image as RLImage,
+    KeepTogether,
 )
 from reportlab.lib.enums import TA_CENTER
 from PIL import Image as PILImage
@@ -52,7 +58,7 @@ class PdfGenerationService:
         self,
         image_bytes: bytes,
         max_width: float = 5.5 * inch,
-        max_height: float = 3.5 * inch
+        max_height: float = 3.5 * inch,
     ) -> Optional[RLImage]:
         """
         Process image bytes and return a ReportLab Image with scaling.
@@ -70,9 +76,12 @@ class PdfGenerationService:
             pil_image = PILImage.open(BytesIO(image_bytes))
 
             # Convert to RGB if necessary (remove alpha channel)
-            if pil_image.mode in ('RGBA', 'LA', 'P'):
-                background = PILImage.new('RGB', pil_image.size, (255, 255, 255))
-                background.paste(pil_image, mask=pil_image.split()[-1] if pil_image.mode == 'RGBA' else None)
+            if pil_image.mode in ("RGBA", "LA", "P"):
+                background = PILImage.new("RGB", pil_image.size, (255, 255, 255))
+                background.paste(
+                    pil_image,
+                    mask=pil_image.split()[-1] if pil_image.mode == "RGBA" else None,
+                )
                 pil_image = background
 
             # Calculate scaling to fit within max dimensions while maintaining aspect ratio
@@ -86,7 +95,7 @@ class PdfGenerationService:
 
             # Save processed image to bytes
             img_buffer = BytesIO()
-            pil_image.save(img_buffer, format='JPEG', quality=85)
+            pil_image.save(img_buffer, format="JPEG", quality=85)
             img_buffer.seek(0)
 
             # Create ReportLab Image
@@ -97,36 +106,33 @@ class PdfGenerationService:
             logger.warning(f"Failed to process receipt image: {e}")
             return None
 
-    def _get_logo_image(
-        self,
-        max_width: float = 2 * inch
-    ) -> Optional[RLImage]:
+    def _get_logo_image(self, max_width: float = 2 * inch) -> Optional[RLImage]:
         """
         Load logo image with maintained aspect ratio.
-        
+
         Args:
             max_width: Maximum width for the logo
-            
+
         Returns:
             ReportLab Image object or None if logo not found
         """
         import os
+
         logo_path = os.path.join(
-            os.path.dirname(__file__), 
-            "..", "..", "assets", "receipta_logo.png"
+            os.path.dirname(__file__), "..", "..", "assets", "receipta_logo.png"
         )
-        
+
         if os.path.exists(logo_path):
             try:
                 # Open image to get dimensions
                 pil_image = PILImage.open(logo_path)
                 img_width, img_height = pil_image.size
-                
+
                 # Calculate height maintaining aspect ratio
                 aspect_ratio = img_height / img_width
                 new_width = max_width
                 new_height = max_width * aspect_ratio
-                
+
                 return RLImage(logo_path, width=new_width, height=new_height)
             except Exception as e:
                 logger.warning(f"Failed to load logo: {e}")
@@ -136,23 +142,23 @@ class PdfGenerationService:
     def _add_page_footer(self, canvas_obj, doc, footer_text: str):
         """
         Add footer to every page.
-        
+
         Args:
             canvas_obj: ReportLab canvas object
             doc: Document template
             footer_text: Footer text to display
         """
         canvas_obj.saveState()
-        canvas_obj.setFont('Helvetica', 8)
+        canvas_obj.setFont("Helvetica", 8)
         canvas_obj.setFillColor(colors.HexColor("#6B7280"))
-        
+
         # Calculate center position
         page_width = doc.pagesize[0]
-        
+
         # Draw footer text centered at bottom
         footer_y = 0.3 * inch
         canvas_obj.drawCentredString(page_width / 2, footer_y, footer_text)
-        
+
         canvas_obj.restoreState()
 
     def generate_claim_pdf(
@@ -165,7 +171,7 @@ class PdfGenerationService:
         s3_service: Optional[object] = None,
         claim_id: Optional[str] = None,
         line_item_id: Optional[str] = None,
-        defect_image_s3_keys: Optional[List[str]] = None
+        defect_image_s3_keys: Optional[List[str]] = None,
     ) -> bytes:
         """
         Generate a warranty claim PDF document with optional defect images.
@@ -190,7 +196,11 @@ class PdfGenerationService:
         )
 
         # Dynamic PDF metadata title based on claim type
-        pdf_title = "Return Request Document" if claim_type and claim_type.lower() == "return" else "Warranty Claim Document"
+        pdf_title = (
+            "Return Request Document"
+            if claim_type and claim_type.lower() == "return"
+            else "Warranty Claim Document"
+        )
 
         # Create PDF in memory
         pdf_buffer = BytesIO()
@@ -201,7 +211,7 @@ class PdfGenerationService:
             rightMargin=self.right_margin,
             topMargin=self.top_margin,
             bottomMargin=self.bottom_margin,
-            title=pdf_title
+            title=pdf_title,
         )
 
         # Build PDF elements
@@ -210,26 +220,26 @@ class PdfGenerationService:
 
         # Custom styles
         title_style = ParagraphStyle(
-            'CustomTitle',
-            parent=styles['Heading1'],
+            "CustomTitle",
+            parent=styles["Heading1"],
             fontSize=26,
             textColor=ACCENT_DARK,
             spaceAfter=8,
             alignment=TA_CENTER,
-            fontName='Helvetica-Bold'
+            fontName="Helvetica-Bold",
         )
 
         heading_style = ParagraphStyle(
-            'SectionHeading',
-            parent=styles['Heading2'],
+            "SectionHeading",
+            parent=styles["Heading2"],
             fontSize=11,
             textColor=PRIMARY_COLOR,
             spaceAfter=8,
             spaceBefore=14,
-            fontName='Helvetica-Bold',
+            fontName="Helvetica-Bold",
             borderWidth=0,
             borderColor=PRIMARY_COLOR,
-            borderPadding=4
+            borderPadding=4,
         )
 
         # Dynamic title based on claim type
@@ -249,25 +259,39 @@ class PdfGenerationService:
         # Get product name for claim details
         product_name = "N/A"
         if line_item_id and receipt.line_items:
-            claimed_items = [item for item in receipt.line_items if item.id == line_item_id]
+            claimed_items = [
+                item for item in receipt.line_items if item.id == line_item_id
+            ]
             if claimed_items:
-                product_name = claimed_items[0].product_name or claimed_items[0].item_description or "N/A"
+                product_name = (
+                    claimed_items[0].product_name
+                    or claimed_items[0].item_description
+                    or "N/A"
+                )
         elif receipt.line_items and len(receipt.line_items) > 0:
-            product_name = receipt.line_items[0].product_name or receipt.line_items[0].item_description or "N/A"
+            product_name = (
+                receipt.line_items[0].product_name
+                or receipt.line_items[0].item_description
+                or "N/A"
+            )
 
         # ── Header Section ──────────────────────────────────────────────
         # Add logo with maintained aspect ratio
         logo = self._get_logo_image(max_width=2 * inch)
         if logo:
             # Center the logo
-            logo_table = Table([[logo]], colWidths=[6*inch])
-            logo_table.setStyle(TableStyle([
-                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ]))
+            logo_table = Table([[logo]], colWidths=[6 * inch])
+            logo_table.setStyle(
+                TableStyle(
+                    [
+                        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                    ]
+                )
+            )
             story.append(logo_table)
             story.append(Spacer(1, 0.15 * inch))
-        
+
         story.append(Paragraph(doc_title, title_style))
         story.append(Spacer(1, 0.15 * inch))
 
@@ -276,18 +300,20 @@ class PdfGenerationService:
         display_claim_id = claim_id if claim_id else receipt.id
 
         timestamp_style = ParagraphStyle(
-            'Timestamp',
-            parent=styles['Normal'],
+            "Timestamp",
+            parent=styles["Normal"],
             fontSize=8,
             textColor=TEXT_SECONDARY,
             alignment=TA_CENTER,
-            fontName='Helvetica'
+            fontName="Helvetica",
         )
-        
-        story.append(Paragraph(
-            f"Generated: {generation_date.strftime('%B %d, %Y at %I:%M %p UTC')}",
-            timestamp_style
-        ))
+
+        story.append(
+            Paragraph(
+                f"Generated: {generation_date.strftime('%B %d, %Y at %I:%M %p UTC')}",
+                timestamp_style,
+            )
+        )
         story.append(Spacer(1, 0.25 * inch))
 
         # ── Claim Details (Priority - Top Section) ─────────────────────
@@ -301,17 +327,21 @@ class PdfGenerationService:
         ]
 
         claim_table = Table(claim_data, colWidths=[1.8 * inch, 4.2 * inch])
-        claim_table.setStyle(TableStyle([
-            ('ALIGN', (0, 0), (0, -1), 'LEFT'),
-            ('ALIGN', (1, 0), (1, -1), 'LEFT'),
-            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-            ('FONT', (0, 0), (0, -1), 'Helvetica-Bold', 10),
-            ('FONT', (1, 0), (1, -1), 'Helvetica', 9),
-            ('TEXTCOLOR', (0, 0), (0, -1), TEXT_SECONDARY),
-            ('TEXTCOLOR', (1, 0), (1, -1), TEXT_PRIMARY),
-            ('TOPPADDING', (0, 0), (-1, -1), 8),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
-        ]))
+        claim_table.setStyle(
+            TableStyle(
+                [
+                    ("ALIGN", (0, 0), (0, -1), "LEFT"),
+                    ("ALIGN", (1, 0), (1, -1), "LEFT"),
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    ("FONT", (0, 0), (0, -1), "Helvetica-Bold", 10),
+                    ("FONT", (1, 0), (1, -1), "Helvetica", 9),
+                    ("TEXTCOLOR", (0, 0), (0, -1), TEXT_SECONDARY),
+                    ("TEXTCOLOR", (1, 0), (1, -1), TEXT_PRIMARY),
+                    ("TOPPADDING", (0, 0), (-1, -1), 8),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+                ]
+            )
+        )
         story.append(claim_table)
         story.append(Spacer(1, 0.2 * inch))
 
@@ -323,16 +353,20 @@ class PdfGenerationService:
             ["Email:", user.email],
         ]
         customer_table = Table(customer_data, colWidths=[1.8 * inch, 4.2 * inch])
-        customer_table.setStyle(TableStyle([
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-            ('FONT', (0, 0), (0, -1), 'Helvetica-Bold', 9),
-            ('FONT', (1, 0), (1, -1), 'Helvetica', 9),
-            ('TEXTCOLOR', (0, 0), (0, -1), TEXT_SECONDARY),
-            ('TEXTCOLOR', (1, 0), (1, -1), TEXT_PRIMARY),
-            ('TOPPADDING', (0, 0), (-1, -1), 5),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
-        ]))
+        customer_table.setStyle(
+            TableStyle(
+                [
+                    ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    ("FONT", (0, 0), (0, -1), "Helvetica-Bold", 9),
+                    ("FONT", (1, 0), (1, -1), "Helvetica", 9),
+                    ("TEXTCOLOR", (0, 0), (0, -1), TEXT_SECONDARY),
+                    ("TEXTCOLOR", (1, 0), (1, -1), TEXT_PRIMARY),
+                    ("TOPPADDING", (0, 0), (-1, -1), 5),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+                ]
+            )
+        )
         story.append(customer_table)
         story.append(Spacer(1, 0.2 * inch))
 
@@ -340,21 +374,39 @@ class PdfGenerationService:
         story.append(Paragraph("RECEIPT INFORMATION", heading_style))
         receipt_data = [
             ["Store Name:", receipt.store_name or "Unknown"],
-            ["Purchase Date:", receipt.purchase_date.strftime('%B %d, %Y') if receipt.purchase_date else "Not Available"],
+            [
+                "Purchase Date:",
+                (
+                    receipt.purchase_date.strftime("%B %d, %Y")
+                    if receipt.purchase_date
+                    else "Not Available"
+                ),
+            ],
             ["Invoice Number:", receipt.invoice_number or "N/A"],
-            ["Total Amount:", f"{receipt.currency} {receipt.total_amount:.2f}" if receipt.total_amount else "Not Available"],
+            [
+                "Total Amount:",
+                (
+                    f"{receipt.currency} {receipt.total_amount:.2f}"
+                    if receipt.total_amount
+                    else "Not Available"
+                ),
+            ],
         ]
         receipt_table = Table(receipt_data, colWidths=[1.8 * inch, 4.2 * inch])
-        receipt_table.setStyle(TableStyle([
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-            ('FONT', (0, 0), (0, -1), 'Helvetica-Bold', 9),
-            ('FONT', (1, 0), (1, -1), 'Helvetica', 9),
-            ('TEXTCOLOR', (0, 0), (0, -1), TEXT_SECONDARY),
-            ('TEXTCOLOR', (1, 0), (1, -1), TEXT_PRIMARY),
-            ('TOPPADDING', (0, 0), (-1, -1), 5),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
-        ]))
+        receipt_table.setStyle(
+            TableStyle(
+                [
+                    ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    ("FONT", (0, 0), (0, -1), "Helvetica-Bold", 9),
+                    ("FONT", (1, 0), (1, -1), "Helvetica", 9),
+                    ("TEXTCOLOR", (0, 0), (0, -1), TEXT_SECONDARY),
+                    ("TEXTCOLOR", (1, 0), (1, -1), TEXT_PRIMARY),
+                    ("TOPPADDING", (0, 0), (-1, -1), 5),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+                ]
+            )
+        )
         story.append(receipt_table)
         story.append(Spacer(1, 0.2 * inch))
 
@@ -367,24 +419,28 @@ class PdfGenerationService:
             ["Website:", receipt.vendor_url or "Not Available"],
         ]
         vendor_table = Table(vendor_data, colWidths=[1.8 * inch, 4.2 * inch])
-        vendor_table.setStyle(TableStyle([
-            ('ALIGN', (0, 0), (0, -1), 'LEFT'),
-            ('ALIGN', (1, 0), (1, -1), 'LEFT'),
-            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-            ('FONT', (0, 0), (0, -1), 'Helvetica-Bold', 9),
-            ('FONT', (1, 0), (1, -1), 'Helvetica', 9),
-            ('TEXTCOLOR', (0, 0), (0, -1), TEXT_SECONDARY),
-            ('TEXTCOLOR', (1, 0), (1, -1), TEXT_PRIMARY),
-            ('TOPPADDING', (0, 0), (-1, -1), 5),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
-        ]))
+        vendor_table.setStyle(
+            TableStyle(
+                [
+                    ("ALIGN", (0, 0), (0, -1), "LEFT"),
+                    ("ALIGN", (1, 0), (1, -1), "LEFT"),
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                    ("FONT", (0, 0), (0, -1), "Helvetica-Bold", 9),
+                    ("FONT", (1, 0), (1, -1), "Helvetica", 9),
+                    ("TEXTCOLOR", (0, 0), (0, -1), TEXT_SECONDARY),
+                    ("TEXTCOLOR", (1, 0), (1, -1), TEXT_PRIMARY),
+                    ("TOPPADDING", (0, 0), (-1, -1), 5),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+                ]
+            )
+        )
         story.append(vendor_table)
         story.append(Spacer(1, 0.3 * inch))
 
         # ── Receipt Images (Separate Full Pages) ─────────────────────────
         # Include both front (s3_object_key) and back images from receipt_images
         receipt_images_added = False
-        
+
         # Front image (from receipt.s3_object_key)
         if receipt.s3_object_key and s3_service:
             try:
@@ -392,61 +448,67 @@ class PdfGenerationService:
                 if image_bytes:
                     # Add page break before receipt image
                     story.append(PageBreak())
-                    
+
                     story.append(Paragraph("ORIGINAL RECEIPT - FRONT", heading_style))
                     story.append(Spacer(1, 0.2 * inch))
-                    
+
                     # Full page image - use larger dimensions for better visibility
                     receipt_image = self._get_scaled_image(
-                        image_bytes,
-                        max_width=6.5 * inch,
-                        max_height=9 * inch
+                        image_bytes, max_width=6.5 * inch, max_height=9 * inch
                     )
                     if receipt_image:
                         # Center the image
-                        image_table = Table(
-                            [[receipt_image]],
-                            colWidths=[6.5 * inch]
+                        image_table = Table([[receipt_image]], colWidths=[6.5 * inch])
+                        image_table.setStyle(
+                            TableStyle(
+                                [
+                                    ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                                ]
+                            )
                         )
-                        image_table.setStyle(TableStyle([
-                            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-                        ]))
                         story.append(image_table)
                         receipt_images_added = True
             except Exception as e:
                 logger.warning(f"Failed to include front receipt image in PDF: {e}")
-        
+
         # Back image (from receipt.images relationship)
-        if hasattr(receipt, 'images') and receipt.images and s3_service:
+        if hasattr(receipt, "images") and receipt.images and s3_service:
             for img in receipt.images:
-                if img.image_type == 'BACK' and img.s3_object_key:
+                if img.image_type == "BACK" and img.s3_object_key:
                     try:
                         back_image_bytes = s3_service.get_file(img.s3_object_key)
                         if back_image_bytes:
                             story.append(PageBreak())
-                            
-                            story.append(Paragraph("ORIGINAL RECEIPT - BACK", heading_style))
+
+                            story.append(
+                                Paragraph("ORIGINAL RECEIPT - BACK", heading_style)
+                            )
                             story.append(Spacer(1, 0.2 * inch))
-                            
+
                             back_receipt_image = self._get_scaled_image(
                                 back_image_bytes,
                                 max_width=6.5 * inch,
-                                max_height=9 * inch
+                                max_height=9 * inch,
                             )
                             if back_receipt_image:
                                 image_table = Table(
-                                    [[back_receipt_image]],
-                                    colWidths=[6.5 * inch]
+                                    [[back_receipt_image]], colWidths=[6.5 * inch]
                                 )
-                                image_table.setStyle(TableStyle([
-                                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                                    ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-                                ]))
+                                image_table.setStyle(
+                                    TableStyle(
+                                        [
+                                            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                                            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                                        ]
+                                    )
+                                )
                                 story.append(image_table)
                                 receipt_images_added = True
                     except Exception as e:
-                        logger.warning(f"Failed to include back receipt image in PDF: {e}")
+                        logger.warning(
+                            f"Failed to include back receipt image in PDF: {e}"
+                        )
 
         # ── Defect Images (Full Page Each with Auto-Rotation) ──────────
         if defect_image_s3_keys and s3_service:
@@ -457,29 +519,35 @@ class PdfGenerationService:
                     if defect_image_bytes:
                         # Add page break before each defect image
                         story.append(PageBreak())
-                        
+
                         # Process image: check orientation and rotate if landscape
                         try:
                             pil_image = PILImage.open(BytesIO(defect_image_bytes))
                             width, height = pil_image.size
-                            
+
                             # If landscape, rotate 90 degrees clockwise to portrait
                             if width > height:
-                                logger.info(f"Defect image {idx} is landscape ({width}x{height}), rotating 90° for full-page display")
+                                logger.info(
+                                    f"Defect image {idx} is landscape ({width}x{height}), rotating 90° for full-page display"
+                                )
                                 pil_image = pil_image.rotate(-90, expand=True)
-                                
+
                                 # Convert back to bytes
                                 rotated_buffer = BytesIO()
-                                pil_image.save(rotated_buffer, format='JPEG', quality=95)
+                                pil_image.save(
+                                    rotated_buffer, format="JPEG", quality=95
+                                )
                                 defect_image_bytes = rotated_buffer.getvalue()
                         except Exception as rot_err:
-                            logger.warning(f"Could not rotate defect image {idx}: {rot_err}")
-                        
+                            logger.warning(
+                                f"Could not rotate defect image {idx}: {rot_err}"
+                            )
+
                         # Full page image for defect - maximize size
                         defect_image = self._get_scaled_image(
                             defect_image_bytes,
                             max_width=7.0 * inch,
-                            max_height=10.0 * inch
+                            max_height=10.0 * inch,
                         )
                         if defect_image:
                             # Create elements to keep together (caption + image)
@@ -487,12 +555,9 @@ class PdfGenerationService:
                             defect_elements = [
                                 Paragraph(caption_text, heading_style),
                                 Spacer(1, 0.2 * inch),
-                                Table(
-                                    [[defect_image]],
-                                    colWidths=[7.0 * inch]
-                                )
+                                Table([[defect_image]], colWidths=[7.0 * inch]),
                             ]
-                            
+
                             # Use KeepTogether to prevent page break between caption and image
                             story.append(KeepTogether(defect_elements))
                 except Exception as e:
@@ -506,7 +571,7 @@ class PdfGenerationService:
         def add_footer(canvas_obj, doc_obj):
             """Add footer to each page."""
             self._add_page_footer(canvas_obj, doc_obj, footer_text)
-        
+
         doc.build(story, onFirstPage=add_footer, onLaterPages=add_footer)
 
         # Get PDF bytes
@@ -515,11 +580,7 @@ class PdfGenerationService:
 
         return pdf_bytes
 
-    def generate_receipt_export_pdf(
-        self,
-        receipt: Receipt,
-        user: User
-    ) -> bytes:
+    def generate_receipt_export_pdf(self, receipt: Receipt, user: User) -> bytes:
         """
         Generate a receipt export PDF (for backup/archiving).
 
@@ -538,7 +599,7 @@ class PdfGenerationService:
             receipt=receipt,
             user=user,
             issue_description="Receipt Export / Backup",
-            claim_type="export"
+            claim_type="export",
         )
 
 
