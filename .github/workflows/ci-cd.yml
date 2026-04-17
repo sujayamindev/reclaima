@@ -625,9 +625,36 @@ jobs:
 
           echo "Mobile coverage did not regress compared to base revision."
 
+      - name: Provision Android Firebase config (optional)
+        id: android_firebase
+        working-directory: mobile
+        env:
+          ANDROID_GOOGLE_SERVICES_JSON: ${{ secrets.ANDROID_GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -f android/app/google-services.json ]; then
+            echo "google-services.json found in repository checkout."
+            echo "available=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [ -n "$ANDROID_GOOGLE_SERVICES_JSON" ]; then
+            printf '%s' "$ANDROID_GOOGLE_SERVICES_JSON" > android/app/google-services.json
+            echo "google-services.json written from secret ANDROID_GOOGLE_SERVICES_JSON."
+            echo "available=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "google-services.json not available; skipping Android debug APK build for this CI run."
+          echo "available=false" >> "$GITHUB_OUTPUT"
+
       - name: Build Android debug artifact
+        if: steps.android_firebase.outputs.available == 'true'
         working-directory: mobile
         run: flutter build apk --debug
+
+      - name: Skip Android debug artifact build
+        if: steps.android_firebase.outputs.available != 'true'
+        run: echo "Android debug APK build skipped because Firebase config is unavailable in CI context."
 
       - name: Upload mobile coverage report
         uses: actions/upload-artifact@v4
@@ -636,6 +663,7 @@ jobs:
           path: mobile/coverage/lcov.info
 
       - name: Upload Android debug artifact
+        if: steps.android_firebase.outputs.available == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: mobile-android-debug-apk
