@@ -84,7 +84,6 @@ class Receipt(Base):
     # Composite index for pagination queries (user_id + created_at)
     __table_args__ = (
         Index('ix_receipts_user_id_created_at', 'user_id', 'created_at'),
-        Index('ix_receipts_status', 'status'),
     )
 
     def __repr__(self):
