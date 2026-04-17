@@ -1084,22 +1084,11 @@ class $ReceiptLineItemsTable extends ReceiptLineItems
   late final GeneratedColumn<String> itemDescription = GeneratedColumn<String>(
       'item_description', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _quantityMeta =
-      const VerificationMeta('quantity');
-  @override
-  late final GeneratedColumn<String> quantity = GeneratedColumn<String>(
-      'quantity', aliasedName, true,
-      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _unitPriceMeta =
       const VerificationMeta('unitPrice');
   @override
   late final GeneratedColumn<double> unitPrice = GeneratedColumn<double>(
       'unit_price', aliasedName, true,
-      type: DriftSqlType.double, requiredDuringInsert: false);
-  static const VerificationMeta _amountMeta = const VerificationMeta('amount');
-  @override
-  late final GeneratedColumn<double> amount = GeneratedColumn<double>(
-      'amount', aliasedName, true,
       type: DriftSqlType.double, requiredDuringInsert: false);
   static const VerificationMeta _productNameMeta =
       const VerificationMeta('productName');
@@ -1143,6 +1132,55 @@ class $ReceiptLineItemsTable extends ReceiptLineItems
   late final GeneratedColumn<DateTime> returnExpiryDate =
       GeneratedColumn<DateTime>('return_expiry_date', aliasedName, true,
           type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _warrantyLeadDaysOverrideMeta =
+      const VerificationMeta('warrantyLeadDaysOverride');
+  @override
+  late final GeneratedColumn<int> warrantyLeadDaysOverride =
+      GeneratedColumn<int>('warranty_lead_days_override', aliasedName, true,
+          type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _returnLeadDaysOverrideMeta =
+      const VerificationMeta('returnLeadDaysOverride');
+  @override
+  late final GeneratedColumn<int> returnLeadDaysOverride = GeneratedColumn<int>(
+      'return_lead_days_override', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _warrantyReminderEnabledMeta =
+      const VerificationMeta('warrantyReminderEnabled');
+  @override
+  late final GeneratedColumn<bool> warrantyReminderEnabled =
+      GeneratedColumn<bool>('warranty_reminder_enabled', aliasedName, true,
+          type: DriftSqlType.bool,
+          requiredDuringInsert: false,
+          defaultConstraints: GeneratedColumn.constraintIsAlways(
+              'CHECK ("warranty_reminder_enabled" IN (0, 1))'));
+  static const VerificationMeta _returnReminderEnabledMeta =
+      const VerificationMeta('returnReminderEnabled');
+  @override
+  late final GeneratedColumn<bool> returnReminderEnabled =
+      GeneratedColumn<bool>('return_reminder_enabled', aliasedName, true,
+          type: DriftSqlType.bool,
+          requiredDuringInsert: false,
+          defaultConstraints: GeneratedColumn.constraintIsAlways(
+              'CHECK ("return_reminder_enabled" IN (0, 1))'));
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+      'status', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('ACTIVE'));
+  static const VerificationMeta _replacementForIdMeta =
+      const VerificationMeta('replacementForId');
+  @override
+  late final GeneratedColumn<String> replacementForId = GeneratedColumn<String>(
+      'replacement_for_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _replacedByIdMeta =
+      const VerificationMeta('replacedById');
+  @override
+  late final GeneratedColumn<String> replacedById = GeneratedColumn<String>(
+      'replaced_by_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _createdAtMeta =
       const VerificationMeta('createdAt');
   @override
@@ -1162,9 +1200,7 @@ class $ReceiptLineItemsTable extends ReceiptLineItems
         rowIndex,
         productCode,
         itemDescription,
-        quantity,
         unitPrice,
-        amount,
         productName,
         productCategory,
         productImageUrl,
@@ -1172,6 +1208,13 @@ class $ReceiptLineItemsTable extends ReceiptLineItems
         warrantyExpiryDate,
         returnPeriodDays,
         returnExpiryDate,
+        warrantyLeadDaysOverride,
+        returnLeadDaysOverride,
+        warrantyReminderEnabled,
+        returnReminderEnabled,
+        status,
+        replacementForId,
+        replacedById,
         createdAt,
         updatedAt
       ];
@@ -1212,17 +1255,9 @@ class $ReceiptLineItemsTable extends ReceiptLineItems
           itemDescription.isAcceptableOrUnknown(
               data['item_description']!, _itemDescriptionMeta));
     }
-    if (data.containsKey('quantity')) {
-      context.handle(_quantityMeta,
-          quantity.isAcceptableOrUnknown(data['quantity']!, _quantityMeta));
-    }
     if (data.containsKey('unit_price')) {
       context.handle(_unitPriceMeta,
           unitPrice.isAcceptableOrUnknown(data['unit_price']!, _unitPriceMeta));
-    }
-    if (data.containsKey('amount')) {
-      context.handle(_amountMeta,
-          amount.isAcceptableOrUnknown(data['amount']!, _amountMeta));
     }
     if (data.containsKey('product_name')) {
       context.handle(
@@ -1266,6 +1301,48 @@ class $ReceiptLineItemsTable extends ReceiptLineItems
           returnExpiryDate.isAcceptableOrUnknown(
               data['return_expiry_date']!, _returnExpiryDateMeta));
     }
+    if (data.containsKey('warranty_lead_days_override')) {
+      context.handle(
+          _warrantyLeadDaysOverrideMeta,
+          warrantyLeadDaysOverride.isAcceptableOrUnknown(
+              data['warranty_lead_days_override']!,
+              _warrantyLeadDaysOverrideMeta));
+    }
+    if (data.containsKey('return_lead_days_override')) {
+      context.handle(
+          _returnLeadDaysOverrideMeta,
+          returnLeadDaysOverride.isAcceptableOrUnknown(
+              data['return_lead_days_override']!, _returnLeadDaysOverrideMeta));
+    }
+    if (data.containsKey('warranty_reminder_enabled')) {
+      context.handle(
+          _warrantyReminderEnabledMeta,
+          warrantyReminderEnabled.isAcceptableOrUnknown(
+              data['warranty_reminder_enabled']!,
+              _warrantyReminderEnabledMeta));
+    }
+    if (data.containsKey('return_reminder_enabled')) {
+      context.handle(
+          _returnReminderEnabledMeta,
+          returnReminderEnabled.isAcceptableOrUnknown(
+              data['return_reminder_enabled']!, _returnReminderEnabledMeta));
+    }
+    if (data.containsKey('status')) {
+      context.handle(_statusMeta,
+          status.isAcceptableOrUnknown(data['status']!, _statusMeta));
+    }
+    if (data.containsKey('replacement_for_id')) {
+      context.handle(
+          _replacementForIdMeta,
+          replacementForId.isAcceptableOrUnknown(
+              data['replacement_for_id']!, _replacementForIdMeta));
+    }
+    if (data.containsKey('replaced_by_id')) {
+      context.handle(
+          _replacedByIdMeta,
+          replacedById.isAcceptableOrUnknown(
+              data['replaced_by_id']!, _replacedByIdMeta));
+    }
     if (data.containsKey('created_at')) {
       context.handle(_createdAtMeta,
           createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
@@ -1297,12 +1374,8 @@ class $ReceiptLineItemsTable extends ReceiptLineItems
           .read(DriftSqlType.string, data['${effectivePrefix}product_code']),
       itemDescription: attachedDatabase.typeMapping.read(
           DriftSqlType.string, data['${effectivePrefix}item_description']),
-      quantity: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}quantity']),
       unitPrice: attachedDatabase.typeMapping
           .read(DriftSqlType.double, data['${effectivePrefix}unit_price']),
-      amount: attachedDatabase.typeMapping
-          .read(DriftSqlType.double, data['${effectivePrefix}amount']),
       productName: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}product_name']),
       productCategory: attachedDatabase.typeMapping.read(
@@ -1318,6 +1391,23 @@ class $ReceiptLineItemsTable extends ReceiptLineItems
           .read(DriftSqlType.int, data['${effectivePrefix}return_period_days']),
       returnExpiryDate: attachedDatabase.typeMapping.read(
           DriftSqlType.dateTime, data['${effectivePrefix}return_expiry_date']),
+      warrantyLeadDaysOverride: attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}warranty_lead_days_override']),
+      returnLeadDaysOverride: attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}return_lead_days_override']),
+      warrantyReminderEnabled: attachedDatabase.typeMapping.read(
+          DriftSqlType.bool,
+          data['${effectivePrefix}warranty_reminder_enabled']),
+      returnReminderEnabled: attachedDatabase.typeMapping.read(
+          DriftSqlType.bool, data['${effectivePrefix}return_reminder_enabled']),
+      status: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}status'])!,
+      replacementForId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}replacement_for_id']),
+      replacedById: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}replaced_by_id']),
       createdAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
       updatedAt: attachedDatabase.typeMapping
@@ -1337,9 +1427,7 @@ class ReceiptLineItem extends DataClass implements Insertable<ReceiptLineItem> {
   final int rowIndex;
   final String? productCode;
   final String? itemDescription;
-  final String? quantity;
   final double? unitPrice;
-  final double? amount;
   final String? productName;
   final String? productCategory;
   final String? productImageUrl;
@@ -1347,6 +1435,13 @@ class ReceiptLineItem extends DataClass implements Insertable<ReceiptLineItem> {
   final DateTime? warrantyExpiryDate;
   final int? returnPeriodDays;
   final DateTime? returnExpiryDate;
+  final int? warrantyLeadDaysOverride;
+  final int? returnLeadDaysOverride;
+  final bool? warrantyReminderEnabled;
+  final bool? returnReminderEnabled;
+  final String status;
+  final String? replacementForId;
+  final String? replacedById;
   final DateTime createdAt;
   final DateTime updatedAt;
   const ReceiptLineItem(
@@ -1355,9 +1450,7 @@ class ReceiptLineItem extends DataClass implements Insertable<ReceiptLineItem> {
       required this.rowIndex,
       this.productCode,
       this.itemDescription,
-      this.quantity,
       this.unitPrice,
-      this.amount,
       this.productName,
       this.productCategory,
       this.productImageUrl,
@@ -1365,6 +1458,13 @@ class ReceiptLineItem extends DataClass implements Insertable<ReceiptLineItem> {
       this.warrantyExpiryDate,
       this.returnPeriodDays,
       this.returnExpiryDate,
+      this.warrantyLeadDaysOverride,
+      this.returnLeadDaysOverride,
+      this.warrantyReminderEnabled,
+      this.returnReminderEnabled,
+      required this.status,
+      this.replacementForId,
+      this.replacedById,
       required this.createdAt,
       required this.updatedAt});
   @override
@@ -1379,14 +1479,8 @@ class ReceiptLineItem extends DataClass implements Insertable<ReceiptLineItem> {
     if (!nullToAbsent || itemDescription != null) {
       map['item_description'] = Variable<String>(itemDescription);
     }
-    if (!nullToAbsent || quantity != null) {
-      map['quantity'] = Variable<String>(quantity);
-    }
     if (!nullToAbsent || unitPrice != null) {
       map['unit_price'] = Variable<double>(unitPrice);
-    }
-    if (!nullToAbsent || amount != null) {
-      map['amount'] = Variable<double>(amount);
     }
     if (!nullToAbsent || productName != null) {
       map['product_name'] = Variable<String>(productName);
@@ -1409,6 +1503,27 @@ class ReceiptLineItem extends DataClass implements Insertable<ReceiptLineItem> {
     if (!nullToAbsent || returnExpiryDate != null) {
       map['return_expiry_date'] = Variable<DateTime>(returnExpiryDate);
     }
+    if (!nullToAbsent || warrantyLeadDaysOverride != null) {
+      map['warranty_lead_days_override'] =
+          Variable<int>(warrantyLeadDaysOverride);
+    }
+    if (!nullToAbsent || returnLeadDaysOverride != null) {
+      map['return_lead_days_override'] = Variable<int>(returnLeadDaysOverride);
+    }
+    if (!nullToAbsent || warrantyReminderEnabled != null) {
+      map['warranty_reminder_enabled'] =
+          Variable<bool>(warrantyReminderEnabled);
+    }
+    if (!nullToAbsent || returnReminderEnabled != null) {
+      map['return_reminder_enabled'] = Variable<bool>(returnReminderEnabled);
+    }
+    map['status'] = Variable<String>(status);
+    if (!nullToAbsent || replacementForId != null) {
+      map['replacement_for_id'] = Variable<String>(replacementForId);
+    }
+    if (!nullToAbsent || replacedById != null) {
+      map['replaced_by_id'] = Variable<String>(replacedById);
+    }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
@@ -1425,14 +1540,9 @@ class ReceiptLineItem extends DataClass implements Insertable<ReceiptLineItem> {
       itemDescription: itemDescription == null && nullToAbsent
           ? const Value.absent()
           : Value(itemDescription),
-      quantity: quantity == null && nullToAbsent
-          ? const Value.absent()
-          : Value(quantity),
       unitPrice: unitPrice == null && nullToAbsent
           ? const Value.absent()
           : Value(unitPrice),
-      amount:
-          amount == null && nullToAbsent ? const Value.absent() : Value(amount),
       productName: productName == null && nullToAbsent
           ? const Value.absent()
           : Value(productName),
@@ -1454,6 +1564,25 @@ class ReceiptLineItem extends DataClass implements Insertable<ReceiptLineItem> {
       returnExpiryDate: returnExpiryDate == null && nullToAbsent
           ? const Value.absent()
           : Value(returnExpiryDate),
+      warrantyLeadDaysOverride: warrantyLeadDaysOverride == null && nullToAbsent
+          ? const Value.absent()
+          : Value(warrantyLeadDaysOverride),
+      returnLeadDaysOverride: returnLeadDaysOverride == null && nullToAbsent
+          ? const Value.absent()
+          : Value(returnLeadDaysOverride),
+      warrantyReminderEnabled: warrantyReminderEnabled == null && nullToAbsent
+          ? const Value.absent()
+          : Value(warrantyReminderEnabled),
+      returnReminderEnabled: returnReminderEnabled == null && nullToAbsent
+          ? const Value.absent()
+          : Value(returnReminderEnabled),
+      status: Value(status),
+      replacementForId: replacementForId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(replacementForId),
+      replacedById: replacedById == null && nullToAbsent
+          ? const Value.absent()
+          : Value(replacedById),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -1468,9 +1597,7 @@ class ReceiptLineItem extends DataClass implements Insertable<ReceiptLineItem> {
       rowIndex: serializer.fromJson<int>(json['rowIndex']),
       productCode: serializer.fromJson<String?>(json['productCode']),
       itemDescription: serializer.fromJson<String?>(json['itemDescription']),
-      quantity: serializer.fromJson<String?>(json['quantity']),
       unitPrice: serializer.fromJson<double?>(json['unitPrice']),
-      amount: serializer.fromJson<double?>(json['amount']),
       productName: serializer.fromJson<String?>(json['productName']),
       productCategory: serializer.fromJson<String?>(json['productCategory']),
       productImageUrl: serializer.fromJson<String?>(json['productImageUrl']),
@@ -1481,6 +1608,17 @@ class ReceiptLineItem extends DataClass implements Insertable<ReceiptLineItem> {
       returnPeriodDays: serializer.fromJson<int?>(json['returnPeriodDays']),
       returnExpiryDate:
           serializer.fromJson<DateTime?>(json['returnExpiryDate']),
+      warrantyLeadDaysOverride:
+          serializer.fromJson<int?>(json['warrantyLeadDaysOverride']),
+      returnLeadDaysOverride:
+          serializer.fromJson<int?>(json['returnLeadDaysOverride']),
+      warrantyReminderEnabled:
+          serializer.fromJson<bool?>(json['warrantyReminderEnabled']),
+      returnReminderEnabled:
+          serializer.fromJson<bool?>(json['returnReminderEnabled']),
+      status: serializer.fromJson<String>(json['status']),
+      replacementForId: serializer.fromJson<String?>(json['replacementForId']),
+      replacedById: serializer.fromJson<String?>(json['replacedById']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -1494,9 +1632,7 @@ class ReceiptLineItem extends DataClass implements Insertable<ReceiptLineItem> {
       'rowIndex': serializer.toJson<int>(rowIndex),
       'productCode': serializer.toJson<String?>(productCode),
       'itemDescription': serializer.toJson<String?>(itemDescription),
-      'quantity': serializer.toJson<String?>(quantity),
       'unitPrice': serializer.toJson<double?>(unitPrice),
-      'amount': serializer.toJson<double?>(amount),
       'productName': serializer.toJson<String?>(productName),
       'productCategory': serializer.toJson<String?>(productCategory),
       'productImageUrl': serializer.toJson<String?>(productImageUrl),
@@ -1504,6 +1640,15 @@ class ReceiptLineItem extends DataClass implements Insertable<ReceiptLineItem> {
       'warrantyExpiryDate': serializer.toJson<DateTime?>(warrantyExpiryDate),
       'returnPeriodDays': serializer.toJson<int?>(returnPeriodDays),
       'returnExpiryDate': serializer.toJson<DateTime?>(returnExpiryDate),
+      'warrantyLeadDaysOverride':
+          serializer.toJson<int?>(warrantyLeadDaysOverride),
+      'returnLeadDaysOverride': serializer.toJson<int?>(returnLeadDaysOverride),
+      'warrantyReminderEnabled':
+          serializer.toJson<bool?>(warrantyReminderEnabled),
+      'returnReminderEnabled': serializer.toJson<bool?>(returnReminderEnabled),
+      'status': serializer.toJson<String>(status),
+      'replacementForId': serializer.toJson<String?>(replacementForId),
+      'replacedById': serializer.toJson<String?>(replacedById),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -1515,9 +1660,7 @@ class ReceiptLineItem extends DataClass implements Insertable<ReceiptLineItem> {
           int? rowIndex,
           Value<String?> productCode = const Value.absent(),
           Value<String?> itemDescription = const Value.absent(),
-          Value<String?> quantity = const Value.absent(),
           Value<double?> unitPrice = const Value.absent(),
-          Value<double?> amount = const Value.absent(),
           Value<String?> productName = const Value.absent(),
           Value<String?> productCategory = const Value.absent(),
           Value<String?> productImageUrl = const Value.absent(),
@@ -1525,6 +1668,13 @@ class ReceiptLineItem extends DataClass implements Insertable<ReceiptLineItem> {
           Value<DateTime?> warrantyExpiryDate = const Value.absent(),
           Value<int?> returnPeriodDays = const Value.absent(),
           Value<DateTime?> returnExpiryDate = const Value.absent(),
+          Value<int?> warrantyLeadDaysOverride = const Value.absent(),
+          Value<int?> returnLeadDaysOverride = const Value.absent(),
+          Value<bool?> warrantyReminderEnabled = const Value.absent(),
+          Value<bool?> returnReminderEnabled = const Value.absent(),
+          String? status,
+          Value<String?> replacementForId = const Value.absent(),
+          Value<String?> replacedById = const Value.absent(),
           DateTime? createdAt,
           DateTime? updatedAt}) =>
       ReceiptLineItem(
@@ -1535,9 +1685,7 @@ class ReceiptLineItem extends DataClass implements Insertable<ReceiptLineItem> {
         itemDescription: itemDescription.present
             ? itemDescription.value
             : this.itemDescription,
-        quantity: quantity.present ? quantity.value : this.quantity,
         unitPrice: unitPrice.present ? unitPrice.value : this.unitPrice,
-        amount: amount.present ? amount.value : this.amount,
         productName: productName.present ? productName.value : this.productName,
         productCategory: productCategory.present
             ? productCategory.value
@@ -1557,6 +1705,24 @@ class ReceiptLineItem extends DataClass implements Insertable<ReceiptLineItem> {
         returnExpiryDate: returnExpiryDate.present
             ? returnExpiryDate.value
             : this.returnExpiryDate,
+        warrantyLeadDaysOverride: warrantyLeadDaysOverride.present
+            ? warrantyLeadDaysOverride.value
+            : this.warrantyLeadDaysOverride,
+        returnLeadDaysOverride: returnLeadDaysOverride.present
+            ? returnLeadDaysOverride.value
+            : this.returnLeadDaysOverride,
+        warrantyReminderEnabled: warrantyReminderEnabled.present
+            ? warrantyReminderEnabled.value
+            : this.warrantyReminderEnabled,
+        returnReminderEnabled: returnReminderEnabled.present
+            ? returnReminderEnabled.value
+            : this.returnReminderEnabled,
+        status: status ?? this.status,
+        replacementForId: replacementForId.present
+            ? replacementForId.value
+            : this.replacementForId,
+        replacedById:
+            replacedById.present ? replacedById.value : this.replacedById,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
       );
@@ -1570,9 +1736,7 @@ class ReceiptLineItem extends DataClass implements Insertable<ReceiptLineItem> {
       itemDescription: data.itemDescription.present
           ? data.itemDescription.value
           : this.itemDescription,
-      quantity: data.quantity.present ? data.quantity.value : this.quantity,
       unitPrice: data.unitPrice.present ? data.unitPrice.value : this.unitPrice,
-      amount: data.amount.present ? data.amount.value : this.amount,
       productName:
           data.productName.present ? data.productName.value : this.productName,
       productCategory: data.productCategory.present
@@ -1593,6 +1757,25 @@ class ReceiptLineItem extends DataClass implements Insertable<ReceiptLineItem> {
       returnExpiryDate: data.returnExpiryDate.present
           ? data.returnExpiryDate.value
           : this.returnExpiryDate,
+      warrantyLeadDaysOverride: data.warrantyLeadDaysOverride.present
+          ? data.warrantyLeadDaysOverride.value
+          : this.warrantyLeadDaysOverride,
+      returnLeadDaysOverride: data.returnLeadDaysOverride.present
+          ? data.returnLeadDaysOverride.value
+          : this.returnLeadDaysOverride,
+      warrantyReminderEnabled: data.warrantyReminderEnabled.present
+          ? data.warrantyReminderEnabled.value
+          : this.warrantyReminderEnabled,
+      returnReminderEnabled: data.returnReminderEnabled.present
+          ? data.returnReminderEnabled.value
+          : this.returnReminderEnabled,
+      status: data.status.present ? data.status.value : this.status,
+      replacementForId: data.replacementForId.present
+          ? data.replacementForId.value
+          : this.replacementForId,
+      replacedById: data.replacedById.present
+          ? data.replacedById.value
+          : this.replacedById,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -1606,9 +1789,7 @@ class ReceiptLineItem extends DataClass implements Insertable<ReceiptLineItem> {
           ..write('rowIndex: $rowIndex, ')
           ..write('productCode: $productCode, ')
           ..write('itemDescription: $itemDescription, ')
-          ..write('quantity: $quantity, ')
           ..write('unitPrice: $unitPrice, ')
-          ..write('amount: $amount, ')
           ..write('productName: $productName, ')
           ..write('productCategory: $productCategory, ')
           ..write('productImageUrl: $productImageUrl, ')
@@ -1616,6 +1797,13 @@ class ReceiptLineItem extends DataClass implements Insertable<ReceiptLineItem> {
           ..write('warrantyExpiryDate: $warrantyExpiryDate, ')
           ..write('returnPeriodDays: $returnPeriodDays, ')
           ..write('returnExpiryDate: $returnExpiryDate, ')
+          ..write('warrantyLeadDaysOverride: $warrantyLeadDaysOverride, ')
+          ..write('returnLeadDaysOverride: $returnLeadDaysOverride, ')
+          ..write('warrantyReminderEnabled: $warrantyReminderEnabled, ')
+          ..write('returnReminderEnabled: $returnReminderEnabled, ')
+          ..write('status: $status, ')
+          ..write('replacementForId: $replacementForId, ')
+          ..write('replacedById: $replacedById, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -1623,24 +1811,30 @@ class ReceiptLineItem extends DataClass implements Insertable<ReceiptLineItem> {
   }
 
   @override
-  int get hashCode => Object.hash(
-      id,
-      receiptId,
-      rowIndex,
-      productCode,
-      itemDescription,
-      quantity,
-      unitPrice,
-      amount,
-      productName,
-      productCategory,
-      productImageUrl,
-      warrantyPeriodMonths,
-      warrantyExpiryDate,
-      returnPeriodDays,
-      returnExpiryDate,
-      createdAt,
-      updatedAt);
+  int get hashCode => Object.hashAll([
+        id,
+        receiptId,
+        rowIndex,
+        productCode,
+        itemDescription,
+        unitPrice,
+        productName,
+        productCategory,
+        productImageUrl,
+        warrantyPeriodMonths,
+        warrantyExpiryDate,
+        returnPeriodDays,
+        returnExpiryDate,
+        warrantyLeadDaysOverride,
+        returnLeadDaysOverride,
+        warrantyReminderEnabled,
+        returnReminderEnabled,
+        status,
+        replacementForId,
+        replacedById,
+        createdAt,
+        updatedAt
+      ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1650,9 +1844,7 @@ class ReceiptLineItem extends DataClass implements Insertable<ReceiptLineItem> {
           other.rowIndex == this.rowIndex &&
           other.productCode == this.productCode &&
           other.itemDescription == this.itemDescription &&
-          other.quantity == this.quantity &&
           other.unitPrice == this.unitPrice &&
-          other.amount == this.amount &&
           other.productName == this.productName &&
           other.productCategory == this.productCategory &&
           other.productImageUrl == this.productImageUrl &&
@@ -1660,6 +1852,13 @@ class ReceiptLineItem extends DataClass implements Insertable<ReceiptLineItem> {
           other.warrantyExpiryDate == this.warrantyExpiryDate &&
           other.returnPeriodDays == this.returnPeriodDays &&
           other.returnExpiryDate == this.returnExpiryDate &&
+          other.warrantyLeadDaysOverride == this.warrantyLeadDaysOverride &&
+          other.returnLeadDaysOverride == this.returnLeadDaysOverride &&
+          other.warrantyReminderEnabled == this.warrantyReminderEnabled &&
+          other.returnReminderEnabled == this.returnReminderEnabled &&
+          other.status == this.status &&
+          other.replacementForId == this.replacementForId &&
+          other.replacedById == this.replacedById &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -1670,9 +1869,7 @@ class ReceiptLineItemsCompanion extends UpdateCompanion<ReceiptLineItem> {
   final Value<int> rowIndex;
   final Value<String?> productCode;
   final Value<String?> itemDescription;
-  final Value<String?> quantity;
   final Value<double?> unitPrice;
-  final Value<double?> amount;
   final Value<String?> productName;
   final Value<String?> productCategory;
   final Value<String?> productImageUrl;
@@ -1680,6 +1877,13 @@ class ReceiptLineItemsCompanion extends UpdateCompanion<ReceiptLineItem> {
   final Value<DateTime?> warrantyExpiryDate;
   final Value<int?> returnPeriodDays;
   final Value<DateTime?> returnExpiryDate;
+  final Value<int?> warrantyLeadDaysOverride;
+  final Value<int?> returnLeadDaysOverride;
+  final Value<bool?> warrantyReminderEnabled;
+  final Value<bool?> returnReminderEnabled;
+  final Value<String> status;
+  final Value<String?> replacementForId;
+  final Value<String?> replacedById;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
@@ -1689,9 +1893,7 @@ class ReceiptLineItemsCompanion extends UpdateCompanion<ReceiptLineItem> {
     this.rowIndex = const Value.absent(),
     this.productCode = const Value.absent(),
     this.itemDescription = const Value.absent(),
-    this.quantity = const Value.absent(),
     this.unitPrice = const Value.absent(),
-    this.amount = const Value.absent(),
     this.productName = const Value.absent(),
     this.productCategory = const Value.absent(),
     this.productImageUrl = const Value.absent(),
@@ -1699,6 +1901,13 @@ class ReceiptLineItemsCompanion extends UpdateCompanion<ReceiptLineItem> {
     this.warrantyExpiryDate = const Value.absent(),
     this.returnPeriodDays = const Value.absent(),
     this.returnExpiryDate = const Value.absent(),
+    this.warrantyLeadDaysOverride = const Value.absent(),
+    this.returnLeadDaysOverride = const Value.absent(),
+    this.warrantyReminderEnabled = const Value.absent(),
+    this.returnReminderEnabled = const Value.absent(),
+    this.status = const Value.absent(),
+    this.replacementForId = const Value.absent(),
+    this.replacedById = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -1709,9 +1918,7 @@ class ReceiptLineItemsCompanion extends UpdateCompanion<ReceiptLineItem> {
     this.rowIndex = const Value.absent(),
     this.productCode = const Value.absent(),
     this.itemDescription = const Value.absent(),
-    this.quantity = const Value.absent(),
     this.unitPrice = const Value.absent(),
-    this.amount = const Value.absent(),
     this.productName = const Value.absent(),
     this.productCategory = const Value.absent(),
     this.productImageUrl = const Value.absent(),
@@ -1719,6 +1926,13 @@ class ReceiptLineItemsCompanion extends UpdateCompanion<ReceiptLineItem> {
     this.warrantyExpiryDate = const Value.absent(),
     this.returnPeriodDays = const Value.absent(),
     this.returnExpiryDate = const Value.absent(),
+    this.warrantyLeadDaysOverride = const Value.absent(),
+    this.returnLeadDaysOverride = const Value.absent(),
+    this.warrantyReminderEnabled = const Value.absent(),
+    this.returnReminderEnabled = const Value.absent(),
+    this.status = const Value.absent(),
+    this.replacementForId = const Value.absent(),
+    this.replacedById = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.rowid = const Value.absent(),
@@ -1732,9 +1946,7 @@ class ReceiptLineItemsCompanion extends UpdateCompanion<ReceiptLineItem> {
     Expression<int>? rowIndex,
     Expression<String>? productCode,
     Expression<String>? itemDescription,
-    Expression<String>? quantity,
     Expression<double>? unitPrice,
-    Expression<double>? amount,
     Expression<String>? productName,
     Expression<String>? productCategory,
     Expression<String>? productImageUrl,
@@ -1742,6 +1954,13 @@ class ReceiptLineItemsCompanion extends UpdateCompanion<ReceiptLineItem> {
     Expression<DateTime>? warrantyExpiryDate,
     Expression<int>? returnPeriodDays,
     Expression<DateTime>? returnExpiryDate,
+    Expression<int>? warrantyLeadDaysOverride,
+    Expression<int>? returnLeadDaysOverride,
+    Expression<bool>? warrantyReminderEnabled,
+    Expression<bool>? returnReminderEnabled,
+    Expression<String>? status,
+    Expression<String>? replacementForId,
+    Expression<String>? replacedById,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
@@ -1752,9 +1971,7 @@ class ReceiptLineItemsCompanion extends UpdateCompanion<ReceiptLineItem> {
       if (rowIndex != null) 'row_index': rowIndex,
       if (productCode != null) 'product_code': productCode,
       if (itemDescription != null) 'item_description': itemDescription,
-      if (quantity != null) 'quantity': quantity,
       if (unitPrice != null) 'unit_price': unitPrice,
-      if (amount != null) 'amount': amount,
       if (productName != null) 'product_name': productName,
       if (productCategory != null) 'product_category': productCategory,
       if (productImageUrl != null) 'product_image_url': productImageUrl,
@@ -1764,6 +1981,17 @@ class ReceiptLineItemsCompanion extends UpdateCompanion<ReceiptLineItem> {
         'warranty_expiry_date': warrantyExpiryDate,
       if (returnPeriodDays != null) 'return_period_days': returnPeriodDays,
       if (returnExpiryDate != null) 'return_expiry_date': returnExpiryDate,
+      if (warrantyLeadDaysOverride != null)
+        'warranty_lead_days_override': warrantyLeadDaysOverride,
+      if (returnLeadDaysOverride != null)
+        'return_lead_days_override': returnLeadDaysOverride,
+      if (warrantyReminderEnabled != null)
+        'warranty_reminder_enabled': warrantyReminderEnabled,
+      if (returnReminderEnabled != null)
+        'return_reminder_enabled': returnReminderEnabled,
+      if (status != null) 'status': status,
+      if (replacementForId != null) 'replacement_for_id': replacementForId,
+      if (replacedById != null) 'replaced_by_id': replacedById,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -1776,9 +2004,7 @@ class ReceiptLineItemsCompanion extends UpdateCompanion<ReceiptLineItem> {
       Value<int>? rowIndex,
       Value<String?>? productCode,
       Value<String?>? itemDescription,
-      Value<String?>? quantity,
       Value<double?>? unitPrice,
-      Value<double?>? amount,
       Value<String?>? productName,
       Value<String?>? productCategory,
       Value<String?>? productImageUrl,
@@ -1786,6 +2012,13 @@ class ReceiptLineItemsCompanion extends UpdateCompanion<ReceiptLineItem> {
       Value<DateTime?>? warrantyExpiryDate,
       Value<int?>? returnPeriodDays,
       Value<DateTime?>? returnExpiryDate,
+      Value<int?>? warrantyLeadDaysOverride,
+      Value<int?>? returnLeadDaysOverride,
+      Value<bool?>? warrantyReminderEnabled,
+      Value<bool?>? returnReminderEnabled,
+      Value<String>? status,
+      Value<String?>? replacementForId,
+      Value<String?>? replacedById,
       Value<DateTime>? createdAt,
       Value<DateTime>? updatedAt,
       Value<int>? rowid}) {
@@ -1795,9 +2028,7 @@ class ReceiptLineItemsCompanion extends UpdateCompanion<ReceiptLineItem> {
       rowIndex: rowIndex ?? this.rowIndex,
       productCode: productCode ?? this.productCode,
       itemDescription: itemDescription ?? this.itemDescription,
-      quantity: quantity ?? this.quantity,
       unitPrice: unitPrice ?? this.unitPrice,
-      amount: amount ?? this.amount,
       productName: productName ?? this.productName,
       productCategory: productCategory ?? this.productCategory,
       productImageUrl: productImageUrl ?? this.productImageUrl,
@@ -1805,6 +2036,17 @@ class ReceiptLineItemsCompanion extends UpdateCompanion<ReceiptLineItem> {
       warrantyExpiryDate: warrantyExpiryDate ?? this.warrantyExpiryDate,
       returnPeriodDays: returnPeriodDays ?? this.returnPeriodDays,
       returnExpiryDate: returnExpiryDate ?? this.returnExpiryDate,
+      warrantyLeadDaysOverride:
+          warrantyLeadDaysOverride ?? this.warrantyLeadDaysOverride,
+      returnLeadDaysOverride:
+          returnLeadDaysOverride ?? this.returnLeadDaysOverride,
+      warrantyReminderEnabled:
+          warrantyReminderEnabled ?? this.warrantyReminderEnabled,
+      returnReminderEnabled:
+          returnReminderEnabled ?? this.returnReminderEnabled,
+      status: status ?? this.status,
+      replacementForId: replacementForId ?? this.replacementForId,
+      replacedById: replacedById ?? this.replacedById,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -1829,14 +2071,8 @@ class ReceiptLineItemsCompanion extends UpdateCompanion<ReceiptLineItem> {
     if (itemDescription.present) {
       map['item_description'] = Variable<String>(itemDescription.value);
     }
-    if (quantity.present) {
-      map['quantity'] = Variable<String>(quantity.value);
-    }
     if (unitPrice.present) {
       map['unit_price'] = Variable<double>(unitPrice.value);
-    }
-    if (amount.present) {
-      map['amount'] = Variable<double>(amount.value);
     }
     if (productName.present) {
       map['product_name'] = Variable<String>(productName.value);
@@ -1860,6 +2096,31 @@ class ReceiptLineItemsCompanion extends UpdateCompanion<ReceiptLineItem> {
     if (returnExpiryDate.present) {
       map['return_expiry_date'] = Variable<DateTime>(returnExpiryDate.value);
     }
+    if (warrantyLeadDaysOverride.present) {
+      map['warranty_lead_days_override'] =
+          Variable<int>(warrantyLeadDaysOverride.value);
+    }
+    if (returnLeadDaysOverride.present) {
+      map['return_lead_days_override'] =
+          Variable<int>(returnLeadDaysOverride.value);
+    }
+    if (warrantyReminderEnabled.present) {
+      map['warranty_reminder_enabled'] =
+          Variable<bool>(warrantyReminderEnabled.value);
+    }
+    if (returnReminderEnabled.present) {
+      map['return_reminder_enabled'] =
+          Variable<bool>(returnReminderEnabled.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (replacementForId.present) {
+      map['replacement_for_id'] = Variable<String>(replacementForId.value);
+    }
+    if (replacedById.present) {
+      map['replaced_by_id'] = Variable<String>(replacedById.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -1880,9 +2141,7 @@ class ReceiptLineItemsCompanion extends UpdateCompanion<ReceiptLineItem> {
           ..write('rowIndex: $rowIndex, ')
           ..write('productCode: $productCode, ')
           ..write('itemDescription: $itemDescription, ')
-          ..write('quantity: $quantity, ')
           ..write('unitPrice: $unitPrice, ')
-          ..write('amount: $amount, ')
           ..write('productName: $productName, ')
           ..write('productCategory: $productCategory, ')
           ..write('productImageUrl: $productImageUrl, ')
@@ -1890,6 +2149,13 @@ class ReceiptLineItemsCompanion extends UpdateCompanion<ReceiptLineItem> {
           ..write('warrantyExpiryDate: $warrantyExpiryDate, ')
           ..write('returnPeriodDays: $returnPeriodDays, ')
           ..write('returnExpiryDate: $returnExpiryDate, ')
+          ..write('warrantyLeadDaysOverride: $warrantyLeadDaysOverride, ')
+          ..write('returnLeadDaysOverride: $returnLeadDaysOverride, ')
+          ..write('warrantyReminderEnabled: $warrantyReminderEnabled, ')
+          ..write('returnReminderEnabled: $returnReminderEnabled, ')
+          ..write('status: $status, ')
+          ..write('replacementForId: $replacementForId, ')
+          ..write('replacedById: $replacedById, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -2753,9 +3019,7 @@ typedef $$ReceiptLineItemsTableCreateCompanionBuilder
   Value<int> rowIndex,
   Value<String?> productCode,
   Value<String?> itemDescription,
-  Value<String?> quantity,
   Value<double?> unitPrice,
-  Value<double?> amount,
   Value<String?> productName,
   Value<String?> productCategory,
   Value<String?> productImageUrl,
@@ -2763,6 +3027,13 @@ typedef $$ReceiptLineItemsTableCreateCompanionBuilder
   Value<DateTime?> warrantyExpiryDate,
   Value<int?> returnPeriodDays,
   Value<DateTime?> returnExpiryDate,
+  Value<int?> warrantyLeadDaysOverride,
+  Value<int?> returnLeadDaysOverride,
+  Value<bool?> warrantyReminderEnabled,
+  Value<bool?> returnReminderEnabled,
+  Value<String> status,
+  Value<String?> replacementForId,
+  Value<String?> replacedById,
   required DateTime createdAt,
   required DateTime updatedAt,
   Value<int> rowid,
@@ -2774,9 +3045,7 @@ typedef $$ReceiptLineItemsTableUpdateCompanionBuilder
   Value<int> rowIndex,
   Value<String?> productCode,
   Value<String?> itemDescription,
-  Value<String?> quantity,
   Value<double?> unitPrice,
-  Value<double?> amount,
   Value<String?> productName,
   Value<String?> productCategory,
   Value<String?> productImageUrl,
@@ -2784,6 +3053,13 @@ typedef $$ReceiptLineItemsTableUpdateCompanionBuilder
   Value<DateTime?> warrantyExpiryDate,
   Value<int?> returnPeriodDays,
   Value<DateTime?> returnExpiryDate,
+  Value<int?> warrantyLeadDaysOverride,
+  Value<int?> returnLeadDaysOverride,
+  Value<bool?> warrantyReminderEnabled,
+  Value<bool?> returnReminderEnabled,
+  Value<String> status,
+  Value<String?> replacementForId,
+  Value<String?> replacedById,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
   Value<int> rowid,
@@ -2812,9 +3088,7 @@ class $$ReceiptLineItemsTableTableManager extends RootTableManager<
             Value<int> rowIndex = const Value.absent(),
             Value<String?> productCode = const Value.absent(),
             Value<String?> itemDescription = const Value.absent(),
-            Value<String?> quantity = const Value.absent(),
             Value<double?> unitPrice = const Value.absent(),
-            Value<double?> amount = const Value.absent(),
             Value<String?> productName = const Value.absent(),
             Value<String?> productCategory = const Value.absent(),
             Value<String?> productImageUrl = const Value.absent(),
@@ -2822,6 +3096,13 @@ class $$ReceiptLineItemsTableTableManager extends RootTableManager<
             Value<DateTime?> warrantyExpiryDate = const Value.absent(),
             Value<int?> returnPeriodDays = const Value.absent(),
             Value<DateTime?> returnExpiryDate = const Value.absent(),
+            Value<int?> warrantyLeadDaysOverride = const Value.absent(),
+            Value<int?> returnLeadDaysOverride = const Value.absent(),
+            Value<bool?> warrantyReminderEnabled = const Value.absent(),
+            Value<bool?> returnReminderEnabled = const Value.absent(),
+            Value<String> status = const Value.absent(),
+            Value<String?> replacementForId = const Value.absent(),
+            Value<String?> replacedById = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
@@ -2832,9 +3113,7 @@ class $$ReceiptLineItemsTableTableManager extends RootTableManager<
             rowIndex: rowIndex,
             productCode: productCode,
             itemDescription: itemDescription,
-            quantity: quantity,
             unitPrice: unitPrice,
-            amount: amount,
             productName: productName,
             productCategory: productCategory,
             productImageUrl: productImageUrl,
@@ -2842,6 +3121,13 @@ class $$ReceiptLineItemsTableTableManager extends RootTableManager<
             warrantyExpiryDate: warrantyExpiryDate,
             returnPeriodDays: returnPeriodDays,
             returnExpiryDate: returnExpiryDate,
+            warrantyLeadDaysOverride: warrantyLeadDaysOverride,
+            returnLeadDaysOverride: returnLeadDaysOverride,
+            warrantyReminderEnabled: warrantyReminderEnabled,
+            returnReminderEnabled: returnReminderEnabled,
+            status: status,
+            replacementForId: replacementForId,
+            replacedById: replacedById,
             createdAt: createdAt,
             updatedAt: updatedAt,
             rowid: rowid,
@@ -2852,9 +3138,7 @@ class $$ReceiptLineItemsTableTableManager extends RootTableManager<
             Value<int> rowIndex = const Value.absent(),
             Value<String?> productCode = const Value.absent(),
             Value<String?> itemDescription = const Value.absent(),
-            Value<String?> quantity = const Value.absent(),
             Value<double?> unitPrice = const Value.absent(),
-            Value<double?> amount = const Value.absent(),
             Value<String?> productName = const Value.absent(),
             Value<String?> productCategory = const Value.absent(),
             Value<String?> productImageUrl = const Value.absent(),
@@ -2862,6 +3146,13 @@ class $$ReceiptLineItemsTableTableManager extends RootTableManager<
             Value<DateTime?> warrantyExpiryDate = const Value.absent(),
             Value<int?> returnPeriodDays = const Value.absent(),
             Value<DateTime?> returnExpiryDate = const Value.absent(),
+            Value<int?> warrantyLeadDaysOverride = const Value.absent(),
+            Value<int?> returnLeadDaysOverride = const Value.absent(),
+            Value<bool?> warrantyReminderEnabled = const Value.absent(),
+            Value<bool?> returnReminderEnabled = const Value.absent(),
+            Value<String> status = const Value.absent(),
+            Value<String?> replacementForId = const Value.absent(),
+            Value<String?> replacedById = const Value.absent(),
             required DateTime createdAt,
             required DateTime updatedAt,
             Value<int> rowid = const Value.absent(),
@@ -2872,9 +3163,7 @@ class $$ReceiptLineItemsTableTableManager extends RootTableManager<
             rowIndex: rowIndex,
             productCode: productCode,
             itemDescription: itemDescription,
-            quantity: quantity,
             unitPrice: unitPrice,
-            amount: amount,
             productName: productName,
             productCategory: productCategory,
             productImageUrl: productImageUrl,
@@ -2882,6 +3171,13 @@ class $$ReceiptLineItemsTableTableManager extends RootTableManager<
             warrantyExpiryDate: warrantyExpiryDate,
             returnPeriodDays: returnPeriodDays,
             returnExpiryDate: returnExpiryDate,
+            warrantyLeadDaysOverride: warrantyLeadDaysOverride,
+            returnLeadDaysOverride: returnLeadDaysOverride,
+            warrantyReminderEnabled: warrantyReminderEnabled,
+            returnReminderEnabled: returnReminderEnabled,
+            status: status,
+            replacementForId: replacementForId,
+            replacedById: replacedById,
             createdAt: createdAt,
             updatedAt: updatedAt,
             rowid: rowid,
@@ -2912,18 +3208,8 @@ class $$ReceiptLineItemsTableFilterComposer
       builder: (column, joinBuilders) =>
           ColumnFilters(column, joinBuilders: joinBuilders));
 
-  ColumnFilters<String> get quantity => $state.composableBuilder(
-      column: $state.table.quantity,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
   ColumnFilters<double> get unitPrice => $state.composableBuilder(
       column: $state.table.unitPrice,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<double> get amount => $state.composableBuilder(
-      column: $state.table.amount,
       builder: (column, joinBuilders) =>
           ColumnFilters(column, joinBuilders: joinBuilders));
 
@@ -2959,6 +3245,41 @@ class $$ReceiptLineItemsTableFilterComposer
 
   ColumnFilters<DateTime> get returnExpiryDate => $state.composableBuilder(
       column: $state.table.returnExpiryDate,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<int> get warrantyLeadDaysOverride => $state.composableBuilder(
+      column: $state.table.warrantyLeadDaysOverride,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<int> get returnLeadDaysOverride => $state.composableBuilder(
+      column: $state.table.returnLeadDaysOverride,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<bool> get warrantyReminderEnabled => $state.composableBuilder(
+      column: $state.table.warrantyReminderEnabled,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<bool> get returnReminderEnabled => $state.composableBuilder(
+      column: $state.table.returnReminderEnabled,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get status => $state.composableBuilder(
+      column: $state.table.status,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get replacementForId => $state.composableBuilder(
+      column: $state.table.replacementForId,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get replacedById => $state.composableBuilder(
+      column: $state.table.replacedById,
       builder: (column, joinBuilders) =>
           ColumnFilters(column, joinBuilders: joinBuilders));
 
@@ -3008,18 +3329,8 @@ class $$ReceiptLineItemsTableOrderingComposer
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
 
-  ColumnOrderings<String> get quantity => $state.composableBuilder(
-      column: $state.table.quantity,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
   ColumnOrderings<double> get unitPrice => $state.composableBuilder(
       column: $state.table.unitPrice,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<double> get amount => $state.composableBuilder(
-      column: $state.table.amount,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
 
@@ -3055,6 +3366,41 @@ class $$ReceiptLineItemsTableOrderingComposer
 
   ColumnOrderings<DateTime> get returnExpiryDate => $state.composableBuilder(
       column: $state.table.returnExpiryDate,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<int> get warrantyLeadDaysOverride => $state.composableBuilder(
+      column: $state.table.warrantyLeadDaysOverride,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<int> get returnLeadDaysOverride => $state.composableBuilder(
+      column: $state.table.returnLeadDaysOverride,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<bool> get warrantyReminderEnabled => $state.composableBuilder(
+      column: $state.table.warrantyReminderEnabled,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<bool> get returnReminderEnabled => $state.composableBuilder(
+      column: $state.table.returnReminderEnabled,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get status => $state.composableBuilder(
+      column: $state.table.status,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get replacementForId => $state.composableBuilder(
+      column: $state.table.replacementForId,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get replacedById => $state.composableBuilder(
+      column: $state.table.replacedById,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
 
