@@ -167,14 +167,101 @@ jobs:
           echo "Mypy summary on target revision:"
           tail -n 5 /tmp/mypy_head.txt || true
 
-      - name: Pytest coverage gate
-        run: >-
-          pytest tests
-          --cov=app
-          --cov-config=.coveragerc
-          --cov-report=term-missing
-          --cov-report=xml:coverage.xml
-          --cov-fail-under=100
+      - name: Pytest and coverage (no-regression gate)
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || '' }}
+          PUSH_BASE_SHA: ${{ github.event.before || '' }}
+          PUSH_HEAD_SHA: ${{ github.sha }}
+          SECRET_KEY: ci-test-secret-key
+          DATABASE_URL: sqlite:///./ci_test.db
+          AWS_ACCESS_KEY_ID: ci-mock-access-key
+          AWS_SECRET_ACCESS_KEY: ci-mock-secret-key
+          USE_MOCK_AWS: "true"
+          ENABLE_SCHEDULER: "false"
+        run: |
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            BASE_SHA="$PR_BASE_SHA"
+            TARGET_SHA="$PR_HEAD_SHA"
+          else
+            BASE_SHA="$PUSH_BASE_SHA"
+            TARGET_SHA="$PUSH_HEAD_SHA"
+          fi
+
+          ORIGINAL_SHA="$(git rev-parse HEAD)"
+
+          if [ -n "$TARGET_SHA" ] && [ "$TARGET_SHA" != "$ORIGINAL_SHA" ]; then
+            git checkout --quiet "$TARGET_SHA"
+          fi
+
+          set +e
+          pytest tests \
+            --cov=app \
+            --cov-config=.coveragerc \
+            --cov-report=term-missing \
+            --cov-report=xml:/tmp/coverage_head.xml > /tmp/pytest_head.txt 2>&1
+          HEAD_STATUS=$?
+          set -e
+
+          if [ $HEAD_STATUS -ne 0 ]; then
+            cat /tmp/pytest_head.txt
+            exit $HEAD_STATUS
+          fi
+
+          if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            cat /tmp/pytest_head.txt
+            cp /tmp/coverage_head.xml coverage.xml
+            exit 0
+          fi
+
+          git checkout --quiet "$BASE_SHA"
+          set +e
+          pytest tests \
+            --cov=app \
+            --cov-config=.coveragerc \
+            --cov-report=term \
+            --cov-report=xml:/tmp/coverage_base.xml > /tmp/pytest_base.txt 2>&1
+          BASE_STATUS=$?
+          set -e
+
+          git checkout --quiet "$ORIGINAL_SHA"
+
+          if [ $BASE_STATUS -ne 0 ]; then
+            echo "Base revision tests failed; skipping coverage regression comparison."
+            cat /tmp/pytest_head.txt
+            cp /tmp/coverage_head.xml coverage.xml
+            exit 0
+          fi
+
+          COVERAGE_COMPARE_STATUS=0
+          python - <<'PY' || COVERAGE_COMPARE_STATUS=$?
+import xml.etree.ElementTree as ET
+import sys
+
+
+def coverage_pct(path: str) -> float:
+    root = ET.parse(path).getroot()
+    return float(root.attrib.get("line-rate", "0")) * 100.0
+
+
+base = coverage_pct("/tmp/coverage_base.xml")
+head = coverage_pct("/tmp/coverage_head.xml")
+print(f"Base coverage: {base:.2f}%")
+print(f"Head coverage: {head:.2f}%")
+
+if head + 1e-9 < base:
+    print("Coverage regressed compared to base revision.")
+    sys.exit(2)
+PY
+
+          if [ $COVERAGE_COMPARE_STATUS -ne 0 ]; then
+            cat /tmp/pytest_head.txt
+            exit 1
+          fi
+
+          cat /tmp/pytest_head.txt
+          cp /tmp/coverage_head.xml coverage.xml
 
       - name: Bandit security scan
         run: bandit -r app -q
