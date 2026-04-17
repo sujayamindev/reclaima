@@ -235,27 +235,15 @@ jobs:
           fi
 
           COVERAGE_COMPARE_STATUS=0
-          python - <<'PY' || COVERAGE_COMPARE_STATUS=$?
-import xml.etree.ElementTree as ET
-import sys
+          BASE_COVERAGE="$(python -c "import xml.etree.ElementTree as ET; print(float(ET.parse('/tmp/coverage_base.xml').getroot().attrib.get('line-rate', '0')) * 100.0)")"
+          HEAD_COVERAGE="$(python -c "import xml.etree.ElementTree as ET; print(float(ET.parse('/tmp/coverage_head.xml').getroot().attrib.get('line-rate', '0')) * 100.0)")"
+          printf 'Base coverage: %.2f%%\n' "$BASE_COVERAGE"
+          printf 'Head coverage: %.2f%%\n' "$HEAD_COVERAGE"
 
-
-def coverage_pct(path: str) -> float:
-    root = ET.parse(path).getroot()
-    return float(root.attrib.get("line-rate", "0")) * 100.0
-
-
-base = coverage_pct("/tmp/coverage_base.xml")
-head = coverage_pct("/tmp/coverage_head.xml")
-print(f"Base coverage: {base:.2f}%")
-print(f"Head coverage: {head:.2f}%")
-
-if head + 1e-9 < base:
-    print("Coverage regressed compared to base revision.")
-    sys.exit(2)
-PY
+          python -c "import sys; base=float('$BASE_COVERAGE'); head=float('$HEAD_COVERAGE'); sys.exit(0 if head + 1e-9 >= base else 2)" || COVERAGE_COMPARE_STATUS=$?
 
           if [ $COVERAGE_COMPARE_STATUS -ne 0 ]; then
+            echo "Coverage regressed compared to base revision."
             cat /tmp/pytest_head.txt
             exit 1
           fi
