@@ -13,7 +13,7 @@ from dateutil.relativedelta import relativedelta
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import and_
 
-from app.models import Receipt, ReceiptStatus, User, ReceiptImage
+from app.models import Receipt, ReceiptStatus, ReceiptImage
 from app.models.receipt_line_item import ReceiptLineItem
 from app.models.claim_document import ClaimDocument
 from app.schemas import ReceiptCreate, ReceiptUpdate, ReceiptLineItemUpdate

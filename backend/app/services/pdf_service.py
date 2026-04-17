@@ -6,27 +6,24 @@ Creates professional PDFs with receipt details, warranty information, and user d
 import logging
 from io import BytesIO
 from datetime import datetime, timezone
-from typing import Optional, Tuple, List, TYPE_CHECKING
+from typing import Optional, List, TYPE_CHECKING
 
 from reportlab.lib import colors
-from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.platypus import (
     SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak,
-    Image as RLImage, PageTemplate, Frame, KeepTogether
+    Image as RLImage, KeepTogether
 )
-from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
-from reportlab.pdfgen import canvas
+from reportlab.lib.enums import TA_CENTER
 from PIL import Image as PILImage
 
-from sqlalchemy.orm import Session
 
 from app.models import Receipt, User
-from app.models.receipt_line_item import ReceiptLineItem
 
 if TYPE_CHECKING:
-    from app.services.s3_service import MockS3Service, RealS3Service
+    pass
 
 logger = logging.getLogger(__name__)
 
@@ -221,16 +218,6 @@ class PdfGenerationService:
             alignment=TA_CENTER,
             fontName='Helvetica-Bold'
         )
-        
-        subtitle_style = ParagraphStyle(
-            'SubTitle',
-            parent=styles['Normal'],
-            fontSize=10,
-            textColor=TEXT_SECONDARY,
-            spaceAfter=4,
-            alignment=TA_CENTER,
-            fontName='Helvetica'
-        )
 
         heading_style = ParagraphStyle(
             'SectionHeading',
@@ -243,14 +230,6 @@ class PdfGenerationService:
             borderWidth=0,
             borderColor=PRIMARY_COLOR,
             borderPadding=4
-        )
-
-        normal_style = ParagraphStyle(
-            'CustomNormal',
-            parent=styles['Normal'],
-            fontSize=9,
-            textColor=TEXT_PRIMARY,
-            leading=13
         )
 
         # Dynamic title based on claim type
@@ -295,17 +274,7 @@ class PdfGenerationService:
         # Document ID and date (centered)
         generation_date = created_at or datetime.now(timezone.utc)
         display_claim_id = claim_id if claim_id else receipt.id
-        
-        claim_id_style = ParagraphStyle(
-            'ClaimID',
-            parent=styles['Normal'],
-            fontSize=9,
-            textColor=TEXT_SECONDARY,
-            alignment=TA_CENTER,
-            fontName='Helvetica-Bold',
-            spaceAfter=2
-        )
-        
+
         timestamp_style = ParagraphStyle(
             'Timestamp',
             parent=styles['Normal'],

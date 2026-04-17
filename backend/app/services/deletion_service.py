@@ -7,7 +7,7 @@ Includes S3 file cleanup to ensure complete data removal.
 
 import logging
 from datetime import datetime, timezone, timedelta
-from typing import Dict, List
+from typing import Dict
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 

@@ -3,7 +3,7 @@ Receipt routes - Upload, manage, and process receipts.
 """
 
 import logging
-from typing import Optional, List
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Query
 from sqlalchemy.orm import Session
 

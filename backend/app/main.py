@@ -204,7 +204,7 @@ async def root():
 # ============================================
 if settings.DEBUG:
     logger.warning("⚠️  Running in DEBUG mode - Do not use in production!")
-    logger.info(f"📚 API Documentation: http://localhost:8000/docs")
+    logger.info("📚 API Documentation: http://localhost:8000/docs")
     logger.info(f"🏥 Health Check: http://localhost:8000{settings.API_V1_PREFIX}/health")
 
 

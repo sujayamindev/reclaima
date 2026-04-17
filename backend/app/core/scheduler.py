@@ -7,7 +7,6 @@ Runs scheduled jobs like hard deletion of soft-deleted records.
 import logging
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from datetime import datetime, timezone
 
 from app.db.session import SessionLocal
 from app.services.deletion_service import DeletionService

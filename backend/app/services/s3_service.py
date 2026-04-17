@@ -4,10 +4,7 @@ Simulates S3 operations without requiring real AWS credentials.
 """
 
 import logging
-import os
-import uuid
 from typing import Optional
-from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 

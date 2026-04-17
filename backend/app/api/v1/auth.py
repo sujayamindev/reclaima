@@ -7,9 +7,9 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Body
 from sqlalchemy.orm import Session
 
-from app.core.security import get_current_user, get_current_user_id
+from app.core.security import get_current_user
 from app.db.session import get_db
-from app.schemas import UserResponse, UserCreate, UserUpdate
+from app.schemas import UserResponse, UserUpdate
 from app.services.user_service import user_service
 
 logger = logging.getLogger(__name__)

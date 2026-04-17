@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 
 from app.models import User
-from app.schemas import UserCreate, UserUpdate
+from app.schemas import UserUpdate
 
 logger = logging.getLogger(__name__)
 
