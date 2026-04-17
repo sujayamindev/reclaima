@@ -1,0 +1,129 @@
+name: smart-receipt-prod
+
+x-backend-common: &backend-common
+  image: ${BACKEND_IMAGE:?BACKEND_IMAGE is required}
+  env_file:
+    - /mnt/data/smart-receipt-and-warranty-manager/.env.prod
+  restart: unless-stopped
+  depends_on:
+    postgres:
+      condition: service_healthy
+  networks:
+    - smart-receipt-network
+  volumes:
+    - /mnt/data/smart-receipt-and-warranty-manager/secrets/firebase-service-account.json:/app/firebase-service-account.json:ro
+
+# For standalone Docker Compose, mem_reservation is enforced.
+# deploy.resources.reservations is retained for Swarm compatibility.
+x-postgres-resources: &postgres-resources
+  mem_reservation: "${POSTGRES_MEM_RESERVATION:-768M}"
+  deploy:
+    resources:
+      reservations:
+        cpus: "${POSTGRES_CPU_RESERVATION:-0.50}"
+        memory: "${POSTGRES_MEM_RESERVATION:-768M}"
+
+x-api-resources: &api-resources
+  mem_reservation: "${API_MEM_RESERVATION:-1024M}"
+  deploy:
+    resources:
+      reservations:
+        cpus: "${API_CPU_RESERVATION:-1.00}"
+        memory: "${API_MEM_RESERVATION:-1024M}"
+
+x-scheduler-resources: &scheduler-resources
+  mem_reservation: "${SCHEDULER_MEM_RESERVATION:-512M}"
+  deploy:
+    resources:
+      reservations:
+        cpus: "${SCHEDULER_CPU_RESERVATION:-0.25}"
+        memory: "${SCHEDULER_MEM_RESERVATION:-512M}"
+
+x-migrate-resources: &migrate-resources
+  mem_reservation: "${MIGRATE_MEM_RESERVATION:-128M}"
+  deploy:
+    resources:
+      reservations:
+        cpus: "${MIGRATE_CPU_RESERVATION:-0.10}"
+        memory: "${MIGRATE_MEM_RESERVATION:-128M}"
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: smart-receipt-db
+    restart: unless-stopped
+    <<: *postgres-resources
+    env_file:
+      - /mnt/data/smart-receipt-and-warranty-manager/.env.prod
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - smart-receipt-network
+
+  migrate:
+    <<: [*backend-common, *migrate-resources]
+    container_name: smart-receipt-migrate
+    restart: "no"
+    command: ["alembic", "upgrade", "head"]
+
+  api:
+    <<: [*backend-common, *api-resources]
+    container_name: smart-receipt-api
+    environment:
+      ENABLE_SCHEDULER: "false"
+    command:
+      [
+        "uvicorn",
+        "app.main:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000",
+        "--workers",
+        "${API_WORKERS:-2}"
+      ]
+    ports:
+      - "${API_PORT:-8000}:8000"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health')\""
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  scheduler:
+    <<: [*backend-common, *scheduler-resources]
+    container_name: smart-receipt-scheduler
+    environment:
+      ENABLE_SCHEDULER: "true"
+    command:
+      [
+        "uvicorn",
+        "app.main:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8010",
+        "--workers",
+        "1"
+      ]
+
+volumes:
+  postgres_data:
+
+networks:
+  smart-receipt-network:
+    driver: bridge

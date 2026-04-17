@@ -1,6 +1,34 @@
+## Reservation-only resources for local compose.
+# mem_reservation is enforced in standalone Docker Compose.
+# deploy.resources.reservations is kept for Swarm compatibility.
+x-postgres-resources: &postgres-resources
+  mem_reservation: "${DEV_POSTGRES_MEM_RESERVATION:-512M}"
+  deploy:
+    resources:
+      reservations:
+        cpus: "${DEV_POSTGRES_CPU_RESERVATION:-0.25}"
+        memory: "${DEV_POSTGRES_MEM_RESERVATION:-512M}"
+
+x-backend-resources: &backend-resources
+  mem_reservation: "${DEV_BACKEND_MEM_RESERVATION:-768M}"
+  deploy:
+    resources:
+      reservations:
+        cpus: "${DEV_BACKEND_CPU_RESERVATION:-0.50}"
+        memory: "${DEV_BACKEND_MEM_RESERVATION:-768M}"
+
+x-pgadmin-resources: &pgadmin-resources
+  mem_reservation: "${DEV_PGADMIN_MEM_RESERVATION:-256M}"
+  deploy:
+    resources:
+      reservations:
+        cpus: "${DEV_PGADMIN_CPU_RESERVATION:-0.10}"
+        memory: "${DEV_PGADMIN_MEM_RESERVATION:-256M}"
+
 services:
   # PostgreSQL Database
   postgres:
+    <<: *postgres-resources
     image: postgres:15-alpine
     container_name: smart-receipt-db
     environment:
@@ -21,6 +49,7 @@ services:
 
   # FastAPI Backend
   backend:
+    <<: *backend-resources
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -52,6 +81,7 @@ services:
 
   # pgAdmin (Optional - for database management)
   pgadmin:
+    <<: *pgadmin-resources
     image: dpage/pgadmin4:latest
     container_name: smart-receipt-pgadmin
     environment:

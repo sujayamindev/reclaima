@@ -1,0 +1,750 @@
+name: CI and CD
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: ci-cd-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.11"
+  FLUTTER_CHANNEL: stable
+  FLUTTER_VERSION: "3.41.4"
+  BACKEND_IMAGE_REPOSITORY: ghcr.io/${{ github.repository_owner }}/smart-receipt-backend
+
+jobs:
+  secret_scan:
+    name: Secret Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  backend_ci:
+    name: Backend CI
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install bandit pip-audit
+
+      - name: Ruff lint
+        run: ruff check app tests
+
+      - name: Black formatting (changed Python files)
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || '' }}
+          PUSH_BASE_SHA: ${{ github.event.before || '' }}
+          PUSH_HEAD_SHA: ${{ github.sha }}
+        run: |
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            BASE_SHA="$PR_BASE_SHA"
+            HEAD_SHA="$PR_HEAD_SHA"
+          else
+            BASE_SHA="$PUSH_BASE_SHA"
+            HEAD_SHA="$PUSH_HEAD_SHA"
+          fi
+
+          if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            echo "Base SHA unavailable; running Black on app and tests."
+            black --check app tests
+            exit 0
+          fi
+
+          mapfile -t changed_py_files < <(
+            git diff --name-only --diff-filter=ACMR "$BASE_SHA" "$HEAD_SHA" -- '*.py' \
+            | sed 's#^backend/##'
+          )
+
+          if [ ${#changed_py_files[@]} -eq 0 ]; then
+            echo "No changed Python files detected for Black check."
+            exit 0
+          fi
+
+          echo "Black checking changed Python files:"
+          printf '%s\n' "${changed_py_files[@]}"
+          black --check "${changed_py_files[@]}"
+
+      - name: Mypy type check (no-regression gate)
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || '' }}
+          PUSH_BASE_SHA: ${{ github.event.before || '' }}
+          PUSH_HEAD_SHA: ${{ github.sha }}
+        run: |
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            BASE_SHA="$PR_BASE_SHA"
+            TARGET_SHA="$PR_HEAD_SHA"
+          else
+            BASE_SHA="$PUSH_BASE_SHA"
+            TARGET_SHA="$PUSH_HEAD_SHA"
+          fi
+
+          ORIGINAL_SHA="$(git rev-parse HEAD)"
+
+          if [ -n "$TARGET_SHA" ] && [ "$TARGET_SHA" != "$ORIGINAL_SHA" ]; then
+            git checkout --quiet "$TARGET_SHA"
+          fi
+
+          set +e
+          mypy app > /tmp/mypy_head.txt 2>&1
+          HEAD_STATUS=$?
+          set -e
+
+          if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            cat /tmp/mypy_head.txt
+            exit $HEAD_STATUS
+          fi
+
+          git checkout --quiet "$BASE_SHA"
+          set +e
+          mypy app > /tmp/mypy_base.txt 2>&1
+          set -e
+
+          git checkout --quiet "$ORIGINAL_SHA"
+
+          if [ $HEAD_STATUS -eq 0 ]; then
+            echo "Mypy passed on target revision."
+            exit 0
+          fi
+
+          grep -E '^[^:]+:[0-9]+: error:' /tmp/mypy_base.txt \
+            | sed -E 's#:[0-9]+: error:#: error:#' \
+            | sort -u > /tmp/mypy_base_errors.txt || true
+          grep -E '^[^:]+:[0-9]+: error:' /tmp/mypy_head.txt \
+            | sed -E 's#:[0-9]+: error:#: error:#' \
+            | sort -u > /tmp/mypy_head_errors.txt || true
+          comm -13 /tmp/mypy_base_errors.txt /tmp/mypy_head_errors.txt > /tmp/mypy_new_errors.txt || true
+
+          if [ -s /tmp/mypy_new_errors.txt ]; then
+            echo "New mypy errors introduced compared to base commit:"
+            cat /tmp/mypy_new_errors.txt
+            echo
+            echo "Full mypy output on target revision:"
+            cat /tmp/mypy_head.txt
+            exit 1
+          fi
+
+          echo "No new mypy errors compared to base commit; existing baseline debt tolerated."
+          echo "Mypy summary on target revision:"
+          tail -n 5 /tmp/mypy_head.txt || true
+
+      - name: Pytest and coverage (no-regression gate)
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || '' }}
+          PUSH_BASE_SHA: ${{ github.event.before || '' }}
+          PUSH_HEAD_SHA: ${{ github.sha }}
+          SECRET_KEY: ci-test-secret-key
+          DATABASE_URL: sqlite:///./ci_test.db
+          AWS_ACCESS_KEY_ID: ci-mock-access-key
+          AWS_SECRET_ACCESS_KEY: ci-mock-secret-key
+          USE_MOCK_AWS: "true"
+          ENABLE_SCHEDULER: "false"
+        run: |
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            BASE_SHA="$PR_BASE_SHA"
+            TARGET_SHA="$PR_HEAD_SHA"
+          else
+            BASE_SHA="$PUSH_BASE_SHA"
+            TARGET_SHA="$PUSH_HEAD_SHA"
+          fi
+
+          ORIGINAL_SHA="$(git rev-parse HEAD)"
+
+          if [ -n "$TARGET_SHA" ] && [ "$TARGET_SHA" != "$ORIGINAL_SHA" ]; then
+            git checkout --quiet "$TARGET_SHA"
+          fi
+
+          set +e
+          pytest tests \
+            --cov=app \
+            --cov-config=.coveragerc \
+            --cov-report=term-missing \
+            --cov-report=xml:/tmp/coverage_head.xml > /tmp/pytest_head.txt 2>&1
+          HEAD_STATUS=$?
+          set -e
+
+          if [ $HEAD_STATUS -ne 0 ]; then
+            cat /tmp/pytest_head.txt
+            exit $HEAD_STATUS
+          fi
+
+          if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            cat /tmp/pytest_head.txt
+            cp /tmp/coverage_head.xml coverage.xml
+            exit 0
+          fi
+
+          git checkout --quiet "$BASE_SHA"
+          set +e
+          pytest tests \
+            --cov=app \
+            --cov-config=.coveragerc \
+            --cov-report=term \
+            --cov-report=xml:/tmp/coverage_base.xml > /tmp/pytest_base.txt 2>&1
+          BASE_STATUS=$?
+          set -e
+
+          git checkout --quiet "$ORIGINAL_SHA"
+
+          if [ $BASE_STATUS -ne 0 ]; then
+            echo "Base revision tests failed; skipping coverage regression comparison."
+            cat /tmp/pytest_head.txt
+            cp /tmp/coverage_head.xml coverage.xml
+            exit 0
+          fi
+
+          COVERAGE_COMPARE_STATUS=0
+          BASE_COVERAGE="$(python -c "import xml.etree.ElementTree as ET; print(float(ET.parse('/tmp/coverage_base.xml').getroot().attrib.get('line-rate', '0')) * 100.0)")"
+          HEAD_COVERAGE="$(python -c "import xml.etree.ElementTree as ET; print(float(ET.parse('/tmp/coverage_head.xml').getroot().attrib.get('line-rate', '0')) * 100.0)")"
+          printf 'Base coverage: %.2f%%\n' "$BASE_COVERAGE"
+          printf 'Head coverage: %.2f%%\n' "$HEAD_COVERAGE"
+
+          python -c "import sys; base=float('$BASE_COVERAGE'); head=float('$HEAD_COVERAGE'); sys.exit(0 if head + 1e-9 >= base else 2)" || COVERAGE_COMPARE_STATUS=$?
+
+          if [ $COVERAGE_COMPARE_STATUS -ne 0 ]; then
+            echo "Coverage regressed compared to base revision."
+            cat /tmp/pytest_head.txt
+            exit 1
+          fi
+
+          cat /tmp/pytest_head.txt
+          cp /tmp/coverage_head.xml coverage.xml
+
+      - name: Bandit security scan (no-regression gate)
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || '' }}
+          PUSH_BASE_SHA: ${{ github.event.before || '' }}
+          PUSH_HEAD_SHA: ${{ github.sha }}
+        run: |
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            BASE_SHA="$PR_BASE_SHA"
+            TARGET_SHA="$PR_HEAD_SHA"
+          else
+            BASE_SHA="$PUSH_BASE_SHA"
+            TARGET_SHA="$PUSH_HEAD_SHA"
+          fi
+
+          ORIGINAL_SHA="$(git rev-parse HEAD)"
+
+          if [ -n "$TARGET_SHA" ] && [ "$TARGET_SHA" != "$ORIGINAL_SHA" ]; then
+            git checkout --quiet "$TARGET_SHA"
+          fi
+
+          set +e
+          bandit -r app -q > /tmp/bandit_head.txt 2>&1
+          HEAD_STATUS=$?
+          set -e
+
+          if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            cat /tmp/bandit_head.txt
+            exit $HEAD_STATUS
+          fi
+
+          git checkout --quiet "$BASE_SHA"
+          set +e
+          bandit -r app -q > /tmp/bandit_base.txt 2>&1
+          BASE_STATUS=$?
+          set -e
+
+          git checkout --quiet "$ORIGINAL_SHA"
+
+          if [ $BASE_STATUS -ge 2 ]; then
+            echo "Base revision Bandit scan failed; skipping regression comparison."
+            cat /tmp/bandit_head.txt
+            exit 0
+          fi
+
+          awk '
+            /^>> Issue: \[/ {issue=$0}
+            /^   Location: / {
+              location=$0
+              sub(/:[0-9]+:[0-9]+$/,":<line>", location)
+              sub(/:[0-9]+$/,":<line>", location)
+              if (issue != "") print issue " | " location
+            }
+          ' /tmp/bandit_base.txt | sort -u > /tmp/bandit_base_findings.txt || true
+
+          awk '
+            /^>> Issue: \[/ {issue=$0}
+            /^   Location: / {
+              location=$0
+              sub(/:[0-9]+:[0-9]+$/,":<line>", location)
+              sub(/:[0-9]+$/,":<line>", location)
+              if (issue != "") print issue " | " location
+            }
+          ' /tmp/bandit_head.txt | sort -u > /tmp/bandit_head_findings.txt || true
+
+          comm -13 /tmp/bandit_base_findings.txt /tmp/bandit_head_findings.txt > /tmp/bandit_new_findings.txt || true
+
+          if [ -s /tmp/bandit_new_findings.txt ]; then
+            echo "New Bandit findings introduced compared to base commit:"
+            cat /tmp/bandit_new_findings.txt
+            echo
+            echo "Full Bandit output on target revision:"
+            cat /tmp/bandit_head.txt
+            exit 1
+          fi
+
+          if [ $HEAD_STATUS -ne 0 ]; then
+            echo "No new Bandit findings compared to base commit; existing baseline findings tolerated."
+            cat /tmp/bandit_head.txt
+            exit 0
+          fi
+
+          echo "Bandit passed on target revision."
+
+      - name: Dependency vulnerability scan (no-regression gate)
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || '' }}
+          PUSH_BASE_SHA: ${{ github.event.before || '' }}
+          PUSH_HEAD_SHA: ${{ github.sha }}
+        run: |
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            BASE_SHA="$PR_BASE_SHA"
+            TARGET_SHA="$PR_HEAD_SHA"
+          else
+            BASE_SHA="$PUSH_BASE_SHA"
+            TARGET_SHA="$PUSH_HEAD_SHA"
+          fi
+
+          ORIGINAL_SHA="$(git rev-parse HEAD)"
+
+          if [ -n "$TARGET_SHA" ] && [ "$TARGET_SHA" != "$ORIGINAL_SHA" ]; then
+            git checkout --quiet "$TARGET_SHA"
+          fi
+
+          set +e
+          pip-audit -r requirements.txt > /tmp/pip_audit_head.txt 2>&1
+          HEAD_STATUS=$?
+          set -e
+
+          if [ $HEAD_STATUS -ge 2 ]; then
+            cat /tmp/pip_audit_head.txt
+            exit $HEAD_STATUS
+          fi
+
+          if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            cat /tmp/pip_audit_head.txt
+            exit $HEAD_STATUS
+          fi
+
+          git checkout --quiet "$BASE_SHA"
+          set +e
+          pip-audit -r requirements.txt > /tmp/pip_audit_base.txt 2>&1
+          BASE_STATUS=$?
+          set -e
+
+          git checkout --quiet "$ORIGINAL_SHA"
+
+          if [ $BASE_STATUS -ge 2 ]; then
+            echo "Base revision pip-audit scan failed; skipping regression comparison."
+            cat /tmp/pip_audit_head.txt
+            exit 0
+          fi
+
+          awk 'NR > 2 && NF >= 3 {print $1 " | " $3}' /tmp/pip_audit_base.txt \
+            | sort -u > /tmp/pip_audit_base_findings.txt || true
+          awk 'NR > 2 && NF >= 3 {print $1 " | " $3}' /tmp/pip_audit_head.txt \
+            | sort -u > /tmp/pip_audit_head_findings.txt || true
+          comm -13 /tmp/pip_audit_base_findings.txt /tmp/pip_audit_head_findings.txt > /tmp/pip_audit_new_findings.txt || true
+
+          if [ -s /tmp/pip_audit_new_findings.txt ]; then
+            echo "New dependency vulnerabilities introduced compared to base commit:"
+            cat /tmp/pip_audit_new_findings.txt
+            echo
+            echo "Full pip-audit output on target revision:"
+            cat /tmp/pip_audit_head.txt
+            exit 1
+          fi
+
+          if [ $HEAD_STATUS -ne 0 ]; then
+            echo "No new dependency vulnerabilities compared to base commit; existing baseline findings tolerated."
+            cat /tmp/pip_audit_head.txt
+            exit 0
+          fi
+
+          echo "pip-audit passed on target revision."
+
+      - name: Upload backend coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage-xml
+          path: backend/coverage.xml
+
+  mobile_ci:
+    name: Mobile CI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Resolve dependencies
+        working-directory: mobile
+        run: flutter pub get
+
+      - name: Validate generated files
+        working-directory: mobile
+        run: |
+          flutter pub run build_runner build --delete-conflicting-outputs
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Generated files changed. Commit generated outputs before merging."
+            git status --short
+            exit 1
+          fi
+
+      - name: Analyze (no-regression gate)
+        working-directory: mobile
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
+          PUSH_BASE_SHA: ${{ github.event.before || '' }}
+        run: |
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            BASE_SHA="$PR_BASE_SHA"
+          else
+            BASE_SHA="$PUSH_BASE_SHA"
+          fi
+
+          ORIGINAL_SHA="$(git rev-parse HEAD)"
+
+          set +e
+          flutter analyze --machine --fatal-infos --fatal-warnings > /tmp/flutter_analyze_head.txt 2>&1
+          HEAD_STATUS=$?
+          set -e
+
+          if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            cat /tmp/flutter_analyze_head.txt
+            exit $HEAD_STATUS
+          fi
+
+          if ! git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
+            echo "Base SHA not available locally; running analyze on current revision only."
+            cat /tmp/flutter_analyze_head.txt
+            exit $HEAD_STATUS
+          fi
+
+          git checkout --quiet "$BASE_SHA"
+          set +e
+          flutter analyze --machine --fatal-infos --fatal-warnings > /tmp/flutter_analyze_base.txt 2>&1
+          BASE_STATUS=$?
+          set -e
+
+          git checkout --quiet "$ORIGINAL_SHA"
+
+          if [ $BASE_STATUS -ge 2 ]; then
+            echo "Base revision Flutter analyze failed unexpectedly; skipping regression comparison."
+            cat /tmp/flutter_analyze_head.txt
+            exit 0
+          fi
+
+          awk -F' - ' '
+            /^[[:space:]]*(error|warning|info) - / {
+              sev = $1
+              msg = $2
+              loc = $3
+              code = $4
+
+              if (loc == "" || code == "") {
+                next
+              }
+
+              gsub(/^[[:space:]]+|[[:space:]]+$/, "", sev)
+              gsub(/^[[:space:]]+|[[:space:]]+$/, "", code)
+              sub(/:[0-9]+:[0-9]+$/, ":<line>", loc)
+
+              print sev " | " msg " | " loc " | " code
+            }
+          ' /tmp/flutter_analyze_base.txt | sort -u > /tmp/flutter_analyze_base_issues.txt || true
+
+          awk -F' - ' '
+            /^[[:space:]]*(error|warning|info) - / {
+              sev = $1
+              msg = $2
+              loc = $3
+              code = $4
+
+              if (loc == "" || code == "") {
+                next
+              }
+
+              gsub(/^[[:space:]]+|[[:space:]]+$/, "", sev)
+              gsub(/^[[:space:]]+|[[:space:]]+$/, "", code)
+              sub(/:[0-9]+:[0-9]+$/, ":<line>", loc)
+
+              print sev " | " msg " | " loc " | " code
+            }
+          ' /tmp/flutter_analyze_head.txt | sort -u > /tmp/flutter_analyze_head_issues.txt || true
+
+          comm -13 /tmp/flutter_analyze_base_issues.txt /tmp/flutter_analyze_head_issues.txt > /tmp/flutter_analyze_new_issues.txt || true
+
+          if [ -s /tmp/flutter_analyze_new_issues.txt ]; then
+            echo "New Flutter analyzer findings introduced compared to base commit:"
+            cat /tmp/flutter_analyze_new_issues.txt
+            echo
+            echo "Full Flutter analyze output on target revision:"
+            cat /tmp/flutter_analyze_head.txt
+            exit 1
+          fi
+
+          if [ $HEAD_STATUS -ne 0 ]; then
+            echo "No new Flutter analyzer findings compared to base commit; existing baseline findings tolerated."
+            cat /tmp/flutter_analyze_head.txt
+            exit 0
+          fi
+
+          echo "Flutter analyze passed on target revision."
+
+      - name: Test with coverage
+        working-directory: mobile
+        run: flutter test --coverage
+
+      - name: Enforce mobile coverage (no-regression gate)
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
+          PUSH_BASE_SHA: ${{ github.event.before || '' }}
+        run: |
+          EXCLUDE_ARGS=(
+            --exclude "**/*.g.dart"
+            --exclude "**/*.freezed.dart"
+            --exclude "**/generated_plugin_registrant.dart"
+          )
+
+          ORIGINAL_SHA="$(git rev-parse HEAD)"
+          cp mobile/coverage/lcov.info /tmp/mobile_lcov_head.info
+
+          HEAD_COVERAGE="$(python scripts/ci/check_lcov.py /tmp/mobile_lcov_head.info --threshold 0 "${EXCLUDE_ARGS[@]}" | awk '/^Coverage:/ {gsub("%", "", $2); print $2}')"
+          if [ -z "$HEAD_COVERAGE" ]; then
+            echo "Unable to compute head mobile coverage."
+            exit 1
+          fi
+
+          printf 'Head mobile coverage: %.2f%%\n' "$HEAD_COVERAGE"
+
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            BASE_SHA="$PR_BASE_SHA"
+          else
+            BASE_SHA="$PUSH_BASE_SHA"
+          fi
+
+          if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            echo "Base SHA unavailable; skipping mobile coverage regression comparison."
+            exit 0
+          fi
+
+          if ! git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
+            echo "Base SHA not available locally; skipping mobile coverage regression comparison."
+            exit 0
+          fi
+
+          git checkout --quiet "$BASE_SHA"
+          set +e
+          (cd mobile && flutter test --coverage > /tmp/flutter_test_base.txt 2>&1)
+          BASE_TEST_STATUS=$?
+          set -e
+
+          if [ $BASE_TEST_STATUS -ne 0 ]; then
+            git checkout --quiet "$ORIGINAL_SHA"
+            echo "Base revision mobile tests failed; skipping coverage regression comparison."
+            exit 0
+          fi
+
+          cp mobile/coverage/lcov.info /tmp/mobile_lcov_base.info
+          git checkout --quiet "$ORIGINAL_SHA"
+
+          BASE_COVERAGE="$(python scripts/ci/check_lcov.py /tmp/mobile_lcov_base.info --threshold 0 "${EXCLUDE_ARGS[@]}" | awk '/^Coverage:/ {gsub("%", "", $2); print $2}')"
+          if [ -z "$BASE_COVERAGE" ]; then
+            echo "Unable to compute base mobile coverage."
+            exit 1
+          fi
+
+          printf 'Base mobile coverage: %.2f%%\n' "$BASE_COVERAGE"
+
+          set +e
+          python -c "import sys; base=float('$BASE_COVERAGE'); head=float('$HEAD_COVERAGE'); sys.exit(0 if head + 1e-9 >= base else 2)"
+          COVERAGE_COMPARE_STATUS=$?
+          set -e
+          if [ $COVERAGE_COMPARE_STATUS -ne 0 ]; then
+            echo "Mobile coverage regressed compared to base revision."
+            exit 1
+          fi
+
+          echo "Mobile coverage did not regress compared to base revision."
+
+      - name: Provision Android Firebase config (optional)
+        id: android_firebase
+        working-directory: mobile
+        env:
+          ANDROID_GOOGLE_SERVICES_JSON: ${{ secrets.ANDROID_GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -f android/app/google-services.json ]; then
+            echo "google-services.json found in repository checkout."
+            echo "available=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [ -n "$ANDROID_GOOGLE_SERVICES_JSON" ]; then
+            printf '%s' "$ANDROID_GOOGLE_SERVICES_JSON" > android/app/google-services.json
+            echo "google-services.json written from secret ANDROID_GOOGLE_SERVICES_JSON."
+            echo "available=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "google-services.json not available; skipping Android debug APK build for this CI run."
+          echo "available=false" >> "$GITHUB_OUTPUT"
+
+      - name: Build Android debug artifact
+        if: steps.android_firebase.outputs.available == 'true'
+        working-directory: mobile
+        run: flutter build apk --debug
+
+      - name: Skip Android debug artifact build
+        if: steps.android_firebase.outputs.available != 'true'
+        run: echo "Android debug APK build skipped because Firebase config is unavailable in CI context."
+
+      - name: Upload mobile coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-lcov
+          path: mobile/coverage/lcov.info
+
+      - name: Upload Android debug artifact
+        if: steps.android_firebase.outputs.available == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-android-debug-apk
+          path: mobile/build/app/outputs/flutter-apk/app-debug.apk
+
+  backend_image:
+    name: Build and Publish Backend Image
+    needs:
+      - secret_scan
+      - backend_ci
+      - mobile_ci
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image_tag: ${{ steps.meta.outputs.image_tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute image metadata
+        id: meta
+        run: echo "image_tag=sha-${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push ARM64 image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          platforms: linux/arm64
+          push: true
+          tags: |
+            ${{ env.BACKEND_IMAGE_REPOSITORY }}:${{ steps.meta.outputs.image_tag }}
+            ${{ env.BACKEND_IMAGE_REPOSITORY }}:latest-prod
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.title=smart-receipt-backend
+
+  deploy_backend_oci:
+    name: Deploy Backend to OCI
+    needs:
+      - backend_image
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.OCI_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "${{ secrets.OCI_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Sync deployment assets
+        run: |
+          ssh "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}" "mkdir -p /mnt/data/smart-receipt-and-warranty-manager/deploy/scripts /mnt/data/smart-receipt-and-warranty-manager/secrets"
+          scp deploy/docker-compose.prod.yml "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}:/mnt/data/smart-receipt-and-warranty-manager/deploy/docker-compose.prod.yml"
+          scp deploy/.env.prod.example "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}:/mnt/data/smart-receipt-and-warranty-manager/deploy/.env.prod.example"
+          scp deploy/scripts/oci_deploy.sh "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}:/mnt/data/smart-receipt-and-warranty-manager/deploy/scripts/oci_deploy.sh"
+
+      - name: Execute deployment
+        run: |
+          ssh "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}" "chmod +x /mnt/data/smart-receipt-and-warranty-manager/deploy/scripts/oci_deploy.sh"
+          ssh "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}" \
+            "GHCR_USERNAME='${{ secrets.GHCR_USERNAME }}' GHCR_TOKEN='${{ secrets.GHCR_READ_TOKEN }}' IMAGE_REPOSITORY='${{ env.BACKEND_IMAGE_REPOSITORY }}' IMAGE_TAG='${{ needs.backend_image.outputs.image_tag }}' DEPLOY_DIR='/mnt/data/smart-receipt-and-warranty-manager/deploy' ENV_FILE='/mnt/data/smart-receipt-and-warranty-manager/.env.prod' /mnt/data/smart-receipt-and-warranty-manager/deploy/scripts/oci_deploy.sh"
