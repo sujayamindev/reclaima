@@ -151,7 +151,8 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
   }
 
   Future<void> _refreshProducts() async {
-    await ref.refresh(receiptsProvider.future);
+    ref.invalidate(receiptsProvider);
+    await ref.read(receiptsProvider.future);
   }
 
   @override
@@ -505,7 +506,7 @@ class _ProductListItem extends StatelessWidget {
                       ? CachedNetworkImage(
                           imageUrl: item.lineItem.productImageUrl!,
                           fit: BoxFit.contain,
-                          errorWidget: (_, __, ___) =>
+                        errorWidget: (context, imageUrl, error) =>
                               _VaultImagePlaceholder(color: statusColor),
                         )
                       : _VaultImagePlaceholder(color: statusColor),

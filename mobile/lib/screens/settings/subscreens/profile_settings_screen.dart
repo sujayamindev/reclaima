@@ -155,11 +155,10 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
     }
   }
 
-  Future<void> _showDeleteAccountDialog(
-      BuildContext context, bool isDark) async {
+  Future<void> _showDeleteAccountDialog(bool isDark) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return AlertDialog(
           backgroundColor: AppColors.card(isDark),
           shape: RoundedRectangleBorder(
@@ -176,7 +175,7 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
+              onPressed: () => Navigator.of(dialogContext).pop(false),
               child: Text(
                 'Cancel',
                 style: AppTextStyles.buttonSmall
@@ -190,7 +189,7 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
                   borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
                 ),
               ),
-              onPressed: () => Navigator.of(context).pop(true),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
               child: Text(
                 'Delete',
                 style:
@@ -202,82 +201,96 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
       },
     );
 
-    if (confirmed == true && mounted) {
-      setState(() => _isSaving = true);
-      try {
-        await ref.read(authControllerProvider.notifier).deleteAccount();
-        if (mounted) {
-          // In case auth change listener doesn't catch it fast enough
-          Navigator.of(context).popUntil((route) => route.isFirst);
-        }
-      } catch (e) {
-        logger.e('Delete account error: $e');
-        if (mounted) {
-          final isRequiresRecentLogin = e.toString().contains('requires-recent-login');
-          if (isRequiresRecentLogin) {
-            showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                backgroundColor: AppColors.card(isDark),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _isSaving = true);
+    try {
+      await ref.read(authControllerProvider.notifier).deleteAccount();
+      if (!mounted) return;
+
+      // In case auth change listener doesn't catch it fast enough.
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    } catch (e) {
+      logger.e('Delete account error: $e');
+      if (!mounted) return;
+
+      final isRequiresRecentLogin =
+          e.toString().contains('requires-recent-login');
+      if (isRequiresRecentLogin) {
+        showDialog(
+          context: context,
+          builder: (reauthDialogContext) => AlertDialog(
+            backgroundColor: AppColors.card(isDark),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+            ),
+            title: Text(
+              'Re-authentication Required',
+              style: AppTextStyles.titleLarge.copyWith(
+                color: AppColors.textPrimary(isDark),
+              ),
+            ),
+            content: Text(
+              'For security reasons, your account needs recent authentication before it can be deleted. Please log out and log back in, then try again.',
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.textPrimary(isDark),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(reauthDialogContext).pop(),
+                child: Text(
+                  'Cancel',
+                  style: AppTextStyles.buttonSmall.copyWith(
+                    color: AppColors.textPrimary(isDark),
+                  ),
                 ),
-                title: Text(
-                  'Re-authentication Required',
-                  style: AppTextStyles.titleLarge.copyWith(color: AppColors.textPrimary(isDark)),
-                ),
-                content: Text(
-                  'For security reasons, your account needs recent authentication before it can be deleted. Please log out and log back in, then try again.',
-                  style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary(isDark)),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text(
-                      'Cancel',
-                      style: AppTextStyles.buttonSmall.copyWith(color: AppColors.textPrimary(isDark)),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.radiusPill,
                     ),
                   ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
-                      ),
+                ),
+                onPressed: () async {
+                  Navigator.of(reauthDialogContext).pop();
+                  await ref.read(authControllerProvider.notifier).signOut();
+                  if (!mounted) return;
+
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LoginScreen(),
                     ),
-                    onPressed: () async {
-                      Navigator.of(context).pop();
-                      await ref.read(authControllerProvider.notifier).signOut();
-                      if (mounted) {
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (context) => const LoginScreen()),
-                          (route) => false,
-                        );
-                      }
-                    },
-                    child: Text(
-                      'Log Out Now',
-                      style: AppTextStyles.buttonSmall.copyWith(color: AppColors.onPrimary),
-                    ),
+                    (route) => false,
+                  );
+                },
+                child: Text(
+                  'Log Out Now',
+                  style: AppTextStyles.buttonSmall.copyWith(
+                    color: AppColors.onPrimary,
                   ),
-                ],
+                ),
               ),
-            );
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Text(
-                    'Failed to delete account. Please try again later.'),
-                behavior: SnackBarBehavior.floating,
-                backgroundColor: AppColors.error,
-              ),
-            );
-          }
-        }
-      } finally {
-        if (mounted) setState(() => _isSaving = false);
+            ],
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              'Failed to delete account. Please try again later.',
+            ),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: AppColors.error,
+          ),
+        );
       }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 
@@ -614,13 +627,12 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
                     trailing: Icon(Symbols.chevron_right_rounded, size: AppDimensions.iconMedium, color: AppColors.muted(isDark)),
                     onTap: () async {
                       await ref.read(authControllerProvider.notifier).signOut();
-                      if (mounted) {
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (context) => const LoginScreen()),
-                          (route) => false,
-                        );
-                      }
+                      if (!context.mounted) return;
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (context) => const LoginScreen()),
+                        (route) => false,
+                      );
                     },
                   ),
                   Divider(color: AppColors.border(isDark), height: 1),
@@ -637,7 +649,7 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
                       style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary(isDark)),
                     ),
                     trailing: Icon(Symbols.chevron_right_rounded, size: AppDimensions.iconMedium, color: AppColors.muted(isDark)),
-                    onTap: () => _showDeleteAccountDialog(context, isDark),
+                    onTap: () => _showDeleteAccountDialog(isDark),
                   ),
                 ],
               ),

@@ -541,14 +541,13 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
               onPressed: () async {
                 Navigator.pop(ctx);
                 await _resolveClaimOutcome('REPLACED');
-                if (context.mounted) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const AddReceiptScreen(),
-                    ),
-                  );
-                }
+                if (!mounted) return;
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AddReceiptScreen(),
+                  ),
+                );
               },
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: AppColors.onPrimary),
               child: Text('Scan New Receipt', style: AppTextStyles.button),
@@ -608,11 +607,12 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
       filePath = _cachedPdfPath;
       logger.i('Using cached PDF for opening');
     } else {
-      filePath = await _downloadPdfFile(showSuccessMessage: false);
-      if (filePath == null) return;
+      final downloadedPath = await _downloadPdfFile(showSuccessMessage: false);
+      if (downloadedPath == null) return;
+      filePath = downloadedPath;
       
       // Cache for future use
-      setState(() => _cachedPdfPath = filePath);
+      setState(() => _cachedPdfPath = downloadedPath);
     }
 
     // Ensure filePath is not null before opening
@@ -709,9 +709,6 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
       // Cache for future use
       setState(() => _cachedPdfPath = filePath);
     }
-
-    // Ensure filePath is not null before sharing
-    if (filePath == null) return;
 
     try {
       await Share.shareXFiles(

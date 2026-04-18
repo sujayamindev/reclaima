@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:intl/intl.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 import '../../core/constants/app_constants.dart';
@@ -1308,7 +1307,7 @@ class _ProductSelectorSheetState extends State<_ProductSelectorSheet> {
                 : ListView.separated(
                     padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingPage, vertical: 8),
                     itemCount: products.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    separatorBuilder: (context, index) => const SizedBox(height: 12),
                     itemBuilder: (context, index) {
                       final p = products[index];
                       return GestureDetector(

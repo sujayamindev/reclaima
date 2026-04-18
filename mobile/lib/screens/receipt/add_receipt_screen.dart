@@ -221,7 +221,6 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
     final backgroundColor = AppColors.background(isDark);
     final textPrimary = AppColors.textPrimary(isDark);
     final textSecondary = AppColors.textSecondary(isDark);
-    final borderColor = AppColors.border(isDark);
     final mutedText = AppColors.muted(isDark);
 
     return Scaffold(

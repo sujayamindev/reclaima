@@ -95,7 +95,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
   final _vendorEmailCtrl = TextEditingController();
 
   // 📦 Line Items Form State
-  List<LineItemFormState> _itemForms = [LineItemFormState()];
+  final List<LineItemFormState> _itemForms = [LineItemFormState()];
   List<ReceiptLineItemModel> _ocrLineItems = [];
 
   static const List<String> _categories = [
@@ -1219,7 +1219,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
         ),
         const SizedBox(height: 6),
         DropdownButtonFormField<String>(
-          value: form.selectedCategory,
+          initialValue: form.selectedCategory,
           dropdownColor: AppColors.card(isDark),
           style: AppTextStyles.bodyMedium.copyWith(color: textPrimary),
           icon: Icon(Symbols.keyboard_arrow_down_rounded, color: labelColor, size: AppDimensions.iconMedium),
@@ -1393,7 +1393,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                   ),
                 ),
               );
-            }).toList(),
+            }),
           ],
         ),
       ],

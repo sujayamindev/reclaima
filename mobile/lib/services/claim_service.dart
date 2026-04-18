@@ -133,12 +133,15 @@ class ClaimService {
       logger.i('Generating claim PDF for receipt $receiptId, product ${lineItemId ?? "all"}, defect images: ${defectImages?.length ?? 0}');
 
       // Create multipart form data
-      final formData = FormData.fromMap({
+      final formDataMap = <String, dynamic>{
         'receipt_id': receiptId,
         'issue_description': issueDescription,
         'claim_type': claimType,
-        if (lineItemId != null) 'line_item_id': lineItemId,
-      });
+      };
+      if (lineItemId != null) {
+        formDataMap['line_item_id'] = lineItemId;
+      }
+      final formData = FormData.fromMap(formDataMap);
       
       // Add defect images if provided
       if (defectImages != null && defectImages.isNotEmpty) {
