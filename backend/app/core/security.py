@@ -4,11 +4,11 @@ Handles Firebase JWT verification and user authentication.
 """
 
 import logging
-from typing import Optional
+from typing import Any, Optional
 from fastapi import HTTPException, Security, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-import firebase_admin
-from firebase_admin import auth, credentials
+import firebase_admin  # type: ignore[import-untyped]
+from firebase_admin import auth, credentials  # type: ignore[import-untyped]
 import os
 
 from app.core.config import settings
@@ -101,7 +101,7 @@ firebase_auth = FirebaseAuthService()
 
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Security(security)
-) -> dict:
+) -> dict[str, Any]:
     """
     FastAPI dependency to get current authenticated user.
     
@@ -120,7 +120,7 @@ async def get_current_user(
 
 
 async def get_current_user_id(
-    current_user: dict = Security(get_current_user)
+    current_user: dict[str, Any] = Security(get_current_user)
 ) -> str:
     """
     FastAPI dependency to get current user's Firebase UID.
@@ -131,7 +131,14 @@ async def get_current_user_id(
     Returns:
         Firebase UID of the current user
     """
-    return current_user.get("uid")
+    uid = current_user.get("uid")
+    if not isinstance(uid, str) or not uid:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication token - missing uid",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return uid
 
 
 async def get_optional_current_user(

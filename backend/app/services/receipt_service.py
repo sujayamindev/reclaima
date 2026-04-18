@@ -6,10 +6,10 @@ Handles CRUD operations, file upload, OCR processing, and warranty calculations.
 import logging
 import json
 import uuid
-from typing import Optional, List
+from typing import Optional, List, cast
 from datetime import datetime, timezone, timedelta
-from dateutil import parser as dateutil_parser
-from dateutil.relativedelta import relativedelta
+from dateutil import parser as dateutil_parser  # type: ignore[import-untyped]
+from dateutil.relativedelta import relativedelta  # type: ignore[import-untyped]
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import and_
 
@@ -500,7 +500,7 @@ class ReceiptService:
 
         try:
             # Soft delete receipt
-            receipt.deleted_at = now
+            setattr(receipt, "deleted_at", now)
 
             # Cascade soft delete to line items
             db.query(ReceiptLineItem).filter(
@@ -590,8 +590,8 @@ class ReceiptService:
         )
 
         # Update receipt with S3 key
-        receipt.s3_object_key = s3_object_key
-        receipt.status = ReceiptStatus.PROCESSING
+        setattr(receipt, "s3_object_key", s3_object_key)
+        setattr(receipt, "status", ReceiptStatus.PROCESSING)
         db.commit()
 
         logger.info(f"Uploaded file for receipt: {receipt_id}")
@@ -624,7 +624,7 @@ class ReceiptService:
             # Call Textract service
             ocr_result = self.textract_service.analyze_document(receipt.s3_object_key)
 
-            receipt.last_ocr_attempt_at = datetime.now(timezone.utc)
+            setattr(receipt, "last_ocr_attempt_at", datetime.now(timezone.utc))
 
             if ocr_result.get("status") == "success":
                 # Extract data from OCR result
@@ -660,7 +660,7 @@ class ReceiptService:
 
                 # ── total amount ─────────────────────────────────────────────
                 if extracted.get("total_amount") is not None:
-                    receipt.total_amount = float(extracted["total_amount"])
+                    setattr(receipt, "total_amount", float(extracted["total_amount"]))
 
                 if extracted.get("currency"):
                     receipt.currency = extracted["currency"]
@@ -687,8 +687,8 @@ class ReceiptService:
                 if extracted.get("warranty_notes"):
                     receipt.warranty_notes = extracted["warranty_notes"]
 
-                receipt.status = ReceiptStatus.COMPLETED
-                receipt.ocr_raw_response = json.dumps(ocr_result, default=str)
+                setattr(receipt, "status", ReceiptStatus.COMPLETED)
+                setattr(receipt, "ocr_raw_response", json.dumps(ocr_result, default=str))
 
                 # ── line items ────────────────────────────────────────────────
                 # Remove any existing line items (e.g. from a previous retry)
@@ -810,8 +810,8 @@ class ReceiptService:
                 logger.info(f"OCR successful for receipt: {receipt_id}")
             else:
                 # OCR failed
-                receipt.ocr_retry_count += 1
-                receipt.status = ReceiptStatus.OCR_FAILED
+                setattr(receipt, "ocr_retry_count", int(receipt.ocr_retry_count) + 1)
+                setattr(receipt, "status", ReceiptStatus.OCR_FAILED)
                 logger.warning(f"OCR failed for receipt: {receipt_id}")
 
             db.commit()
@@ -825,9 +825,9 @@ class ReceiptService:
 
         except Exception as e:
             logger.error(f"OCR processing error for receipt {receipt_id}: {e}")
-            receipt.ocr_retry_count += 1
-            receipt.status = ReceiptStatus.OCR_FAILED
-            receipt.last_ocr_attempt_at = datetime.now(timezone.utc)
+            setattr(receipt, "ocr_retry_count", int(receipt.ocr_retry_count) + 1)
+            setattr(receipt, "status", ReceiptStatus.OCR_FAILED)
+            setattr(receipt, "last_ocr_attempt_at", datetime.now(timezone.utc))
             db.commit()
             return receipt
 
@@ -854,8 +854,9 @@ class ReceiptService:
             logger.warning(f"Max OCR retries exceeded for receipt: {receipt_id}")
             return receipt
 
-        receipt.status = ReceiptStatus.PROCESSING
+        setattr(receipt, "status", ReceiptStatus.PROCESSING)
         db.commit()
+        return self.process_ocr(db, receipt_id, user_id)
 
     def create_line_item(
         self,
@@ -1008,18 +1009,25 @@ class ReceiptService:
         purchase_date = receipt.purchase_date
         if purchase_date:
             if line_item.warranty_period_months is not None:
-                line_item.warranty_expiry_date = purchase_date + relativedelta(
-                    months=line_item.warranty_period_months
+                setattr(
+                    line_item,
+                    "warranty_expiry_date",
+                    purchase_date
+                    + relativedelta(
+                        months=cast(int, line_item.warranty_period_months)
+                    ),
                 )
             else:
-                line_item.warranty_expiry_date = None
+                setattr(line_item, "warranty_expiry_date", None)
 
             if line_item.return_period_days is not None:
-                line_item.return_expiry_date = purchase_date + timedelta(
-                    days=line_item.return_period_days
+                setattr(
+                    line_item,
+                    "return_expiry_date",
+                    purchase_date + timedelta(days=cast(int, line_item.return_period_days)),
                 )
             else:
-                line_item.return_expiry_date = None
+                setattr(line_item, "return_expiry_date", None)
 
         db.commit()
         db.refresh(line_item)
@@ -1058,7 +1066,7 @@ class ReceiptService:
             return False
 
         now = datetime.now(timezone.utc)
-        line_item.deleted_at = now
+        setattr(line_item, "deleted_at", now)
 
         # Soft delete claims linked specifically to this line item
         db.query(ClaimDocument).filter(

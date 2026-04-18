@@ -4,7 +4,7 @@ Claims routes - Generate and manage warranty claim PDFs.
 
 import logging
 import uuid
-from typing import Optional, List
+from typing import Optional, List, cast
 from fastapi import (
     APIRouter,
     Depends,
@@ -35,6 +35,18 @@ from app.schemas import (
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/claims", tags=["Claims"])
+
+
+def _as_str(value: object) -> str:
+    return cast(str, value)
+
+
+def _as_optional_str(value: object) -> Optional[str]:
+    return cast(Optional[str], value)
+
+
+def _as_optional_datetime(value: object) -> Optional[datetime]:
+    return cast(Optional[datetime], value)
 
 
 def _get_receipt_with_line_items(db: Session, receipt_id: str) -> Optional[Receipt]:
@@ -129,6 +141,7 @@ async def create_claim(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
+    db_user_id = _as_str(db_user.id)
 
     # Get receipt and verify ownership (already loads line items)
     receipt = _get_receipt_with_line_items(db, receipt_id)
@@ -137,10 +150,10 @@ async def create_claim(
             status_code=status.HTTP_404_NOT_FOUND, detail="Receipt not found"
         )
 
-    if receipt.user_id != db_user.id:
+    if _as_str(receipt.user_id) != db_user_id:
         logger.warning(
-            f"User {db_user.id} attempted to create claim for receipt "
-            f"{receipt.id} owned by {receipt.user_id}"
+            f"User {db_user_id} attempted to create claim for receipt "
+            f"{_as_str(receipt.id)} owned by {_as_str(receipt.user_id)}"
         )
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -163,9 +176,10 @@ async def create_claim(
         for idx, img in enumerate(defect_images):
             img_content = await img.read()
             # Extract file extension
-            ext = img.filename.split(".")[-1] if "." in img.filename else "jpg"
+            file_name = img.filename or "defect.jpg"
+            ext = file_name.rsplit(".", 1)[-1] if "." in file_name else "jpg"
             img_uuid = str(uuid.uuid4())
-            s3_key = f"users/{db_user.id}/claims/{claim_id}/defects/defect_{idx + 1}_{img_uuid}.{ext}"
+            s3_key = f"users/{db_user_id}/claims/{claim_id}/defects/defect_{idx + 1}_{img_uuid}.{ext}"
 
             s3_service.upload_file(
                 file_content=img_content,
@@ -189,7 +203,7 @@ async def create_claim(
             defect_image_s3_keys=defect_image_s3_keys,
         )
         logger.info(f"Generated claim PDF: {len(pdf_bytes)} bytes")
-        s3_object_key = f"users/{db_user.id}/claims/{claim_id}/claim.pdf"
+        s3_object_key = f"users/{db_user_id}/claims/{claim_id}/claim.pdf"
 
         s3_service.upload_file(
             file_content=pdf_bytes,
@@ -201,7 +215,7 @@ async def create_claim(
         # Create claim document record
         claim_document = ClaimDocument(
             id=claim_id,
-            receipt_id=receipt.id,
+            receipt_id=_as_str(receipt.id),
             line_item_id=line_item_id,
             issue_description=issue_description,
             claim_type=claim_type,
@@ -265,6 +279,7 @@ async def update_claim(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
+    db_user_id = _as_str(db_user.id)
 
     # Get claim
     claim = (
@@ -279,8 +294,8 @@ async def update_claim(
         )
 
     # Verify user owns the associated receipt
-    receipt = _get_receipt_with_line_items(db, claim.receipt_id)
-    if not receipt or receipt.user_id != db_user.id:
+    receipt = _get_receipt_with_line_items(db, _as_str(claim.receipt_id))
+    if not receipt or _as_str(receipt.user_id) != db_user_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You don't have permission to modify this claim",
@@ -289,10 +304,10 @@ async def update_claim(
     # Update fields
     updated = False
     if claim_update.status is not None:
-        claim.status = claim_update.status
+        setattr(claim, "status", claim_update.status.value)
         updated = True
     if claim_update.notes is not None:
-        claim.notes = claim_update.notes
+        setattr(claim, "notes", claim_update.notes)
         updated = True
 
     if updated:
@@ -324,6 +339,7 @@ async def resolve_claim(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
+    db_user_id = _as_str(db_user.id)
 
     # Get claim
     claim = (
@@ -338,22 +354,22 @@ async def resolve_claim(
         )
 
     # Verify user owns the associated receipt
-    receipt = _get_receipt_with_line_items(db, claim.receipt_id)
-    if not receipt or receipt.user_id != db_user.id:
+    receipt = _get_receipt_with_line_items(db, _as_str(claim.receipt_id))
+    if not receipt or _as_str(receipt.user_id) != db_user_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You don't have permission to modify this claim",
         )
 
     # Mark claim as RESOLVED
-    claim.status = "RESOLVED"
+    setattr(claim, "status", "RESOLVED")
 
     # Identify the primary item (for simplicity, using the first line item)
     if receipt.line_items:
         item = receipt.line_items[0]
 
         if resolution_data.outcome == "REFUNDED":
-            item.status = "ARCHIVED"
+            setattr(item, "status", "ARCHIVED")
         elif resolution_data.outcome == "REPLACED":
             if resolution_data.duplicate_details:
                 import uuid
@@ -372,19 +388,19 @@ async def resolve_claim(
                     replacement_for_id=item.id,
                     status="ACTIVE",
                 )
-                item.replaced_by_id = new_item_id
-                item.status = "ARCHIVED"
+                setattr(item, "replaced_by_id", new_item_id)
+                setattr(item, "status", "ARCHIVED")
                 db.add(new_item)
             elif resolution_data.linked_item_id:
-                new_item = (
+                linked_item = (
                     db.query(ReceiptLineItem)
                     .filter(ReceiptLineItem.id == resolution_data.linked_item_id)
                     .first()
                 )
-                if new_item:
-                    new_item.replacement_for_id = item.id
-                    item.replaced_by_id = new_item.id
-                item.status = "ARCHIVED"
+                if linked_item:
+                    setattr(linked_item, "replacement_for_id", _as_str(item.id))
+                    setattr(item, "replaced_by_id", _as_str(linked_item.id))
+                setattr(item, "status", "ARCHIVED")
 
     db.commit()
     db.refresh(claim)
@@ -429,6 +445,7 @@ async def list_claims(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
+    db_user_id = _as_str(db_user.id)
 
     try:
         # Query claims
@@ -440,7 +457,7 @@ async def list_claims(
         elif receipt_id:
             # Verify user owns the receipt
             receipt = _get_receipt_with_line_items(db, receipt_id)
-            if not receipt or receipt.user_id != db_user.id:
+            if not receipt or _as_str(receipt.user_id) != db_user_id:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="You don't have permission to access this receipt",
@@ -451,7 +468,7 @@ async def list_claims(
             user_receipt_ids = (
                 db.query(Receipt.id)
                 .filter(
-                    and_(Receipt.user_id == db_user.id, Receipt.deleted_at.is_(None))
+                    and_(Receipt.user_id == db_user_id, Receipt.deleted_at.is_(None))
                 )
                 .all()
             )
@@ -509,6 +526,7 @@ async def get_claim(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
+    db_user_id = _as_str(db_user.id)
 
     try:
         # Get claim
@@ -526,8 +544,8 @@ async def get_claim(
             )
 
         # Verify user owns the receipt
-        receipt = _get_receipt_with_line_items(db, claim.receipt_id)
-        if not receipt or receipt.user_id != db_user.id:
+        receipt = _get_receipt_with_line_items(db, _as_str(claim.receipt_id))
+        if not receipt or _as_str(receipt.user_id) != db_user_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You don't have permission to access this claim",
@@ -567,6 +585,7 @@ async def access_claim_pdf(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
+    db_user_id = _as_str(db_user.id)
 
     try:
         claim = (
@@ -582,14 +601,15 @@ async def access_claim_pdf(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Claim not found"
             )
 
-        receipt = _get_receipt_with_line_items(db, claim.receipt_id)
-        if not receipt or receipt.user_id != db_user.id:
+        receipt = _get_receipt_with_line_items(db, _as_str(claim.receipt_id))
+        if not receipt or _as_str(receipt.user_id) != db_user_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You don't have permission to access this claim",
             )
 
-        if not claim.generated_pdf_s3_key:
+        generated_pdf_s3_key = _as_optional_str(claim.generated_pdf_s3_key)
+        if not generated_pdf_s3_key:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Claim PDF is not available",
@@ -601,30 +621,30 @@ async def access_claim_pdf(
             region=settings.AWS_REGION,
         )
 
-        if not s3_service.file_exists(claim.generated_pdf_s3_key):
+        if not s3_service.file_exists(generated_pdf_s3_key):
             logger.info(
-                f"Claim PDF missing in storage for claim {claim.id}; regenerating"
+                f"Claim PDF missing in storage for claim {_as_str(claim.id)}; regenerating"
             )
             pdf_service = get_pdf_service()
             pdf_bytes = pdf_service.generate_claim_pdf(
                 receipt=receipt,
                 user=db_user,
-                issue_description=claim.issue_description,
-                claim_type=claim.claim_type or "warranty",
-                created_at=claim.created_at,
+                issue_description=_as_str(claim.issue_description),
+                claim_type=_as_optional_str(claim.claim_type) or "warranty",
+                created_at=_as_optional_datetime(claim.created_at),
                 s3_service=s3_service,
-                claim_id=claim.id,
-                line_item_id=claim.line_item_id,
+                claim_id=_as_str(claim.id),
+                line_item_id=_as_optional_str(claim.line_item_id),
             )
             s3_service.upload_file(
                 file_content=pdf_bytes,
-                object_key=claim.generated_pdf_s3_key,
+                object_key=generated_pdf_s3_key,
                 content_type="application/pdf",
             )
 
         response = ClaimDocumentResponse.model_validate(claim)
         response.url = s3_service.generate_presigned_url(
-            claim.generated_pdf_s3_key, expiration=3600, operation="get_object"
+            generated_pdf_s3_key, expiration=3600, operation="get_object"
         )
         return response
 
@@ -665,6 +685,7 @@ async def delete_claim(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
+    db_user_id = _as_str(db_user.id)
 
     try:
         # Get claim
@@ -682,15 +703,15 @@ async def delete_claim(
             )
 
         # Verify user owns the receipt
-        receipt = _get_receipt_with_line_items(db, claim.receipt_id)
-        if not receipt or receipt.user_id != db_user.id:
+        receipt = _get_receipt_with_line_items(db, _as_str(claim.receipt_id))
+        if not receipt or _as_str(receipt.user_id) != db_user_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You don't have permission to delete this claim",
             )
 
         # Soft delete
-        claim.deleted_at = datetime.now(timezone.utc)
+        setattr(claim, "deleted_at", datetime.now(timezone.utc))
         db.commit()
         logger.info(f"Soft-deleted claim {claim_id}")
 

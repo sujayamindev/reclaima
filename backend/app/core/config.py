@@ -98,7 +98,7 @@ def get_settings() -> Settings:
     Get cached settings instance.
     Using lru_cache ensures we only create one instance.
     """
-    return Settings()
+    return Settings()  # type: ignore[call-arg]
 
 
 # Global settings instance

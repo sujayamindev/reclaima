@@ -4,6 +4,7 @@ Smart Receipt & Warranty Manager Backend API.
 """
 
 import logging
+import os
 import sys
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, status
@@ -49,7 +50,7 @@ async def lifespan(app: FastAPI):
     scheduler = None
     if settings.ENABLE_SCHEDULER:
         try:
-            from apscheduler.schedulers.background import BackgroundScheduler
+            from apscheduler.schedulers.background import BackgroundScheduler  # type: ignore[import-untyped]
             from app.services.notification_service import notification_service
 
             scheduler = BackgroundScheduler(timezone="UTC")
@@ -221,9 +222,12 @@ if settings.DEBUG:
 if __name__ == "__main__":
     import uvicorn
 
+    # Use localhost by default for local runs; deployments can override via env.
+    host = os.getenv("UVICORN_HOST", "127.0.0.1")
+
     uvicorn.run(
         "app.main:app",
-        host="0.0.0.0",
+        host=host,
         port=8000,
         reload=settings.DEBUG,
         log_level=settings.LOG_LEVEL.lower(),

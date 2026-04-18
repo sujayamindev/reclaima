@@ -452,7 +452,7 @@ class BedrockLLMService(BaseLLMService):
     """
 
     def __init__(self, region: str, model_id: str) -> None:
-        import boto3
+        import boto3  # type: ignore[import-not-found,import-untyped]
 
         self._client = boto3.client("bedrock-runtime", region_name=region)
         self._model_id = model_id

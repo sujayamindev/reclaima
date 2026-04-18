@@ -77,27 +77,23 @@ def _clean_query(raw: str) -> str:
 
 def _is_blocked(url: str) -> bool:
     """Return True if the image URL is hosted on a blocked domain."""
-    try:
-        from urllib.parse import urlparse
-        host = urlparse(url).hostname or ""
-        # Match "ebay.com" and "i.ebay.com", etc.
-        for blocked in _BLOCKED_DOMAINS:
-            if host == blocked or host.endswith("." + blocked):
-                return True
-    except Exception:
-        pass
+    from urllib.parse import urlparse
+
+    host = urlparse(url).hostname or ""
+    # Match "ebay.com" and "i.ebay.com", etc.
+    for blocked in _BLOCKED_DOMAINS:
+        if host == blocked or host.endswith("." + blocked):
+            return True
     return False
 
 def _is_trusted(url: str) -> bool:
     """Return True if the image URL is hosted on a trusted domain."""
-    try:
-        from urllib.parse import urlparse
-        host = urlparse(url).hostname or ""
-        for trusted in _TRUSTED_DOMAINS:
-            if host == trusted or host.endswith("." + trusted):
-                return True
-    except Exception:
-        pass
+    from urllib.parse import urlparse
+
+    host = urlparse(url).hostname or ""
+    for trusted in _TRUSTED_DOMAINS:
+        if host == trusted or host.endswith("." + trusted):
+            return True
     return False
 
 
@@ -179,7 +175,7 @@ class BraveProductImageService(BaseProductImageService):
                 "Accept-Encoding": "gzip",
                 "X-Subscription-Token": self._api_key,
             }
-            params = {
+            params: dict[str, str | int] = {
                 "q": search_query,
                 "count": 8,  # fetch extras so we can filter
                 "safesearch": "strict",
@@ -254,7 +250,7 @@ class BraveProductImageService(BaseProductImageService):
                 "Accept-Encoding": "gzip",
                 "X-Subscription-Token": self._api_key,
             }
-            params = {
+            params: dict[str, str | int] = {
                 "q": search_query,
                 "count": 8,
                 "safesearch": "strict",

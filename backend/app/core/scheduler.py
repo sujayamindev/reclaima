@@ -5,8 +5,8 @@ Runs scheduled jobs like hard deletion of soft-deleted records.
 """
 
 import logging
-from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.triggers.cron import CronTrigger
+from apscheduler.schedulers.background import BackgroundScheduler  # type: ignore[import-untyped]
+from apscheduler.triggers.cron import CronTrigger  # type: ignore[import-untyped]
 
 from app.db.session import SessionLocal
 from app.services.deletion_service import DeletionService
@@ -31,8 +31,8 @@ def run_hard_delete_job():
         from app.services.s3_service import get_s3_service
 
         s3_service = get_s3_service(
-            bucket_name=settings.AWS_S3_BUCKET_NAME,
-            use_mock=settings.USE_MOCK_S3,
+            bucket_name=settings.AWS_S3_BUCKET,
+            use_mock=settings.USE_MOCK_AWS,
             region=settings.AWS_REGION,
         )
 

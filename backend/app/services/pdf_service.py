@@ -6,13 +6,13 @@ Creates professional PDFs with receipt details, warranty information, and user d
 import logging
 from io import BytesIO
 from datetime import datetime, timezone
-from typing import Optional, List, TYPE_CHECKING
+from typing import Optional, List, Protocol
 
-from reportlab.lib import colors
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import inch
-from reportlab.platypus import (
+from reportlab.lib import colors  # type: ignore[import-untyped]
+from reportlab.lib.pagesizes import A4  # type: ignore[import-untyped]
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle  # type: ignore[import-untyped]
+from reportlab.lib.units import inch  # type: ignore[import-untyped]
+from reportlab.platypus import (  # type: ignore[import-untyped]
     SimpleDocTemplate,
     Table,
     TableStyle,
@@ -22,14 +22,16 @@ from reportlab.platypus import (
     Image as RLImage,
     KeepTogether,
 )
-from reportlab.lib.enums import TA_CENTER
+from reportlab.lib.enums import TA_CENTER  # type: ignore[import-untyped]
 from PIL import Image as PILImage
 
 
 from app.models import Receipt, User
 
-if TYPE_CHECKING:
-    pass
+
+class S3Readable(Protocol):
+    def get_file(self, object_key: str) -> Optional[bytes]:
+        ...
 
 logger = logging.getLogger(__name__)
 
@@ -74,18 +76,23 @@ class PdfGenerationService:
         try:
             # Open image with PIL
             pil_image = PILImage.open(BytesIO(image_bytes))
+            processed_image: PILImage.Image = pil_image
 
             # Convert to RGB if necessary (remove alpha channel)
-            if pil_image.mode in ("RGBA", "LA", "P"):
-                background = PILImage.new("RGB", pil_image.size, (255, 255, 255))
+            if processed_image.mode in ("RGBA", "LA", "P"):
+                background = PILImage.new("RGB", processed_image.size, (255, 255, 255))
                 background.paste(
-                    pil_image,
-                    mask=pil_image.split()[-1] if pil_image.mode == "RGBA" else None,
+                    processed_image,
+                    mask=(
+                        processed_image.split()[-1]
+                        if processed_image.mode == "RGBA"
+                        else None
+                    ),
                 )
-                pil_image = background
+                processed_image = background
 
             # Calculate scaling to fit within max dimensions while maintaining aspect ratio
-            img_width, img_height = pil_image.size
+            img_width, img_height = processed_image.size
             width_ratio = max_width / img_width
             height_ratio = max_height / img_height
             scale_ratio = min(width_ratio, height_ratio, 1.0)  # Don't upscale
@@ -95,7 +102,7 @@ class PdfGenerationService:
 
             # Save processed image to bytes
             img_buffer = BytesIO()
-            pil_image.save(img_buffer, format="JPEG", quality=85)
+            processed_image.save(img_buffer, format="JPEG", quality=85)
             img_buffer.seek(0)
 
             # Create ReportLab Image
@@ -168,7 +175,7 @@ class PdfGenerationService:
         issue_description: str,
         claim_type: str,
         created_at: Optional[datetime] = None,
-        s3_service: Optional[object] = None,
+        s3_service: Optional[S3Readable] = None,
         claim_id: Optional[str] = None,
         line_item_id: Optional[str] = None,
         defect_image_s3_keys: Optional[List[str]] = None,
@@ -444,7 +451,7 @@ class PdfGenerationService:
         # Front image (from receipt.s3_object_key)
         if receipt.s3_object_key and s3_service:
             try:
-                image_bytes = s3_service.get_file(receipt.s3_object_key)
+                image_bytes = s3_service.get_file(str(receipt.s3_object_key))
                 if image_bytes:
                     # Add page break before receipt image
                     story.append(PageBreak())
@@ -477,7 +484,7 @@ class PdfGenerationService:
             for img in receipt.images:
                 if img.image_type == "BACK" and img.s3_object_key:
                     try:
-                        back_image_bytes = s3_service.get_file(img.s3_object_key)
+                        back_image_bytes = s3_service.get_file(str(img.s3_object_key))
                         if back_image_bytes:
                             story.append(PageBreak())
 
@@ -523,18 +530,19 @@ class PdfGenerationService:
                         # Process image: check orientation and rotate if landscape
                         try:
                             pil_image = PILImage.open(BytesIO(defect_image_bytes))
-                            width, height = pil_image.size
+                            processed_defect: PILImage.Image = pil_image
+                            width, height = processed_defect.size
 
                             # If landscape, rotate 90 degrees clockwise to portrait
                             if width > height:
                                 logger.info(
                                     f"Defect image {idx} is landscape ({width}x{height}), rotating 90° for full-page display"
                                 )
-                                pil_image = pil_image.rotate(-90, expand=True)
+                                processed_defect = processed_defect.rotate(-90, expand=True)
 
                                 # Convert back to bytes
                                 rotated_buffer = BytesIO()
-                                pil_image.save(
+                                processed_defect.save(
                                     rotated_buffer, format="JPEG", quality=95
                                 )
                                 defect_image_bytes = rotated_buffer.getvalue()

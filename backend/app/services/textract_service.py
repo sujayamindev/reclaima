@@ -6,7 +6,7 @@ Mock implementation for development without AWS credentials.
 
 import logging
 import re
-import random
+from random import SystemRandom
 from typing import Dict, Any, Optional, List
 from datetime import datetime, timedelta
 
@@ -40,27 +40,28 @@ class MockTextractService:
         # Generate mock receipt data
         mock_stores = ["Target", "Walmart", "Best Buy", "Amazon", "Home Depot", "Costco"]
         mock_products = ["Laptop", "Smartphone", "TV", "Headphones", "Camera", "Tablet"]
+        rng = SystemRandom()
         
-        mock_result = {
+        mock_result: Dict[str, Any] = {
             "status": "success",
             "extracted_data": {
-                "store_name": random.choice(mock_stores),
-                "purchase_date": (datetime.now() - timedelta(days=random.randint(1, 90))).isoformat(),
-                "total_amount": round(random.uniform(50.0, 2000.0), 2),
+                "store_name": rng.choice(mock_stores),
+                "purchase_date": (datetime.now() - timedelta(days=rng.randint(1, 90))).isoformat(),
+                "total_amount": round(rng.uniform(50.0, 2000.0), 2),
                 "currency": "USD",
-                "product_name": random.choice(mock_products),
-                "warranty_period_months": random.choice([6, 12, 24, 36]),
+                "product_name": rng.choice(mock_products),
+                "warranty_period_months": rng.choice([6, 12, 24, 36]),
                 "warranty_notes": "Warranty valid for 1 year from date of purchase. Does not cover physical damage or damage caused by natural disaster.",
-                "remarks": f"Serial No: SN{random.randint(100000, 999999)}",
+                "remarks": f"Serial No: SN{rng.randint(100000, 999999)}",
             },
-            "confidence": round(random.uniform(0.85, 0.99), 2),
+            "confidence": round(rng.uniform(0.85, 0.99), 2),
             "raw_text": f"""
 RECEIPT
-Store: {random.choice(mock_stores)}
+Store: {rng.choice(mock_stores)}
 Date: {datetime.now().strftime('%Y-%m-%d')}
-Product: {random.choice(mock_products)}
-Total: ${round(random.uniform(50.0, 2000.0), 2)}
-Warranty: {random.choice([6, 12, 24])} months
+Product: {rng.choice(mock_products)}
+Total: ${round(rng.uniform(50.0, 2000.0), 2)}
+Warranty: {rng.choice([6, 12, 24])} months
             """.strip()
         }
         
@@ -96,8 +97,8 @@ class RealTextractService:
             region: AWS region (default: us-east-1)
             llm_service: LLM service for cleaning extracted text (optional)
         """
-        import boto3
-        from botocore.exceptions import ClientError
+        import boto3  # type: ignore[import-not-found,import-untyped]
+        from botocore.exceptions import ClientError  # type: ignore[import-not-found,import-untyped]
         
         self.s3_bucket = s3_bucket
         self.llm_service = llm_service
