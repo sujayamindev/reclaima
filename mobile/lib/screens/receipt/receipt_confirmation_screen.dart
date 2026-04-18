@@ -64,9 +64,6 @@ class _ReceiptConfirmationScreenState
 
   // ─── Helpers ───────────────────────────────────────────────────────────────
 
-  String _formatDate(DateTime date) =>
-      '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}T00:00:00';
-
   String _displayDate(DateTime date) {
     const months = [
       'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -101,12 +98,12 @@ class _ReceiptConfirmationScreenState
     final controller = ref.read(receiptControllerProvider.notifier);
 
     // ── 1. Build receipt-level data (strip product/warranty fields) ─────────
-    const _lineItemKeys = {
+    const lineItemKeys = {
       'productName', 'productCategory',
       'warrantyPeriodMonths', 'returnPeriodDays',
     };
     final recData = Map<String, dynamic>.from(widget.formData)
-      ..removeWhere((k, _) => _lineItemKeys.contains(k));
+      ..removeWhere((k, _) => lineItemKeys.contains(k));
     // Remove server-side computed fields from the old schema (backend ignores
     // them now, but guard against a stale call being sent accidentally).
     recData.remove('warrantyExpiryDate');
@@ -220,10 +217,6 @@ class _ReceiptConfirmationScreenState
     final totalAmount = widget.formData['totalAmount'] as double?;
     final currency = widget.formData['currency'] as String? ?? 'USD';
     final productName = widget.formData['productName'] as String?;
-    final productCategory = widget.formData['productCategory'] as String?;
-    final warrantyMonths = widget.formData['warrantyPeriodMonths'] as int?;
-    final returnDays = widget.formData['returnPeriodDays'] as int?;
-    final remarks = widget.formData['remarks'] as String?;
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -681,7 +674,6 @@ class _ReceiptConfirmationScreenState
 
   Widget _buildSaveFooter(bool isDark, AsyncValue<void> controllerState) {
     final backgroundColor = AppColors.background(isDark);
-    final borderColor = AppColors.border(isDark);
 
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),

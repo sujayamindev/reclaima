@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:intl/intl.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/utils/logger.dart';
@@ -66,68 +65,6 @@ class _ClaimsListScreenState extends ConsumerState<ClaimsListScreen> {
         _error = e.toString();
         _isLoading = false;
       });
-    }
-  }
-
-  Future<void> _deleteClaim(String claimId) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.card(
-          Theme.of(context).brightness == Brightness.dark,
-        ),
-        title: Text(
-          'Delete Claim',
-          style: TextStyle(
-            color: AppColors.textPrimary(
-              Theme.of(context).brightness == Brightness.dark,
-            ),
-          ),
-        ),
-        content: Text(
-          'Are you sure you want to delete this claim? This action cannot be undone.',
-          style: TextStyle(
-            color: AppColors.textSecondary(
-              Theme.of(context).brightness == Brightness.dark,
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed != true) return;
-
-    try {
-      final claimService = ref.read(claimServiceProvider);
-      await claimService.deleteClaim(claimId);
-
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Claim deleted successfully')),
-      );
-
-      // Reload claims
-      _loadClaims();
-    } catch (e) {
-      logger.e('Error deleting claim: $e');
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to delete claim: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
     }
   }
 

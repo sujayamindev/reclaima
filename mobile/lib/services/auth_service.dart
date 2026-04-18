@@ -73,16 +73,7 @@ class AuthService {
       logger.e('Firebase signup error: ${e.code}');
       
       if (e.code == 'email-already-in-use') {
-        try {
-          final methods = await _auth.fetchSignInMethodsForEmail(email);
-          if (methods.contains('google.com')) {
-            throw 'Looks like you signed up with Google. Please use the "Continue with Google" button.';
-          } else if (methods.contains('apple.com')) {
-            throw 'Looks like you signed up with Apple. Please use the "Continue with Apple" button.';
-          }
-        } catch (_) {
-          // Ignore fetch errors and fallback to original error
-        }
+        throw 'This email is already in use. If you signed up with Google or Apple, please use that sign-in button.';
       }
       
       rethrow;
@@ -107,16 +98,7 @@ class AuthService {
       logger.e('Firebase signin error: ${e.code}');
       
       if (e.code == 'invalid-credential' || e.code == 'wrong-password') {
-        try {
-          final methods = await _auth.fetchSignInMethodsForEmail(email);
-          if (methods.contains('google.com') && !methods.contains('password')) {
-            throw 'Looks like you signed up with Google. Please use the "Continue with Google" button.';
-          } else if (methods.contains('apple.com') && !methods.contains('password')) {
-            throw 'Looks like you signed up with Apple. Please use the "Continue with Apple" button.';
-          }
-        } catch (_) {
-          // Ignore fetch errors and fallback to original error
-        }
+        throw 'Incorrect email or password. If you signed up with Google or Apple, please use that sign-in button.';
       }
       
       rethrow;
@@ -275,7 +257,7 @@ class AuthService {
       await user.updatePassword(newPassword);
       logger.i('Password updated successfully');
     } on FirebaseAuthException catch (e) {
-      logger.e('Error changing password: ');
+      logger.e('Error changing password: ${e.code}');
       rethrow;
     }
   }

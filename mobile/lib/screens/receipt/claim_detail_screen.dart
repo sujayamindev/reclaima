@@ -328,14 +328,13 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
                   'REPLACED',
                   closeOnSuccess: closeOnSuccess,
                 );
-                if (context.mounted) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const AddReceiptScreen(),
-                    ),
-                  );
-                }
+                if (!mounted) return;
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AddReceiptScreen(),
+                  ),
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/app_constants.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import '../../providers/auth_provider.dart';
 import 'subscreens/profile_settings_screen.dart';
 import 'subscreens/notification_settings_screen.dart';
 import 'subscreens/privacy_settings_screen.dart';

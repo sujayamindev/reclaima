@@ -12,7 +12,6 @@ import '../../providers/receipt_provider.dart';
 import '../../core/utils/formatters.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import '../../widgets/app_primary_button.dart';
-import 'claim_pdf_screen.dart';
 import 'claims_list_screen.dart';
 
 /// Full-screen product detail view.
@@ -452,7 +451,7 @@ class ProductDetailScreen extends ConsumerWidget {
                     width: double.infinity,
                     height: 200,
                     fit: BoxFit.contain,
-                    placeholder: (_, __) => Container(
+                    placeholder: (context, imageUrl) => Container(
                       height: 200,
                       color: AppColors.primary.withValues(alpha: 0.06),
                       child: const Center(
@@ -466,7 +465,8 @@ class ProductDetailScreen extends ConsumerWidget {
                         ),
                       ),
                     ),
-                    errorWidget: (_, __, ___) => const SizedBox.shrink(),
+                    errorWidget: (context, imageUrl, error) =>
+                        const SizedBox.shrink(),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -563,11 +563,14 @@ class ProductDetailScreen extends ConsumerWidget {
     final replacedById = product.lineItem!.replacedById;
     final replacementForId = product.lineItem!.replacementForId;
 
-    if (replacedById == null && replacementForId == null)
+    if (replacedById == null && replacementForId == null) {
       return const SizedBox.shrink();
+    }
 
     final allReceiptsVal = ref.read(receiptsProvider);
-    if (allReceiptsVal.valueOrNull == null) return const SizedBox.shrink();
+    if (allReceiptsVal.valueOrNull == null) {
+      return const SizedBox.shrink();
+    }
 
     final allReceipts = allReceiptsVal.value!;
 
@@ -920,7 +923,7 @@ class ProductDetailScreen extends ConsumerWidget {
               ),
             ),
           ),
-          error: (_, __) => Center(
+          error: (error, stackTrace) => Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -967,7 +970,7 @@ class ProductDetailScreen extends ConsumerWidget {
                     CachedNetworkImage(
                       imageUrl: url,
                       fit: BoxFit.cover,
-                      placeholder: (_, __) => const Center(
+                      placeholder: (context, imageUrl) => const Center(
                         child: SizedBox(
                           width: 28,
                           height: 28,
@@ -977,7 +980,7 @@ class ProductDetailScreen extends ConsumerWidget {
                           ),
                         ),
                       ),
-                      errorWidget: (_, __, ___) => Center(
+                      errorWidget: (context, imageUrl, error) => Center(
                         child: Icon(
                           Symbols.broken_image_rounded,
                           size: AppDimensions.iconLarge,
@@ -1402,14 +1405,10 @@ class _StatusBadge extends StatelessWidget {
   const _StatusBadge({
     required this.color,
     required this.label,
-    this.filled = true,
-    this.isDark = false,
   });
 
   final Color color;
   final String label;
-  final bool filled;
-  final bool isDark;
 
   @override
   Widget build(BuildContext context) {
@@ -1419,25 +1418,23 @@ class _StatusBadge extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
         border: Border.all(
-          color: filled ? color.withValues(alpha: 0.45) : color,
+          color: color.withValues(alpha: 0.45),
           width: 1,
         ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (filled) ...[
-            Container(
-              width: 6,
-              height: 6,
-              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-            ),
-            const SizedBox(width: 6),
-          ],
+          Container(
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 6),
           Text(
             label,
             style: AppTextStyles.badgeText.copyWith(
-              color: filled ? color : color,
+              color: color,
             ),
           ),
         ],
@@ -1697,9 +1694,6 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
   int? _localWarrantyLeadOverride;
   int? _localReturnLeadOverride;
 
-  // Save state
-  bool _isSaving = false;
-
   static const _warrantyOptions = [7, 14, 30, 60, 90];
   static const _returnOptions = [1, 2, 3, 5, 7];
 
@@ -1830,7 +1824,6 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
   // ── Save notification settings ──────────────────────────────────────
 
   Future<void> _saveNotificationSettings() async {
-    setState(() => _isSaving = true);
     try {
       await widget.ref
           .read(receiptControllerProvider.notifier)
@@ -1864,8 +1857,6 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
           ),
         );
       }
-    } finally {
-      if (mounted) setState(() => _isSaving = false);
     }
   }
 
@@ -1995,7 +1986,7 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
                   ),
                 ),
               );
-            }).toList(),
+            }),
           ],
         ),
       ],

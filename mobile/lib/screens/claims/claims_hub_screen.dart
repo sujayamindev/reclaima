@@ -120,7 +120,8 @@ class _ClaimsHubScreenState extends ConsumerState<ClaimsHubScreen> {
   }
 
   Future<void> _refreshClaims() async {
-    await ref.refresh(userClaimsProvider.future);
+    ref.invalidate(userClaimsProvider);
+    await ref.read(userClaimsProvider.future);
   }
 
   Future<void> _showClaimsInfoDialog() async {
