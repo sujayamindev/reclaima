@@ -13,6 +13,54 @@ API_PORT="${API_PORT:-8000}"
 BACKEND_IMAGE="${IMAGE_REPOSITORY}:${IMAGE_TAG}"
 PREVIOUS_IMAGE_FILE="${DEPLOY_DIR}/.previous_backend_image"
 HEALTH_URL="http://127.0.0.1:${API_PORT}/api/v1/health"
+API_CONTAINER="${API_CONTAINER:-smart-receipt-api}"
+SCHEDULER_CONTAINER="${SCHEDULER_CONTAINER:-smart-receipt-scheduler}"
+
+container_health_status() {
+  docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$1" 2>/dev/null || echo "missing"
+}
+
+container_running_status() {
+  docker inspect --format='{{.State.Status}}' "$1" 2>/dev/null || echo "missing"
+}
+
+wait_for_runtime_health() {
+  local context="$1"
+
+  for attempt in $(seq 1 20); do
+    local api_http_ok=0
+    if curl --fail --silent "${HEALTH_URL}" >/dev/null; then
+      api_http_ok=1
+    fi
+
+    local api_health scheduler_health api_state scheduler_state
+    api_health="$(container_health_status "${API_CONTAINER}")"
+    scheduler_health="$(container_health_status "${SCHEDULER_CONTAINER}")"
+    api_state="$(container_running_status "${API_CONTAINER}")"
+    scheduler_state="$(container_running_status "${SCHEDULER_CONTAINER}")"
+
+    local api_ready=0
+    local scheduler_ready=0
+
+    if [[ "${api_http_ok}" -eq 1 ]] && [[ "${api_state}" = "running" ]] && { [[ "${api_health}" = "healthy" ]] || [[ "${api_health}" = "none" ]]; }; then
+      api_ready=1
+    fi
+
+    if [[ "${scheduler_state}" = "running" ]] && { [[ "${scheduler_health}" = "healthy" ]] || [[ "${scheduler_health}" = "none" ]]; }; then
+      scheduler_ready=1
+    fi
+
+    if [[ "${api_ready}" -eq 1 ]] && [[ "${scheduler_ready}" -eq 1 ]]; then
+      echo "${context} succeeded."
+      return 0
+    fi
+
+    echo "${context} health attempt ${attempt}/20 pending. api_http=${api_http_ok} api_state=${api_state} api_health=${api_health} scheduler_state=${scheduler_state} scheduler_health=${scheduler_health}"
+    sleep 3
+  done
+
+  return 1
+}
 
 if [[ ! -f "${COMPOSE_FILE}" ]]; then
   echo "Compose file not found: ${COMPOSE_FILE}" >&2
@@ -43,15 +91,10 @@ docker compose -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}" up -d postgres
 docker compose -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}" run --rm migrate
 docker compose -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}" up -d api scheduler
 
-echo "Running post-deploy health check: ${HEALTH_URL}"
-for attempt in $(seq 1 20); do
-  if curl --fail --silent "${HEALTH_URL}" >/dev/null; then
-    echo "Deployment succeeded."
-    exit 0
-  fi
-  echo "Health check attempt ${attempt}/20 failed. Retrying..."
-  sleep 3
-done
+echo "Running post-deploy health checks: API endpoint and scheduler container"
+if wait_for_runtime_health "Deployment"; then
+  exit 0
+fi
 
 echo "Deployment health check failed. Starting rollback..."
 if [[ -f "${PREVIOUS_IMAGE_FILE}" ]]; then
@@ -59,14 +102,10 @@ if [[ -f "${PREVIOUS_IMAGE_FILE}" ]]; then
   export BACKEND_IMAGE="${ROLLBACK_IMAGE}"
   docker compose -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}" up -d api scheduler
 
-  for attempt in $(seq 1 20); do
-    if curl --fail --silent "${HEALTH_URL}" >/dev/null; then
-      echo "Rollback succeeded using ${ROLLBACK_IMAGE}."
-      exit 1
-    fi
-    echo "Rollback health check attempt ${attempt}/20 failed. Retrying..."
-    sleep 3
-  done
+  if wait_for_runtime_health "Rollback"; then
+    echo "Rollback succeeded using ${ROLLBACK_IMAGE}."
+    exit 1
+  fi
 fi
 
 echo "Rollback failed. Manual intervention required."
