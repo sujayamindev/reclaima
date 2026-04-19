@@ -23,6 +23,7 @@ env:
   FLUTTER_VERSION: "3.41.4"
   BACKEND_IMAGE_REPOSITORY: ghcr.io/${{ github.repository_owner }}/smart-receipt-backend
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  BACKEND_COVERAGE_FLOOR: "33.0"
 
 jobs:
   secret_scan:
@@ -238,10 +239,21 @@ jobs:
           fi
 
           COVERAGE_COMPARE_STATUS=0
+          COVERAGE_FLOOR_STATUS=0
           BASE_COVERAGE="$(python -c "import xml.etree.ElementTree as ET; print(float(ET.parse('/tmp/coverage_base.xml').getroot().attrib.get('line-rate', '0')) * 100.0)")"
           HEAD_COVERAGE="$(python -c "import xml.etree.ElementTree as ET; print(float(ET.parse('/tmp/coverage_head.xml').getroot().attrib.get('line-rate', '0')) * 100.0)")"
+          COVERAGE_FLOOR="${BACKEND_COVERAGE_FLOOR:-33.0}"
           printf 'Base coverage: %.2f%%\n' "$BASE_COVERAGE"
           printf 'Head coverage: %.2f%%\n' "$HEAD_COVERAGE"
+          printf 'Coverage floor: %.2f%%\n' "$COVERAGE_FLOOR"
+
+          python -c "import sys; floor=float('$COVERAGE_FLOOR'); head=float('$HEAD_COVERAGE'); sys.exit(0 if head + 1e-9 >= floor else 2)" || COVERAGE_FLOOR_STATUS=$?
+
+          if [ $COVERAGE_FLOOR_STATUS -ne 0 ]; then
+            echo "Coverage is below the minimum floor."
+            cat /tmp/pytest_head.txt
+            exit 1
+          fi
 
           python -c "import sys; base=float('$BASE_COVERAGE'); head=float('$HEAD_COVERAGE'); sys.exit(0 if head + 1e-9 >= base else 2)" || COVERAGE_COMPARE_STATUS=$?
 
