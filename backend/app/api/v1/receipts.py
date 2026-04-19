@@ -11,6 +11,7 @@ from app.core.security import get_current_user
 from app.services.user_service import user_service
 from app.core.config import settings
 from app.db.session import get_db
+from app.models.receipt import ReceiptStatus
 from app.schemas import (
     ReceiptResponse,
     ReceiptCreate,
@@ -59,7 +60,7 @@ async def create_receipt(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
 
-    receipt = receipt_service.create_receipt(db, db_user.id, receipt_data)
+    receipt = receipt_service.create_receipt(db, str(db_user.id), receipt_data)
     return receipt
 
 
@@ -137,7 +138,7 @@ async def ocr_extract(
 
     # Extract OCR from both images
     result = receipt_service.extract_ocr_from_files(
-        user_id=db_user.id,
+        user_id=str(db_user.id),
         front_image_data=front_data,
         back_image_data=back_data,
     )
@@ -182,12 +183,13 @@ async def list_receipts(
         }
 
     skip = (page - 1) * page_size
+    model_status = ReceiptStatus(status_filter.value) if status_filter else None
     receipts, total = receipt_service.list_receipts(
         db=db,
-        user_id=db_user.id,
+        user_id=str(db_user.id),
         skip=skip,
         limit=page_size,
-        status=status_filter,
+        status=model_status,
     )
 
     return {
@@ -225,7 +227,7 @@ async def get_receipt(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
 
-    receipt = receipt_service.get_receipt(db, receipt_id, db_user.id)
+    receipt = receipt_service.get_receipt(db, receipt_id, str(db_user.id))
 
     if not receipt:
         raise HTTPException(
@@ -264,7 +266,9 @@ async def update_receipt(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
 
-    receipt = receipt_service.update_receipt(db, receipt_id, db_user.id, receipt_data)
+    receipt = receipt_service.update_receipt(
+        db, receipt_id, str(db_user.id), receipt_data
+    )
 
     if not receipt:
         raise HTTPException(
@@ -296,7 +300,7 @@ async def delete_receipt(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
 
-    success = receipt_service.delete_receipt(db, receipt_id, db_user.id)
+    success = receipt_service.delete_receipt(db, receipt_id, str(db_user.id))
 
     if not success:
         raise HTTPException(
@@ -354,7 +358,7 @@ async def upload_receipt_file(
     receipt = receipt_service.upload_receipt_file(
         db=db,
         receipt_id=receipt_id,
-        user_id=db_user.id,
+        user_id=str(db_user.id),
         file_content=file_content,
         file_name=file.filename or "receipt",
         content_type=file.content_type,
@@ -389,7 +393,7 @@ async def get_receipt_image_url(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
 
-    url = receipt_service.get_receipt_image_url(db, receipt_id, db_user.id)
+    url = receipt_service.get_receipt_image_url(db, receipt_id, str(db_user.id))
 
     if url is None:
         raise HTTPException(
@@ -425,7 +429,7 @@ async def create_line_item(
 
     try:
         line_item = receipt_service.create_line_item(
-            db, receipt_id, db_user.id, item_data
+            db, receipt_id, str(db_user.id), item_data
         )
         if not line_item:
             raise HTTPException(
@@ -460,7 +464,7 @@ async def update_line_item(
         )
 
     line_item = receipt_service.update_line_item(
-        db, receipt_id, item_id, db_user.id, item_data
+        db, receipt_id, item_id, str(db_user.id), item_data
     )
     if not line_item:
         raise HTTPException(
@@ -493,7 +497,7 @@ async def delete_line_item(
         db=db,
         receipt_id=receipt_id,
         item_id=item_id,
-        user_id=db_user.id,
+        user_id=str(db_user.id),
     )
 
     if not success:
@@ -532,7 +536,7 @@ async def retry_ocr_processing(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
 
-    receipt = receipt_service.retry_ocr(db, receipt_id, db_user.id)
+    receipt = receipt_service.retry_ocr(db, receipt_id, str(db_user.id))
 
     if not receipt:
         raise HTTPException(

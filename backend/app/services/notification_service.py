@@ -62,21 +62,21 @@ class NotificationService:
         for field, value in update_data.items():
             if value is not None and hasattr(prefs, field):
                 setattr(prefs, field, value)
-        prefs.updated_at = datetime.now(timezone.utc)
+        setattr(prefs, "updated_at", datetime.now(timezone.utc))
         db.commit()
         db.refresh(prefs)
         return prefs
 
-    def update_fcm_token(
-        self, db: Session, user_id: str, token: Optional[str]
-    ) -> None:
+    def update_fcm_token(self, db: Session, user_id: str, token: Optional[str]) -> None:
         """Store or clear the FCM device push token for *user_id*."""
         db.query(User).filter(User.id == user_id).update(
             {"fcm_token": token, "updated_at": datetime.now(timezone.utc)},
             synchronize_session=False,
         )
         db.commit()
-        logger.info(f"FCM token {'registered' if token else 'cleared'} for user {user_id}")
+        logger.info(
+            f"FCM token {'registered' if token else 'cleared'} for user {user_id}"
+        )
 
     # ── FCM Push Delivery ─────────────────────────────────────────────────────
 
@@ -93,7 +93,7 @@ class NotificationService:
         FCM values in ``data`` must all be strings.
         """
         try:
-            import firebase_admin.messaging as msg
+            import firebase_admin.messaging as msg  # type: ignore[import-untyped]
 
             message = msg.Message(
                 notification=msg.Notification(title=title, body=body),
@@ -122,9 +122,11 @@ class NotificationService:
 
         db = SessionLocal()
         try:
-            user = db.query(User).filter(
-                User.id == user_id, User.deleted_at.is_(None)
-            ).first()
+            user = (
+                db.query(User)
+                .filter(User.id == user_id, User.deleted_at.is_(None))
+                .first()
+            )
             if not user or not user.fcm_token:
                 return
             prefs = (
@@ -141,7 +143,7 @@ class NotificationService:
                 else "We could not read your receipt. You can enter the details manually."
             )
             self.send_fcm(
-                token=user.fcm_token,
+                token=str(user.fcm_token),
                 title=title,
                 body=body,
                 data={"type": "ocr", "receipt_id": receipt_id, "success": str(success)},
@@ -193,15 +195,15 @@ class NotificationService:
         try:
             # Get S3 service
             s3_service = get_s3_service(
-                bucket_name=settings.AWS_S3_BUCKET_NAME,
-                use_mock=settings.USE_MOCK_S3,
-                region=settings.AWS_REGION
+                bucket_name=settings.AWS_S3_BUCKET,
+                use_mock=settings.USE_MOCK_AWS,
+                region=settings.AWS_REGION,
             )
-            
+
             # Create deletion service and run job
             deletion_service = DeletionService(s3_service)
             results = deletion_service.run_hard_delete_job(db)
-            
+
             logger.info(
                 f"Hard-delete cleanup: {results['total']} total records removed "
                 f"({results['users']} users, {results['receipts']} receipts, "
@@ -317,7 +319,7 @@ class NotificationService:
                 body = f'Only {lead} day{"s" if lead != 1 else ""} left to return "{product_label}"'
 
             self.send_fcm(
-                token=user.fcm_token,
+                token=str(user.fcm_token),
                 title=title,
                 body=body,
                 data={

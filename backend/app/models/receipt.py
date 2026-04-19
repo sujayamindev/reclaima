@@ -71,7 +71,7 @@ class Receipt(Base):
     warranty_notes = Column(Text, nullable=True)  # OTHER/Note — warranty policy text
 
     # Processing status
-    status = Column(
+    status = Column(  # type: ignore[var-annotated]
         SQLEnum(ReceiptStatus),
         default=ReceiptStatus.UPLOADED,
         nullable=False,

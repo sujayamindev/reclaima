@@ -49,12 +49,12 @@ class UserService:
             # Check if we should update display_name (e.g. it was missing and now provided)
             needs_update = False
             if display_name and not user.display_name:
-                user.display_name = display_name
+                setattr(user, "display_name", display_name)
                 needs_update = True
 
             if user.firebase_uid != firebase_uid or user.deleted_at is not None:
-                user.firebase_uid = firebase_uid
-                user.deleted_at = None
+                setattr(user, "firebase_uid", firebase_uid)
+                setattr(user, "deleted_at", None)
                 needs_update = True
                 logger.info(f"Updated firebase_uid and restored user: {user.id}")
 
@@ -82,7 +82,7 @@ class UserService:
         return user
 
     def get_user_by_firebase_uid(
-        self, db: Session, firebase_uid: str
+        self, db: Session, firebase_uid: Optional[str]
     ) -> Optional[User]:
         """
         Get user by Firebase UID.
@@ -94,6 +94,8 @@ class UserService:
         Returns:
             User or None if not found
         """
+        if not firebase_uid:
+            return None
         return db.query(User).filter(User.firebase_uid == firebase_uid).first()
 
     def get_user_by_id(self, db: Session, user_id: str) -> Optional[User]:
@@ -155,7 +157,7 @@ class UserService:
         if not user:
             return False
 
-        user.deleted_at = datetime.now(timezone.utc)
+        setattr(user, "deleted_at", datetime.now(timezone.utc))
 
         # Soft delete all user's receipts
         from app.models import Receipt

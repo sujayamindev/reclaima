@@ -161,8 +161,8 @@ class RealS3Service:
             bucket_name: S3 bucket name
             region: AWS region (default: us-east-1)
         """
-        import boto3
-        from botocore.exceptions import ClientError
+        import boto3  # type: ignore[import-not-found,import-untyped]
+        from botocore.exceptions import ClientError  # type: ignore[import-not-found,import-untyped]
 
         self.bucket_name = bucket_name
         self.s3_client = boto3.client("s3", region_name=region)

@@ -225,6 +225,7 @@ OCR text to process:
 # Abstract base
 # ---------------------------------------------------------------------------
 
+
 class BaseLLMService(ABC):
     """Abstract base class for LLM text-cleanup services."""
 
@@ -241,10 +242,10 @@ class BaseLLMService(ABC):
     def extract_product_name(self, text: str) -> str:
         """
         Extract clean product name from OCR text that may contain extra info.
-        
+
         Args:
             text: Raw OCR text that may include IMEI, warranty info, etc.
-            
+
         Returns:
             Cleaned product name, or original text if extraction fails.
         """
@@ -253,10 +254,10 @@ class BaseLLMService(ABC):
     def clean_store_name(self, text: str) -> str:
         """
         Clean and format store/vendor name from OCR text.
-        
+
         Args:
             text: Raw OCR text with potential formatting issues
-            
+
         Returns:
             Cleaned store name, or original text if cleaning fails.
         """
@@ -265,10 +266,10 @@ class BaseLLMService(ABC):
     def clean_phone_number(self, text: str) -> str:
         """
         Format phone number from OCR text.
-        
+
         Args:
             text: Raw OCR text with phone number
-            
+
         Returns:
             Formatted phone number, or original text if cleaning fails.
         """
@@ -277,10 +278,10 @@ class BaseLLMService(ABC):
     def clean_email(self, text: str) -> str:
         """
         Clean email address from OCR text.
-        
+
         Args:
             text: Raw OCR text with email address
-            
+
         Returns:
             Cleaned email address, or original text if cleaning fails.
         """
@@ -289,10 +290,10 @@ class BaseLLMService(ABC):
     def clean_address(self, text: str) -> str:
         """
         Format address from OCR text.
-        
+
         Args:
             text: Raw OCR text with address
-            
+
         Returns:
             Formatted address, or original text if cleaning fails.
         """
@@ -301,6 +302,7 @@ class BaseLLMService(ABC):
 # ---------------------------------------------------------------------------
 # Mock implementation (dev / USE_MOCK_AWS=True)
 # ---------------------------------------------------------------------------
+
 
 class MockLLMService(BaseLLMService):
     """Mock LLM service — returns text unchanged (passthrough for dev mode)."""
@@ -319,27 +321,27 @@ class MockLLMService(BaseLLMService):
         """
         logger.debug("[MOCK] Product name extraction: using regex fallback")
         import re
-        
+
         # Common patterns that indicate non-product info starts
         patterns = [
-            r'(?i)(IMEI|Serial|S/N|Warranty|Brand\s+new|Refurbished|AppleCare)',
-            r'\d{15,}',  # Long numbers (IMEI, etc.)
+            r"(?i)(IMEI|Serial|S/N|Warranty|Brand\s+new|Refurbished|AppleCare)",
+            r"\d{15,}",  # Long numbers (IMEI, etc.)
         ]
-        
+
         # Try to split at first match
         for pattern in patterns:
             match = re.search(pattern, text)
             if match:
                 # Return everything before the match, stripped
-                result = text[:match.start()].strip()
+                result = text[: match.start()].strip()
                 if result:
                     return result
-        
+
         # Fallback: return first line or first 100 chars
-        first_line = text.split('\n')[0].strip()
+        first_line = text.split("\n")[0].strip()
         if len(first_line) <= 100:
             return first_line
-        
+
         # Last resort: return original
         return text
 
@@ -347,44 +349,46 @@ class MockLLMService(BaseLLMService):
         """Mock implementation using basic string cleanup."""
         logger.debug("[MOCK] Store name cleanup: using regex")
         import re
-        
+
         if not text or not text.strip():
             return text
-        
+
         # Remove common legal suffixes
-        result = re.sub(r'\s+(Inc\.?|LLC|Ltd\.?|Corp\.?|Co\.?)$', '', text, flags=re.IGNORECASE)
-        
+        result = re.sub(
+            r"\s+(Inc\.?|LLC|Ltd\.?|Corp\.?|Co\.?)$", "", text, flags=re.IGNORECASE
+        )
+
         # Remove extra punctuation
-        result = re.sub(r'[.]{2,}', '.', result)  # Multiple dots
-        result = re.sub(r'\s*[.-]\s*', ' ', result)  # Dashes and dots with spaces
-        result = re.sub(r'\.+$', '', result)  # Trailing dots
-        
+        result = re.sub(r"[.]{2,}", ".", result)  # Multiple dots
+        result = re.sub(r"\s*[.-]\s*", " ", result)  # Dashes and dots with spaces
+        result = re.sub(r"\.+$", "", result)  # Trailing dots
+
         # Convert to title case
         result = result.strip().title()
-        
+
         return result if result else text
 
     def clean_phone_number(self, text: str) -> str:
         """Mock implementation using regex for phone formatting."""
         logger.debug("[MOCK] Phone cleanup: using regex")
         import re
-        
+
         if not text or not text.strip():
             return text
-        
+
         # Extract digits only
-        digits = re.sub(r'\D', '', text)
-        
+        digits = re.sub(r"\D", "", text)
+
         # Check if it looks like a valid phone number (7-15 digits)
         if len(digits) < 7 or len(digits) > 15:
             return text
-        
+
         # Format US/Canada numbers (10 or 11 digits)
         if len(digits) == 10:
             return f"+1 ({digits[:3]}) {digits[3:6]}-{digits[6:]}"
-        elif len(digits) == 11 and digits[0] == '1':
+        elif len(digits) == 11 and digits[0] == "1":
             return f"+1 ({digits[1:4]}) {digits[4:7]}-{digits[7:]}"
-        
+
         # For other lengths, keep original
         return text
 
@@ -392,56 +396,57 @@ class MockLLMService(BaseLLMService):
         """Mock implementation using regex for email cleanup."""
         logger.debug("[MOCK] Email cleanup: using regex")
         import re
-        
+
         if not text or not text.strip():
             return text
-        
+
         # Remove spaces
-        result = text.replace(' ', '')
-        
+        result = text.replace(" ", "")
+
         # Fix common OCR mistakes
-        result = result.replace(',', '.')  # Comma instead of dot
-        result = result.replace(';', '.')  # Semicolon instead of dot
-        
+        result = result.replace(",", ".")  # Comma instead of dot
+        result = result.replace(";", ".")  # Semicolon instead of dot
+
         # Remove duplicate dots
-        result = re.sub(r'\.{2,}', '.', result)
-        
+        result = re.sub(r"\.{2,}", ".", result)
+
         # Convert to lowercase
         result = result.lower()
-        
+
         # Verify it looks like an email (has @ and .)
-        if '@' in result and '.' in result.split('@')[-1]:
+        if "@" in result and "." in result.split("@")[-1]:
             return result
-        
+
         return text
 
     def clean_address(self, text: str) -> str:
         """Mock implementation using basic formatting."""
         logger.debug("[MOCK] Address cleanup: using regex")
         import re
-        
+
         if not text or not text.strip():
             return text
-        
+
         # Replace line breaks with spaces
-        result = text.replace('\n', ' ')
-        
+        result = text.replace("\n", " ")
+
         # Fix common punctuation issues
-        result = re.sub(r'\s*\.\s*', ' ', result)  # Dots
-        result = re.sub(r'\s*-\s*', ' ', result)   # Dashes
-        
+        result = re.sub(r"\s*\.\s*", " ", result)  # Dots
+        result = re.sub(r"\s*-\s*", " ", result)  # Dashes
+
         # Normalize spacing
-        result = re.sub(r'\s+', ' ', result)
-        
+        result = re.sub(r"\s+", " ", result)
+
         # Basic title case (not perfect but better than nothing)
         result = result.strip().title()
-        
+
         return result if result else text
 
 
 # ---------------------------------------------------------------------------
 # Real implementation — AWS Bedrock (Claude Haiku via Converse API)
 # ---------------------------------------------------------------------------
+
 
 class BedrockLLMService(BaseLLMService):
     """
@@ -452,7 +457,7 @@ class BedrockLLMService(BaseLLMService):
     """
 
     def __init__(self, region: str, model_id: str) -> None:
-        import boto3
+        import boto3  # type: ignore[import-not-found,import-untyped]
 
         self._client = boto3.client("bedrock-runtime", region_name=region)
         self._model_id = model_id
@@ -487,17 +492,19 @@ class BedrockLLMService(BaseLLMService):
         try:
             import json
 
-            body = json.dumps({
-                "anthropic_version": "bedrock-2023-05-31",
-                "max_tokens": 512,
-                "temperature": 0.1,  # low temp → deterministic cleanup
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": [{"type": "text", "text": prompt}],
-                    }
-                ],
-            })
+            body = json.dumps(
+                {
+                    "anthropic_version": "bedrock-2023-05-31",
+                    "max_tokens": 512,
+                    "temperature": 0.1,  # low temp → deterministic cleanup
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": [{"type": "text", "text": prompt}],
+                        }
+                    ],
+                }
+            )
 
             raw = self._client.invoke_model(
                 modelId=self._model_id,
@@ -540,17 +547,19 @@ class BedrockLLMService(BaseLLMService):
         try:
             import json
 
-            body = json.dumps({
-                "anthropic_version": "bedrock-2023-05-31",
-                "max_tokens": 100,  # Product names are short
-                "temperature": 0.1,  # Deterministic extraction
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": [{"type": "text", "text": prompt}],
-                    }
-                ],
-            })
+            body = json.dumps(
+                {
+                    "anthropic_version": "bedrock-2023-05-31",
+                    "max_tokens": 100,  # Product names are short
+                    "temperature": 0.1,  # Deterministic extraction
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": [{"type": "text", "text": prompt}],
+                        }
+                    ],
+                }
+            )
 
             raw = self._client.invoke_model(
                 modelId=self._model_id,
@@ -585,17 +594,19 @@ class BedrockLLMService(BaseLLMService):
         try:
             import json
 
-            body = json.dumps({
-                "anthropic_version": "bedrock-2023-05-31",
-                "max_tokens": 50,
-                "temperature": 0.1,
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": [{"type": "text", "text": prompt}],
-                    }
-                ],
-            })
+            body = json.dumps(
+                {
+                    "anthropic_version": "bedrock-2023-05-31",
+                    "max_tokens": 50,
+                    "temperature": 0.1,
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": [{"type": "text", "text": prompt}],
+                        }
+                    ],
+                }
+            )
 
             raw = self._client.invoke_model(
                 modelId=self._model_id,
@@ -627,17 +638,19 @@ class BedrockLLMService(BaseLLMService):
         try:
             import json
 
-            body = json.dumps({
-                "anthropic_version": "bedrock-2023-05-31",
-                "max_tokens": 50,
-                "temperature": 0.1,
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": [{"type": "text", "text": prompt}],
-                    }
-                ],
-            })
+            body = json.dumps(
+                {
+                    "anthropic_version": "bedrock-2023-05-31",
+                    "max_tokens": 50,
+                    "temperature": 0.1,
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": [{"type": "text", "text": prompt}],
+                        }
+                    ],
+                }
+            )
 
             raw = self._client.invoke_model(
                 modelId=self._model_id,
@@ -669,17 +682,19 @@ class BedrockLLMService(BaseLLMService):
         try:
             import json
 
-            body = json.dumps({
-                "anthropic_version": "bedrock-2023-05-31",
-                "max_tokens": 50,
-                "temperature": 0.1,
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": [{"type": "text", "text": prompt}],
-                    }
-                ],
-            })
+            body = json.dumps(
+                {
+                    "anthropic_version": "bedrock-2023-05-31",
+                    "max_tokens": 50,
+                    "temperature": 0.1,
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": [{"type": "text", "text": prompt}],
+                        }
+                    ],
+                }
+            )
 
             raw = self._client.invoke_model(
                 modelId=self._model_id,
@@ -711,17 +726,19 @@ class BedrockLLMService(BaseLLMService):
         try:
             import json
 
-            body = json.dumps({
-                "anthropic_version": "bedrock-2023-05-31",
-                "max_tokens": 150,  # Addresses can be longer
-                "temperature": 0.1,
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": [{"type": "text", "text": prompt}],
-                    }
-                ],
-            })
+            body = json.dumps(
+                {
+                    "anthropic_version": "bedrock-2023-05-31",
+                    "max_tokens": 150,  # Addresses can be longer
+                    "temperature": 0.1,
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": [{"type": "text", "text": prompt}],
+                        }
+                    ],
+                }
+            )
 
             raw = self._client.invoke_model(
                 modelId=self._model_id,
@@ -746,6 +763,7 @@ class BedrockLLMService(BaseLLMService):
 # ---------------------------------------------------------------------------
 # Factory
 # ---------------------------------------------------------------------------
+
 
 def create_llm_service(
     use_mock: bool,
