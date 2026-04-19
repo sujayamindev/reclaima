@@ -25,22 +25,56 @@ _BRAVE_IMAGE_ENDPOINT = "https://api.search.brave.com/res/v1/images/search"
 
 # Domains that typically serve low-quality, watermarked, or cluttered images.
 _BLOCKED_DOMAINS = {
-    "ebay.com", "ebay.co.uk", "ebay.de", "ebay.fr",
-    "aliexpress.com", "alibaba.com",
-    "wish.com", "temu.com", "dhgate.com",
-    "facebook.com", "pinterest.com", "instagram.com",
-    "reddit.com", "twitter.com", "x.com",
-    "shutterstock.com", "gettyimages.com", "alamy.com",  # stock-photo paywalls
+    "ebay.com",
+    "ebay.co.uk",
+    "ebay.de",
+    "ebay.fr",
+    "aliexpress.com",
+    "alibaba.com",
+    "wish.com",
+    "temu.com",
+    "dhgate.com",
+    "facebook.com",
+    "pinterest.com",
+    "instagram.com",
+    "reddit.com",
+    "twitter.com",
+    "x.com",
+    "shutterstock.com",
+    "gettyimages.com",
+    "alamy.com",  # stock-photo paywalls
 }
 
 # Domains that provide high quality official product images.
 _TRUSTED_DOMAINS = {
-    "apple.com", "samsung.com", "sony.com", "lg.com", "panasonic.com",
-    "bose.com", "dell.com", "hp.com", "lenovo.com", "asus.com", "acer.com",
-    "microsoft.com", "bestbuy.com", "target.com", "walmart.com",
-    "homedepot.com", "lowes.com", "ikea.com", "canadiantire.ca",
-    "costco.com", "costco.ca", "bjs.com", "samsclub.com",
-    "bhphotovideo.com", "adorama.com", "officedepot.com", "staples.com", "amazon.com"
+    "apple.com",
+    "samsung.com",
+    "sony.com",
+    "lg.com",
+    "panasonic.com",
+    "bose.com",
+    "dell.com",
+    "hp.com",
+    "lenovo.com",
+    "asus.com",
+    "acer.com",
+    "microsoft.com",
+    "bestbuy.com",
+    "target.com",
+    "walmart.com",
+    "homedepot.com",
+    "lowes.com",
+    "ikea.com",
+    "canadiantire.ca",
+    "costco.com",
+    "costco.ca",
+    "bjs.com",
+    "samsclub.com",
+    "bhphotovideo.com",
+    "adorama.com",
+    "officedepot.com",
+    "staples.com",
+    "amazon.com",
 }
 
 
@@ -86,6 +120,7 @@ def _is_blocked(url: str) -> bool:
             return True
     return False
 
+
 def _is_trusted(url: str) -> bool:
     """Return True if the image URL is hosted on a trusted domain."""
     from urllib.parse import urlparse
@@ -100,6 +135,7 @@ def _is_trusted(url: str) -> bool:
 # ---------------------------------------------------------------------------
 # Abstract base
 # ---------------------------------------------------------------------------
+
 
 class BaseProductImageService(ABC):
     """Abstract base class for product image search services."""
@@ -120,6 +156,7 @@ class BaseProductImageService(ABC):
 # ---------------------------------------------------------------------------
 # Mock implementation (dev / USE_MOCK_AWS=True)
 # ---------------------------------------------------------------------------
+
 
 class MockProductImageService(BaseProductImageService):
     """Mock service — returns a placeholder image URL for development."""
@@ -147,6 +184,7 @@ class MockProductImageService(BaseProductImageService):
 # ---------------------------------------------------------------------------
 # Real implementation — Brave Search Image API
 # ---------------------------------------------------------------------------
+
 
 class BraveProductImageService(BaseProductImageService):
     """
@@ -311,6 +349,7 @@ class BraveProductImageService(BaseProductImageService):
 # ---------------------------------------------------------------------------
 # Factory
 # ---------------------------------------------------------------------------
+
 
 def create_product_image_service(
     use_mock: bool,

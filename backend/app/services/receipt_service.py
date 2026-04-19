@@ -688,7 +688,9 @@ class ReceiptService:
                     receipt.warranty_notes = extracted["warranty_notes"]
 
                 setattr(receipt, "status", ReceiptStatus.COMPLETED)
-                setattr(receipt, "ocr_raw_response", json.dumps(ocr_result, default=str))
+                setattr(
+                    receipt, "ocr_raw_response", json.dumps(ocr_result, default=str)
+                )
 
                 # ── line items ────────────────────────────────────────────────
                 # Remove any existing line items (e.g. from a previous retry)
@@ -1013,9 +1015,7 @@ class ReceiptService:
                     line_item,
                     "warranty_expiry_date",
                     purchase_date
-                    + relativedelta(
-                        months=cast(int, line_item.warranty_period_months)
-                    ),
+                    + relativedelta(months=cast(int, line_item.warranty_period_months)),
                 )
             else:
                 setattr(line_item, "warranty_expiry_date", None)
@@ -1024,7 +1024,8 @@ class ReceiptService:
                 setattr(
                     line_item,
                     "return_expiry_date",
-                    purchase_date + timedelta(days=cast(int, line_item.return_period_days)),
+                    purchase_date
+                    + timedelta(days=cast(int, line_item.return_period_days)),
                 )
             else:
                 setattr(line_item, "return_expiry_date", None)

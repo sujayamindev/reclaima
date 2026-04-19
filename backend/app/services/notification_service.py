@@ -67,16 +67,16 @@ class NotificationService:
         db.refresh(prefs)
         return prefs
 
-    def update_fcm_token(
-        self, db: Session, user_id: str, token: Optional[str]
-    ) -> None:
+    def update_fcm_token(self, db: Session, user_id: str, token: Optional[str]) -> None:
         """Store or clear the FCM device push token for *user_id*."""
         db.query(User).filter(User.id == user_id).update(
             {"fcm_token": token, "updated_at": datetime.now(timezone.utc)},
             synchronize_session=False,
         )
         db.commit()
-        logger.info(f"FCM token {'registered' if token else 'cleared'} for user {user_id}")
+        logger.info(
+            f"FCM token {'registered' if token else 'cleared'} for user {user_id}"
+        )
 
     # ── FCM Push Delivery ─────────────────────────────────────────────────────
 
@@ -122,9 +122,11 @@ class NotificationService:
 
         db = SessionLocal()
         try:
-            user = db.query(User).filter(
-                User.id == user_id, User.deleted_at.is_(None)
-            ).first()
+            user = (
+                db.query(User)
+                .filter(User.id == user_id, User.deleted_at.is_(None))
+                .first()
+            )
             if not user or not user.fcm_token:
                 return
             prefs = (
@@ -195,13 +197,13 @@ class NotificationService:
             s3_service = get_s3_service(
                 bucket_name=settings.AWS_S3_BUCKET,
                 use_mock=settings.USE_MOCK_AWS,
-                region=settings.AWS_REGION
+                region=settings.AWS_REGION,
             )
-            
+
             # Create deletion service and run job
             deletion_service = DeletionService(s3_service)
             results = deletion_service.run_hard_delete_job(db)
-            
+
             logger.info(
                 f"Hard-delete cleanup: {results['total']} total records removed "
                 f"({results['users']} users, {results['receipts']} receipts, "

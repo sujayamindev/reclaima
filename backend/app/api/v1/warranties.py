@@ -39,7 +39,7 @@ def _to_optional_datetime(value: object) -> Optional[datetime]:
 async def list_active_warranties(
     include_expired: bool = Query(False, description="Include expired warranties"),
     user_id: str = Depends(get_current_user_id),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     List active warranties for current user (one entry per line item).
@@ -101,7 +101,7 @@ async def list_active_warranties(
 async def list_return_deadlines(
     include_expired: bool = Query(False, description="Include expired return windows"),
     user_id: str = Depends(get_current_user_id),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     List return deadlines for current user (one entry per line item).

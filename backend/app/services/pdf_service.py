@@ -30,8 +30,8 @@ from app.models import Receipt, User
 
 
 class S3Readable(Protocol):
-    def get_file(self, object_key: str) -> Optional[bytes]:
-        ...
+    def get_file(self, object_key: str) -> Optional[bytes]: ...
+
 
 logger = logging.getLogger(__name__)
 
@@ -538,7 +538,9 @@ class PdfGenerationService:
                                 logger.info(
                                     f"Defect image {idx} is landscape ({width}x{height}), rotating 90° for full-page display"
                                 )
-                                processed_defect = processed_defect.rotate(-90, expand=True)
+                                processed_defect = processed_defect.rotate(
+                                    -90, expand=True
+                                )
 
                                 # Convert back to bytes
                                 rotated_buffer = BytesIO()
