@@ -60,7 +60,7 @@ dependencies:
   flutter_svg: ^2.0.10+1
 
   # Share & External URLs
-  share_plus: ^9.0.0
+  share_plus: ^13.0.0
   url_launcher: ^6.2.4
 
   # Utilities
