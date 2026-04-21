@@ -892,7 +892,7 @@ jobs:
 
       - name: Notify on deployment failure
         if: ${{ failure() && env.SLACK_DEPLOY_WEBHOOK != '' }}
-        uses: slackapi/slack-github-action@v1.26.0
+        uses: slackapi/slack-github-action@v3.0.1
         with:
           payload: |
             {
