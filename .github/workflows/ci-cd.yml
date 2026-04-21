@@ -474,7 +474,7 @@ jobs:
           echo "pip-audit passed on target revision."
 
       - name: Upload backend coverage report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: backend-coverage-xml
           path: backend/coverage.xml
@@ -739,14 +739,14 @@ jobs:
         run: echo "Android debug APK build skipped because Firebase config is unavailable in CI context."
 
       - name: Upload mobile coverage report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: mobile-lcov
           path: mobile/coverage/lcov.info
 
       - name: Upload Android debug artifact
         if: steps.android_firebase.outputs.available == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: mobile-android-debug-apk
           path: mobile/build/app/outputs/flutter-apk/app-debug.apk
