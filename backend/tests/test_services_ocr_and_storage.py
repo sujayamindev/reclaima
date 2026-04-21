@@ -176,7 +176,9 @@ def test_mock_llm_service_and_factory() -> None:
     assert service.clean_email("INFO @ SHOP . COM") == "info@shop.com"
     assert "Los Angeles" in service.clean_address("123 main st los angeles ca")
 
-    assert isinstance(create_llm_service(use_mock=True, region="us", model_id="x"), MockLLMService)
+    assert isinstance(
+        create_llm_service(use_mock=True, region="us", model_id="x"), MockLLMService
+    )
 
 
 def test_bedrock_llm_success_paths() -> None:
@@ -212,7 +214,9 @@ def test_product_image_helpers_and_factory() -> None:
     assert async_result and "imageUrl" in async_result
     assert sync_result and "imageUrl" in sync_result
 
-    assert isinstance(create_product_image_service(use_mock=True), MockProductImageService)
+    assert isinstance(
+        create_product_image_service(use_mock=True), MockProductImageService
+    )
     assert isinstance(
         create_product_image_service(use_mock=False, api_key="token"),
         BraveProductImageService,
@@ -222,8 +226,14 @@ def test_product_image_helpers_and_factory() -> None:
 def test_brave_product_image_service_async(monkeypatch) -> None:
     payload = {
         "results": [
-            {"url": "https://www.random.com/p/1", "properties": {"url": "https://www.random.com/i.jpg"}},
-            {"url": "https://www.apple.com/p/2", "properties": {"url": "https://www.apple.com/i.jpg"}},
+            {
+                "url": "https://www.random.com/p/1",
+                "properties": {"url": "https://www.random.com/i.jpg"},
+            },
+            {
+                "url": "https://www.apple.com/p/2",
+                "properties": {"url": "https://www.apple.com/i.jpg"},
+            },
         ]
     }
     response = _DummyHTTPResponse(payload=payload)
@@ -268,7 +278,9 @@ def test_mock_and_real_s3_service_behaviors() -> None:
 
     out_key = service.upload_file(b"pdf", "doc.pdf", "application/pdf")
     assert out_key == "doc.pdf"
-    assert service.generate_presigned_url("doc.pdf", expiration=120).startswith("https://s3.local")
+    assert service.generate_presigned_url("doc.pdf", expiration=120).startswith(
+        "https://s3.local"
+    )
     assert service.get_file("doc.pdf") == b"pdf"
     assert service.get_file("missing") is None
 
@@ -290,9 +302,42 @@ def test_textract_geometry_helpers() -> None:
     assert not RealTextractService._boxes_overlap(region, bbox_outside)
 
     blocks = [
-        {"BlockType": "LINE", "Text": "L1", "Geometry": {"BoundingBox": {"Left": 0.15, "Top": 0.20, "Width": 0.10, "Height": 0.02}}},
-        {"BlockType": "LINE", "Text": "L2", "Geometry": {"BoundingBox": {"Left": 0.16, "Top": 0.30, "Width": 0.10, "Height": 0.02}}},
-        {"BlockType": "LINE", "Text": "R1", "Geometry": {"BoundingBox": {"Left": 0.55, "Top": 0.20, "Width": 0.10, "Height": 0.02}}},
+        {
+            "BlockType": "LINE",
+            "Text": "L1",
+            "Geometry": {
+                "BoundingBox": {
+                    "Left": 0.15,
+                    "Top": 0.20,
+                    "Width": 0.10,
+                    "Height": 0.02,
+                }
+            },
+        },
+        {
+            "BlockType": "LINE",
+            "Text": "L2",
+            "Geometry": {
+                "BoundingBox": {
+                    "Left": 0.16,
+                    "Top": 0.30,
+                    "Width": 0.10,
+                    "Height": 0.02,
+                }
+            },
+        },
+        {
+            "BlockType": "LINE",
+            "Text": "R1",
+            "Geometry": {
+                "BoundingBox": {
+                    "Left": 0.55,
+                    "Top": 0.20,
+                    "Width": 0.10,
+                    "Height": 0.02,
+                }
+            },
+        },
     ]
     text = RealTextractService._reconstruct_column_text(blocks, region)
     assert "L1" in text and "R1" in text
@@ -307,18 +352,42 @@ def test_textract_parse_response_extracts_fields_and_line_items() -> None:
         "ExpenseDocuments": [
             {
                 "SummaryFields": [
-                    {"Type": {"Text": "VENDOR_NAME"}, "ValueDetection": {"Text": "DOLL", "Confidence": 90}},
-                    {"Type": {"Text": "VENDOR_NAME"}, "ValueDetection": {"Text": "Dellshop.lk", "Confidence": 80}},
-                    {"Type": {"Text": "VENDOR_URL"}, "ValueDetection": {"Text": "https://dellshop.lk", "Confidence": 95}},
-                    {"Type": {"Text": "INVOICE_RECEIPT_DATE"}, "ValueDetection": {"Text": "2026-04-01", "Confidence": 95}},
-                    {"Type": {"Text": "TOTAL"}, "ValueDetection": {"Text": "$123.45", "Confidence": 99}},
+                    {
+                        "Type": {"Text": "VENDOR_NAME"},
+                        "ValueDetection": {"Text": "DOLL", "Confidence": 90},
+                    },
+                    {
+                        "Type": {"Text": "VENDOR_NAME"},
+                        "ValueDetection": {"Text": "Dellshop.lk", "Confidence": 80},
+                    },
+                    {
+                        "Type": {"Text": "VENDOR_URL"},
+                        "ValueDetection": {
+                            "Text": "https://dellshop.lk",
+                            "Confidence": 95,
+                        },
+                    },
+                    {
+                        "Type": {"Text": "INVOICE_RECEIPT_DATE"},
+                        "ValueDetection": {"Text": "2026-04-01", "Confidence": 95},
+                    },
+                    {
+                        "Type": {"Text": "TOTAL"},
+                        "ValueDetection": {"Text": "$123.45", "Confidence": 99},
+                    },
                     {
                         "Type": {"Text": "INVOICE_RECEIPT_ID"},
                         "LabelDetection": {"Text": "Invoice No"},
                         "ValueDetection": {"Text": "INV-001", "Confidence": 90},
                     },
-                    {"Type": {"Text": "VENDOR_ADDRESS"}, "ValueDetection": {"Text": "123 MAIN ST", "Confidence": 90}},
-                    {"Type": {"Text": "VENDOR_PHONE"}, "ValueDetection": {"Text": "123.456.7890", "Confidence": 90}},
+                    {
+                        "Type": {"Text": "VENDOR_ADDRESS"},
+                        "ValueDetection": {"Text": "123 MAIN ST", "Confidence": 90},
+                    },
+                    {
+                        "Type": {"Text": "VENDOR_PHONE"},
+                        "ValueDetection": {"Text": "123.456.7890", "Confidence": 90},
+                    },
                     {
                         "Type": {"Text": "OTHER"},
                         "LabelDetection": {"Text": "Note"},
@@ -335,20 +404,71 @@ def test_textract_parse_response_extracts_fields_and_line_items() -> None:
                     },
                 ],
                 "Blocks": [
-                    {"BlockType": "LINE", "Text": "left column text", "Confidence": 99, "Geometry": {"BoundingBox": {"Left": 0.11, "Top": 0.41, "Width": 0.20, "Height": 0.02}}},
-                    {"BlockType": "LINE", "Text": "right column text", "Confidence": 99, "Geometry": {"BoundingBox": {"Left": 0.50, "Top": 0.41, "Width": 0.20, "Height": 0.02}}},
-                    {"BlockType": "LINE", "Text": "support@shop.com", "Confidence": 99, "Geometry": {"BoundingBox": {"Left": 0.10, "Top": 0.20, "Width": 0.20, "Height": 0.02}}},
+                    {
+                        "BlockType": "LINE",
+                        "Text": "left column text",
+                        "Confidence": 99,
+                        "Geometry": {
+                            "BoundingBox": {
+                                "Left": 0.11,
+                                "Top": 0.41,
+                                "Width": 0.20,
+                                "Height": 0.02,
+                            }
+                        },
+                    },
+                    {
+                        "BlockType": "LINE",
+                        "Text": "right column text",
+                        "Confidence": 99,
+                        "Geometry": {
+                            "BoundingBox": {
+                                "Left": 0.50,
+                                "Top": 0.41,
+                                "Width": 0.20,
+                                "Height": 0.02,
+                            }
+                        },
+                    },
+                    {
+                        "BlockType": "LINE",
+                        "Text": "support@shop.com",
+                        "Confidence": 99,
+                        "Geometry": {
+                            "BoundingBox": {
+                                "Left": 0.10,
+                                "Top": 0.20,
+                                "Width": 0.20,
+                                "Height": 0.02,
+                            }
+                        },
+                    },
                 ],
                 "LineItemGroups": [
                     {
                         "LineItems": [
                             {
                                 "LineItemExpenseFields": [
-                                    {"Type": {"Text": "PRODUCT_CODE"}, "ValueDetection": {"Text": "SKU1"}},
-                                    {"Type": {"Text": "ITEM"}, "ValueDetection": {"Text": "Laptop IMEI 123"}},
-                                    {"Type": {"Text": "QUANTITY"}, "ValueDetection": {"Text": "3"}},
-                                    {"Type": {"Text": "PRICE"}, "ValueDetection": {"Text": "300.00"}},
-                                    {"Type": {"Text": "EXPENSE_ROW"}, "ValueDetection": {"Text": "Warranty 2 years"}},
+                                    {
+                                        "Type": {"Text": "PRODUCT_CODE"},
+                                        "ValueDetection": {"Text": "SKU1"},
+                                    },
+                                    {
+                                        "Type": {"Text": "ITEM"},
+                                        "ValueDetection": {"Text": "Laptop IMEI 123"},
+                                    },
+                                    {
+                                        "Type": {"Text": "QUANTITY"},
+                                        "ValueDetection": {"Text": "3"},
+                                    },
+                                    {
+                                        "Type": {"Text": "PRICE"},
+                                        "ValueDetection": {"Text": "300.00"},
+                                    },
+                                    {
+                                        "Type": {"Text": "EXPENSE_ROW"},
+                                        "ValueDetection": {"Text": "Warranty 2 years"},
+                                    },
                                 ]
                             }
                         ]
@@ -388,5 +508,7 @@ def test_textract_analyze_document_failure_and_factories() -> None:
     mock = MockTextractService().analyze_document("doc.pdf")
     assert mock["status"] == "success"
 
-    assert isinstance(get_textract_service("bucket", use_mock=True), MockTextractService)
+    assert isinstance(
+        get_textract_service("bucket", use_mock=True), MockTextractService
+    )
     assert isinstance(get_s3_service("bucket", use_mock=True), MockS3Service)

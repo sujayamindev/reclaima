@@ -48,7 +48,9 @@ class _StubProductImageService:
 
 @pytest.fixture()
 def db_session():
-    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
+    engine = create_engine(
+        "sqlite:///:memory:", connect_args={"check_same_thread": False}
+    )
     TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     Base.metadata.create_all(bind=engine)
 
@@ -74,7 +76,9 @@ def _create_user(db_session, uid: str = "test-firebase-uid") -> User:
     return user
 
 
-def _make_receipt_service(textract_map: dict[str, dict] | None = None) -> ReceiptService:
+def _make_receipt_service(
+    textract_map: dict[str, dict] | None = None,
+) -> ReceiptService:
     service = ReceiptService.__new__(ReceiptService)
     service.llm_service = _DummyLLM()
     service.s3_service = MockS3Service("unit-test-bucket")
@@ -261,7 +265,9 @@ def test_process_ocr_retry_and_line_item_crud(db_session) -> None:
     db_session.add(claim)
     db_session.commit()
 
-    assert service.delete_line_item(db_session, str(receipt.id), str(created_item.id), str(user.id))
+    assert service.delete_line_item(
+        db_session, str(receipt.id), str(created_item.id), str(user.id)
+    )
 
     failed_receipt = Receipt(
         id=str(uuid.uuid4()),

@@ -36,7 +36,9 @@ from app.services.user_service import UserService
 
 @pytest.fixture()
 def db_session():
-    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
+    engine = create_engine(
+        "sqlite:///:memory:", connect_args={"check_same_thread": False}
+    )
     TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     Base.metadata.create_all(bind=engine)
 
@@ -119,16 +121,22 @@ async def test_auth_routes_and_user_service_flow(db_session) -> None:
     )
     assert existing.firebase_uid == "uid-auth-1-updated"
 
-    assert service.get_user_by_firebase_uid(db_session, "uid-auth-1-updated") is not None
+    assert (
+        service.get_user_by_firebase_uid(db_session, "uid-auth-1-updated") is not None
+    )
     assert service.get_user_by_id(db_session, str(existing.id)) is not None
 
-    updated = service.update_user(db_session, str(existing.id), UserUpdate(display_name="Updated"))
+    updated = service.update_user(
+        db_session, str(existing.id), UserUpdate(display_name="Updated")
+    )
     assert updated is not None
     assert updated.display_name == "Updated"
 
     bad_token = {"uid": "x"}
     with pytest.raises(HTTPException) as exc:
-        await auth_api.register_user(current_user=bad_token, db=db_session, full_name=None)
+        await auth_api.register_user(
+            current_user=bad_token, db=db_session, full_name=None
+        )
     assert exc.value.status_code == 400
 
     token = {"uid": "uid-auth-1-updated", "email": "auth@example.com"}
@@ -222,7 +230,9 @@ async def test_notification_and_products_routes(db_session, monkeypatch) -> None
             return {"imageUrl": "https://img/1.jpg", "title": query, "source": "test"}
 
     monkeypatch.setattr(products_api, "_get_image_service", lambda: _ImageService())
-    found = await products_api.search_product_image(query="Laptop", current_user=current_user)
+    found = await products_api.search_product_image(
+        query="Laptop", current_user=current_user
+    )
     assert found["imageUrl"].endswith("1.jpg")
 
     class _NoImageService:
@@ -231,7 +241,9 @@ async def test_notification_and_products_routes(db_session, monkeypatch) -> None
 
     monkeypatch.setattr(products_api, "_get_image_service", lambda: _NoImageService())
     with pytest.raises(HTTPException) as exc:
-        await products_api.search_product_image(query="Unknown", current_user=current_user)
+        await products_api.search_product_image(
+            query="Unknown", current_user=current_user
+        )
     assert exc.value.status_code == 404
 
 
@@ -267,12 +279,20 @@ async def test_receipt_routes_branches(db_session, monkeypatch) -> None:
     )
     assert listed["total"] == 1
 
-    monkeypatch.setattr(receipts_api.receipt_service, "get_receipt", lambda db, rid, uid: None)
+    monkeypatch.setattr(
+        receipts_api.receipt_service, "get_receipt", lambda db, rid, uid: None
+    )
     with pytest.raises(HTTPException) as exc:
-        await receipts_api.get_receipt(str(receipt.id), current_user=current_user, db=db_session)
+        await receipts_api.get_receipt(
+            str(receipt.id), current_user=current_user, db=db_session
+        )
     assert exc.value.status_code == 404
 
-    monkeypatch.setattr(receipts_api.receipt_service, "update_receipt", lambda db, rid, uid, payload: None)
+    monkeypatch.setattr(
+        receipts_api.receipt_service,
+        "update_receipt",
+        lambda db, rid, uid, payload: None,
+    )
     with pytest.raises(HTTPException) as exc:
         await receipts_api.update_receipt(
             str(receipt.id),
@@ -282,9 +302,13 @@ async def test_receipt_routes_branches(db_session, monkeypatch) -> None:
         )
     assert exc.value.status_code == 404
 
-    monkeypatch.setattr(receipts_api.receipt_service, "delete_receipt", lambda db, rid, uid: False)
+    monkeypatch.setattr(
+        receipts_api.receipt_service, "delete_receipt", lambda db, rid, uid: False
+    )
     with pytest.raises(HTTPException) as exc:
-        await receipts_api.delete_receipt(str(receipt.id), current_user=current_user, db=db_session)
+        await receipts_api.delete_receipt(
+            str(receipt.id), current_user=current_user, db=db_session
+        )
     assert exc.value.status_code == 404
 
     bad_type = _upload_file("file.txt", "text/plain", b"abc")
@@ -330,7 +354,9 @@ async def test_receipt_routes_branches(db_session, monkeypatch) -> None:
         )
     assert exc.value.status_code == 400
 
-    monkeypatch.setattr(receipts_api.receipt_service, "create_line_item", lambda *args, **kwargs: None)
+    monkeypatch.setattr(
+        receipts_api.receipt_service, "create_line_item", lambda *args, **kwargs: None
+    )
     with pytest.raises(HTTPException) as exc:
         await receipts_api.create_line_item(
             str(receipt.id),
@@ -340,7 +366,9 @@ async def test_receipt_routes_branches(db_session, monkeypatch) -> None:
         )
     assert exc.value.status_code == 404
 
-    monkeypatch.setattr(receipts_api.receipt_service, "update_line_item", lambda *args, **kwargs: None)
+    monkeypatch.setattr(
+        receipts_api.receipt_service, "update_line_item", lambda *args, **kwargs: None
+    )
     with pytest.raises(HTTPException) as exc:
         await receipts_api.update_line_item(
             str(receipt.id),
@@ -351,7 +379,9 @@ async def test_receipt_routes_branches(db_session, monkeypatch) -> None:
         )
     assert exc.value.status_code == 404
 
-    monkeypatch.setattr(receipts_api.receipt_service, "delete_line_item", lambda *args, **kwargs: False)
+    monkeypatch.setattr(
+        receipts_api.receipt_service, "delete_line_item", lambda *args, **kwargs: False
+    )
     with pytest.raises(HTTPException) as exc:
         await receipts_api.delete_line_item(
             str(receipt.id),
@@ -367,7 +397,11 @@ async def test_claim_routes_success_and_errors(db_session, monkeypatch) -> None:
     user = _make_user(db_session, uid="claim-route-user")
     current_user = {"uid": user.firebase_uid}
     receipt = _make_receipt(db_session, str(user.id), with_line_item=True)
-    line_item = db_session.query(ReceiptLineItem).filter(ReceiptLineItem.receipt_id == str(receipt.id)).first()
+    line_item = (
+        db_session.query(ReceiptLineItem)
+        .filter(ReceiptLineItem.receipt_id == str(receipt.id))
+        .first()
+    )
     assert line_item is not None
 
     too_many = [_upload_file(f"{i}.jpg", "image/jpeg", b"img") for i in range(11)]
@@ -394,7 +428,9 @@ async def test_claim_routes_success_and_errors(db_session, monkeypatch) -> None:
         def file_exists(self, object_key):
             return object_key in self.files
 
-        def generate_presigned_url(self, object_key, expiration=3600, operation="get_object"):
+        def generate_presigned_url(
+            self, object_key, expiration=3600, operation="get_object"
+        ):
             return f"https://signed/{object_key}"
 
     class _DummyPDF:
@@ -442,20 +478,28 @@ async def test_claim_routes_success_and_errors(db_session, monkeypatch) -> None:
     )
     assert len(listed) >= 1
 
-    fetched = await claims_api.get_claim(claim_id, current_user=current_user, db=db_session)
+    fetched = await claims_api.get_claim(
+        claim_id, current_user=current_user, db=db_session
+    )
     assert fetched.id == claim_id
 
     # Force regeneration path for PDF access.
-    claim_row = db_session.query(ClaimDocument).filter(ClaimDocument.id == claim_id).first()
+    claim_row = (
+        db_session.query(ClaimDocument).filter(ClaimDocument.id == claim_id).first()
+    )
     assert claim_row is not None
     claim_row.generated_pdf_s3_key = "missing.pdf"
     db_session.commit()
 
-    accessed = await claims_api.access_claim_pdf(claim_id, current_user=current_user, db=db_session)
+    accessed = await claims_api.access_claim_pdf(
+        claim_id, current_user=current_user, db=db_session
+    )
     assert accessed.url is not None
 
     await claims_api.delete_claim(claim_id, current_user=current_user, db=db_session)
-    deleted = db_session.query(ClaimDocument).filter(ClaimDocument.id == claim_id).first()
+    deleted = (
+        db_session.query(ClaimDocument).filter(ClaimDocument.id == claim_id).first()
+    )
     assert deleted is not None
     assert deleted.deleted_at is not None
 
@@ -466,7 +510,9 @@ def test_scheduler_module_paths(monkeypatch) -> None:
             self.running = False
             self.jobs = []
 
-        def add_job(self, func, trigger, id, name, replace_existing, misfire_grace_time):
+        def add_job(
+            self, func, trigger, id, name, replace_existing, misfire_grace_time
+        ):
             self.jobs.append(
                 {
                     "id": id,
