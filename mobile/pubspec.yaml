@@ -64,7 +64,7 @@ dependencies:
   url_launcher: ^6.2.4
 
   # Utilities
-  intl: ^0.19.0
+  intl: ^0.20.2
   uuid: ^4.4.0
   logger: ^2.3.0
   
