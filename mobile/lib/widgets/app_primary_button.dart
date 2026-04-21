@@ -43,7 +43,8 @@ class AppPrimaryButton extends StatelessWidget {
       width: width,
       height: height,
       backgroundColor: AppColors.onPrimary,
-      foregroundColor: Colors.white, // In dark button, we use white text on the navy background
+      foregroundColor: Colors
+          .white, // In dark button, we use white text on the navy background
       side: side,
       icon: icon,
     );
@@ -82,10 +83,7 @@ class AppPrimaryButton extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if (icon != null) ...[
-                    icon!,
-                    const SizedBox(width: 8),
-                  ],
+                  if (icon != null) ...[icon!, const SizedBox(width: 8)],
                   Text(
                     text,
                     style: AppTextStyles.button.copyWith(

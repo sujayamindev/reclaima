@@ -14,9 +14,5 @@ final logger = Logger(
 
 /// Production logger (no colors, no emojis)
 final productionLogger = Logger(
-  printer: PrettyPrinter(
-    methodCount: 0,
-    colors: false,
-    printEmojis: false,
-  ),
+  printer: PrettyPrinter(methodCount: 0, colors: false, printEmojis: false),
 );

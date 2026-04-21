@@ -78,15 +78,15 @@ class MyApp extends ConsumerWidget {
             FlutterNativeSplash.remove();
             return const LoginScreen();
           }
-          if (!user.emailVerified && user.providerData.any((p) => p.providerId == 'password')) {
+          if (!user.emailVerified &&
+              user.providerData.any((p) => p.providerId == 'password')) {
             FlutterNativeSplash.remove();
             return const VerifyEmailScreen();
           }
           return const _AuthenticatedRoot();
         },
-        loading: () => const Scaffold(
-          body: Center(child: CircularProgressIndicator()),
-        ),
+        loading: () =>
+            const Scaffold(body: Center(child: CircularProgressIndicator())),
         error: (_, _) {
           FlutterNativeSplash.remove();
           return const LoginScreen();

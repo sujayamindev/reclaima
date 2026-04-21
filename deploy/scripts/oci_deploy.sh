@@ -12,9 +12,12 @@ COMPOSE_FILE="${COMPOSE_FILE:-${DEPLOY_DIR}/docker-compose.prod.yml}"
 API_PORT="${API_PORT:-8000}"
 BACKEND_IMAGE="${IMAGE_REPOSITORY}:${IMAGE_TAG}"
 PREVIOUS_IMAGE_FILE="${DEPLOY_DIR}/.previous_backend_image"
+PREVIOUS_ALEMBIC_REV_FILE="${DEPLOY_DIR}/.previous_alembic_rev"
 HEALTH_URL="http://127.0.0.1:${API_PORT}/api/v1/health"
 API_CONTAINER="${API_CONTAINER:-smart-receipt-api}"
 SCHEDULER_CONTAINER="${SCHEDULER_CONTAINER:-smart-receipt-scheduler}"
+SMOKE_TEST_URL="${SMOKE_TEST_URL:-http://127.0.0.1:${API_PORT}/api/v1/receipts?page=1&page_size=1}"
+SMOKE_TEST_TOKEN="${SMOKE_TEST_TOKEN:-}"
 
 container_health_status() {
   docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$1" 2>/dev/null || echo "missing"
@@ -62,6 +65,30 @@ wait_for_runtime_health() {
   return 1
 }
 
+read_alembic_revision_from_output() {
+  awk '/^[0-9a-f]+/ {print $1; exit}'
+}
+
+run_authenticated_smoke_test() {
+  if [[ -z "${SMOKE_TEST_TOKEN}" ]]; then
+    echo "SMOKE_TEST_TOKEN not provided; skipping authenticated smoke test."
+    return 0
+  fi
+
+  local status
+  status="$(curl --silent --output /dev/null --write-out "%{http_code}" \
+    -H "Authorization: Bearer ${SMOKE_TEST_TOKEN}" \
+    "${SMOKE_TEST_URL}")"
+
+  if [[ "${status}" != "200" ]]; then
+    echo "Authenticated smoke test failed with HTTP ${status} at ${SMOKE_TEST_URL}."
+    return 1
+  fi
+
+  echo "Authenticated smoke test passed."
+  return 0
+}
+
 if [[ ! -f "${COMPOSE_FILE}" ]]; then
   echo "Compose file not found: ${COMPOSE_FILE}" >&2
   exit 1
@@ -83,16 +110,33 @@ if [[ -n "${CURRENT_IMAGE}" ]]; then
   printf '%s\n' "${CURRENT_IMAGE}" > "${PREVIOUS_IMAGE_FILE}"
 fi
 
+docker compose -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}" up -d postgres
+
+PREVIOUS_ALEMBIC_REV="base"
+if [[ -n "${CURRENT_IMAGE}" ]]; then
+  export BACKEND_IMAGE="${CURRENT_IMAGE}"
+  if CURRENT_REVISION_OUTPUT="$(docker compose -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}" run --rm migrate alembic current 2>&1)"; then
+    PARSED_REVISION="$(printf '%s\n' "${CURRENT_REVISION_OUTPUT}" | read_alembic_revision_from_output || true)"
+    if [[ -n "${PARSED_REVISION}" ]]; then
+      PREVIOUS_ALEMBIC_REV="${PARSED_REVISION}"
+    fi
+  else
+    echo "Warning: Unable to detect current Alembic revision; defaulting rollback target to base."
+  fi
+fi
+printf '%s\n' "${PREVIOUS_ALEMBIC_REV}" > "${PREVIOUS_ALEMBIC_REV_FILE}"
+echo "Recorded pre-deploy Alembic revision: ${PREVIOUS_ALEMBIC_REV}"
+
+BACKEND_IMAGE="${IMAGE_REPOSITORY}:${IMAGE_TAG}"
 echo "Deploying image ${BACKEND_IMAGE}"
 export BACKEND_IMAGE
 
 docker compose -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}" pull api scheduler migrate
-docker compose -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}" up -d postgres
 docker compose -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}" run --rm migrate
 docker compose -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}" up -d api scheduler
 
 echo "Running post-deploy health checks: API endpoint and scheduler container"
-if wait_for_runtime_health "Deployment"; then
+if wait_for_runtime_health "Deployment" && run_authenticated_smoke_test; then
   exit 0
 fi
 
@@ -100,9 +144,26 @@ echo "Deployment health check failed. Starting rollback..."
 if [[ -f "${PREVIOUS_IMAGE_FILE}" ]]; then
   ROLLBACK_IMAGE="$(cat "${PREVIOUS_IMAGE_FILE}")"
   export BACKEND_IMAGE="${ROLLBACK_IMAGE}"
+
+  if [[ -f "${PREVIOUS_ALEMBIC_REV_FILE}" ]]; then
+    ROLLBACK_REVISION="$(cat "${PREVIOUS_ALEMBIC_REV_FILE}")"
+    if [[ -z "${ROLLBACK_REVISION}" ]]; then
+      ROLLBACK_REVISION="base"
+    fi
+
+    echo "Rolling back database schema to revision: ${ROLLBACK_REVISION}"
+    if ! docker compose -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}" run --rm migrate alembic downgrade "${ROLLBACK_REVISION}"; then
+      echo "Database rollback failed for revision ${ROLLBACK_REVISION}."
+      echo "Rollback failed. Manual intervention required."
+      exit 1
+    fi
+  else
+    echo "Previous Alembic revision file not found; skipping schema rollback."
+  fi
+
   docker compose -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}" up -d api scheduler
 
-  if wait_for_runtime_health "Rollback"; then
+  if wait_for_runtime_health "Rollback" && run_authenticated_smoke_test; then
     echo "Rollback succeeded using ${ROLLBACK_IMAGE}."
     exit 1
   fi

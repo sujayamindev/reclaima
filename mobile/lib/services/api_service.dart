@@ -7,19 +7,17 @@ import '../core/utils/logger.dart';
 class ApiService {
   late final Dio _dio;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  
+
   ApiService() {
     _dio = Dio(
       BaseOptions(
         baseUrl: ApiConstants.baseUrl,
         connectTimeout: ApiConstants.connectTimeout,
         receiveTimeout: ApiConstants.receiveTimeout,
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: {'Content-Type': 'application/json'},
       ),
     );
-    
+
     // Add interceptors
     _dio.interceptors.add(
       InterceptorsWrapper(
@@ -29,7 +27,7 @@ class ApiService {
       ),
     );
   }
-  
+
   /// Request interceptor - Add Firebase token
   Future<void> _onRequest(
     RequestOptions options,
@@ -46,30 +44,26 @@ class ApiService {
     } catch (e) {
       logger.e('Error getting Firebase token: $e');
     }
-    
+
     logger.d('Request: ${options.method} ${options.path}');
     handler.next(options);
   }
-  
+
   /// Response interceptor
-  void _onResponse(
-    Response response,
-    ResponseInterceptorHandler handler,
-  ) {
-    logger.d('Response: ${response.statusCode} ${response.requestOptions.path}');
+  void _onResponse(Response response, ResponseInterceptorHandler handler) {
+    logger.d(
+      'Response: ${response.statusCode} ${response.requestOptions.path}',
+    );
     handler.next(response);
   }
-  
+
   /// Error interceptor
-  void _onError(
-    DioException err,
-    ErrorInterceptorHandler handler,
-  ) {
+  void _onError(DioException err, ErrorInterceptorHandler handler) {
     logger.e('Error: ${err.response?.statusCode} ${err.requestOptions.path}');
     logger.e('Message: ${err.message}');
     handler.next(err);
   }
-  
+
   /// GET request
   Future<Response> get(
     String path, {
@@ -77,33 +71,25 @@ class ApiService {
   }) async {
     return await _dio.get(path, queryParameters: queryParameters);
   }
-  
+
   /// POST request
   Future<Response> post(
     String path, {
     dynamic data,
     Map<String, dynamic>? queryParameters,
   }) async {
-    return await _dio.post(
-      path,
-      data: data,
-      queryParameters: queryParameters,
-    );
+    return await _dio.post(path, data: data, queryParameters: queryParameters);
   }
-  
+
   /// PATCH request
   Future<Response> patch(
     String path, {
     dynamic data,
     Map<String, dynamic>? queryParameters,
   }) async {
-    return await _dio.patch(
-      path,
-      data: data,
-      queryParameters: queryParameters,
-    );
+    return await _dio.patch(path, data: data, queryParameters: queryParameters);
   }
-  
+
   /// DELETE request
   Future<Response> delete(
     String path, {
@@ -111,7 +97,7 @@ class ApiService {
   }) async {
     return await _dio.delete(path, queryParameters: queryParameters);
   }
-  
+
   /// Upload file
   Future<Response> uploadFile(
     String path,
@@ -124,7 +110,7 @@ class ApiService {
       fileKey: await MultipartFile.fromFile(filePath),
       ...?data,
     });
-    
+
     return await _dio.post(
       path,
       data: formData,

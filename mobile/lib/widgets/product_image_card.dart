@@ -48,9 +48,7 @@ class ProductImageCard extends StatelessWidget {
               const SizedBox(width: 10),
               Text(
                 'Product Preview',
-                style: AppTextStyles.sectionTitle.copyWith(
-                  color: textPrimary,
-                ),
+                style: AppTextStyles.sectionTitle.copyWith(color: textPrimary),
               ),
             ],
           ),

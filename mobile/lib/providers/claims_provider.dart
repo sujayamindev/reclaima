@@ -40,7 +40,8 @@ class ClaimsNotifier extends StateNotifier<ClaimsState> {
   final ClaimService _claimService;
   final String receiptId;
 
-  ClaimsNotifier(this._claimService, this.receiptId) : super(const ClaimsState()) {
+  ClaimsNotifier(this._claimService, this.receiptId)
+    : super(const ClaimsState()) {
     loadClaims();
   }
 
@@ -50,25 +51,27 @@ class ClaimsNotifier extends StateNotifier<ClaimsState> {
     try {
       logger.i('Loading claims for receipt $receiptId');
       final claims = await _claimService.getClaims(receiptId: receiptId);
-      state = state.copyWith(
-        claims: claims,
-        isLoading: false,
-      );
+      state = state.copyWith(claims: claims, isLoading: false);
       logger.i('Loaded ${claims.length} claims');
     } catch (e) {
       logger.e('Error loading claims: $e');
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
   /// Update a claim's status or notes
-  Future<void> updateClaim(String claimId, {String? status, String? notes}) async {
+  Future<void> updateClaim(
+    String claimId, {
+    String? status,
+    String? notes,
+  }) async {
     try {
       logger.i('Updating claim $claimId');
-      final updatedClaim = await _claimService.updateClaim(claimId, status: status, notes: notes);
+      final updatedClaim = await _claimService.updateClaim(
+        claimId,
+        status: status,
+        notes: notes,
+      );
 
       // Update the claim in the list
       final updatedClaims = state.claims.map((claim) {
@@ -90,7 +93,9 @@ class ClaimsNotifier extends StateNotifier<ClaimsState> {
       await _claimService.deleteClaim(claimId);
 
       // Remove the claim from the list
-      final updatedClaims = state.claims.where((claim) => claim.id != claimId).toList();
+      final updatedClaims = state.claims
+          .where((claim) => claim.id != claimId)
+          .toList();
       state = state.copyWith(claims: updatedClaims);
       logger.i('Claim deleted successfully');
     } catch (e) {
@@ -100,7 +105,12 @@ class ClaimsNotifier extends StateNotifier<ClaimsState> {
   }
 
   /// Resolve a claim with an outcome
-  Future<void> resolveClaim(String claimId, String outcome, {String? linkedItemId, bool? duplicateDetails}) async {
+  Future<void> resolveClaim(
+    String claimId,
+    String outcome, {
+    String? linkedItemId,
+    bool? duplicateDetails,
+  }) async {
     try {
       logger.i('Resolving claim $claimId with outcome $outcome');
       final updatedClaim = await _claimService.resolveClaim(
@@ -125,13 +135,20 @@ class ClaimsNotifier extends StateNotifier<ClaimsState> {
 }
 
 /// Provider family for claims by receipt ID
-final claimsProvider = StateNotifierProvider.family<ClaimsNotifier, ClaimsState, String>((ref, receiptId) {
-  final claimService = ref.watch(claimServiceProvider);
-  return ClaimsNotifier(claimService, receiptId);
-});
+final claimsProvider =
+    StateNotifierProvider.family<ClaimsNotifier, ClaimsState, String>((
+      ref,
+      receiptId,
+    ) {
+      final claimService = ref.watch(claimServiceProvider);
+      return ClaimsNotifier(claimService, receiptId);
+    });
 
 /// Provider for getting a single claim by ID
-final claimProvider = FutureProvider.family<ClaimDocumentResponse, String>((ref, claimId) async {
+final claimProvider = FutureProvider.family<ClaimDocumentResponse, String>((
+  ref,
+  claimId,
+) async {
   final claimService = ref.watch(claimServiceProvider);
   return claimService.getClaim(claimId);
 });

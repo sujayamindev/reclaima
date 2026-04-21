@@ -18,9 +18,11 @@ class ProfileSettingsScreen extends ConsumerStatefulWidget {
 class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _contactController = TextEditingController();
-  final TextEditingController _currentPasswordController = TextEditingController();
+  final TextEditingController _currentPasswordController =
+      TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   String _userEmail = '';
   bool _isSaving = false;
@@ -65,7 +67,9 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
   Future<void> _saveProfile() async {
     setState(() => _isSaving = true);
     try {
-      await ref.read(authControllerProvider.notifier).updateProfile(
+      await ref
+          .read(authControllerProvider.notifier)
+          .updateProfile(
             displayName: _nameController.text.trim(),
             contactNumber: _contactController.text.trim(),
           );
@@ -122,7 +126,9 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
     setState(() => _isChangingPassword = true);
 
     try {
-      await ref.read(authControllerProvider.notifier).changePassword(
+      await ref
+          .read(authControllerProvider.notifier)
+          .changePassword(
             currentPassword: _currentPasswordController.text,
             newPassword: _newPasswordController.text,
           );
@@ -144,7 +150,9 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to update password: ${e.toString().replaceAll("Exception: ", "")}'),
+            content: Text(
+              'Failed to update password: ${e.toString().replaceAll("Exception: ", "")}',
+            ),
             behavior: SnackBarBehavior.floating,
             backgroundColor: AppColors.error,
           ),
@@ -170,16 +178,18 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
           ),
           content: Text(
             'Are you sure you want to permanently delete your account and all associated data? This action cannot be undone.',
-            style: AppTextStyles.bodyMedium
-                .copyWith(color: AppColors.textPrimary(isDark)),
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.textPrimary(isDark),
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
               child: Text(
                 'Cancel',
-                style: AppTextStyles.buttonSmall
-                    .copyWith(color: AppColors.textPrimary(isDark)),
+                style: AppTextStyles.buttonSmall.copyWith(
+                  color: AppColors.textPrimary(isDark),
+                ),
               ),
             ),
             ElevatedButton(
@@ -192,8 +202,7 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
               onPressed: () => Navigator.of(dialogContext).pop(true),
               child: Text(
                 'Delete',
-                style:
-                    AppTextStyles.buttonSmall.copyWith(color: Colors.white),
+                style: AppTextStyles.buttonSmall.copyWith(color: Colors.white),
               ),
             ),
           ],
@@ -214,8 +223,9 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
       logger.e('Delete account error: $e');
       if (!mounted) return;
 
-      final isRequiresRecentLogin =
-          e.toString().contains('requires-recent-login');
+      final isRequiresRecentLogin = e.toString().contains(
+        'requires-recent-login',
+      );
       if (isRequiresRecentLogin) {
         showDialog(
           context: context,
@@ -334,8 +344,7 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
             decoration: InputDecoration(
               hintText: hintText,
               hintStyle: AppTextStyles.bodyMedium.copyWith(
-                color:
-                    AppColors.textSecondary(isDark).withValues(alpha: 0.5),
+                color: AppColors.textSecondary(isDark).withValues(alpha: 0.5),
               ),
               filled: true,
               fillColor: readOnly
@@ -343,15 +352,18 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
                   : AppColors.card(isDark),
               prefixIcon: Padding(
                 padding: const EdgeInsets.only(left: 16, right: 12),
-                child: Icon(icon,
-                    color: AppColors.textSecondary(isDark)
-                        .withValues(alpha: 0.7),
-                    size: 20,
-                    weight: 600.0),
+                child: Icon(
+                  icon,
+                  color: AppColors.textSecondary(isDark).withValues(alpha: 0.7),
+                  size: 20,
+                  weight: 600.0,
+                ),
               ),
               suffixIcon: suffixIcon,
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
                 borderSide: BorderSide(color: AppColors.border(isDark)),
@@ -363,10 +375,11 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
                 borderSide: BorderSide(
-                    color: readOnly
-                        ? AppColors.border(isDark)
-                        : AppColors.primary,
-                    width: 2),
+                  color: readOnly
+                      ? AppColors.border(isDark)
+                      : AppColors.primary,
+                  width: 2,
+                ),
               ),
             ),
           ),
@@ -394,12 +407,18 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
         children: [
           Row(
             children: [
-              Icon(icon, size: AppDimensions.iconMedium, color: AppColors.primary, weight: AppDimensions.iconWeightHeavy),
+              Icon(
+                icon,
+                size: AppDimensions.iconMedium,
+                color: AppColors.primary,
+                weight: AppDimensions.iconWeightHeavy,
+              ),
               const SizedBox(width: 10),
               Text(
                 title,
-                style: AppTextStyles.sectionTitle
-                    .copyWith(color: AppColors.textPrimary(isDark)),
+                style: AppTextStyles.sectionTitle.copyWith(
+                  color: AppColors.textPrimary(isDark),
+                ),
               ),
             ],
           ),
@@ -432,7 +451,11 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(
-              AppDimensions.paddingPage, 8, AppDimensions.paddingPage, 40),
+            AppDimensions.paddingPage,
+            8,
+            AppDimensions.paddingPage,
+            40,
+          ),
           child: Column(
             children: [
               _buildSectionCard(
@@ -477,8 +500,9 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         shadowColor: Colors.transparent,
                         shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(AppDimensions.radiusXL),
+                          borderRadius: BorderRadius.circular(
+                            AppDimensions.radiusXL,
+                          ),
                         ),
                       ),
                       onPressed: _isSaving ? null : _saveProfile,
@@ -489,7 +513,8 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
                                 valueColor: AlwaysStoppedAnimation(
-                                    AppColors.onPrimary),
+                                  AppColors.onPrimary,
+                                ),
                               ),
                             )
                           : const Text('Save Profile'),
@@ -498,112 +523,128 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
                 ],
               ),
               const SizedBox(height: 16),
-              
+
               // ── Change Password ──────────────────────────────────────────
-              _buildSectionCard(
-                isDark,
-                'Change Password',
-                Symbols.lock_rounded,
-                [
-                  if (ref.read(currentUserProvider)?.providerData.any((p) => p.providerId == 'password') ?? false) ...[
-                    _buildTextFieldRow(
-                      isDark,
-                      icon: Symbols.key_rounded,
-                      title: 'Current Password',
-                      hintText: 'Enter current password',
-                      controller: _currentPasswordController,
-                      obscureText: _obscureCurrentPassword,
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscureCurrentPassword ? Symbols.visibility_rounded : Symbols.visibility_off_rounded,
-                          color: AppColors.textSecondary(isDark),
-                        ),
-                        onPressed: () {
-                          setState(() => _obscureCurrentPassword = !_obscureCurrentPassword);
-                        },
+              _buildSectionCard(isDark, 'Change Password', Symbols.lock_rounded, [
+                if (ref
+                        .read(currentUserProvider)
+                        ?.providerData
+                        .any((p) => p.providerId == 'password') ??
+                    false) ...[
+                  _buildTextFieldRow(
+                    isDark,
+                    icon: Symbols.key_rounded,
+                    title: 'Current Password',
+                    hintText: 'Enter current password',
+                    controller: _currentPasswordController,
+                    obscureText: _obscureCurrentPassword,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureCurrentPassword
+                            ? Symbols.visibility_rounded
+                            : Symbols.visibility_off_rounded,
+                        color: AppColors.textSecondary(isDark),
                       ),
-                    ),
-                    const SizedBox(height: 6),
-                    _buildTextFieldRow(
-                      isDark,
-                      icon: Symbols.password_rounded,
-                      title: 'New Password',
-                      hintText: 'Enter new password',
-                      controller: _newPasswordController,
-                      obscureText: _obscureNewPassword,
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscureNewPassword ? Symbols.visibility_rounded : Symbols.visibility_off_rounded,
-                          color: AppColors.textSecondary(isDark),
-                        ),
-                        onPressed: () {
-                          setState(() => _obscureNewPassword = !_obscureNewPassword);
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    _buildTextFieldRow(
-                      isDark,
-                      icon: Symbols.password_rounded,
-                      title: 'Confirm New Password',
-                      hintText: 'Confirm new password',
-                      controller: _confirmPasswordController,
-                      obscureText: _obscureConfirmPassword,
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscureConfirmPassword ? Symbols.visibility_rounded : Symbols.visibility_off_rounded,
-                          color: AppColors.textSecondary(isDark),
-                        ),
-                        onPressed: () {
-                          setState(() => _obscureConfirmPassword = !_obscureConfirmPassword);
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(AppDimensions.radiusXL),
-                          ),
-                          side: BorderSide(color: AppColors.primary),
-                        ),
-                        onPressed: _isChangingPassword ? null : _changePassword,
-                        child: _isChangingPassword
-                            ? SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Text('Update Password'),
-                      ),
-                    ),
-                  ] else ...[
-                    Builder(
-                      builder: (context) {
-                        final authUser = ref.read(currentUserProvider);
-                        final isApple = authUser?.providerData.any((p) => p.providerId.contains('apple')) ?? false;
-                        final providerName = isApple ? 'an Apple' : 'a Google';
-                        final shortName = isApple ? 'Apple' : 'Google';
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0),
-                          child: Text(
-                            'You are signed in with $providerName account. Password changes are managed through $shortName.',
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.textSecondary(isDark),
-                            ),
-                          ),
+                      onPressed: () {
+                        setState(
+                          () => _obscureCurrentPassword =
+                              !_obscureCurrentPassword,
                         );
-                      }
+                      },
                     ),
-                  ],
+                  ),
+                  const SizedBox(height: 6),
+                  _buildTextFieldRow(
+                    isDark,
+                    icon: Symbols.password_rounded,
+                    title: 'New Password',
+                    hintText: 'Enter new password',
+                    controller: _newPasswordController,
+                    obscureText: _obscureNewPassword,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureNewPassword
+                            ? Symbols.visibility_rounded
+                            : Symbols.visibility_off_rounded,
+                        color: AppColors.textSecondary(isDark),
+                      ),
+                      onPressed: () {
+                        setState(
+                          () => _obscureNewPassword = !_obscureNewPassword,
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  _buildTextFieldRow(
+                    isDark,
+                    icon: Symbols.password_rounded,
+                    title: 'Confirm New Password',
+                    hintText: 'Confirm new password',
+                    controller: _confirmPasswordController,
+                    obscureText: _obscureConfirmPassword,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureConfirmPassword
+                            ? Symbols.visibility_rounded
+                            : Symbols.visibility_off_rounded,
+                        color: AppColors.textSecondary(isDark),
+                      ),
+                      onPressed: () {
+                        setState(
+                          () => _obscureConfirmPassword =
+                              !_obscureConfirmPassword,
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                            AppDimensions.radiusXL,
+                          ),
+                        ),
+                        side: BorderSide(color: AppColors.primary),
+                      ),
+                      onPressed: _isChangingPassword ? null : _changePassword,
+                      child: _isChangingPassword
+                          ? SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Text('Update Password'),
+                    ),
+                  ),
+                ] else ...[
+                  Builder(
+                    builder: (context) {
+                      final authUser = ref.read(currentUserProvider);
+                      final isApple =
+                          authUser?.providerData.any(
+                            (p) => p.providerId.contains('apple'),
+                          ) ??
+                          false;
+                      final providerName = isApple ? 'an Apple' : 'a Google';
+                      final shortName = isApple ? 'Apple' : 'Google';
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: Text(
+                          'You are signed in with $providerName account. Password changes are managed through $shortName.',
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.textSecondary(isDark),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ],
-              ),
+              ]),
               const SizedBox(height: 16),
 
               // ── Danger Zone ─────────────────────────────────────────────
@@ -615,22 +656,36 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     horizontalTitleGap: 12,
-                    leading: Icon(Symbols.door_open_rounded, color: AppColors.error, weight: AppDimensions.iconWeightBold),
+                    leading: Icon(
+                      Symbols.door_open_rounded,
+                      color: AppColors.error,
+                      weight: AppDimensions.iconWeightBold,
+                    ),
                     title: Text(
                       'Log Out',
-                      style: AppTextStyles.listTitle.copyWith(color: AppColors.error),
+                      style: AppTextStyles.listTitle.copyWith(
+                        color: AppColors.error,
+                      ),
                     ),
                     subtitle: Text(
                       'Sign out of your account on this device',
-                      style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary(isDark)),
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.textSecondary(isDark),
+                      ),
                     ),
-                    trailing: Icon(Symbols.chevron_right_rounded, size: AppDimensions.iconMedium, color: AppColors.muted(isDark)),
+                    trailing: Icon(
+                      Symbols.chevron_right_rounded,
+                      size: AppDimensions.iconMedium,
+                      color: AppColors.muted(isDark),
+                    ),
                     onTap: () async {
                       await ref.read(authControllerProvider.notifier).signOut();
                       if (!context.mounted) return;
                       Navigator.pushAndRemoveUntil(
                         context,
-                        MaterialPageRoute(builder: (context) => const LoginScreen()),
+                        MaterialPageRoute(
+                          builder: (context) => const LoginScreen(),
+                        ),
                         (route) => false,
                       );
                     },
@@ -639,16 +694,28 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     horizontalTitleGap: 12,
-                    leading: Icon(Symbols.delete_rounded, color: AppColors.error, weight: AppDimensions.iconWeightBold),
+                    leading: Icon(
+                      Symbols.delete_rounded,
+                      color: AppColors.error,
+                      weight: AppDimensions.iconWeightBold,
+                    ),
                     title: Text(
                       'Delete Account',
-                      style: AppTextStyles.listTitle.copyWith(color: AppColors.error),
+                      style: AppTextStyles.listTitle.copyWith(
+                        color: AppColors.error,
+                      ),
                     ),
                     subtitle: Text(
                       'Permanently remove all your data',
-                      style: AppTextStyles.caption.copyWith(color: AppColors.textSecondary(isDark)),
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.textSecondary(isDark),
+                      ),
                     ),
-                    trailing: Icon(Symbols.chevron_right_rounded, size: AppDimensions.iconMedium, color: AppColors.muted(isDark)),
+                    trailing: Icon(
+                      Symbols.chevron_right_rounded,
+                      size: AppDimensions.iconMedium,
+                      color: AppColors.muted(isDark),
+                    ),
                     onTap: () => _showDeleteAccountDialog(isDark),
                   ),
                 ],

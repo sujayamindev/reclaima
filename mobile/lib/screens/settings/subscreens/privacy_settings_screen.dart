@@ -24,12 +24,18 @@ class PrivacySettingsScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, size: AppDimensions.iconMedium, color: AppColors.primary, weight: AppDimensions.iconWeightHeavy),
+              Icon(
+                icon,
+                size: AppDimensions.iconMedium,
+                color: AppColors.primary,
+                weight: AppDimensions.iconWeightHeavy,
+              ),
               const SizedBox(width: 10),
               Text(
                 title,
-                style: AppTextStyles.sectionTitle
-                    .copyWith(color: AppColors.textPrimary(isDark)),
+                style: AppTextStyles.sectionTitle.copyWith(
+                  color: AppColors.textPrimary(isDark),
+                ),
               ),
             ],
           ),
@@ -56,10 +62,12 @@ class PrivacySettingsScreen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 10),
           child: Row(
             children: [
-              Icon(icon,
-                  size: AppDimensions.iconMedium,
-                  weight: AppDimensions.iconWeightBold,
-                  color: AppColors.textSecondary(isDark)),
+              Icon(
+                icon,
+                size: AppDimensions.iconMedium,
+                weight: AppDimensions.iconWeightBold,
+                color: AppColors.textSecondary(isDark),
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -75,14 +83,19 @@ class PrivacySettingsScreen extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       subtitle,
-                      style: AppTextStyles.caption
-                          .copyWith(color: AppColors.textSecondary(isDark)),
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.textSecondary(isDark),
+                      ),
                     ),
                   ],
                 ),
               ),
-              Icon(Symbols.chevron_right_rounded,
-                  size: AppDimensions.iconMedium, color: AppColors.muted(isDark), weight: 600.0),
+              Icon(
+                Symbols.chevron_right_rounded,
+                size: AppDimensions.iconMedium,
+                color: AppColors.muted(isDark),
+                weight: 600.0,
+              ),
             ],
           ),
         ),
@@ -121,7 +134,11 @@ class PrivacySettingsScreen extends StatelessWidget {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(
-              AppDimensions.paddingPage, 8, AppDimensions.paddingPage, 40),
+            AppDimensions.paddingPage,
+            8,
+            AppDimensions.paddingPage,
+            40,
+          ),
           child: Column(
             children: [
               _buildSectionCard(

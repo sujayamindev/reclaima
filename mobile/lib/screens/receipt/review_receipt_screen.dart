@@ -51,7 +51,7 @@ class LineItemFormState {
 
   double? unitPrice;
   String? itemDescription;
-  
+
   final TextEditingController warrantyPeriodCtrl = TextEditingController();
   DateTime? warrantyExpiryDate;
   int? warrantyLeadDaysOverride;
@@ -116,8 +116,6 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     'Other',
   ];
 
-
-
   // 📝 Remarks & Notes
   final _remarksCtrl = TextEditingController();
   final _warrantyNotesCtrl = TextEditingController();
@@ -173,11 +171,13 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
         form.existingId = item.id;
         form.itemDescription = item.itemDescription;
         form.unitPrice = item.unitPrice;
-        form.productNameCtrl.text = item.productName ?? item.itemDescription ?? '';
+        form.productNameCtrl.text =
+            item.productName ?? item.itemDescription ?? '';
         form.productCodeCtrl.text = item.productCode ?? '';
         final cat = item.productCategory ?? '';
         form.selectedCategory = _categories.contains(cat) ? cat : 'Electronics';
-        form.warrantyPeriodCtrl.text = item.warrantyPeriodMonths?.toString() ?? '';
+        form.warrantyPeriodCtrl.text =
+            item.warrantyPeriodMonths?.toString() ?? '';
         form.warrantyExpiryDate = item.warrantyExpiryDate;
         form.warrantyLeadDaysOverride = item.warrantyLeadDaysOverride;
         form.warrantyReminderEnabled = item.warrantyReminderEnabled ?? true;
@@ -220,23 +220,27 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
           (e) => ReceiptLineItemModel.fromOcrExtract(e as Map<String, dynamic>),
         )
         .toList();
-    
+
     if (_ocrLineItems.isNotEmpty) {
       _itemForms.clear();
       for (final item in _ocrLineItems) {
         final form = LineItemFormState();
         form.itemDescription = item.itemDescription;
         form.unitPrice = item.unitPrice;
-        form.productNameCtrl.text = item.productName ?? item.itemDescription ?? '';
+        form.productNameCtrl.text =
+            item.productName ?? item.itemDescription ?? '';
         form.productCodeCtrl.text = item.productCode ?? '';
         final cat = item.productCategory ?? '';
         form.selectedCategory = _categories.contains(cat) ? cat : 'Electronics';
-        form.warrantyPeriodCtrl.text = item.warrantyPeriodMonths?.toString() ?? '';
+        form.warrantyPeriodCtrl.text =
+            item.warrantyPeriodMonths?.toString() ?? '';
         _itemForms.add(form);
       }
     } else {
-      _itemForms.first.productNameCtrl.text = (data['productName'] as String?) ?? '';
-      _itemForms.first.warrantyPeriodCtrl.text = data['warrantyPeriodMonths']?.toString() ?? '';
+      _itemForms.first.productNameCtrl.text =
+          (data['productName'] as String?) ?? '';
+      _itemForms.first.warrantyPeriodCtrl.text =
+          data['warrantyPeriodMonths']?.toString() ?? '';
     }
 
     if (_purchaseDate != null) {
@@ -257,7 +261,9 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     _vendorAddressCtrl.dispose();
     _vendorPhoneCtrl.dispose();
     _vendorEmailCtrl.dispose();
-    for (var form in _itemForms) { form.dispose(); }
+    for (var form in _itemForms) {
+      form.dispose();
+    }
     _remarksCtrl.dispose();
     _warrantyNotesCtrl.dispose();
     super.dispose();
@@ -389,43 +395,46 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
 
     final List<Map<String, dynamic>> itemsPayload = [];
     for (final form in _itemForms) {
-        final liData = <String, dynamic>{};
-        if (form.existingId != null) liData['_existingId'] = form.existingId;
-        if (form.itemDescription != null) liData['itemDescription'] = form.itemDescription;
-        if (form.unitPrice != null) liData['unitPrice'] = form.unitPrice;
-        
-        final productName = form.productNameCtrl.text.trim();
-        if (productName.isNotEmpty) liData['productName'] = productName;
-        
-        final productCode = form.productCodeCtrl.text.trim();
-        if (productCode.isNotEmpty) liData['productCode'] = productCode;
-        
-        liData['productCategory'] = form.selectedCategory;
-        
-        if (form.warrantyPeriodCtrl.text.isNotEmpty) {
-            final months = int.tryParse(form.warrantyPeriodCtrl.text);
-            if (months != null) liData['warrantyPeriodMonths'] = months;
-        } else {
-            liData['warrantyPeriodMonths'] = null;
-        }
-        
-        if (form.returnPeriodCtrl.text.isNotEmpty) {
-            final days = int.tryParse(form.returnPeriodCtrl.text);
-            if (days != null) liData['returnPeriodDays'] = days;
-        } else {
-            liData['returnPeriodDays'] = null;
-        }
-        
-        if (form.warrantyLeadDaysOverride != null) liData['warrantyLeadDaysOverride'] = form.warrantyLeadDaysOverride;
-        if (form.returnLeadDaysOverride != null) liData['returnLeadDaysOverride'] = form.returnLeadDaysOverride;
-        liData['warrantyReminderEnabled'] = form.warrantyReminderEnabled;
-        liData['returnReminderEnabled'] = form.returnReminderEnabled;
-        itemsPayload.add(liData);
+      final liData = <String, dynamic>{};
+      if (form.existingId != null) liData['_existingId'] = form.existingId;
+      if (form.itemDescription != null)
+        liData['itemDescription'] = form.itemDescription;
+      if (form.unitPrice != null) liData['unitPrice'] = form.unitPrice;
+
+      final productName = form.productNameCtrl.text.trim();
+      if (productName.isNotEmpty) liData['productName'] = productName;
+
+      final productCode = form.productCodeCtrl.text.trim();
+      if (productCode.isNotEmpty) liData['productCode'] = productCode;
+
+      liData['productCategory'] = form.selectedCategory;
+
+      if (form.warrantyPeriodCtrl.text.isNotEmpty) {
+        final months = int.tryParse(form.warrantyPeriodCtrl.text);
+        if (months != null) liData['warrantyPeriodMonths'] = months;
+      } else {
+        liData['warrantyPeriodMonths'] = null;
+      }
+
+      if (form.returnPeriodCtrl.text.isNotEmpty) {
+        final days = int.tryParse(form.returnPeriodCtrl.text);
+        if (days != null) liData['returnPeriodDays'] = days;
+      } else {
+        liData['returnPeriodDays'] = null;
+      }
+
+      if (form.warrantyLeadDaysOverride != null)
+        liData['warrantyLeadDaysOverride'] = form.warrantyLeadDaysOverride;
+      if (form.returnLeadDaysOverride != null)
+        liData['returnLeadDaysOverride'] = form.returnLeadDaysOverride;
+      liData['warrantyReminderEnabled'] = form.warrantyReminderEnabled;
+      liData['returnReminderEnabled'] = form.returnReminderEnabled;
+      itemsPayload.add(liData);
     }
-    
+
     // Pass the first item's name to receiptData for display
     if (itemsPayload.isNotEmpty && itemsPayload.first['productName'] != null) {
-        receiptData['productName'] = itemsPayload.first['productName'];
+      receiptData['productName'] = itemsPayload.first['productName'];
     }
 
     Navigator.push(
@@ -564,7 +573,11 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
           ),
           child: Row(
             children: [
-              const Icon(Symbols.warning_rounded, color: AppColors.error, size: AppDimensions.iconMedium),
+              const Icon(
+                Symbols.warning_rounded,
+                color: AppColors.error,
+                size: AppDimensions.iconMedium,
+              ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -641,7 +654,10 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                 ref.invalidate(receiptProvider(widget.receiptId!));
                 _startPolling();
               },
-              icon: const Icon(Symbols.refresh_rounded, size: AppDimensions.iconSmall),
+              icon: const Icon(
+                Symbols.refresh_rounded,
+                size: AppDimensions.iconSmall,
+              ),
               label: const Text('Refresh'),
               style: TextButton.styleFrom(foregroundColor: AppColors.primary),
             ),
@@ -666,7 +682,11 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Symbols.timer_off_rounded, size: AppDimensions.iconXL, color: AppColors.warning),
+              const Icon(
+                Symbols.timer_off_rounded,
+                size: AppDimensions.iconXL,
+                color: AppColors.warning,
+              ),
               const SizedBox(height: 16),
               Text(
                 'Taking longer than expected',
@@ -692,7 +712,10 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                   ref.invalidate(receiptProvider(widget.receiptId!));
                   _startPolling();
                 },
-                icon: const Icon(Symbols.refresh_rounded, size: AppDimensions.iconMedium),
+                icon: const Icon(
+                  Symbols.refresh_rounded,
+                  size: AppDimensions.iconMedium,
+                ),
                 text: 'Refresh',
               ),
               const SizedBox(height: 12),
@@ -723,7 +746,11 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Symbols.error_rounded, size: AppDimensions.iconXL, color: AppColors.error),
+            const Icon(
+              Symbols.error_rounded,
+              size: AppDimensions.iconXL,
+              color: AppColors.error,
+            ),
             const SizedBox(height: 16),
             Text(
               'Something went wrong',
@@ -740,7 +767,10 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
             TextButton.icon(
               onPressed: () =>
                   ref.invalidate(receiptProvider(widget.receiptId!)),
-              icon: const Icon(Symbols.refresh_rounded, size: AppDimensions.iconSmall),
+              icon: const Icon(
+                Symbols.refresh_rounded,
+                size: AppDimensions.iconSmall,
+              ),
               label: const Text('Retry'),
               style: TextButton.styleFrom(foregroundColor: AppColors.primary),
             ),
@@ -910,145 +940,171 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                   if (_ocrLineItems.isNotEmpty) const SizedBox(height: 16),
 
                   ...List.generate(_itemForms.length, (index) {
-                      final form = _itemForms[index];
-                      return Container(
-                          margin: const EdgeInsets.only(bottom: 16),
-                          decoration: BoxDecoration(
-                              color: AppColors.card(isDark).withValues(alpha: 0.5),
-                              borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
-                              border: Border.all(color: AppColors.border(isDark)),
-                          ),
-                          child: Column(
+                    final form = _itemForms[index];
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: AppColors.card(isDark).withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.radiusXL,
+                        ),
+                        border: Border.all(color: AppColors.border(isDark)),
+                      ),
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                  Padding(
-                                      padding: const EdgeInsets.all(16),
-                                      child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                              Text('Item ${index + 1}', style: AppTextStyles.titleLarge.copyWith(color: AppColors.textPrimary(isDark))),
-                                              if (_itemForms.length > 1) 
-                                                IconButton(
-                                                    icon: const Icon(Symbols.delete_rounded, color: AppColors.error),
-                                                    onPressed: () {
-                                                        setState(() { _itemForms.removeAt(index); });
-                                                    }
-                                                )
-                                          ]
-                                      )
+                                Text(
+                                  'Item ${index + 1}',
+                                  style: AppTextStyles.titleLarge.copyWith(
+                                    color: AppColors.textPrimary(isDark),
                                   ),
-                                  // Product Info
-                                  _buildSection(
-                                    isDark: isDark,
-                                    textPrimary: textPrimary,
-                                    title: 'Product Info',
-                                    icon: Symbols.inventory_2_rounded,
-                                    iconColor: AppColors.primary,
-                                    children: [
-                                      _buildTextField(
-                                        isDark: isDark,
-                                        label: 'Product Name',
-                                        controller: form.productNameCtrl,
-                                        hint: 'e.g. MacBook Pro 14"',
-                                        validator: (v) => (v == null || v.trim().isEmpty)
-                                            ? 'Product name is required'
-                                            : null,
-                                      ),
-                                      const SizedBox(height: 14),
-                                      _buildTextField(
-                                        isDark: isDark,
-                                        label: 'SKU / Product Code',
-                                        controller: form.productCodeCtrl,
-                                        hint: 'e.g. MK1234',
-                                      ),
-                                      const SizedBox(height: 14),
-                                      _buildCategoryDropdown(isDark: isDark, form: form),
-                                    ],
+                                ),
+                                if (_itemForms.length > 1)
+                                  IconButton(
+                                    icon: const Icon(
+                                      Symbols.delete_rounded,
+                                      color: AppColors.error,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _itemForms.removeAt(index);
+                                      });
+                                    },
                                   ),
-                                  const SizedBox(height: 8),
-                                  // Warranty Info
-                                  _buildSection(
-                                    isDark: isDark,
-                                    textPrimary: textPrimary,
-                                    title: 'Warranty Info',
-                                    icon: Symbols.verified_rounded,
-                                    iconColor: AppColors.primary,
-                                    children: [
-                                      _buildTextField(
-                                        isDark: isDark,
-                                        label: 'Warranty Period (months)',
-                                        controller: form.warrantyPeriodCtrl,
-                                        hint: 'e.g. 12',
-                                        keyboardType: TextInputType.number,
-                                        inputFormatters: [
-                                          FilteringTextInputFormatter.digitsOnly,
-                                        ],
-                                        onChanged: (_) => _autoComputeWarrantyExpiry(index),
-                                      ),
-                                      const SizedBox(height: 14),
-                                      _buildLeadTimeDropdown(
-                                        isDark: isDark,
-                                        label: 'Remind me before warranty expires (optional)',
-                                        hint: 'Default: use my default setting',
-                                        options: const [7, 14, 30, 60, 90],
-                                        selectedValue: form.warrantyLeadDaysOverride,
-                                        reminderEnabled: form.warrantyReminderEnabled,
-                                        onChanged: (value) =>
-                                            setState(() => form.warrantyLeadDaysOverride = value),
-                                        onReminderEnabledChanged: (value) =>
-                                            setState(() => form.warrantyReminderEnabled = value),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  // Return Policy
-                                  _buildSection(
-                                    isDark: isDark,
-                                    textPrimary: textPrimary,
-                                    title: 'Return Policy',
-                                    icon: Symbols.assignment_return_rounded,
-                                    iconColor: AppColors.primary,
-                                    children: [
-                                      _buildTextField(
-                                        isDark: isDark,
-                                        label: 'Return Period (days)',
-                                        controller: form.returnPeriodCtrl,
-                                        hint: 'e.g. 30',
-                                        keyboardType: TextInputType.number,
-                                        inputFormatters: [
-                                          FilteringTextInputFormatter.digitsOnly,
-                                        ],
-                                        onChanged: (_) => _autoComputeReturnExpiry(index),
-                                      ),
-                                      const SizedBox(height: 14),
-                                      _buildLeadTimeDropdown(
-                                        isDark: isDark,
-                                        label: 'Remind me before return deadline (optional)',
-                                        hint: 'Default: use my default setting',
-                                        options: const [1, 2, 3, 5, 7],
-                                        selectedValue: form.returnLeadDaysOverride,
-                                        reminderEnabled: form.returnReminderEnabled,
-                                        onChanged: (value) =>
-                                            setState(() => form.returnLeadDaysOverride = value),
-                                        onReminderEnabledChanged: (value) =>
-                                            setState(() => form.returnReminderEnabled = value),
-                                      ),
-                                    ],
-                                  ),
-                              ]
-                          )
-                      );
+                              ],
+                            ),
+                          ),
+                          // Product Info
+                          _buildSection(
+                            isDark: isDark,
+                            textPrimary: textPrimary,
+                            title: 'Product Info',
+                            icon: Symbols.inventory_2_rounded,
+                            iconColor: AppColors.primary,
+                            children: [
+                              _buildTextField(
+                                isDark: isDark,
+                                label: 'Product Name',
+                                controller: form.productNameCtrl,
+                                hint: 'e.g. MacBook Pro 14"',
+                                validator: (v) =>
+                                    (v == null || v.trim().isEmpty)
+                                    ? 'Product name is required'
+                                    : null,
+                              ),
+                              const SizedBox(height: 14),
+                              _buildTextField(
+                                isDark: isDark,
+                                label: 'SKU / Product Code',
+                                controller: form.productCodeCtrl,
+                                hint: 'e.g. MK1234',
+                              ),
+                              const SizedBox(height: 14),
+                              _buildCategoryDropdown(
+                                isDark: isDark,
+                                form: form,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          // Warranty Info
+                          _buildSection(
+                            isDark: isDark,
+                            textPrimary: textPrimary,
+                            title: 'Warranty Info',
+                            icon: Symbols.verified_rounded,
+                            iconColor: AppColors.primary,
+                            children: [
+                              _buildTextField(
+                                isDark: isDark,
+                                label: 'Warranty Period (months)',
+                                controller: form.warrantyPeriodCtrl,
+                                hint: 'e.g. 12',
+                                keyboardType: TextInputType.number,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.digitsOnly,
+                                ],
+                                onChanged: (_) =>
+                                    _autoComputeWarrantyExpiry(index),
+                              ),
+                              const SizedBox(height: 14),
+                              _buildLeadTimeDropdown(
+                                isDark: isDark,
+                                label:
+                                    'Remind me before warranty expires (optional)',
+                                hint: 'Default: use my default setting',
+                                options: const [7, 14, 30, 60, 90],
+                                selectedValue: form.warrantyLeadDaysOverride,
+                                reminderEnabled: form.warrantyReminderEnabled,
+                                onChanged: (value) => setState(
+                                  () => form.warrantyLeadDaysOverride = value,
+                                ),
+                                onReminderEnabledChanged: (value) => setState(
+                                  () => form.warrantyReminderEnabled = value,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          // Return Policy
+                          _buildSection(
+                            isDark: isDark,
+                            textPrimary: textPrimary,
+                            title: 'Return Policy',
+                            icon: Symbols.assignment_return_rounded,
+                            iconColor: AppColors.primary,
+                            children: [
+                              _buildTextField(
+                                isDark: isDark,
+                                label: 'Return Period (days)',
+                                controller: form.returnPeriodCtrl,
+                                hint: 'e.g. 30',
+                                keyboardType: TextInputType.number,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.digitsOnly,
+                                ],
+                                onChanged: (_) =>
+                                    _autoComputeReturnExpiry(index),
+                              ),
+                              const SizedBox(height: 14),
+                              _buildLeadTimeDropdown(
+                                isDark: isDark,
+                                label:
+                                    'Remind me before return deadline (optional)',
+                                hint: 'Default: use my default setting',
+                                options: const [1, 2, 3, 5, 7],
+                                selectedValue: form.returnLeadDaysOverride,
+                                reminderEnabled: form.returnReminderEnabled,
+                                onChanged: (value) => setState(
+                                  () => form.returnLeadDaysOverride = value,
+                                ),
+                                onReminderEnabledChanged: (value) => setState(
+                                  () => form.returnReminderEnabled = value,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
                   }),
-                  
+
                   // Add Another Item Button
                   Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: TextButton.icon(
-                          onPressed: () {
-                              setState(() { _itemForms.add(LineItemFormState()); });
-                          },
-                          icon: const Icon(Symbols.add_rounded),
-                          label: const Text('Add Another Item')
-                      )
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: TextButton.icon(
+                      onPressed: () {
+                        setState(() {
+                          _itemForms.add(LineItemFormState());
+                        });
+                      },
+                      icon: const Icon(Symbols.add_rounded),
+                      label: const Text('Add Another Item'),
+                    ),
                   ),
                   const SizedBox(height: 16),
 
@@ -1202,7 +1258,10 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     );
   }
 
-  Widget _buildCategoryDropdown({required bool isDark, required LineItemFormState form}) {
+  Widget _buildCategoryDropdown({
+    required bool isDark,
+    required LineItemFormState form,
+  }) {
     final labelColor = AppColors.label(isDark);
     final borderColor = AppColors.border(isDark);
     final fillColor = AppColors.card(isDark);
@@ -1222,7 +1281,11 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
           initialValue: form.selectedCategory,
           dropdownColor: AppColors.card(isDark),
           style: AppTextStyles.bodyMedium.copyWith(color: textPrimary),
-          icon: Icon(Symbols.keyboard_arrow_down_rounded, color: labelColor, size: AppDimensions.iconMedium),
+          icon: Icon(
+            Symbols.keyboard_arrow_down_rounded,
+            color: labelColor,
+            size: AppDimensions.iconMedium,
+          ),
           decoration: InputDecoration(
             filled: true,
             fillColor: fillColor,
@@ -1451,9 +1514,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
           const SizedBox(height: 4),
           Text(
             'Extracted from receipt - edit via Receipt Details if needed.',
-            style: AppTextStyles.caption.copyWith(
-              color: labelColor,
-            ),
+            style: AppTextStyles.caption.copyWith(color: labelColor),
           ),
           const SizedBox(height: 12),
           // Table header
@@ -1487,15 +1548,18 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                 children: [
                   Expanded(
                     flex: 3,
-                    child: Text(item.itemDescription ?? '—', style: cellStyle, maxLines: 1, overflow: TextOverflow.ellipsis),
+                    child: Text(
+                      item.itemDescription ?? '—',
+                      style: cellStyle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                   SizedBox(
                     width: 64,
                     child: Text(
                       item.productCode ?? '—',
-                      style: AppTextStyles.caption.copyWith(
-                        color: labelColor,
-                      ),
+                      style: AppTextStyles.caption.copyWith(color: labelColor),
                     ),
                   ),
                   SizedBox(
@@ -1567,10 +1631,18 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                 if (value != null && onClear != null)
                   GestureDetector(
                     onTap: onClear,
-                    child: Icon(Symbols.close_rounded, size: AppDimensions.iconSmall, color: labelColor),
+                    child: Icon(
+                      Symbols.close_rounded,
+                      size: AppDimensions.iconSmall,
+                      color: labelColor,
+                    ),
                   )
                 else
-                  Icon(Symbols.calendar_today_rounded, size: AppDimensions.iconSmall, color: labelColor),
+                  Icon(
+                    Symbols.calendar_today_rounded,
+                    size: AppDimensions.iconSmall,
+                    color: labelColor,
+                  ),
               ],
             ),
           ),

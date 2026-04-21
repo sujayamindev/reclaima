@@ -397,9 +397,15 @@ class RealTextractService:
             # of raw confidence.
             if _vendor_name_candidates:
                 vendor_url = extracted.get("vendor_url", "")
-                url_domain = (
-                    vendor_url.lower().replace("www.", "") if vendor_url else ""
-                )
+                url_domain = ""
+                if vendor_url:
+                    # Parse host from full URL so domain matching works for
+                    # values like "https://dellshop.lk".
+                    from urllib.parse import urlparse
+
+                    parsed_host = (urlparse(vendor_url).hostname or vendor_url).lower()
+                    url_domain = parsed_host.replace("www.", "")
+
                 url_domain_root = url_domain.split(".")[0] if url_domain else ""
 
                 chosen_name = None

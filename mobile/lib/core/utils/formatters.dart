@@ -5,19 +5,19 @@ class DateFormatter {
   static String formatDate(DateTime date) {
     return DateFormat('MMM dd, yyyy').format(date);
   }
-  
+
   static String formatDateTime(DateTime dateTime) {
     return DateFormat('MMM dd, yyyy HH:mm').format(dateTime);
   }
-  
+
   static String formatDateShort(DateTime date) {
     return DateFormat('MM/dd/yyyy').format(date);
   }
-  
+
   static String formatRelative(DateTime date) {
     final now = DateTime.now();
     final difference = now.difference(date);
-    
+
     if (difference.inDays == 0) {
       if (difference.inHours == 0) {
         if (difference.inMinutes == 0) {
@@ -52,7 +52,7 @@ class CurrencyFormatter {
     );
     return formatter.format(amount);
   }
-  
+
   static String _getCurrencySymbol(String currency) {
     switch (currency.toUpperCase()) {
       case 'USD':

@@ -8,6 +8,12 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      deploy:
+        description: Deploy to production? (requires production environment approval)
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -23,7 +29,8 @@ env:
   FLUTTER_VERSION: "3.41.4"
   BACKEND_IMAGE_REPOSITORY: ghcr.io/${{ github.repository_owner }}/smart-receipt-backend
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-  BACKEND_COVERAGE_FLOOR: "33.0"
+  BACKEND_COVERAGE_FLOOR: "70.0"
+  MOBILE_COVERAGE_FLOOR: "60.0"
 
 jobs:
   secret_scan:
@@ -43,8 +50,24 @@ jobs:
 
   backend_ci:
     name: Backend CI
+    needs:
+      - secret_scan
     runs-on: ubuntu-latest
     timeout-minutes: 35
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: ci_test_user
+          POSTGRES_PASSWORD: ci_test_pass
+          POSTGRES_DB: ci_test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci_test_user -d ci_test_db"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     defaults:
       run:
         working-directory: backend
@@ -138,6 +161,12 @@ jobs:
             exit $HEAD_STATUS
           fi
 
+          if ! git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
+            echo "Base SHA not available locally; running mypy on target revision only."
+            cat /tmp/mypy_head.txt
+            exit $HEAD_STATUS
+          fi
+
           git checkout --quiet "$BASE_SHA"
           set +e
           mypy app > /tmp/mypy_base.txt 2>&1
@@ -179,7 +208,7 @@ jobs:
           PUSH_BASE_SHA: ${{ github.event.before || '' }}
           PUSH_HEAD_SHA: ${{ github.sha }}
           SECRET_KEY: ci-test-secret-key
-          DATABASE_URL: sqlite:///./ci_test.db
+          DATABASE_URL: postgresql://ci_test_user:ci_test_pass@localhost:5432/ci_test_db
           AWS_ACCESS_KEY_ID: ci-mock-access-key
           AWS_SECRET_ACCESS_KEY: ci-mock-secret-key
           USE_MOCK_AWS: "true"
@@ -214,6 +243,13 @@ jobs:
           fi
 
           if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            cat /tmp/pytest_head.txt
+            cp /tmp/coverage_head.xml coverage.xml
+            exit 0
+          fi
+
+          if ! git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
+            echo "Base SHA not available locally; skipping backend coverage regression comparison."
             cat /tmp/pytest_head.txt
             cp /tmp/coverage_head.xml coverage.xml
             exit 0
@@ -294,6 +330,12 @@ jobs:
           set -e
 
           if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            cat /tmp/bandit_head.txt
+            exit $HEAD_STATUS
+          fi
+
+          if ! git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
+            echo "Base SHA not available locally; running Bandit on target revision only."
             cat /tmp/bandit_head.txt
             exit $HEAD_STATUS
           fi
@@ -388,6 +430,12 @@ jobs:
             exit $HEAD_STATUS
           fi
 
+          if ! git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
+            echo "Base SHA not available locally; running pip-audit on target revision only."
+            cat /tmp/pip_audit_head.txt
+            exit $HEAD_STATUS
+          fi
+
           git checkout --quiet "$BASE_SHA"
           set +e
           pip-audit -r requirements.txt > /tmp/pip_audit_base.txt 2>&1
@@ -433,6 +481,8 @@ jobs:
 
   mobile_ci:
     name: Mobile CI
+    needs:
+      - secret_scan
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
@@ -456,11 +506,17 @@ jobs:
         working-directory: mobile
         run: |
           flutter pub run build_runner build --delete-conflicting-outputs
+          # Normalize generated output formatting before cleanliness checks.
+          dart format lib test
           if [ -n "$(git status --porcelain)" ]; then
             echo "Generated files changed. Commit generated outputs before merging."
             git status --short
             exit 1
           fi
+
+      - name: Dart format check
+        working-directory: mobile
+        run: dart format --set-exit-if-changed lib test
 
       - name: Analyze (no-regression gate)
         working-directory: mobile
@@ -573,6 +629,7 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
           PUSH_BASE_SHA: ${{ github.event.before || '' }}
+          MOBILE_COVERAGE_FLOOR: ${{ env.MOBILE_COVERAGE_FLOOR }}
         run: |
           EXCLUDE_ARGS=(
             --exclude "**/*.g.dart"
@@ -590,6 +647,15 @@ jobs:
           fi
 
           printf 'Head mobile coverage: %.2f%%\n' "$HEAD_COVERAGE"
+
+          set +e
+          python -c "import sys; floor=float('${MOBILE_COVERAGE_FLOOR:-60.0}'); head=float('$HEAD_COVERAGE'); sys.exit(0 if head + 1e-9 >= floor else 2)"
+          COVERAGE_FLOOR_STATUS=$?
+          set -e
+          if [ $COVERAGE_FLOOR_STATUS -ne 0 ]; then
+            echo "Mobile coverage ${HEAD_COVERAGE}% is below floor ${MOBILE_COVERAGE_FLOOR}%."
+            exit 1
+          fi
 
           if [ "$EVENT_NAME" = "pull_request" ]; then
             BASE_SHA="$PR_BASE_SHA"
@@ -691,7 +757,12 @@ jobs:
       - secret_scan
       - backend_ci
       - mobile_ci
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (
+        github.event_name == 'push' ||
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy == 'true')
+      )
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -720,13 +791,15 @@ jobs:
         id: meta
         run: echo "image_tag=sha-${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
 
-      - name: Build and push ARM64 image
+      - name: Build and push multi-arch image
         uses: docker/build-push-action@v5
         with:
           context: ./backend
           file: ./backend/Dockerfile
-          platforms: linux/arm64
+          platforms: linux/arm64,linux/amd64
           push: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           tags: |
             ${{ env.BACKEND_IMAGE_REPOSITORY }}:${{ steps.meta.outputs.image_tag }}
             ${{ env.BACKEND_IMAGE_REPOSITORY }}:latest-prod
@@ -735,14 +808,31 @@ jobs:
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.title=smart-receipt-backend
 
+      - name: Scan image for vulnerabilities
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ env.BACKEND_IMAGE_REPOSITORY }}:${{ steps.meta.outputs.image_tag }}
+          format: table
+          ignore-unfixed: true
+          severity: CRITICAL,HIGH
+          vuln-type: os,library
+          exit-code: "1"
+
   deploy_backend_oci:
     name: Deploy Backend to OCI
     needs:
       - backend_image
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (
+        github.event_name == 'push' ||
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy == 'true')
+      )
     runs-on: ubuntu-latest
     timeout-minutes: 25
     environment: production
+    env:
+      SLACK_DEPLOY_WEBHOOK: ${{ secrets.SLACK_DEPLOY_WEBHOOK }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -750,7 +840,7 @@ jobs:
       - name: Configure SSH
         env:
           OCI_SSH_PRIVATE_KEY: ${{ secrets.OCI_SSH_PRIVATE_KEY }}
-          OCI_HOST: ${{ secrets.OCI_HOST }}
+          OCI_KNOWN_HOST: ${{ secrets.OCI_KNOWN_HOST }}
         run: |
           mkdir -p ~/.ssh
 
@@ -780,7 +870,12 @@ jobs:
             exit 1
           fi
 
-          ssh-keyscan -H "$OCI_HOST" >> ~/.ssh/known_hosts
+          if [ -z "$OCI_KNOWN_HOST" ]; then
+            echo "Missing required secret: OCI_KNOWN_HOST"
+            exit 1
+          fi
+
+          printf '%s\n' "$OCI_KNOWN_HOST" >> ~/.ssh/known_hosts
 
       - name: Sync deployment assets
         run: |
@@ -793,4 +888,15 @@ jobs:
         run: |
           ssh "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}" "chmod +x /mnt/data/smart-receipt-and-warranty-manager/deploy/scripts/oci_deploy.sh"
           ssh "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}" \
-            "GHCR_USERNAME='${{ secrets.GHCR_USERNAME }}' GHCR_TOKEN='${{ secrets.GHCR_READ_TOKEN }}' IMAGE_REPOSITORY='${{ env.BACKEND_IMAGE_REPOSITORY }}' IMAGE_TAG='${{ needs.backend_image.outputs.image_tag }}' DEPLOY_DIR='/mnt/data/smart-receipt-and-warranty-manager/deploy' ENV_FILE='/mnt/data/smart-receipt-and-warranty-manager/.env.prod' /mnt/data/smart-receipt-and-warranty-manager/deploy/scripts/oci_deploy.sh"
+            "GHCR_USERNAME='${{ secrets.GHCR_USERNAME }}' GHCR_TOKEN='${{ secrets.GHCR_READ_TOKEN }}' IMAGE_REPOSITORY='${{ env.BACKEND_IMAGE_REPOSITORY }}' IMAGE_TAG='${{ needs.backend_image.outputs.image_tag }}' DEPLOY_DIR='/mnt/data/smart-receipt-and-warranty-manager/deploy' ENV_FILE='/mnt/data/smart-receipt-and-warranty-manager/.env.prod' SMOKE_TEST_URL='${{ secrets.DEPLOY_SMOKE_TEST_URL }}' SMOKE_TEST_TOKEN='${{ secrets.DEPLOY_SMOKE_TEST_TOKEN }}' /mnt/data/smart-receipt-and-warranty-manager/deploy/scripts/oci_deploy.sh"
+
+      - name: Notify on deployment failure
+        if: ${{ failure() && env.SLACK_DEPLOY_WEBHOOK != '' }}
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            {
+              "text": ":rotating_light: Production deploy failed for ${{ github.repository }} at commit ${{ github.sha }}. Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ env.SLACK_DEPLOY_WEBHOOK }}

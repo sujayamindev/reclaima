@@ -102,7 +102,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             isReturn: true,
           );
           allUpcomingItems.add(attentionItem);
-          
+
           if (returnDays <= _returnAlertDays) {
             alertItems.add(attentionItem);
           }
@@ -120,7 +120,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             isReturn: false,
           );
           allUpcomingItems.add(attentionItem);
-          
+
           if (warrantyDays <= _warrantyAlertDays) {
             alertItems.add(attentionItem);
           }
@@ -176,7 +176,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       finalItems = alertItems;
     } else {
       // Option 2: Fallback to the closest upcoming items across all receipts
-      allUpcomingItems.sort((a, b) => a.daysRemaining.compareTo(b.daysRemaining));
+      allUpcomingItems.sort(
+        (a, b) => a.daysRemaining.compareTo(b.daysRemaining),
+      );
       finalItems = allUpcomingItems.take(5).toList();
     }
 
@@ -229,7 +231,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     // Watch providers that need to load data
     final receiptState = ref.watch(receiptsProvider);
     final claimState = ref.watch(userClaimsProvider);
-    
+
     // Check if both data sets have loaded
     if (receiptState.hasValue && claimState.hasValue) {
       // Remove splash screen once the initial API calls are completed.
@@ -463,12 +465,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        final receipts = ref.read(receiptsProvider).valueOrNull ?? [];
-                        final hasProducts = receipts.any((r) => r.lineItems.any((i) => i.status != 'ARCHIVED'));
+                        final receipts =
+                            ref.read(receiptsProvider).valueOrNull ?? [];
+                        final hasProducts = receipts.any(
+                          (r) => r.lineItems.any((i) => i.status != 'ARCHIVED'),
+                        );
                         if (!hasProducts) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: const Text('No products available to claim.'),
+                              content: const Text(
+                                'No products available to claim.',
+                              ),
                               behavior: SnackBarBehavior.floating,
                               backgroundColor: AppColors.error,
                             ),
@@ -992,7 +999,9 @@ class _InsightsSection extends StatelessWidget {
       }
     }
 
-    final double scorePercentage = totalEligible == 0 ? 0.0 : (protectedCount / totalEligible);
+    final double scorePercentage = totalEligible == 0
+        ? 0.0
+        : (protectedCount / totalEligible);
     final int scoreDisplay = (scorePercentage * 100).round();
 
     // Determine the color of the bar indicator
@@ -1014,10 +1023,10 @@ class _InsightsSection extends StatelessWidget {
       ),
       child: Container(
         padding: const EdgeInsets.fromLTRB(
-          AppDimensions.paddingCardSmall, 
-          AppDimensions.paddingCardSmall, 
-          AppDimensions.paddingCardSmall, 
-          AppDimensions.paddingCardSmall
+          AppDimensions.paddingCardSmall,
+          AppDimensions.paddingCardSmall,
+          AppDimensions.paddingCardSmall,
+          AppDimensions.paddingCardSmall,
         ),
         decoration: BoxDecoration(
           color: card,
@@ -1071,7 +1080,9 @@ class _InsightsSection extends StatelessWidget {
             LayoutBuilder(
               builder: (context, constraints) {
                 final maxWidth = constraints.maxWidth;
-                final fillWidth = totalEligible == 0 ? 0.0 : (maxWidth * scorePercentage);
+                final fillWidth = totalEligible == 0
+                    ? 0.0
+                    : (maxWidth * scorePercentage);
                 return Container(
                   height: 8,
                   width: double.infinity,
@@ -1103,7 +1114,7 @@ class _InsightsSection extends StatelessWidget {
               style: AppTextStyles.spaceGrotesk.copyWith(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
-                color: textSecondary, 
+                color: textSecondary,
               ),
             ),
           ],
@@ -1203,7 +1214,7 @@ class _CircleIconButton extends StatelessWidget {
 
 class _ProductSelectorSheet extends StatefulWidget {
   final List<ReceiptModel> receipts;
-  
+
   const _ProductSelectorSheet({required this.receipts});
 
   @override
@@ -1219,7 +1230,7 @@ class _ProductSelectorSheetState extends State<_ProductSelectorSheet> {
     final bg = AppColors.background(isDark);
     final textPrimary = AppColors.textPrimary(isDark);
     final textSecondary = AppColors.textSecondary(isDark);
-    
+
     // Extract flatten products
     final products = <Map<String, dynamic>>[];
     for (final receipt in widget.receipts) {
@@ -1227,7 +1238,7 @@ class _ProductSelectorSheetState extends State<_ProductSelectorSheet> {
         if (item.status == 'ARCHIVED') continue;
         if (_searchQuery.isNotEmpty) {
           final query = _searchQuery.toLowerCase();
-          if (!item.displayName.toLowerCase().contains(query) && 
+          if (!item.displayName.toLowerCase().contains(query) &&
               !(receipt.storeName?.toLowerCase().contains(query) ?? false)) {
             continue;
           }
@@ -1247,7 +1258,9 @@ class _ProductSelectorSheetState extends State<_ProductSelectorSheet> {
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(AppDimensions.radiusXXL)),
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(AppDimensions.radiusXXL),
+        ),
       ),
       child: Column(
         children: [
@@ -1262,25 +1275,34 @@ class _ProductSelectorSheetState extends State<_ProductSelectorSheet> {
           ),
           const SizedBox(height: 24),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingPage),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.paddingPage,
+            ),
             child: Row(
               children: [
                 Text(
                   'Select Product to Claim',
-                  style: AppTextStyles.headingLarge.copyWith(color: textPrimary, fontSize: 20),
+                  style: AppTextStyles.headingLarge.copyWith(
+                    color: textPrimary,
+                    fontSize: 20,
+                  ),
                 ),
               ],
             ),
           ),
           const SizedBox(height: 16),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingPage),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.paddingPage,
+            ),
             child: TextField(
               onChanged: (val) => setState(() => _searchQuery = val),
               style: AppTextStyles.bodyMedium.copyWith(color: textPrimary),
               decoration: InputDecoration(
                 hintText: 'Search products or stores...',
-                hintStyle: AppTextStyles.bodyMedium.copyWith(color: textSecondary.withValues(alpha: 0.5)),
+                hintStyle: AppTextStyles.bodyMedium.copyWith(
+                  color: textSecondary.withValues(alpha: 0.5),
+                ),
                 prefixIcon: Icon(Symbols.search_rounded, color: textSecondary),
                 filled: true,
                 fillColor: AppColors.card(isDark),
@@ -1296,18 +1318,32 @@ class _ProductSelectorSheetState extends State<_ProductSelectorSheet> {
                   borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
                   borderSide: BorderSide(color: AppColors.primary, width: 2),
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
               ),
             ),
           ),
           const SizedBox(height: 16),
           Expanded(
-            child: products.isEmpty 
-                ? Center(child: Text('No products found', style: AppTextStyles.bodyMedium.copyWith(color: textSecondary)))
+            child: products.isEmpty
+                ? Center(
+                    child: Text(
+                      'No products found',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: textSecondary,
+                      ),
+                    ),
+                  )
                 : ListView.separated(
-                    padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingPage, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppDimensions.paddingPage,
+                      vertical: 8,
+                    ),
                     itemCount: products.length,
-                    separatorBuilder: (context, index) => const SizedBox(height: 12),
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 12),
                     itemBuilder: (context, index) {
                       final p = products[index];
                       return GestureDetector(
@@ -1328,13 +1364,17 @@ class _ProductSelectorSheetState extends State<_ProductSelectorSheet> {
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: AppColors.card(isDark),
-                            borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+                            borderRadius: BorderRadius.circular(
+                              AppDimensions.radiusXL,
+                            ),
                             border: Border.all(color: AppColors.border(isDark)),
                           ),
                           child: Row(
                             children: [
                               ClipRRect(
-                                borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+                                borderRadius: BorderRadius.circular(
+                                  AppDimensions.radiusMedium,
+                                ),
                                 child: Container(
                                   width: 50,
                                   height: 50,
@@ -1343,9 +1383,21 @@ class _ProductSelectorSheetState extends State<_ProductSelectorSheet> {
                                       ? CachedNetworkImage(
                                           imageUrl: p['productImageUrl'],
                                           fit: BoxFit.contain,
-                                          errorWidget: (_, _, _) => Icon(Symbols.image_not_supported_rounded, color: textSecondary.withValues(alpha: 0.5), size: 24),
+                                          errorWidget: (_, _, _) => Icon(
+                                            Symbols.image_not_supported_rounded,
+                                            color: textSecondary.withValues(
+                                              alpha: 0.5,
+                                            ),
+                                            size: 24,
+                                          ),
                                         )
-                                      : Icon(Symbols.image_not_supported_rounded, color: textSecondary.withValues(alpha: 0.5), size: 24),
+                                      : Icon(
+                                          Symbols.image_not_supported_rounded,
+                                          color: textSecondary.withValues(
+                                            alpha: 0.5,
+                                          ),
+                                          size: 24,
+                                        ),
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -1355,21 +1407,28 @@ class _ProductSelectorSheetState extends State<_ProductSelectorSheet> {
                                   children: [
                                     Text(
                                       p['productName'],
-                                      style: AppTextStyles.listTitle.copyWith(color: textPrimary),
+                                      style: AppTextStyles.listTitle.copyWith(
+                                        color: textPrimary,
+                                      ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
                                       p['storeName'] ?? 'Unknown Store',
-                                      style: AppTextStyles.caption.copyWith(color: textSecondary),
+                                      style: AppTextStyles.caption.copyWith(
+                                        color: textSecondary,
+                                      ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ],
                                 ),
                               ),
-                              Icon(Symbols.chevron_right_rounded, color: textSecondary),
+                              Icon(
+                                Symbols.chevron_right_rounded,
+                                color: textSecondary,
+                              ),
                             ],
                           ),
                         ),
@@ -1383,4 +1442,3 @@ class _ProductSelectorSheetState extends State<_ProductSelectorSheet> {
     );
   }
 }
-

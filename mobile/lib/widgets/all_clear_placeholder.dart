@@ -5,10 +5,7 @@ import 'package:material_symbols_icons/symbols.dart';
 /// Placeholder card shown when there are no immediate action items
 /// Matches the attention card design for consistency
 class AllClearPlaceholder extends StatelessWidget {
-  const AllClearPlaceholder({
-    super.key,
-    required this.isDark,
-  });
+  const AllClearPlaceholder({super.key, required this.isDark});
 
   final bool isDark;
 
@@ -32,7 +29,12 @@ class AllClearPlaceholder extends StatelessWidget {
           // Text content
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(AppDimensions.paddingCardSmall+12, AppDimensions.paddingCardSmall, AppDimensions.paddingCardSmall, AppDimensions.paddingCardSmall),
+              padding: const EdgeInsets.fromLTRB(
+                AppDimensions.paddingCardSmall + 12,
+                AppDimensions.paddingCardSmall,
+                AppDimensions.paddingCardSmall,
+                AppDimensions.paddingCardSmall,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -71,9 +73,15 @@ class AllClearPlaceholder extends StatelessWidget {
             child: SizedBox(
               width: 100,
               child: Center(
-                child: Icon(Symbols.contextual_token_add_rounded, size: 64, color: primary, weight: AppDimensions.iconWeightNormal),)
+                child: Icon(
+                  Symbols.contextual_token_add_rounded,
+                  size: 64,
+                  color: primary,
+                  weight: AppDimensions.iconWeightNormal,
+                ),
               ),
             ),
+          ),
         ],
       ),
     );

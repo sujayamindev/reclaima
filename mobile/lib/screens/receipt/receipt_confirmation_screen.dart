@@ -19,10 +19,12 @@ class ReceiptConfirmationScreen extends ConsumerStatefulWidget {
   final DateTime? returnExpiryDate;
   final List<Map<String, dynamic>> itemsPayload;
   final List<dynamic>? itemForms;
+
   /// S3 key of the front image pre-uploaded via POST /receipts/ocr-extract.
   /// When set, the receipt is created with this image key already attached
   /// and the status is set to COMPLETED server-side.
   final String? stagingS3Key;
+
   /// S3 key of the back image pre-uploaded via POST /receipts/ocr-extract.
   final String? backImageS3Key;
 
@@ -66,8 +68,18 @@ class _ReceiptConfirmationScreenState
 
   String _displayDate(DateTime date) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
@@ -99,8 +111,10 @@ class _ReceiptConfirmationScreenState
 
     // ── 1. Build receipt-level data (strip product/warranty fields) ─────────
     const lineItemKeys = {
-      'productName', 'productCategory',
-      'warrantyPeriodMonths', 'returnPeriodDays',
+      'productName',
+      'productCategory',
+      'warrantyPeriodMonths',
+      'returnPeriodDays',
     };
     final recData = Map<String, dynamic>.from(widget.formData)
       ..removeWhere((k, _) => lineItemKeys.contains(k));
@@ -133,25 +147,30 @@ class _ReceiptConfirmationScreenState
     // ── 3. Save product / warranty data to the line item ────────────────
     final ocrLineItems = result.lineItems;
     int index = 0;
-    
+
     // Create an explicit list of futures for creating/updating line items
     final futures = <Future>[];
     String? firstProcessedItemId;
 
     for (final rawItemData in widget.itemsPayload) {
-      final liData = Map<String, dynamic>.from(rawItemData)..removeWhere((_, v) => v == null);
+      final liData = Map<String, dynamic>.from(rawItemData)
+        ..removeWhere((_, v) => v == null);
       if (liData.isEmpty) {
         index++;
         continue;
       }
-      
+
       final existingId = liData.remove('_existingId') as String?;
-      final itemId = existingId ?? (index < ocrLineItems.length ? ocrLineItems[index].id : null);
-      
-      if (itemId == null && firstProcessedItemId == null && result.lineItems.isNotEmpty) {
-           firstProcessedItemId = result.lineItems.first.id;
+      final itemId =
+          existingId ??
+          (index < ocrLineItems.length ? ocrLineItems[index].id : null);
+
+      if (itemId == null &&
+          firstProcessedItemId == null &&
+          result.lineItems.isNotEmpty) {
+        firstProcessedItemId = result.lineItems.first.id;
       }
-      
+
       if (itemId != null) {
         firstProcessedItemId ??= itemId;
         futures.add(controller.updateLineItem(result.id, itemId, liData));
@@ -160,7 +179,7 @@ class _ReceiptConfirmationScreenState
       }
       index++;
     }
-    
+
     await Future.wait(futures);
 
     // ── 4. Handle Pending Replacement Links ─────────────────────────────────
@@ -169,7 +188,7 @@ class _ReceiptConfirmationScreenState
       try {
         final claimService = ref.read(claimServiceProvider);
         final newLineItemId = firstProcessedItemId;
-            
+
         if (newLineItemId != null) {
           await claimService.resolveClaim(
             pendingClaimId,
@@ -212,8 +231,9 @@ class _ReceiptConfirmationScreenState
     final storeName = widget.formData['storeName'] as String? ?? '—';
     final invoiceNumber = widget.formData['invoiceNumber'] as String?;
     final purchaseDateStr = widget.formData['purchaseDate'] as String?;
-    final purchaseDate =
-        purchaseDateStr != null ? DateTime.tryParse(purchaseDateStr) : null;
+    final purchaseDate = purchaseDateStr != null
+        ? DateTime.tryParse(purchaseDateStr)
+        : null;
     final totalAmount = widget.formData['totalAmount'] as double?;
     final currency = widget.formData['currency'] as String? ?? 'USD';
     final productName = widget.formData['productName'] as String?;
@@ -240,10 +260,7 @@ class _ReceiptConfirmationScreenState
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 32),
-                      child: StepProgressBar(
-                        currentStep: 3,
-                        totalSteps: 3,
-                      ),
+                      child: StepProgressBar(currentStep: 3, totalSteps: 3),
                     ),
                   ),
                   const SizedBox(width: 48),
@@ -296,105 +313,153 @@ class _ReceiptConfirmationScreenState
                           _buildDetailRow(isDark, 'Invoice No.', invoiceNumber),
                         if (purchaseDate != null)
                           _buildDetailRow(
-                              isDark, 'Purchase Date', _displayDate(purchaseDate)),
+                            isDark,
+                            'Purchase Date',
+                            _displayDate(purchaseDate),
+                          ),
                         if (totalAmount != null)
                           _buildDetailRow(
                             isDark,
                             'Total',
-                            '$currency ${totalAmount.toStringAsFixed(2)}'
+                            '$currency ${totalAmount.toStringAsFixed(2)}',
                           ),
-                        _buildDetailRow(isDark, 'Tracked Items', '${widget.itemsPayload.length}'),
+                        _buildDetailRow(
+                          isDark,
+                          'Tracked Items',
+                          '${widget.itemsPayload.length}',
+                        ),
                       ],
                     ),
                     const SizedBox(height: 16),
-                    
-                    if (widget.itemForms != null) ...List.generate(widget.itemForms!.length, (index) {
+
+                    if (widget.itemForms != null)
+                      ...List.generate(widget.itemForms!.length, (index) {
                         final form = widget.itemForms![index];
                         final productName = form.productNameCtrl.text.trim();
-                        final displayName = productName.isNotEmpty ? productName : 'Item ${index + 1}';
-                        
-                        final warrantyMonths = int.tryParse(form.warrantyPeriodCtrl.text);
-                        final returnDays = int.tryParse(form.returnPeriodCtrl.text);
-                        final hasWarranty = form.warrantyExpiryDate != null || warrantyMonths != null;
-                        final hasReturn = form.returnExpiryDate != null || returnDays != null;
-                        
-                        if (!hasWarranty && !hasReturn) return const SizedBox.shrink();
-                        
+                        final displayName = productName.isNotEmpty
+                            ? productName
+                            : 'Item ${index + 1}';
+
+                        final warrantyMonths = int.tryParse(
+                          form.warrantyPeriodCtrl.text,
+                        );
+                        final returnDays = int.tryParse(
+                          form.returnPeriodCtrl.text,
+                        );
+                        final hasWarranty =
+                            form.warrantyExpiryDate != null ||
+                            warrantyMonths != null;
+                        final hasReturn =
+                            form.returnExpiryDate != null || returnDays != null;
+
+                        if (!hasWarranty && !hasReturn)
+                          return const SizedBox.shrink();
+
                         return Container(
-                            margin: const EdgeInsets.only(bottom: 16),
-                            child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                          margin: const EdgeInsets.only(bottom: 16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  left: 8,
+                                  bottom: 8,
+                                ),
+                                child: Text(
+                                  displayName,
+                                  style: AppTextStyles.titleLarge.copyWith(
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              ),
+                              _buildSection(
+                                isDark: isDark,
+                                textPrimary: textPrimary,
+                                title: 'Coverage & Returns',
+                                icon: Symbols.shield_rounded,
                                 children: [
-                                    Padding(
-                                        padding: const EdgeInsets.only(left: 8, bottom: 8),
-                                        child: Text(displayName, style: AppTextStyles.titleLarge.copyWith(color: AppColors.primary)),
-                                    ),
-                                    _buildSection(
-                                      isDark: isDark,
-                                      textPrimary: textPrimary,
-                                      title: 'Coverage & Returns',
-                                      icon: Symbols.shield_rounded,
+                                  if (hasWarranty) ...[
+                                    Row(
                                       children: [
-                                        if (hasWarranty) ...[
-                                          Row(
-                                            children: [
-                                              Text('Warranty', style: AppTextStyles.formLabel.copyWith(color: AppColors.textPrimary(isDark))),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 6),
-                                          if (form.warrantyExpiryDate != null)
-                                            _buildExpiryBanner(
-                                              isDark: isDark,
-                                              textPrimary: textPrimary,
-                                              expiryDate: form.warrantyExpiryDate!,
-                                              periodLabel: warrantyMonths != null
-                                                  ? '$warrantyMonths-month warranty'
-                                                  : null,
-                                              soonThreshold: 30,
-                                              soonLabel: 'Expiring Soon',
-                                              expiredLabel: 'Expired',
-                                              activeLabel: 'Active',
-                                              activeColor: AppColors.primary,
-                                            )
-                                          else
-                                            _buildNoInfoRow(isDark, 'No warranty information added.'),
-                                        ],
-                                        if (hasWarranty && hasReturn) ...[
-                                          const SizedBox(height: 16),
-                                          Divider(color: AppColors.border(isDark)),
-                                          const SizedBox(height: 16),
-                                        ],
-                                        if (hasReturn) ...[
-                                          Row(
-                                            children: [
-                                              Text('Return Policy', style: AppTextStyles.formLabel.copyWith(color: AppColors.textPrimary(isDark))),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 6),
-                                          if (form.returnExpiryDate != null)
-                                            _buildExpiryBanner(
-                                              isDark: isDark,
-                                              textPrimary: textPrimary,
-                                              expiryDate: form.returnExpiryDate!,
-                                              periodLabel: returnDays != null
-                                                  ? '$returnDays-day return window'
-                                                  : null,
-                                              soonThreshold: 3,
-                                              soonLabel: 'Closing Soon',
-                                              expiredLabel: 'Closed',
-                                              activeLabel: 'Open',
-                                              activeColor: AppColors.info,
-                                            )
-                                          else
-                                            _buildNoInfoRow(isDark, 'No return policy information added.'),
-                                        ],
+                                        Text(
+                                          'Warranty',
+                                          style: AppTextStyles.formLabel
+                                              .copyWith(
+                                                color: AppColors.textPrimary(
+                                                  isDark,
+                                                ),
+                                              ),
+                                        ),
                                       ],
                                     ),
+                                    const SizedBox(height: 6),
+                                    if (form.warrantyExpiryDate != null)
+                                      _buildExpiryBanner(
+                                        isDark: isDark,
+                                        textPrimary: textPrimary,
+                                        expiryDate: form.warrantyExpiryDate!,
+                                        periodLabel: warrantyMonths != null
+                                            ? '$warrantyMonths-month warranty'
+                                            : null,
+                                        soonThreshold: 30,
+                                        soonLabel: 'Expiring Soon',
+                                        expiredLabel: 'Expired',
+                                        activeLabel: 'Active',
+                                        activeColor: AppColors.primary,
+                                      )
+                                    else
+                                      _buildNoInfoRow(
+                                        isDark,
+                                        'No warranty information added.',
+                                      ),
+                                  ],
+                                  if (hasWarranty && hasReturn) ...[
                                     const SizedBox(height: 16),
-                                ]
-                            )
+                                    Divider(color: AppColors.border(isDark)),
+                                    const SizedBox(height: 16),
+                                  ],
+                                  if (hasReturn) ...[
+                                    Row(
+                                      children: [
+                                        Text(
+                                          'Return Policy',
+                                          style: AppTextStyles.formLabel
+                                              .copyWith(
+                                                color: AppColors.textPrimary(
+                                                  isDark,
+                                                ),
+                                              ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 6),
+                                    if (form.returnExpiryDate != null)
+                                      _buildExpiryBanner(
+                                        isDark: isDark,
+                                        textPrimary: textPrimary,
+                                        expiryDate: form.returnExpiryDate!,
+                                        periodLabel: returnDays != null
+                                            ? '$returnDays-day return window'
+                                            : null,
+                                        soonThreshold: 3,
+                                        soonLabel: 'Closing Soon',
+                                        expiredLabel: 'Closed',
+                                        activeLabel: 'Open',
+                                        activeColor: AppColors.info,
+                                      )
+                                    else
+                                      _buildNoInfoRow(
+                                        isDark,
+                                        'No return policy information added.',
+                                      ),
+                                  ],
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                            ],
+                          ),
                         );
-                    }),
+                      }),
                   ],
                 ),
               ),
@@ -433,7 +498,11 @@ class _ReceiptConfirmationScreenState
         children: [
           Row(
             children: [
-              Icon(icon, size: AppDimensions.iconMedium, color: AppColors.primary),
+              Icon(
+                icon,
+                size: AppDimensions.iconMedium,
+                color: AppColors.primary,
+              ),
               const SizedBox(width: 10),
               Text(
                 title,
@@ -485,8 +554,9 @@ class _ReceiptConfirmationScreenState
                   style: TextStyle(
                     fontSize: 13,
                     color: isHighlighted ? AppColors.primary : textPrimary,
-                    fontWeight:
-                        isHighlighted ? FontWeight.w700 : FontWeight.w500,
+                    fontWeight: isHighlighted
+                        ? FontWeight.w700
+                        : FontWeight.w500,
                   ),
                 ),
               ),
@@ -504,7 +574,11 @@ class _ReceiptConfirmationScreenState
     final labelColor = AppColors.muted(isDark);
     return Row(
       children: [
-        Icon(Symbols.info_rounded, size: AppDimensions.iconSmall, color: labelColor),
+        Icon(
+          Symbols.info_rounded,
+          size: AppDimensions.iconSmall,
+          color: labelColor,
+        ),
         const SizedBox(width: 6),
         Expanded(
           child: Text(
@@ -553,11 +627,15 @@ class _ReceiptConfirmationScreenState
     final labelColor = AppColors.label(isDark);
     final duration = _formatDuration(daysLeft);
     final unitSuffix = isExpired ? 'ago' : 'left';
-    final unitLabel = duration.unit.isNotEmpty ? '${duration.unit} $unitSuffix' : unitSuffix;
+    final unitLabel = duration.unit.isNotEmpty
+        ? '${duration.unit} $unitSuffix'
+        : unitSuffix;
 
     // Progress fraction
     final purchaseDateStr = widget.formData['purchaseDate'] as String?;
-    final purchaseDate = purchaseDateStr != null ? DateTime.tryParse(purchaseDateStr) : null;
+    final purchaseDate = purchaseDateStr != null
+        ? DateTime.tryParse(purchaseDateStr)
+        : null;
     double progressFraction = 0.0;
     if (purchaseDate != null) {
       final totalDays = expiryDate.difference(purchaseDate).inDays;
@@ -599,11 +677,16 @@ class _ReceiptConfirmationScreenState
                   ),
                   const SizedBox(height: 0),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: statusColor.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: statusColor.withValues(alpha: 0.35)),
+                      border: Border.all(
+                        color: statusColor.withValues(alpha: 0.35),
+                      ),
                     ),
                     child: Text(
                       statusLabel,
@@ -650,7 +733,11 @@ class _ReceiptConfirmationScreenState
         const SizedBox(height: 12),
         Row(
           children: [
-            Icon(Symbols.event_rounded, size: AppDimensions.iconTiny, color: labelColor),
+            Icon(
+              Symbols.event_rounded,
+              size: AppDimensions.iconTiny,
+              color: labelColor,
+            ),
             const SizedBox(width: 5),
             Text(
               'Expires ${_displayDate(expiryDate)}',
@@ -669,7 +756,6 @@ class _ReceiptConfirmationScreenState
     );
   }
 
-
   // ─── Save footer (matches review_receipt_screen style) ─────────────────────
 
   Widget _buildSaveFooter(bool isDark, AsyncValue<void> controllerState) {
@@ -677,9 +763,7 @@ class _ReceiptConfirmationScreenState
 
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-      ),
+      decoration: BoxDecoration(color: backgroundColor),
       child: SizedBox(
         width: double.infinity,
         child: ElevatedButton.icon(
@@ -693,14 +777,15 @@ class _ReceiptConfirmationScreenState
                     color: AppColors.onPrimary,
                   ),
                 )
-              : const Icon(Symbols.check_circle_rounded,
-                  size: AppDimensions.iconMedium, color: AppColors.onPrimary, weight: AppDimensions.iconWeightBold),
+              : const Icon(
+                  Symbols.check_circle_rounded,
+                  size: AppDimensions.iconMedium,
+                  color: AppColors.onPrimary,
+                  weight: AppDimensions.iconWeightBold,
+                ),
           label: const Text(
             'Save Receipt',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primary,

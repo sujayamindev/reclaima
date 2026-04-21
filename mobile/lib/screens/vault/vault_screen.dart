@@ -96,8 +96,10 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
           return true; // Show all products
         case VaultFilterType.active:
           // Active means at least one of warranty or return is still valid
-          final hasActiveWarranty = item.hasWarranty == true && !item.isWarrantyExpired;
-          final hasActiveReturn = item.lineItem.returnExpiryDate != null && !item.isReturnExpired;
+          final hasActiveWarranty =
+              item.hasWarranty == true && !item.isWarrantyExpired;
+          final hasActiveReturn =
+              item.lineItem.returnExpiryDate != null && !item.isReturnExpired;
           return (hasActiveWarranty || hasActiveReturn) &&
               item.lineItem.status != 'ARCHIVED';
         case VaultFilterType.warrantyExpiring:
@@ -114,9 +116,12 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
               item.lineItem.status != 'ARCHIVED';
         case VaultFilterType.expired:
           // Expired means BOTH warranty AND return periods are expired (or not set)
-          final warrantyExpiredOrNone = item.hasWarranty != true || item.isWarrantyExpired;
-          final returnExpiredOrNone = item.lineItem.returnExpiryDate == null || item.isReturnExpired;
-          return warrantyExpiredOrNone && returnExpiredOrNone &&
+          final warrantyExpiredOrNone =
+              item.hasWarranty != true || item.isWarrantyExpired;
+          final returnExpiredOrNone =
+              item.lineItem.returnExpiryDate == null || item.isReturnExpired;
+          return warrantyExpiredOrNone &&
+              returnExpiredOrNone &&
               item.lineItem.status != 'ARCHIVED';
         case VaultFilterType.archived:
           return item.lineItem.status == 'ARCHIVED';
@@ -430,8 +435,10 @@ class _ProductListItem extends StatelessWidget {
 
   Color _statusColor() {
     // Green if at least one of warranty or return is still active
-    final hasActiveWarranty = item.hasWarranty == true && !item.isWarrantyExpired;
-    final hasActiveReturn = item.lineItem.returnExpiryDate != null && !item.isReturnExpired;
+    final hasActiveWarranty =
+        item.hasWarranty == true && !item.isWarrantyExpired;
+    final hasActiveReturn =
+        item.lineItem.returnExpiryDate != null && !item.isReturnExpired;
     if (hasActiveWarranty || hasActiveReturn) {
       return AppColors.success;
     }
@@ -444,9 +451,10 @@ class _ProductListItem extends StatelessWidget {
 
     // Priority 1: Warranty expired (show this even if return also expired)
     if (item.isWarrantyExpired) return 'Warranty expired';
-    
+
     // Priority 2: Warranty active but return expired
-    if (item.isReturnExpired && !item.isWarrantyExpired) return 'Active warranty';
+    if (item.isReturnExpired && !item.isWarrantyExpired)
+      return 'Active warranty';
 
     // Priority 3: Return expires today (urgent)
     if (returnDays != null && returnDays == 0) {
@@ -506,7 +514,7 @@ class _ProductListItem extends StatelessWidget {
                       ? CachedNetworkImage(
                           imageUrl: item.lineItem.productImageUrl!,
                           fit: BoxFit.contain,
-                        errorWidget: (context, imageUrl, error) =>
+                          errorWidget: (context, imageUrl, error) =>
                               _VaultImagePlaceholder(color: statusColor),
                         )
                       : _VaultImagePlaceholder(color: statusColor),

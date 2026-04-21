@@ -33,7 +33,8 @@ class NotificationPreferencesModel {
     return NotificationPreferencesModel(
       id: json['id'] as String,
       userId: json['userId'] as String,
-      warrantyRemindersEnabled: json['warrantyRemindersEnabled'] as bool? ?? true,
+      warrantyRemindersEnabled:
+          json['warrantyRemindersEnabled'] as bool? ?? true,
       returnRemindersEnabled: json['returnRemindersEnabled'] as bool? ?? true,
       ocrNotificationsEnabled: json['ocrNotificationsEnabled'] as bool? ?? true,
       warrantyLeadDays: json['warrantyLeadDays'] as int? ?? 30,
@@ -44,27 +45,27 @@ class NotificationPreferencesModel {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'userId': userId,
-        'warrantyRemindersEnabled': warrantyRemindersEnabled,
-        'returnRemindersEnabled': returnRemindersEnabled,
-        'ocrNotificationsEnabled': ocrNotificationsEnabled,
-        'warrantyLeadDays': warrantyLeadDays,
-        'returnLeadDays': returnLeadDays,
-        if (quietHoursStart != null) 'quietHoursStart': quietHoursStart,
-        if (quietHoursEnd != null) 'quietHoursEnd': quietHoursEnd,
-      };
+    'id': id,
+    'userId': userId,
+    'warrantyRemindersEnabled': warrantyRemindersEnabled,
+    'returnRemindersEnabled': returnRemindersEnabled,
+    'ocrNotificationsEnabled': ocrNotificationsEnabled,
+    'warrantyLeadDays': warrantyLeadDays,
+    'returnLeadDays': returnLeadDays,
+    if (quietHoursStart != null) 'quietHoursStart': quietHoursStart,
+    if (quietHoursEnd != null) 'quietHoursEnd': quietHoursEnd,
+  };
 
   /// Partial-update payload — only include non-null values that differ.
   Map<String, dynamic> toUpdateJson() => {
-        'warrantyRemindersEnabled': warrantyRemindersEnabled,
-        'returnRemindersEnabled': returnRemindersEnabled,
-        'ocrNotificationsEnabled': ocrNotificationsEnabled,
-        'warrantyLeadDays': warrantyLeadDays,
-        'returnLeadDays': returnLeadDays,
-        'quietHoursStart': quietHoursStart,
-        'quietHoursEnd': quietHoursEnd,
-      };
+    'warrantyRemindersEnabled': warrantyRemindersEnabled,
+    'returnRemindersEnabled': returnRemindersEnabled,
+    'ocrNotificationsEnabled': ocrNotificationsEnabled,
+    'warrantyLeadDays': warrantyLeadDays,
+    'returnLeadDays': returnLeadDays,
+    'quietHoursStart': quietHoursStart,
+    'quietHoursEnd': quietHoursEnd,
+  };
 
   NotificationPreferencesModel copyWith({
     bool? warrantyRemindersEnabled,
@@ -87,8 +88,12 @@ class NotificationPreferencesModel {
           ocrNotificationsEnabled ?? this.ocrNotificationsEnabled,
       warrantyLeadDays: warrantyLeadDays ?? this.warrantyLeadDays,
       returnLeadDays: returnLeadDays ?? this.returnLeadDays,
-      quietHoursStart: clearQuietHours ? null : (quietHoursStart ?? this.quietHoursStart),
-      quietHoursEnd: clearQuietHours ? null : (quietHoursEnd ?? this.quietHoursEnd),
+      quietHoursStart: clearQuietHours
+          ? null
+          : (quietHoursStart ?? this.quietHoursStart),
+      quietHoursEnd: clearQuietHours
+          ? null
+          : (quietHoursEnd ?? this.quietHoursEnd),
     );
   }
 }

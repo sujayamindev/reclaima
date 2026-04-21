@@ -8,9 +8,9 @@ import 'service_providers.dart';
 /// A default row is auto-created by the backend on first access.
 final notificationPreferencesProvider =
     FutureProvider<NotificationPreferencesModel?>((ref) async {
-  final notifService = ref.watch(notificationServiceProvider);
-  return notifService.getPreferences();
-});
+      final notifService = ref.watch(notificationServiceProvider);
+      return notifService.getPreferences();
+    });
 
 // ── Preferences controller ─────────────────────────────────────────────────
 
@@ -19,15 +19,16 @@ class NotificationPreferencesController
   final Ref _ref;
 
   NotificationPreferencesController(this._ref)
-      : super(const AsyncValue.loading()) {
+    : super(const AsyncValue.loading()) {
     _load();
   }
 
   Future<void> _load() async {
     state = const AsyncValue.loading();
     try {
-      final prefs =
-          await _ref.read(notificationServiceProvider).getPreferences();
+      final prefs = await _ref
+          .read(notificationServiceProvider)
+          .getPreferences();
       state = AsyncValue.data(prefs);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -39,8 +40,9 @@ class NotificationPreferencesController
     // Optimistic update
     state = AsyncValue.data(updated);
     try {
-      final saved =
-          await _ref.read(notificationServiceProvider).savePreferences(updated);
+      final saved = await _ref
+          .read(notificationServiceProvider)
+          .savePreferences(updated);
       if (saved != null) state = AsyncValue.data(saved);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -50,8 +52,8 @@ class NotificationPreferencesController
   Future<void> reload() => _load();
 }
 
-final notificationPreferencesControllerProvider = StateNotifierProvider<
-    NotificationPreferencesController,
-    AsyncValue<NotificationPreferencesModel?>>(
-  (ref) => NotificationPreferencesController(ref),
-);
+final notificationPreferencesControllerProvider =
+    StateNotifierProvider<
+      NotificationPreferencesController,
+      AsyncValue<NotificationPreferencesModel?>
+    >((ref) => NotificationPreferencesController(ref));

@@ -78,7 +78,7 @@ class UploadQueue extends Table {
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get lastAttemptAt => dateTime().nullable()();
   TextColumn get errorMessage => text().nullable()();
-  
+
   @override
   Set<Column> get primaryKey => {id};
 }
@@ -92,86 +92,90 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        onCreate: (m) => m.createAll(),
-        onUpgrade: (m, from, to) async {
-          if (from < 2) {
-            // v1 → v2: ReceiptLineItems table added;
-            // product/warranty columns dropped from Receipts.
-            await m.createTable(receiptLineItems);
-            await m.addColumn(receipts, receipts.invoiceNumber);
-            await m.addColumn(receipts, receipts.vendorAddress);
-            await m.addColumn(receipts, receipts.vendorPhone);
-            await m.addColumn(receipts, receipts.vendorEmail);
-            await m.addColumn(receipts, receipts.vendorUrl);
-            await m.addColumn(receipts, receipts.warrantyNotes);
-            await m.addColumn(receipts, receipts.remarks);
-            // Note: Drift cannot drop columns on SQLite — the old
-            // productName, productCategory, warrantyPeriodMonths,
-            // warrantyExpiryDate, returnPeriodDays, returnExpiryDate columns
-            // will remain in the physical table but are no longer mapped.
-          }
-          if (from < 3) {
-            // v2 → v3: Schema change - quantity and amount removed
-            // For fresh databases, onCreate handles this.
-            // For existing v2 databases, we recreate the table to match new schema.
-            // This is acceptable since the database is fresh (confirmed by user).
-            
-            // Drop and recreate ReceiptLineItems table with new schema
-            await m.deleteTable('receipt_line_items');
-            await m.createTable(receiptLineItems);
-          }
-        },
-      );
-  
+    onCreate: (m) => m.createAll(),
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        // v1 → v2: ReceiptLineItems table added;
+        // product/warranty columns dropped from Receipts.
+        await m.createTable(receiptLineItems);
+        await m.addColumn(receipts, receipts.invoiceNumber);
+        await m.addColumn(receipts, receipts.vendorAddress);
+        await m.addColumn(receipts, receipts.vendorPhone);
+        await m.addColumn(receipts, receipts.vendorEmail);
+        await m.addColumn(receipts, receipts.vendorUrl);
+        await m.addColumn(receipts, receipts.warrantyNotes);
+        await m.addColumn(receipts, receipts.remarks);
+        // Note: Drift cannot drop columns on SQLite — the old
+        // productName, productCategory, warrantyPeriodMonths,
+        // warrantyExpiryDate, returnPeriodDays, returnExpiryDate columns
+        // will remain in the physical table but are no longer mapped.
+      }
+      if (from < 3) {
+        // v2 → v3: Schema change - quantity and amount removed
+        // For fresh databases, onCreate handles this.
+        // For existing v2 databases, we recreate the table to match new schema.
+        // This is acceptable since the database is fresh (confirmed by user).
+
+        // Drop and recreate ReceiptLineItems table with new schema
+        await m.deleteTable('receipt_line_items');
+        await m.createTable(receiptLineItems);
+      }
+    },
+  );
+
   // Receipt operations
-  
+
   /// Get all receipts
   Future<List<Receipt>> getAllReceipts() => select(receipts).get();
-  
+
   /// Get receipt by ID
   Future<Receipt?> getReceipt(String id) =>
       (select(receipts)..where((r) => r.id.equals(id))).getSingleOrNull();
-  
+
   /// Insert or update receipt
   Future<int> upsertReceipt(ReceiptsCompanion receipt) =>
       into(receipts).insertOnConflictUpdate(receipt);
-  
+
   /// Delete receipt
   Future<int> deleteReceipt(String id) =>
       (delete(receipts)..where((r) => r.id.equals(id))).go();
-  
+
   /// Get receipts that need syncing
   Future<List<Receipt>> getUnsyncedReceipts() =>
       (select(receipts)..where((r) => r.syncedAt.isNull())).get();
-  
+
   /// Mark receipt as synced
   Future<int> markReceiptSynced(String id) =>
-      (update(receipts)..where((r) => r.id.equals(id)))
-          .write(ReceiptsCompanion(syncedAt: Value(DateTime.now())));
-  
+      (update(receipts)..where((r) => r.id.equals(id))).write(
+        ReceiptsCompanion(syncedAt: Value(DateTime.now())),
+      );
+
   // Upload queue operations
-  
+
   /// Get all pending uploads
   Future<List<UploadQueueData>> getPendingUploads() =>
       select(uploadQueue).get();
-  
+
   /// Add to upload queue
   Future<int> addToUploadQueue(UploadQueueCompanion upload) =>
       into(uploadQueue).insert(upload);
-  
+
   /// Remove from upload queue
   Future<int> removeFromUploadQueue(String id) =>
       (delete(uploadQueue)..where((u) => u.id.equals(id))).go();
-  
+
   /// Update upload retry count
-  Future<int> incrementUploadRetry(String id, int currentRetryCount, String? errorMsg) =>
-      (update(uploadQueue)..where((u) => u.id.equals(id))).write(
-        UploadQueueCompanion(
-          retryCount: Value(currentRetryCount + 1),
-          lastAttemptAt: Value(DateTime.now()),
-          errorMessage: Value(errorMsg),
-        ),
-      );
+  Future<int> incrementUploadRetry(
+    String id,
+    int currentRetryCount,
+    String? errorMsg,
+  ) => (update(uploadQueue)..where((u) => u.id.equals(id))).write(
+    UploadQueueCompanion(
+      retryCount: Value(currentRetryCount + 1),
+      lastAttemptAt: Value(DateTime.now()),
+      errorMessage: Value(errorMsg),
+    ),
+  );
 }
 
 /// Open database connection

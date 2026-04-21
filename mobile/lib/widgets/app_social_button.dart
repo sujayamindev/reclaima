@@ -16,7 +16,7 @@ class AppSocialButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return SizedBox(
       height: AppDimensions.buttonHeight,
       child: OutlinedButton(

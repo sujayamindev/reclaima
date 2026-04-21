@@ -32,7 +32,12 @@ def _to_optional_int(value: object) -> Optional[int]:
 
 
 def _to_optional_datetime(value: object) -> Optional[datetime]:
-    return value if isinstance(value, datetime) else None
+    if not isinstance(value, datetime):
+        return None
+    # SQLite often returns naive datetimes even for timezone=True columns.
+    if value.tzinfo is None:
+        return value.replace(tzinfo=timezone.utc)
+    return value
 
 
 @router.get("", response_model=List[WarrantyInfo])

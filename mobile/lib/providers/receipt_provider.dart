@@ -22,14 +22,20 @@ final receiptsProvider = FutureProvider<List<ReceiptModel>>((ref) async {
 });
 
 /// Single receipt provider
-final receiptProvider = FutureProvider.family<ReceiptModel, String>((ref, id) async {
+final receiptProvider = FutureProvider.family<ReceiptModel, String>((
+  ref,
+  id,
+) async {
   final receiptService = ref.watch(receiptServiceProvider);
   return await receiptService.getReceipt(id);
 });
 
 /// Pre-signed S3 URL provider for the receipt image.
 /// Returns null if the receipt has no uploaded image.
-final receiptImageUrlProvider = FutureProvider.family<String?, String>((ref, receiptId) async {
+final receiptImageUrlProvider = FutureProvider.family<String?, String>((
+  ref,
+  receiptId,
+) async {
   final receiptService = ref.watch(receiptServiceProvider);
   return await receiptService.getReceiptImageUrl(receiptId);
 });
@@ -37,13 +43,13 @@ final receiptImageUrlProvider = FutureProvider.family<String?, String>((ref, rec
 /// Receipt Controller
 class ReceiptController extends StateNotifier<AsyncValue<void>> {
   final ReceiptService _receiptService;
-  
+
   ReceiptController(this._receiptService) : super(const AsyncValue.data(null));
-  
+
   /// Create a new receipt
   Future<ReceiptModel?> createReceipt(Map<String, dynamic> data) async {
     state = const AsyncValue.loading();
-    
+
     try {
       final receipt = await _receiptService.createReceipt(data);
       state = const AsyncValue.data(null);
@@ -53,14 +59,14 @@ class ReceiptController extends StateNotifier<AsyncValue<void>> {
       return null;
     }
   }
-  
+
   /// Update receipt
   Future<ReceiptModel?> updateReceipt(
     String id,
     Map<String, dynamic> data,
   ) async {
     state = const AsyncValue.loading();
-    
+
     try {
       final receipt = await _receiptService.updateReceipt(id, data);
       state = const AsyncValue.data(null);
@@ -70,18 +76,18 @@ class ReceiptController extends StateNotifier<AsyncValue<void>> {
       return null;
     }
   }
-  
+
   /// Delete receipt
   Future<bool> deleteReceipt(String id, WidgetRef ref) async {
     state = const AsyncValue.loading();
-    
+
     try {
       await _receiptService.deleteReceipt(id);
-      
+
       // Invalidate providers to refresh UI
       ref.invalidate(receiptsProvider);
       ref.invalidate(receiptProvider(id));
-      
+
       state = const AsyncValue.data(null);
       return true;
     } catch (e, st) {
@@ -91,16 +97,20 @@ class ReceiptController extends StateNotifier<AsyncValue<void>> {
   }
 
   /// Delete a single line item
-  Future<bool> deleteLineItem(String receiptId, String itemId, WidgetRef ref) async {
+  Future<bool> deleteLineItem(
+    String receiptId,
+    String itemId,
+    WidgetRef ref,
+  ) async {
     state = const AsyncValue.loading();
-    
+
     try {
       await _receiptService.deleteLineItem(receiptId, itemId);
-      
+
       // Invalidate providers to refresh UI
       ref.invalidate(receiptsProvider);
       ref.invalidate(receiptProvider(receiptId));
-      
+
       state = const AsyncValue.data(null);
       return true;
     } catch (e, st) {
@@ -108,19 +118,13 @@ class ReceiptController extends StateNotifier<AsyncValue<void>> {
       return false;
     }
   }
-  
+
   /// Upload receipt file
-  Future<ReceiptModel?> uploadReceipt(
-    String receiptId,
-    String filePath,
-  ) async {
+  Future<ReceiptModel?> uploadReceipt(String receiptId, String filePath) async {
     state = const AsyncValue.loading();
-    
+
     try {
-      final receipt = await _receiptService.uploadReceipt(
-        receiptId,
-        filePath,
-      );
+      final receipt = await _receiptService.uploadReceipt(receiptId, filePath);
       state = const AsyncValue.data(null);
       return receipt;
     } catch (e, st) {
@@ -128,11 +132,11 @@ class ReceiptController extends StateNotifier<AsyncValue<void>> {
       return null;
     }
   }
-  
+
   /// Retry OCR processing
   Future<ReceiptModel?> retryOcr(String receiptId) async {
     state = const AsyncValue.loading();
-    
+
     try {
       final receipt = await _receiptService.retryOcr(receiptId);
       state = const AsyncValue.data(null);
@@ -151,8 +155,7 @@ class ReceiptController extends StateNotifier<AsyncValue<void>> {
     state = const AsyncValue.loading();
 
     try {
-      final lineItem =
-          await _receiptService.createLineItem(receiptId, data);
+      final lineItem = await _receiptService.createLineItem(receiptId, data);
       state = const AsyncValue.data(null);
       return lineItem;
     } catch (e, st) {
@@ -170,8 +173,11 @@ class ReceiptController extends StateNotifier<AsyncValue<void>> {
     state = const AsyncValue.loading();
 
     try {
-      final lineItem =
-          await _receiptService.updateLineItem(receiptId, itemId, data);
+      final lineItem = await _receiptService.updateLineItem(
+        receiptId,
+        itemId,
+        data,
+      );
       state = const AsyncValue.data(null);
       return lineItem;
     } catch (e, st) {
@@ -184,11 +190,17 @@ class ReceiptController extends StateNotifier<AsyncValue<void>> {
   ///
   /// Returns the OCR-extracted data map (camelCase keys) including
   /// [s3ObjectKey] and [backImageS3Key] on success, or null on error.
-  Future<Map<String, dynamic>?> extractOcr(String? frontImagePath, String? backImagePath) async {
+  Future<Map<String, dynamic>?> extractOcr(
+    String? frontImagePath,
+    String? backImagePath,
+  ) async {
     state = const AsyncValue.loading();
 
     try {
-      final result = await _receiptService.extractOcr(frontImagePath, backImagePath);
+      final result = await _receiptService.extractOcr(
+        frontImagePath,
+        backImagePath,
+      );
       state = const AsyncValue.data(null);
       return result;
     } catch (e, st) {
@@ -201,6 +213,6 @@ class ReceiptController extends StateNotifier<AsyncValue<void>> {
 /// Receipt controller provider
 final receiptControllerProvider =
     StateNotifierProvider<ReceiptController, AsyncValue<void>>((ref) {
-  final receiptService = ref.watch(receiptServiceProvider);
-  return ReceiptController(receiptService);
-});
+      final receiptService = ref.watch(receiptServiceProvider);
+      return ReceiptController(receiptService);
+    });

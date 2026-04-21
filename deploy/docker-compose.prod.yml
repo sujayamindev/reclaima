@@ -73,6 +73,8 @@ services:
     <<: [*backend-common, *migrate-resources]
     container_name: smart-receipt-migrate
     restart: "no"
+    environment:
+      ENABLE_SCHEDULER: "false"
     command: ["alembic", "upgrade", "head"]
 
   api:

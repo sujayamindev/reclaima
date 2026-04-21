@@ -32,9 +32,9 @@ services:
     image: postgres:15-alpine
     container_name: smart-receipt-db
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: CR5#zhQRHk2zxL*4tCFcbN5Reg
-      POSTGRES_DB: smart_receipt_db
+      POSTGRES_USER: ${DEV_POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${DEV_POSTGRES_PASSWORD:?DEV_POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${DEV_POSTGRES_DB:-smart_receipt_db}
     ports:
       - "5432:5432"
     volumes:
@@ -58,7 +58,7 @@ services:
       - ./backend/.env  # Read all env vars from backend/.env
     environment:
       # Override database URL to use Docker service name
-      DATABASE_URL: postgresql://postgres:CR5#zhQRHk2zxL*4tCFcbN5Reg@postgres:5432/smart_receipt_db
+      DATABASE_URL: postgresql://${DEV_POSTGRES_USER:-postgres}:${DEV_POSTGRES_PASSWORD:?DEV_POSTGRES_PASSWORD is required}@postgres:5432/${DEV_POSTGRES_DB:-smart_receipt_db}
     ports:
       - "8000:8000"
     volumes:
@@ -85,8 +85,8 @@ services:
     image: dpage/pgadmin4:latest
     container_name: smart-receipt-pgadmin
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@smartreceipt.com
-      PGADMIN_DEFAULT_PASSWORD: CR5#zhQRHk2zxL*4tCFcbN5Reg
+      PGADMIN_DEFAULT_EMAIL: ${DEV_PGADMIN_EMAIL:-admin@smartreceipt.com}
+      PGADMIN_DEFAULT_PASSWORD: ${DEV_PGADMIN_PASSWORD:?DEV_PGADMIN_PASSWORD is required}
       PGADMIN_CONFIG_SERVER_MODE: 'False'
     ports:
       - "5050:80"
