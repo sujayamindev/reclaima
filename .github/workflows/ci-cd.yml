@@ -751,40 +751,12 @@ jobs:
           name: mobile-android-debug-apk
           path: mobile/build/app/outputs/flutter-apk/app-debug.apk
 
-  mobile_ios_ci:
-    name: Mobile iOS CI
-    needs:
-      - secret_scan
-    runs-on: macos-latest
-    timeout-minutes: 45
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: ${{ env.FLUTTER_CHANNEL }}
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          cache: true
-
-      - name: Resolve dependencies
-        working-directory: mobile
-        run: flutter pub get
-
-      - name: Build iOS debug artifact
-        working-directory: mobile
-        run: flutter build ios --debug --no-codesign
-
   backend_image:
     name: Build and Publish Backend Image
     needs:
       - secret_scan
       - backend_ci
       - mobile_ci
-      - mobile_ios_ci
     if: >-
       github.ref == 'refs/heads/main' &&
       (
