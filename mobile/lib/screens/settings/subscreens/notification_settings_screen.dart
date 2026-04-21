@@ -48,8 +48,7 @@ class _NotificationSettingsScreenState
           _returnLeadDays = prefs.returnLeadDays;
           _quietHoursEnabled =
               prefs.quietHoursStart != null && prefs.quietHoursEnd != null;
-          _quietStart =
-              TimeOfDay(hour: prefs.quietHoursStart ?? 22, minute: 0);
+          _quietStart = TimeOfDay(hour: prefs.quietHoursStart ?? 22, minute: 0);
           _quietEnd = TimeOfDay(hour: prefs.quietHoursEnd ?? 8, minute: 0);
         });
       }
@@ -57,7 +56,8 @@ class _NotificationSettingsScreenState
   }
 
   NotificationPreferencesModel _buildUpdatedPreferences(
-      NotificationPreferencesModel basePrefs) {
+    NotificationPreferencesModel basePrefs,
+  ) {
     return basePrefs.copyWith(
       warrantyRemindersEnabled: _warrantyReminders,
       returnRemindersEnabled: _returnReminders,
@@ -114,12 +114,18 @@ class _NotificationSettingsScreenState
         children: [
           Row(
             children: [
-              Icon(icon, size: AppDimensions.iconMedium, color: AppColors.primary, weight: AppDimensions.iconWeightHeavy),
+              Icon(
+                icon,
+                size: AppDimensions.iconMedium,
+                color: AppColors.primary,
+                weight: AppDimensions.iconWeightHeavy,
+              ),
               const SizedBox(width: 10),
               Text(
                 title,
-                style: AppTextStyles.sectionTitle
-                    .copyWith(color: AppColors.textPrimary(isDark)),
+                style: AppTextStyles.sectionTitle.copyWith(
+                  color: AppColors.textPrimary(isDark),
+                ),
               ),
             ],
           ),
@@ -143,8 +149,12 @@ class _NotificationSettingsScreenState
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         children: [
-          Icon(icon,
-              size: AppDimensions.iconMedium, color: AppColors.textSecondary(isDark), weight: 600.0),
+          Icon(
+            icon,
+            size: AppDimensions.iconMedium,
+            color: AppColors.textSecondary(isDark),
+            weight: 600.0,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -160,8 +170,9 @@ class _NotificationSettingsScreenState
                 const SizedBox(height: 2),
                 Text(
                   subtitle,
-                  style: AppTextStyles.caption
-                      .copyWith(color: AppColors.textSecondary(isDark)),
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColors.textSecondary(isDark),
+                  ),
                 ),
               ],
             ),
@@ -200,10 +211,12 @@ class _NotificationSettingsScreenState
           padding: const EdgeInsets.symmetric(vertical: 10),
           child: Row(
             children: [
-              Icon(icon,
-                  size: AppDimensions.iconMedium,
-                  color: AppColors.textSecondary(isDark),
-                  weight: 600.0),
+              Icon(
+                icon,
+                size: AppDimensions.iconMedium,
+                color: AppColors.textSecondary(isDark),
+                weight: 600.0,
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -215,30 +228,42 @@ class _NotificationSettingsScreenState
                 ),
               ),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.1),
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.radiusMedium),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.radiusMedium,
+                  ),
                 ),
                 child: DropdownButton<int>(
                   value: selectedValue,
                   underline: const SizedBox.shrink(),
                   isDense: true,
-                  icon: Icon(Symbols.arrow_drop_down_rounded,
-                      size: AppDimensions.iconMedium, color: AppColors.primary, weight: AppDimensions.iconWeightBold),
+                  icon: Icon(
+                    Symbols.arrow_drop_down_rounded,
+                    size: AppDimensions.iconMedium,
+                    color: AppColors.primary,
+                    weight: AppDimensions.iconWeightBold,
+                  ),
                   style: AppTextStyles.listTitle.copyWith(
                     color: AppColors.primary,
                   ),
                   dropdownColor: AppColors.card(isDark),
                   items: options
-                      .map((v) => DropdownMenuItem(
-                            value: v,
-                            child: Text('$v $unit',
-                                style: TextStyle(
-                                    color: AppColors.textPrimary(isDark))),
-                          ))
+                      .map(
+                        (v) => DropdownMenuItem(
+                          value: v,
+                          child: Text(
+                            '$v $unit',
+                            style: TextStyle(
+                              color: AppColors.textPrimary(isDark),
+                            ),
+                          ),
+                        ),
+                      )
                       .toList(),
                   onChanged: (v) {
                     if (v != null) onChanged(v);
@@ -269,10 +294,12 @@ class _NotificationSettingsScreenState
           padding: const EdgeInsets.symmetric(vertical: 10),
           child: Row(
             children: [
-              Icon(icon,
-                  size: AppDimensions.iconMedium,
-                  color: AppColors.textSecondary(isDark),
-                  weight: 600.0),
+              Icon(
+                icon,
+                size: AppDimensions.iconMedium,
+                color: AppColors.textSecondary(isDark),
+                weight: 600.0,
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -283,12 +310,15 @@ class _NotificationSettingsScreenState
                 ),
               ),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.1),
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.radiusMedium),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.radiusMedium,
+                  ),
                 ),
                 child: Text(
                   time.format(context),
@@ -325,17 +355,23 @@ class _NotificationSettingsScreenState
         iconTheme: IconThemeData(color: AppColors.textPrimary(isDark)),
       ),
       body: prefsAsync.when(
-        loading: () => Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
-        ),
+        loading: () =>
+            Center(child: CircularProgressIndicator(color: AppColors.primary)),
         error: (err, st) => Center(
-          child: Text('Failed to load settings',
-              style: AppTextStyles.bodySmall
-                  .copyWith(color: AppColors.textPrimary(isDark))),
+          child: Text(
+            'Failed to load settings',
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textPrimary(isDark),
+            ),
+          ),
         ),
         data: (_) => SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(
-              AppDimensions.paddingPage, 8, AppDimensions.paddingPage, 40),
+            AppDimensions.paddingPage,
+            8,
+            AppDimensions.paddingPage,
+            40,
+          ),
           child: Column(
             children: [
               _buildSectionCard(

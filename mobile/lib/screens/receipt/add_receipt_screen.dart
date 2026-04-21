@@ -56,7 +56,9 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                   padding: const EdgeInsets.all(AppDimensions.paddingCardSmall),
                   decoration: BoxDecoration(
                     color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(AppDimensions.radiusIconContainer),
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.radiusIconContainer,
+                    ),
                   ),
                   child: const Icon(
                     Symbols.camera_alt_rounded,
@@ -66,9 +68,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                 ),
                 title: Text(
                   'Snap a Photo',
-                  style: AppTextStyles.listTitle.copyWith(
-                    color: textPrimary,
-                  ),
+                  style: AppTextStyles.listTitle.copyWith(color: textPrimary),
                 ),
                 onTap: () => Navigator.pop(context, ImageSource.camera),
               ),
@@ -77,7 +77,9 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                   padding: const EdgeInsets.all(AppDimensions.paddingCardSmall),
                   decoration: BoxDecoration(
                     color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(AppDimensions.radiusIconContainer),
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.radiusIconContainer,
+                    ),
                   ),
                   child: const Icon(
                     Symbols.photo_library_rounded,
@@ -87,9 +89,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                 ),
                 title: Text(
                   'Choose from Gallery',
-                  style: AppTextStyles.listTitle.copyWith(
-                    color: textPrimary,
-                  ),
+                  style: AppTextStyles.listTitle.copyWith(color: textPrimary),
                 ),
                 onTap: () => Navigator.pop(context, ImageSource.gallery),
               ),
@@ -145,7 +145,10 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
 
     // Upload images → S3 + run OCR without creating a DB record.
     // On failure the images are still preserved (permanent S3 path).
-    final ocrData = await controller.extractOcr(_frontImagePath, _backImagePath);
+    final ocrData = await controller.extractOcr(
+      _frontImagePath,
+      _backImagePath,
+    );
 
     if (!mounted) return;
 
@@ -182,21 +185,36 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
           children: [
             const Icon(Symbols.warning_rounded, color: AppColors.warning),
             const SizedBox(width: 8),
-            Text('Missing Image', style: AppTextStyles.titleLarge.copyWith(color: AppColors.textPrimary(isDark))),
+            Text(
+              'Missing Image',
+              style: AppTextStyles.titleLarge.copyWith(
+                color: AppColors.textPrimary(isDark),
+              ),
+            ),
           ],
         ),
         content: Text(
           'If you don\'t upload a receipt image, it will not be included in generated Claim Documents, and you cannot attach an image later.\n\nWe highly recommend uploading an image even if you enter details manually.',
-          style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary(isDark)),
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: AppColors.textPrimary(isDark),
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Go Back & Upload', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Go Back & Upload',
+              style: TextStyle(
+                color: AppColors.primary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.textSecondary(isDark)),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.textSecondary(isDark),
+            ),
             child: const Text('Proceed Manually'),
           ),
         ],
@@ -346,7 +364,9 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                                   'Upload front, then back',
                                   style: AppTextStyles.caption.copyWith(
                                     fontSize: 12,
-                                    color: AppColors.onPrimary.withValues(alpha: 0.7),
+                                    color: AppColors.onPrimary.withValues(
+                                      alpha: 0.7,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -377,15 +397,22 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                         child: ListView.builder(
                           scrollDirection: Axis.horizontal,
                           padding: const EdgeInsets.symmetric(horizontal: 24),
-                          itemCount: (_frontImagePath != null ? 1 : 0) + (_backImagePath != null ? 1 : 0),
+                          itemCount:
+                              (_frontImagePath != null ? 1 : 0) +
+                              (_backImagePath != null ? 1 : 0),
                           itemBuilder: (context, index) {
                             final isFirst = index == 0;
-                            final imagePath = isFirst 
-                                ? _frontImagePath! 
+                            final imagePath = isFirst
+                                ? _frontImagePath!
                                 : _backImagePath!;
-                            final label = (isFirst && _frontImagePath != null) ? 'Front' : 'Back';
-                            final imageType = (isFirst && _frontImagePath != null) ? 'FRONT' : 'BACK';
-                            
+                            final label = (isFirst && _frontImagePath != null)
+                                ? 'Front'
+                                : 'Back';
+                            final imageType =
+                                (isFirst && _frontImagePath != null)
+                                ? 'FRONT'
+                                : 'BACK';
+
                             return Padding(
                               padding: const EdgeInsets.only(right: 10),
                               child: Stack(
@@ -410,7 +437,9 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                                         width: 24,
                                         height: 24,
                                         decoration: BoxDecoration(
-                                          color: Colors.black.withValues(alpha: 0.6),
+                                          color: Colors.black.withValues(
+                                            alpha: 0.6,
+                                          ),
                                           shape: BoxShape.circle,
                                           border: Border.all(
                                             color: backgroundColor,
@@ -430,10 +459,17 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                                     bottom: 24,
                                     left: 4,
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 3,
+                                      ),
                                       decoration: BoxDecoration(
-                                        color: Colors.black.withValues(alpha: 0.6),
-                                        borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+                                        color: Colors.black.withValues(
+                                          alpha: 0.6,
+                                        ),
+                                        borderRadius: BorderRadius.circular(
+                                          AppDimensions.radiusXL,
+                                        ),
                                       ),
                                       child: Text(
                                         label,
@@ -508,9 +544,10 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
           ),
           AppPrimaryButton.dark(
             onPressed:
-                  (controllerState.isLoading || (_frontImagePath == null && _backImagePath == null))
-                  ? null
-                  : _upload,
+                (controllerState.isLoading ||
+                    (_frontImagePath == null && _backImagePath == null))
+                ? null
+                : _upload,
             isLoading: controllerState.isLoading,
             text: (_frontImagePath == null && _backImagePath == null)
                 ? 'Add at least one image'

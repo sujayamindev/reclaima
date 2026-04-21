@@ -13,10 +13,7 @@ class ProductViewModel {
   /// Null when the receipt is still PROCESSING / UPLOADED and has no line items.
   final ReceiptLineItemModel? lineItem;
 
-  const ProductViewModel({
-    required this.receipt,
-    this.lineItem,
-  });
+  const ProductViewModel({required this.receipt, this.lineItem});
 
   // ── Identity ────────────────────────────────────────────────────────────
 

@@ -25,7 +25,9 @@ class ClaimDefectImageResponse {
       id: json['id'] as String,
       s3ObjectKey: json['s3ObjectKey'] ?? json['s3_object_key'] as String,
       displayOrder: json['displayOrder'] ?? json['display_order'] as int,
-      createdAt: DateTime.parse(json['createdAt'] ?? json['created_at'] as String),
+      createdAt: DateTime.parse(
+        json['createdAt'] ?? json['created_at'] as String,
+      ),
     );
   }
 }
@@ -61,22 +63,32 @@ class ClaimDocumentResponse {
   });
 
   factory ClaimDocumentResponse.fromJson(Map<String, dynamic> json) {
-    final defectImagesList = json['defectImages'] ?? json['defect_images'] ?? [];
+    final defectImagesList =
+        json['defectImages'] ?? json['defect_images'] ?? [];
     return ClaimDocumentResponse(
       id: json['id'] as String,
       receiptId: json['receiptId'] ?? json['receipt_id'] as String,
       lineItemId: json['lineItemId'] ?? json['line_item_id'] as String?,
-      issueDescription: json['issueDescription'] ?? json['issue_description'] as String,
+      issueDescription:
+          json['issueDescription'] ?? json['issue_description'] as String,
       claimType: json['claimType'] ?? json['claim_type'] as String?,
       status: json['status'] as String? ?? 'SUBMITTED',
       notes: json['notes'] as String?,
-      generatedPdfS3Key: json['generatedPdfS3Key'] ?? json['generated_pdf_s3_key'] as String?,
+      generatedPdfS3Key:
+          json['generatedPdfS3Key'] ?? json['generated_pdf_s3_key'] as String?,
       url: json['url'] as String?,
       defectImages: (defectImagesList as List)
-          .map((img) => ClaimDefectImageResponse.fromJson(img as Map<String, dynamic>))
+          .map(
+            (img) =>
+                ClaimDefectImageResponse.fromJson(img as Map<String, dynamic>),
+          )
           .toList(),
-      createdAt: DateTime.parse(json['createdAt'] ?? json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] ?? json['updated_at'] as String),
+      createdAt: DateTime.parse(
+        json['createdAt'] ?? json['created_at'] as String,
+      ),
+      updatedAt: DateTime.parse(
+        json['updatedAt'] ?? json['updated_at'] as String,
+      ),
     );
   }
 
@@ -90,12 +102,16 @@ class ClaimDocumentResponse {
     'notes': notes,
     'generatedPdfS3Key': generatedPdfS3Key,
     'url': url,
-    'defectImages': defectImages.map((img) => {
-      'id': img.id,
-      's3ObjectKey': img.s3ObjectKey,
-      'displayOrder': img.displayOrder,
-      'createdAt': img.createdAt.toIso8601String(),
-    }).toList(),
+    'defectImages': defectImages
+        .map(
+          (img) => {
+            'id': img.id,
+            's3ObjectKey': img.s3ObjectKey,
+            'displayOrder': img.displayOrder,
+            'createdAt': img.createdAt.toIso8601String(),
+          },
+        )
+        .toList(),
     'createdAt': createdAt.toIso8601String(),
     'updatedAt': updatedAt.toIso8601String(),
   };
@@ -130,7 +146,9 @@ class ClaimService {
     List<File>? defectImages,
   }) async {
     try {
-      logger.i('Generating claim PDF for receipt $receiptId, product ${lineItemId ?? "all"}, defect images: ${defectImages?.length ?? 0}');
+      logger.i(
+        'Generating claim PDF for receipt $receiptId, product ${lineItemId ?? "all"}, defect images: ${defectImages?.length ?? 0}',
+      );
 
       // Create multipart form data
       final formDataMap = <String, dynamic>{
@@ -142,29 +160,27 @@ class ClaimService {
         formDataMap['line_item_id'] = lineItemId;
       }
       final formData = FormData.fromMap(formDataMap);
-      
+
       // Add defect images if provided
       if (defectImages != null && defectImages.isNotEmpty) {
         for (final imageFile in defectImages) {
           final fileName = imageFile.path.split('/').last;
-          formData.files.add(MapEntry(
-            'defect_images',
-            await MultipartFile.fromFile(
-              imageFile.path,
-              filename: fileName,
+          formData.files.add(
+            MapEntry(
+              'defect_images',
+              await MultipartFile.fromFile(imageFile.path, filename: fileName),
             ),
-          ));
+          );
         }
       }
 
-      final response = await _apiService.post(
-        '/claims',
-        data: formData,
-      );
+      final response = await _apiService.post('/claims', data: formData);
 
       if (response.statusCode == 201) {
         final data = response.data as Map<String, dynamic>;
-        logger.i('Claim PDF generated successfully: ${data['id']} with ${data['defectImages']?.length ?? 0} defect images');
+        logger.i(
+          'Claim PDF generated successfully: ${data['id']} with ${data['defectImages']?.length ?? 0} defect images',
+        );
         return ClaimDocumentResponse.fromJson(data);
       } else {
         throw Exception('Failed to generate claim PDF: ${response.statusCode}');
@@ -186,7 +202,10 @@ class ClaimService {
   ///
   /// Throws:
   ///   Exception if retrieval fails
-  Future<List<ClaimDocumentResponse>> getClaims({String? receiptId, String? lineItemId}) async {
+  Future<List<ClaimDocumentResponse>> getClaims({
+    String? receiptId,
+    String? lineItemId,
+  }) async {
     try {
       if (lineItemId != null) {
         logger.i('Fetching claims for product $lineItemId');
@@ -212,7 +231,10 @@ class ClaimService {
         final data = response.data as List;
         logger.i('Retrieved ${data.length} claims');
         return data
-            .map((json) => ClaimDocumentResponse.fromJson(json as Map<String, dynamic>))
+            .map(
+              (json) =>
+                  ClaimDocumentResponse.fromJson(json as Map<String, dynamic>),
+            )
             .toList();
       } else {
         throw Exception('Failed to retrieve claims: ${response.statusCode}');
@@ -260,7 +282,10 @@ class ClaimService {
     try {
       logger.i('Accessing claim PDF for $claimId');
 
-      final response = await _apiService.post('/claims/$claimId/pdf-access', data: {});
+      final response = await _apiService.post(
+        '/claims/$claimId/pdf-access',
+        data: {},
+      );
 
       if (response.statusCode == 200) {
         final data = response.data as Map<String, dynamic>;
@@ -317,11 +342,9 @@ class ClaimService {
   }) async {
     try {
       logger.i('Resolving claim $claimId with outcome $outcome');
-      
-      final Map<String, dynamic> data = {
-        'outcome': outcome,
-      };
-      
+
+      final Map<String, dynamic> data = {'outcome': outcome};
+
       if (linkedItemId != null) {
         data['linkedItemId'] = linkedItemId;
       }
@@ -336,7 +359,9 @@ class ClaimService {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         logger.i('Claim resolved successfully');
-        return ClaimDocumentResponse.fromJson(response.data as Map<String, dynamic>);
+        return ClaimDocumentResponse.fromJson(
+          response.data as Map<String, dynamic>,
+        );
       } else {
         throw Exception('Failed to resolve claim: ${response.statusCode}');
       }
@@ -347,18 +372,19 @@ class ClaimService {
   }
 
   /// Update an existing claim
-  Future<ClaimDocumentResponse> updateClaim(String claimId, {String? status, String? notes}) async {
+  Future<ClaimDocumentResponse> updateClaim(
+    String claimId, {
+    String? status,
+    String? notes,
+  }) async {
     try {
       logger.i('Updating claim $claimId');
-      
+
       final data = <String, dynamic>{};
       if (status != null) data['status'] = status;
       if (notes != null) data['notes'] = notes;
 
-      final response = await _apiService.patch(
-        '/claims/$claimId',
-        data: data,
-      );
+      final response = await _apiService.patch('/claims/$claimId', data: data);
 
       if (response.statusCode == 200) {
         final respData = response.data as Map<String, dynamic>;

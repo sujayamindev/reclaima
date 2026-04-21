@@ -53,15 +53,17 @@ class StepProgressBar extends StatelessWidget {
       ),
       child: Center(
         child: isCompleted
-            ? const Icon(Symbols.check, size: AppDimensions.iconTiny, color: AppColors.onPrimary)
+            ? const Icon(
+                Symbols.check,
+                size: AppDimensions.iconTiny,
+                color: AppColors.onPrimary,
+              )
             : Text(
                 '$step',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: isActive
-                      ? AppColors.onPrimary
-                      : inactiveTextColor,
+                  color: isActive ? AppColors.onPrimary : inactiveTextColor,
                 ),
               ),
       ),

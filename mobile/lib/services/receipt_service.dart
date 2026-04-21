@@ -8,9 +8,9 @@ import '../core/constants/app_constants.dart';
 /// Receipt service
 class ReceiptService {
   final ApiService _apiService;
-  
+
   ReceiptService(this._apiService);
-  
+
   /// Get all receipts with optional pagination
   Future<List<ReceiptModel>> getReceipts({
     int skip = 0,
@@ -19,15 +19,12 @@ class ReceiptService {
     try {
       final response = await _apiService.get(
         ApiConstants.receipts,
-        queryParameters: {
-          'skip': skip,
-          'limit': limit,
-        },
+        queryParameters: {'skip': skip, 'limit': limit},
       );
-      
+
       // Handle response data - could be List or Map
       final dynamic data = response.data;
-      
+
       if (data is List) {
         return data.map((json) => ReceiptModel.fromJson(json)).toList();
       } else if (data is Map<String, dynamic>) {
@@ -43,7 +40,7 @@ class ReceiptService {
           return items.map((json) => ReceiptModel.fromJson(json)).toList();
         }
       }
-      
+
       // If neither format matches, return empty list
       logger.w('Unexpected response format: $data');
       return [];
@@ -52,7 +49,7 @@ class ReceiptService {
       rethrow;
     }
   }
-  
+
   /// Get single receipt by ID
   Future<ReceiptModel> getReceipt(String id) async {
     try {
@@ -63,7 +60,7 @@ class ReceiptService {
       rethrow;
     }
   }
-  
+
   /// Create a new receipt
   Future<ReceiptModel> createReceipt(Map<String, dynamic> data) async {
     try {
@@ -77,7 +74,7 @@ class ReceiptService {
       rethrow;
     }
   }
-  
+
   /// Update receipt
   Future<ReceiptModel> updateReceipt(
     String id,
@@ -94,7 +91,7 @@ class ReceiptService {
       rethrow;
     }
   }
-  
+
   /// Delete receipt
   Future<void> deleteReceipt(String id) async {
     try {
@@ -108,13 +105,15 @@ class ReceiptService {
   /// Delete a specific line item
   Future<void> deleteLineItem(String receiptId, String itemId) async {
     try {
-      await _apiService.delete('${ApiConstants.receipts}/$receiptId/items/$itemId');
+      await _apiService.delete(
+        '${ApiConstants.receipts}/$receiptId/items/$itemId',
+      );
     } catch (e) {
       logger.e('Error deleting line item $itemId from receipt $receiptId: $e');
       rethrow;
     }
   }
-  
+
   /// Upload receipt file
   Future<ReceiptModel> uploadReceipt(
     String receiptId,
@@ -123,20 +122,20 @@ class ReceiptService {
   }) async {
     try {
       logger.i('Uploading receipt file: $filePath');
-      
+
       final response = await _apiService.uploadFile(
         '${ApiConstants.receipts}/$receiptId/upload',
         filePath,
         onSendProgress: onProgress,
       );
-      
+
       return ReceiptModel.fromJson(response.data);
     } catch (e) {
       logger.e('Error uploading receipt: $e');
       rethrow;
     }
   }
-  
+
   /// Retry OCR processing
   Future<ReceiptModel> retryOcr(String receiptId) async {
     try {
@@ -204,28 +203,43 @@ class ReceiptService {
   /// Upload a receipt image to S3, run OCR, and return extracted data.
   ///
   /// Does NOT create a receipt record in the database. The [s3ObjectKey]
-  /// and [backImageS3Key] returned in the map should be passed to [createReceipt] 
+  /// and [backImageS3Key] returned in the map should be passed to [createReceipt]
   /// when the user saves on the confirmation screen.
-  Future<Map<String, dynamic>> extractOcr(String? frontImagePath, String? backImagePath) async {
+  Future<Map<String, dynamic>> extractOcr(
+    String? frontImagePath,
+    String? backImagePath,
+  ) async {
     try {
-      logger.i('OCR extract: uploading front=$frontImagePath, back=$backImagePath');
-      
+      logger.i(
+        'OCR extract: uploading front=$frontImagePath, back=$backImagePath',
+      );
+
       final formData = FormData();
-      
+
       if (frontImagePath != null) {
-        formData.files.add(MapEntry(
-          'front_image',
-          await MultipartFile.fromFile(frontImagePath, filename: 'front_image.jpg'),
-        ));
+        formData.files.add(
+          MapEntry(
+            'front_image',
+            await MultipartFile.fromFile(
+              frontImagePath,
+              filename: 'front_image.jpg',
+            ),
+          ),
+        );
       }
-      
+
       if (backImagePath != null) {
-        formData.files.add(MapEntry(
-          'back_image',
-          await MultipartFile.fromFile(backImagePath, filename: 'back_image.jpg'),
-        ));
+        formData.files.add(
+          MapEntry(
+            'back_image',
+            await MultipartFile.fromFile(
+              backImagePath,
+              filename: 'back_image.jpg',
+            ),
+          ),
+        );
       }
-      
+
       final response = await _apiService.post(
         '${ApiConstants.receipts}/ocr-extract',
         data: formData,

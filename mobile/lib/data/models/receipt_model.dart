@@ -41,8 +41,8 @@ class ReceiptModel {
   final String? vendorPhone;
   final String? vendorEmail;
   final String? vendorUrl;
-  final String? remarks;        // OCR OTHER/Remarks — serial numbers, etc.
-  final String? warrantyNotes;  // OCR OTHER/Note — warranty policy text
+  final String? remarks; // OCR OTHER/Remarks — serial numbers, etc.
+  final String? warrantyNotes; // OCR OTHER/Note — warranty policy text
 
   // ── Line items (multi-product receipts) ─────────────────────────────────
   // Product images, warranty & return data all live on individual line items.
@@ -72,12 +72,12 @@ class ReceiptModel {
     this.warrantyNotes,
     this.lineItems = const [],
   });
-  
+
   factory ReceiptModel.fromJson(Map<String, dynamic> json) =>
       _$ReceiptModelFromJson(json);
-  
+
   Map<String, dynamic> toJson() => _$ReceiptModelToJson(this);
-  
+
   // ── Convenience delegation getters ──────────────────────────────────────
   // These read from line items so that screens written before the per-item
   // model migration continue to compile without changes.

@@ -39,8 +39,7 @@ class NotificationService {
     FirebaseMessaging.onMessageOpenedApp.listen(_handleNotificationTap);
 
     // Terminated state — app launched by tapping a notification
-    final initialMessage =
-        await FirebaseMessaging.instance.getInitialMessage();
+    final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
     if (initialMessage != null) {
       // Defer until the navigator is ready
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -54,10 +53,10 @@ class NotificationService {
   /// Fetch notification preferences from the backend.
   Future<NotificationPreferencesModel?> getPreferences() async {
     try {
-      final response =
-          await _api.get(ApiConstants.notificationPreferences);
+      final response = await _api.get(ApiConstants.notificationPreferences);
       return NotificationPreferencesModel.fromJson(
-          response.data as Map<String, dynamic>);
+        response.data as Map<String, dynamic>,
+      );
     } catch (e) {
       logger.e('Failed to load notification preferences: $e');
       return null;
@@ -66,14 +65,16 @@ class NotificationService {
 
   /// Persist notification preferences to the backend.
   Future<NotificationPreferencesModel?> savePreferences(
-      NotificationPreferencesModel prefs) async {
+    NotificationPreferencesModel prefs,
+  ) async {
     try {
       final response = await _api.patch(
         ApiConstants.notificationPreferences,
         data: prefs.toUpdateJson(),
       );
       return NotificationPreferencesModel.fromJson(
-          response.data as Map<String, dynamic>);
+        response.data as Map<String, dynamic>,
+      );
     } catch (e) {
       logger.e('Failed to save notification preferences: $e');
       return null;
@@ -89,8 +90,7 @@ class NotificationService {
       sound: true,
       provisional: false, // iOS: ask explicitly
     );
-    logger.d(
-        'Notification permission: ${settings.authorizationStatus.name}');
+    logger.d('Notification permission: ${settings.authorizationStatus.name}');
   }
 
   Future<String?> _registerToken() async {
@@ -108,10 +108,7 @@ class NotificationService {
 
   Future<void> _uploadToken(String token) async {
     try {
-      await _api.patch(
-        ApiConstants.fcmToken,
-        data: {'token': token},
-      );
+      await _api.patch(ApiConstants.fcmToken, data: {'token': token});
     } catch (e) {
       logger.e('Failed to register FCM token: $e');
     }

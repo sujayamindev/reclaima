@@ -7,11 +7,7 @@ void main() {
     expect(navigatorKey, isA<GlobalKey<NavigatorState>>());
     expect(navigatorKey.currentState, isNull);
 
-    await tester.pumpWidget(
-      const MaterialApp(
-        home: SizedBox.shrink(),
-      ),
-    );
+    await tester.pumpWidget(const MaterialApp(home: SizedBox.shrink()));
 
     expect(find.byType(SizedBox), findsOneWidget);
   });

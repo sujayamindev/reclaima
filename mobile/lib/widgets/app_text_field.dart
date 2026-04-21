@@ -30,13 +30,13 @@ class AppTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardColor = readOnly 
-        ? AppColors.background(isDark).withValues(alpha: 0.5) 
+    final cardColor = readOnly
+        ? AppColors.background(isDark).withValues(alpha: 0.5)
         : AppColors.card(isDark);
     final borderColor = AppColors.border(isDark);
     final labelColor = AppColors.label(isDark);
-    final textColor = readOnly 
-        ? AppColors.textSecondary(isDark) 
+    final textColor = readOnly
+        ? AppColors.textSecondary(isDark)
         : AppColors.textPrimary(isDark);
 
     return Column(
@@ -63,12 +63,16 @@ class AppTextField extends StatelessWidget {
             ),
             filled: true,
             fillColor: cardColor,
-            prefixIcon: icon != null 
-              ? Padding(
-                  padding: const EdgeInsets.only(left: 16, right: 12),
-                  child: Icon(icon, color: labelColor.withValues(alpha: 0.7), size: 20),
-                )
-              : null,
+            prefixIcon: icon != null
+                ? Padding(
+                    padding: const EdgeInsets.only(left: 16, right: 12),
+                    child: Icon(
+                      icon,
+                      color: labelColor.withValues(alpha: 0.7),
+                      size: 20,
+                    ),
+                  )
+                : null,
             suffixIcon: suffixIcon,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
@@ -81,7 +85,7 @@ class AppTextField extends StatelessWidget {
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
               borderSide: BorderSide(
-                color: readOnly ? borderColor : AppColors.primary, 
+                color: readOnly ? borderColor : AppColors.primary,
                 width: 2,
               ),
             ),
@@ -93,7 +97,10 @@ class AppTextField extends StatelessWidget {
               borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
               borderSide: const BorderSide(color: AppColors.error, width: 2),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
           ),
           validator: validator,
         ),

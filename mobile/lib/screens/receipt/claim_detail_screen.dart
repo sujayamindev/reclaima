@@ -509,9 +509,7 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
         );
       } else if (outcome == 'REPLACED') {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Item successfully archived.'),
-          ),
+          const SnackBar(content: Text('Item successfully archived.')),
         );
       }
 

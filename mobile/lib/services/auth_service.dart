@@ -10,12 +10,12 @@ class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final ApiService _apiService;
   bool _isGoogleInitialized = false;
-  
+
   AuthService(this._apiService);
-  
+
   /// Get current Firebase user
   User? get currentUser => _auth.currentUser;
-  
+
   /// Auth state changes stream
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
@@ -38,7 +38,7 @@ class AuthService {
     await currentUser!.reload();
     return currentUser!.emailVerified;
   }
-  
+
   /// Sign up with email and password
   Future<UserCredential> signUp({
     required String email,
@@ -47,7 +47,7 @@ class AuthService {
   }) async {
     try {
       logger.i('Signing up user: $email');
-      
+
       final userCredential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
@@ -58,28 +58,30 @@ class AuthService {
       } catch (e) {
         logger.w('Failed to send verification email during signup: $e');
       }
-      
+
       // Register user in backend with full name.
       // Non-fatal: Firebase auth is the primary auth source.
       // userProfileProvider will retry registration if this fails.
       try {
         await registerInBackend(fullName: fullName);
       } catch (e) {
-        logger.w('Backend registration failed during signup (will retry via profile provider): $e');
+        logger.w(
+          'Backend registration failed during signup (will retry via profile provider): $e',
+        );
       }
 
       return userCredential;
     } on FirebaseAuthException catch (e) {
       logger.e('Firebase signup error: ${e.code}');
-      
+
       if (e.code == 'email-already-in-use') {
         throw 'This email is already in use. If you signed up with Google or Apple, please use that sign-in button.';
       }
-      
+
       rethrow;
     }
   }
-  
+
   /// Sign in with email and password
   Future<UserCredential> signIn({
     required String email,
@@ -87,20 +89,20 @@ class AuthService {
   }) async {
     try {
       logger.i('Signing in user: $email');
-      
+
       final userCredential = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
-      
+
       return userCredential;
     } on FirebaseAuthException catch (e) {
       logger.e('Firebase signin error: ${e.code}');
-      
+
       if (e.code == 'invalid-credential' || e.code == 'wrong-password') {
         throw 'Incorrect email or password. If you signed up with Google or Apple, please use that sign-in button.';
       }
-      
+
       rethrow;
     }
   }
@@ -109,20 +111,22 @@ class AuthService {
   Future<UserCredential> signInWithGoogle() async {
     try {
       logger.i('Starting Google sign-in flow');
-      
+
       if (!_isGoogleInitialized) {
         await GoogleSignIn.instance.initialize();
         _isGoogleInitialized = true;
       }
-      
-      final GoogleSignInAccount googleUser = await GoogleSignIn.instance.authenticate();
+
+      final GoogleSignInAccount googleUser = await GoogleSignIn.instance
+          .authenticate();
 
       final GoogleSignInAuthentication googleAuth = googleUser.authentication;
-      
+
       // Request client authorization to get access token (needed for some Firebase/Google features)
-      final GoogleSignInClientAuthorization? clientAuth = 
-          await googleUser.authorizationClient.authorizationForScopes(['email', 'profile']);
-          
+      final GoogleSignInClientAuthorization? clientAuth = await googleUser
+          .authorizationClient
+          .authorizationForScopes(['email', 'profile']);
+
       final OAuthCredential credential = GoogleAuthProvider.credential(
         accessToken: clientAuth?.accessToken,
         idToken: googleAuth.idToken,
@@ -146,7 +150,7 @@ class AuthService {
       throw Exception('Google sign-in failed: $e'); // standardized throwing
     }
   }
-  
+
   /// Sign out
   Future<void> signOut() async {
     logger.i('Signing out user');
@@ -164,7 +168,7 @@ class AuthService {
     }
     await _auth.signOut();
   }
-  
+
   /// Register user in backend after Firebase signup
   Future<UserModel> registerInBackend({String? fullName}) async {
     try {
@@ -179,7 +183,7 @@ class AuthService {
       rethrow;
     }
   }
-  
+
   /// Get current user profile from backend
   Future<UserModel> getCurrentUserProfile() async {
     try {
@@ -201,10 +205,7 @@ class AuthService {
       if (displayName != null) data['displayName'] = displayName;
       if (contactNumber != null) data['contactNumber'] = contactNumber;
 
-      final response = await _apiService.patch(
-        ApiConstants.authMe,
-        data: data,
-      );
+      final response = await _apiService.patch(ApiConstants.authMe, data: data);
       return UserModel.fromJson(response.data);
     } catch (e) {
       logger.e('Error updating user profile: $e');
@@ -216,10 +217,10 @@ class AuthService {
   Future<void> deleteAccount() async {
     try {
       logger.i('Deleting user account...');
-      
+
       // 1. Delete from backend using ApiService (DELETE /auth/me)
       await _apiService.delete(ApiConstants.authMe);
-      
+
       // 2. Delete from Firebase Auth
       final user = _auth.currentUser;
       if (user != null) {
@@ -232,7 +233,6 @@ class AuthService {
       rethrow;
     }
   }
-  
 
   /// Change password for currently signed-in user
   Future<void> changePassword({
@@ -244,15 +244,15 @@ class AuthService {
       if (user == null || user.email == null) {
         throw Exception('User not signed in or email not available');
       }
-      
+
       // Re-authenticate user first
       final AuthCredential credential = EmailAuthProvider.credential(
         email: user.email!,
         password: currentPassword,
       );
-      
+
       await user.reauthenticateWithCredential(credential);
-      
+
       // Then update password
       await user.updatePassword(newPassword);
       logger.i('Password updated successfully');

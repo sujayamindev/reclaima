@@ -506,6 +506,8 @@ jobs:
         working-directory: mobile
         run: |
           flutter pub run build_runner build --delete-conflicting-outputs
+          # Normalize generated output formatting before cleanliness checks.
+          dart format lib test
           if [ -n "$(git status --porcelain)" ]; then
             echo "Generated files changed. Commit generated outputs before merging."
             git status --short

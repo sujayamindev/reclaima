@@ -59,7 +59,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     ref.listen<AsyncValue<dynamic>>(authStateProvider, (previous, next) {
       next.whenData((user) {
         if (user != null && mounted) {
-          if (!user.emailVerified && user.providerData.any((p) => p.providerId == 'password')) {
+          if (!user.emailVerified &&
+              user.providerData.any((p) => p.providerId == 'password')) {
             Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(builder: (_) => const VerifyEmailScreen()),
               (route) => false,
@@ -86,19 +87,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           children: [
             // Header
             Padding(
-              padding: const EdgeInsets.fromLTRB(AppDimensions.paddingPage, 20, AppDimensions.paddingPage, 0,),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Receipta.',
-                      style: AppTextStyles.appName.copyWith(
-                        color: AppColors.textPrimary(isDark),
-                      ),
-                    ), 
-                  ],
-                ),
+              padding: const EdgeInsets.fromLTRB(
+                AppDimensions.paddingPage,
+                20,
+                AppDimensions.paddingPage,
+                0,
               ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Receipta.',
+                    style: AppTextStyles.appName.copyWith(
+                      color: AppColors.textPrimary(isDark),
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
             // Header
             Padding(

@@ -138,4 +138,3 @@ class ReceiptLineItemModel {
   /// Effective return lead days — returns override if set, otherwise indicates custom setting exists.
   int? get effectiveReturnLead => returnLeadDaysOverride;
 }
-

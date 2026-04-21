@@ -298,9 +298,6 @@ class ProductDetailScreen extends ConsumerWidget {
                 ]),
                 const SizedBox(height: 12),
               ],
-
-              
-              
             ]),
           ),
         ),
@@ -369,9 +366,13 @@ class ProductDetailScreen extends ConsumerWidget {
             onSelected: (value) async {
               if (value == 'delete') {
                 final isLastItem = product.receipt.lineItems.length <= 1;
-                final deleteReceiptLevel = isLastItem || product.lineItem == null;
-                
-                final confirmed = await _showDeleteDialog(context, deleteReceiptLevel);
+                final deleteReceiptLevel =
+                    isLastItem || product.lineItem == null;
+
+                final confirmed = await _showDeleteDialog(
+                  context,
+                  deleteReceiptLevel,
+                );
                 if (confirmed == true && context.mounted) {
                   bool ok = false;
                   if (deleteReceiptLevel) {
@@ -381,7 +382,11 @@ class ProductDetailScreen extends ConsumerWidget {
                   } else {
                     ok = await ref
                         .read(receiptControllerProvider.notifier)
-                        .deleteLineItem(product.receiptId, product.lineItem!.id, ref);
+                        .deleteLineItem(
+                          product.receiptId,
+                          product.lineItem!.id,
+                          ref,
+                        );
                   }
                   if (ok && context.mounted) Navigator.pop(context);
                 }
@@ -1128,9 +1133,7 @@ class ProductDetailScreen extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(vertical: 4),
             child: Row(
               children: [
-                Expanded(
-                  child: Text('Description', style: headerStyle),
-                ),
+                Expanded(child: Text('Description', style: headerStyle)),
                 SizedBox(
                   width: 90,
                   child: Text(
@@ -1301,8 +1304,7 @@ class ProductDetailScreen extends ConsumerWidget {
       receipt.vendorUrl != null;
 
   bool _hasProductInfo(ReceiptLineItemModel item) =>
-      item.productCode != null ||
-      item.unitPrice != null;
+      item.productCode != null || item.unitPrice != null;
 
   Color _statusColor(ReceiptModel receipt, bool isDark) {
     switch (receipt.status) {
@@ -1343,9 +1345,9 @@ class ProductDetailScreen extends ConsumerWidget {
       builder: (ctx) => AlertDialog(
         title: Text(isReceiptLevel ? 'Delete Receipt' : 'Delete Item'),
         content: Text(
-          isReceiptLevel 
-            ? 'This will delete the entire receipt including all items and any associated warranty claims. This action cannot be undone.'
-            : 'This will delete this specific item and its associated warranty claims. Other items on the receipt will be preserved. This action cannot be undone.',
+          isReceiptLevel
+              ? 'This will delete the entire receipt including all items and any associated warranty claims. This action cannot be undone.'
+              : 'This will delete this specific item and its associated warranty claims. Other items on the receipt will be preserved. This action cannot be undone.',
         ),
         actions: [
           TextButton(
@@ -1402,10 +1404,7 @@ class _SectionHeader extends StatelessWidget {
 
 /// Colored pill badge for status and category labels.
 class _StatusBadge extends StatelessWidget {
-  const _StatusBadge({
-    required this.color,
-    required this.label,
-  });
+  const _StatusBadge({required this.color, required this.label});
 
   final Color color;
   final String label;
@@ -1417,10 +1416,7 @@ class _StatusBadge extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
-        border: Border.all(
-          color: color.withValues(alpha: 0.45),
-          width: 1,
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.45), width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1431,12 +1427,7 @@ class _StatusBadge extends StatelessWidget {
             decoration: BoxDecoration(color: color, shape: BoxShape.circle),
           ),
           const SizedBox(width: 6),
-          Text(
-            label,
-            style: AppTextStyles.badgeText.copyWith(
-              color: color,
-            ),
-          ),
+          Text(label, style: AppTextStyles.badgeText.copyWith(color: color)),
         ],
       ),
     );

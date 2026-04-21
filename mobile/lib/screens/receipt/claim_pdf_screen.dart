@@ -46,20 +46,28 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
   bool _isUpdating = false;
   ClaimDocumentResponse? _generatedClaim;
   String? _error;
-  
+
   // Defect images
   final List<String> _defectImagePaths = [];
-  
+
   // PDF cache
   String? _cachedPdfPath;
   bool _isCachingPdf = false;
 
-  final List<String> _statusOptions = ['DRAFT', 'SUBMITTED', 'IN_PROGRESS', 'RESOLVED', 'DENIED'];
-  List<String> get _claimTypeOptions => AppConstants.claimTypes
-      .toList(growable: false);
+  final List<String> _statusOptions = [
+    'DRAFT',
+    'SUBMITTED',
+    'IN_PROGRESS',
+    'RESOLVED',
+    'DENIED',
+  ];
+  List<String> get _claimTypeOptions =>
+      AppConstants.claimTypes.toList(growable: false);
 
   String _formatClaimTypeText(String type) {
-    return type.isNotEmpty ? type[0].toUpperCase() + type.substring(1).toLowerCase() : type;
+    return type.isNotEmpty
+        ? type[0].toUpperCase() + type.substring(1).toLowerCase()
+        : type;
   }
 
   IconData _getClaimTypeIcon(String type) {
@@ -126,14 +134,17 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
     setState(() => _isUpdating = true);
     try {
       final claimService = ref.read(claimServiceProvider);
-      final updated = await claimService.updateClaim(_generatedClaim!.id, notes: currentNotes);
+      final updated = await claimService.updateClaim(
+        _generatedClaim!.id,
+        notes: currentNotes,
+      );
       setState(() => _generatedClaim = updated);
     } catch (e) {
       logger.e('Error saving notes: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save notes: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to save notes: $e')));
       }
     } finally {
       if (mounted) setState(() => _isUpdating = false);
@@ -150,7 +161,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
 
   Future<void> _pickDefectImages() async {
     final ImagePicker picker = ImagePicker();
-    
+
     // Show source selection dialog
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
@@ -169,13 +180,29 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
               ),
               const SizedBox(height: 12),
               ListTile(
-                leading: Icon(Symbols.camera_alt_rounded, color: AppColors.primary, size: AppDimensions.iconMedium, weight: AppDimensions.iconWeightHeavy),
-                title: const Text('Take Photo', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                leading: Icon(
+                  Symbols.camera_alt_rounded,
+                  color: AppColors.primary,
+                  size: AppDimensions.iconMedium,
+                  weight: AppDimensions.iconWeightHeavy,
+                ),
+                title: const Text(
+                  'Take Photo',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
                 onTap: () => Navigator.pop(ctx, ImageSource.camera),
               ),
               ListTile(
-                leading: Icon(Symbols.photo_library_rounded, color: AppColors.primary, size: AppDimensions.iconMedium, weight: AppDimensions.iconWeightHeavy),
-                title: const Text('Choose from Gallery', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                leading: Icon(
+                  Symbols.photo_library_rounded,
+                  color: AppColors.primary,
+                  size: AppDimensions.iconMedium,
+                  weight: AppDimensions.iconWeightHeavy,
+                ),
+                title: const Text(
+                  'Choose from Gallery',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
                 onTap: () => Navigator.pop(ctx, ImageSource.gallery),
               ),
             ],
@@ -183,9 +210,9 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
         );
       },
     );
-    
+
     if (source == null) return;
-    
+
     try {
       final XFile? image = await picker.pickImage(source: source);
       if (image != null) {
@@ -197,7 +224,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
             builder: (context) => ImageCropRotateScreen(imagePath: image.path),
           ),
         );
-        
+
         if (result != null) {
           setState(() {
             _defectImagePaths.add(result);
@@ -207,9 +234,9 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
     } catch (e) {
       logger.e('Error picking defect image: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to pick image: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to pick image: $e')));
       }
     }
   }
@@ -224,10 +251,11 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
     final result = await Navigator.push<String>(
       context,
       MaterialPageRoute(
-        builder: (context) => ImageCropRotateScreen(imagePath: _defectImagePaths[index]),
+        builder: (context) =>
+            ImageCropRotateScreen(imagePath: _defectImagePaths[index]),
       ),
     );
-    
+
     if (result != null) {
       setState(() {
         _defectImagePaths[index] = result;
@@ -244,13 +272,13 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
       );
       return;
     }
-    
+
     // Validate defect images file sizes
     for (int i = 0; i < _defectImagePaths.length; i++) {
       final file = File(_defectImagePaths[i]);
       final fileSize = await file.length();
       const maxSize = 5 * 1024 * 1024; // 5MB
-      
+
       if (fileSize > maxSize) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -269,11 +297,15 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
     });
 
     try {
-      logger.i('Generating claim PDF with ${_defectImagePaths.length} defect images...');
+      logger.i(
+        'Generating claim PDF with ${_defectImagePaths.length} defect images...',
+      );
       final claimService = ref.read(claimServiceProvider);
-      
+
       // Convert paths to File objects
-      final defectImageFiles = _defectImagePaths.map((path) => File(path)).toList();
+      final defectImageFiles = _defectImagePaths
+          .map((path) => File(path))
+          .toList();
 
       final claim = await claimService.generateClaimPdf(
         receiptId: widget.receiptId,
@@ -283,22 +315,26 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
         defectImages: defectImageFiles.isNotEmpty ? defectImageFiles : null,
       );
 
-      logger.i('Claim PDF generated successfully: ${claim.id} with ${claim.defectImages.length} defect images');
+      logger.i(
+        'Claim PDF generated successfully: ${claim.id} with ${claim.defectImages.length} defect images',
+      );
 
       setState(() {
         _generatedClaim = claim;
         _notesController.text = claim.notes ?? '';
       });
-      
+
       // Start caching PDF in background (don't await)
       _cachePdfInBackground();
-      
+
       if (!mounted) return;
-      
+
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Claim generated successfully with ${claim.defectImages.length} defect images'),
+          content: Text(
+            'Claim generated successfully with ${claim.defectImages.length} defect images',
+          ),
           backgroundColor: AppColors.primary,
         ),
       );
@@ -328,11 +364,17 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
     setState(() => _isUpdating = true);
     try {
       final claimService = ref.read(claimServiceProvider);
-      final updated = await claimService.updateClaim(_generatedClaim!.id, status: newStatus);
+      final updated = await claimService.updateClaim(
+        _generatedClaim!.id,
+        status: newStatus,
+      );
       setState(() => _generatedClaim = updated);
     } catch (e) {
       logger.e('Error updating status: $e');
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: $e')));
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed: $e')));
     } finally {
       if (mounted) setState(() => _isUpdating = false);
     }
@@ -355,15 +397,35 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildStatusInfoItem('DRAFT', 'Claim document is created but not submitted yet.', isDark),
+            _buildStatusInfoItem(
+              'DRAFT',
+              'Claim document is created but not submitted yet.',
+              isDark,
+            ),
             const SizedBox(height: 16),
-            _buildStatusInfoItem('SUBMITTED', 'Claim is sent and awaiting processing.', isDark),
+            _buildStatusInfoItem(
+              'SUBMITTED',
+              'Claim is sent and awaiting processing.',
+              isDark,
+            ),
             const SizedBox(height: 16),
-            _buildStatusInfoItem('IN_PROGRESS', 'Claim is currently being worked on.', isDark),
+            _buildStatusInfoItem(
+              'IN_PROGRESS',
+              'Claim is currently being worked on.',
+              isDark,
+            ),
             const SizedBox(height: 16),
-            _buildStatusInfoItem('RESOLVED', 'Claim has been completed successfully.', isDark),
+            _buildStatusInfoItem(
+              'RESOLVED',
+              'Claim has been completed successfully.',
+              isDark,
+            ),
             const SizedBox(height: 16),
-            _buildStatusInfoItem('DENIED', 'Claim was reviewed and rejected.', isDark),
+            _buildStatusInfoItem(
+              'DENIED',
+              'Claim was reviewed and rejected.',
+              isDark,
+            ),
           ],
         ),
         actions: [
@@ -371,7 +433,9 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
             onPressed: () => Navigator.pop(ctx),
             child: Text(
               'Close',
-              style: AppTextStyles.buttonSmall.copyWith(color: AppColors.primary),
+              style: AppTextStyles.buttonSmall.copyWith(
+                color: AppColors.primary,
+              ),
             ),
           ),
         ],
@@ -419,25 +483,38 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardColor = AppColors.card(isDark);
     final textColor = AppColors.textPrimary(isDark);
-    
+
     showModalBottomSheet(
       context: context,
       backgroundColor: cardColor,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       isScrollControlled: true,
       builder: (BuildContext ctx) {
         return SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24.0,
+              vertical: 32.0,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Claim Resolved', style: AppTextStyles.titleLarge.copyWith(color: textColor)),
+                Text(
+                  'Claim Resolved',
+                  style: AppTextStyles.titleLarge.copyWith(color: textColor),
+                ),
                 const SizedBox(height: 8),
-                Text('What was the outcome of this claim?', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary(isDark))),
+                Text(
+                  'What was the outcome of this claim?',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.textSecondary(isDark),
+                  ),
+                ),
                 const SizedBox(height: 24),
-                
+
                 // Refunded
                 _buildOutcomeOption(
                   icon: Symbols.payments_rounded,
@@ -450,12 +527,13 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                   isDark: isDark,
                 ),
                 const SizedBox(height: 12),
-                
+
                 // Repaired
                 _buildOutcomeOption(
                   icon: Symbols.build_rounded,
                   title: 'Repaired',
-                  subtitle: 'Item stays active. You can update its warranty date.',
+                  subtitle:
+                      'Item stays active. You can update its warranty date.',
                   onTap: () {
                     Navigator.pop(ctx);
                     _resolveClaimOutcome('REPAIRED');
@@ -463,12 +541,13 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                   isDark: isDark,
                 ),
                 const SizedBox(height: 12),
-                
+
                 // Replaced
                 _buildOutcomeOption(
                   icon: Symbols.autorenew_rounded,
                   title: 'Replaced with New Item',
-                  subtitle: 'Archive old item and prepare a new digital record.',
+                  subtitle:
+                      'Archive old item and prepare a new digital record.',
                   onTap: () {
                     Navigator.pop(ctx);
                     _showReplacementStrategyDialog();
@@ -479,11 +558,17 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
             ),
           ),
         );
-      }
+      },
     );
   }
 
-  Widget _buildOutcomeOption({required IconData icon, required String title, required String subtitle, required VoidCallback onTap, required bool isDark}) {
+  Widget _buildOutcomeOption({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+    required bool isDark,
+  }) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
@@ -497,7 +582,10 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
           children: [
             Container(
               padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.1), shape: BoxShape.circle),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
               child: Icon(icon, color: AppColors.primary),
             ),
             const SizedBox(width: 16),
@@ -505,9 +593,20 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: AppTextStyles.bodyLarge.copyWith(color: AppColors.textPrimary(isDark), fontWeight: FontWeight.w600)),
+                  Text(
+                    title,
+                    style: AppTextStyles.bodyLarge.copyWith(
+                      color: AppColors.textPrimary(isDark),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text(subtitle, style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary(isDark))),
+                  Text(
+                    subtitle,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.textSecondary(isDark),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -519,23 +618,35 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
 
   Future<void> _showReplacementStrategyDialog() async {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     showDialog(
       context: context,
       builder: (ctx) {
         return AlertDialog(
           backgroundColor: AppColors.card(isDark),
-          title: Text('Add Replacement', style: AppTextStyles.titleLarge.copyWith(color: AppColors.textPrimary(isDark))),
+          title: Text(
+            'Add Replacement',
+            style: AppTextStyles.titleLarge.copyWith(
+              color: AppColors.textPrimary(isDark),
+            ),
+          ),
           content: Text(
             'Scan or upload the receipt for your new replacement item to track its warranty.',
-            style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary(isDark)),
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textSecondary(isDark),
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.pop(ctx);
               },
-              child: Text('Cancel', style: AppTextStyles.buttonSmall.copyWith(color: AppColors.textSecondary(isDark))),
+              child: Text(
+                'Cancel',
+                style: AppTextStyles.buttonSmall.copyWith(
+                  color: AppColors.textSecondary(isDark),
+                ),
+              ),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -549,16 +660,22 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                   ),
                 );
               },
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: AppColors.onPrimary),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.onPrimary,
+              ),
               child: Text('Scan New Receipt', style: AppTextStyles.button),
             ),
           ],
         );
-      }
+      },
     );
   }
 
-  Future<void> _resolveClaimOutcome(String outcome, {bool duplicateDetails = false}) async {
+  Future<void> _resolveClaimOutcome(
+    String outcome, {
+    bool duplicateDetails = false,
+  }) async {
     if (_generatedClaim == null) return;
     setState(() => _isUpdating = true);
     try {
@@ -572,28 +689,56 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
 
       if (!mounted) return;
       if (outcome == 'REFUNDED') {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Item successfully archived.')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Item successfully archived.')),
+        );
       } else if (outcome == 'REPAIRED') {
         showDialog(
           context: context,
           builder: (ctx) => AlertDialog(
-            backgroundColor: AppColors.card(Theme.of(context).brightness == Brightness.dark),
-            title: Text('Claim Resolved', style: AppTextStyles.titleLarge.copyWith(color: AppColors.textPrimary(Theme.of(context).brightness == Brightness.dark))),
-            content: Text('Please check your warranty and return coverages and update them if they got extended.', style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary(Theme.of(context).brightness == Brightness.dark))),
+            backgroundColor: AppColors.card(
+              Theme.of(context).brightness == Brightness.dark,
+            ),
+            title: Text(
+              'Claim Resolved',
+              style: AppTextStyles.titleLarge.copyWith(
+                color: AppColors.textPrimary(
+                  Theme.of(context).brightness == Brightness.dark,
+                ),
+              ),
+            ),
+            content: Text(
+              'Please check your warranty and return coverages and update them if they got extended.',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textSecondary(
+                  Theme.of(context).brightness == Brightness.dark,
+                ),
+              ),
+            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: Text('OK', style: AppTextStyles.buttonSmall.copyWith(color: AppColors.primary)),
-              )
-            ]
-          )
+                child: Text(
+                  'OK',
+                  style: AppTextStyles.buttonSmall.copyWith(
+                    color: AppColors.primary,
+                  ),
+                ),
+              ),
+            ],
+          ),
         );
       } else if (outcome == 'REPLACED') {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Item successfully archived.')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Item successfully archived.')),
+        );
       }
     } catch (e) {
       logger.e('Error resolving claim: $e');
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to resolve claim: $e')));
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to resolve claim: $e')));
     } finally {
       if (mounted) setState(() => _isUpdating = false);
     }
@@ -601,7 +746,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
 
   Future<void> _openPdf() async {
     String? filePath;
-    
+
     // Check if PDF is already cached
     if (_cachedPdfPath != null && await File(_cachedPdfPath!).exists()) {
       filePath = _cachedPdfPath;
@@ -610,7 +755,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
       final downloadedPath = await _downloadPdfFile(showSuccessMessage: false);
       if (downloadedPath == null) return;
       filePath = downloadedPath;
-      
+
       // Cache for future use
       setState(() => _cachedPdfPath = downloadedPath);
     }
@@ -619,19 +764,30 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
     if (filePath == null) return;
 
     try {
-      final openResult = await OpenFilex.open(filePath, type: 'application/pdf');
+      final openResult = await OpenFilex.open(
+        filePath,
+        type: 'application/pdf',
+      );
       if (openResult.type != ResultType.done && mounted) {
-      if (openResult.type != ResultType.done && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(openResult.message.isNotEmpty ? openResult.message : 'No PDF app found on this device.')),
-        );
-      }
+        if (openResult.type != ResultType.done && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                openResult.message.isNotEmpty
+                    ? openResult.message
+                    : 'No PDF app found on this device.',
+              ),
+            ),
+          );
+        }
       }
     } catch (e) {
       logger.e('Error opening PDF: $e');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Unable to open PDF. Please try Download instead.')),
+        const SnackBar(
+          content: Text('Unable to open PDF. Please try Download instead.'),
+        ),
       );
     }
   }
@@ -643,9 +799,9 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
   /// Cache PDF in background after generation
   Future<void> _cachePdfInBackground() async {
     if (_isCachingPdf || _cachedPdfPath != null) return;
-    
+
     setState(() => _isCachingPdf = true);
-    
+
     try {
       final filePath = await _downloadPdfFile(showSuccessMessage: false);
       if (filePath != null && mounted) {
@@ -665,7 +821,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
 
   Future<void> _sharePdf() async {
     String? filePath;
-    
+
     // Check if PDF is already cached
     if (_cachedPdfPath != null) {
       // Verify cached file still exists
@@ -677,7 +833,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
         setState(() => _cachedPdfPath = null);
       }
     }
-    
+
     // If no cache, show loading and download
     if (filePath == null) {
       // Show loading indicator
@@ -702,10 +858,10 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
           ),
         );
       }
-      
+
       filePath = await _downloadPdfFile(showSuccessMessage: false);
       if (filePath == null) return;
-      
+
       // Cache for future use
       setState(() => _cachedPdfPath = filePath);
     }
@@ -739,7 +895,8 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
         await pdfDir.create(recursive: true);
       }
 
-      final filePath = '${pdfDir.path}/claim_${_generatedClaim!.id}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+      final filePath =
+          '${pdfDir.path}/claim_${_generatedClaim!.id}_${DateTime.now().millisecondsSinceEpoch}.pdf';
       await Dio().download(url, filePath);
 
       if (showSuccessMessage && mounted) {
@@ -753,7 +910,9 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
       logger.e('Error downloading PDF file: $e');
       if (!mounted) return null;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Unable to download PDF. Please try again.')),
+        const SnackBar(
+          content: Text('Unable to download PDF. Please try again.'),
+        ),
       );
       return null;
     }
@@ -765,12 +924,14 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
 
     try {
       if (Platform.isAndroid) {
-        final fileName = 'claim_${_generatedClaim!.id}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+        final fileName =
+            'claim_${_generatedClaim!.id}_${DateTime.now().millisecondsSinceEpoch}.pdf';
         await AndroidDownloadManagerService.enqueuePdfDownload(
           url: url,
           fileName: fileName,
           title: 'Claim PDF',
-          description: 'Downloading document. Open notification to view when complete.',
+          description:
+              'Downloading document. Open notification to view when complete.',
         );
 
         if (mounted) {
@@ -785,7 +946,8 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
           await downloadsDir.create(recursive: true);
         }
 
-        final filePath = '${downloadsDir.path}/claim_${_generatedClaim!.id}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+        final filePath =
+            '${downloadsDir.path}/claim_${_generatedClaim!.id}_${DateTime.now().millisecondsSinceEpoch}.pdf';
         await Dio().download(url, filePath);
 
         if (mounted) {
@@ -800,7 +962,11 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
       logger.e('Error saving PDF to Downloads: $e');
       if (!mounted) return null;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Unable to save to Downloads. Please check storage permissions.')),
+        const SnackBar(
+          content: Text(
+            'Unable to save to Downloads. Please check storage permissions.',
+          ),
+        ),
       );
       return null;
     }
@@ -854,14 +1020,18 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
 
     try {
       final claimService = ref.read(claimServiceProvider);
-      final refreshedClaim = await claimService.accessClaimPdf(_generatedClaim!.id);
+      final refreshedClaim = await claimService.accessClaimPdf(
+        _generatedClaim!.id,
+      );
 
       if (!mounted) return refreshedClaim.url;
       setState(() => _generatedClaim = refreshedClaim);
 
       if (refreshedClaim.url == null || refreshedClaim.url!.trim().isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Claim PDF is not available yet. Try again shortly.')),
+          const SnackBar(
+            content: Text('Claim PDF is not available yet. Try again shortly.'),
+          ),
         );
         return null;
       }
@@ -871,7 +1041,9 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
       logger.e('Error refreshing claim PDF URL: $e');
       if (!mounted) return null;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not fetch PDF link. Please try again.')),
+        const SnackBar(
+          content: Text('Could not fetch PDF link. Please try again.'),
+        ),
       );
       return null;
     }
@@ -897,7 +1069,8 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
 
     final productName = receiptAsync.maybeWhen(
       data: (receipt) {
-        if (receipt.productName != null && receipt.productName!.trim().isNotEmpty) {
+        if (receipt.productName != null &&
+            receipt.productName!.trim().isNotEmpty) {
           return receipt.productName!;
         }
         if (receipt.lineItems.isNotEmpty) {
@@ -909,7 +1082,9 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
     );
 
     final receiptDate = receiptAsync.maybeWhen(
-      data: (receipt) => receipt.purchaseDate != null ? dateFormat.format(receipt.purchaseDate!.toLocal()) : 'Not available',
+      data: (receipt) => receipt.purchaseDate != null
+          ? dateFormat.format(receipt.purchaseDate!.toLocal())
+          : 'Not available',
       orElse: () => 'Not available',
     );
 
@@ -924,7 +1099,9 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
             }
           }
         }
-        lineItem ??= receipt.lineItems.isNotEmpty ? receipt.lineItems.first : null;
+        lineItem ??= receipt.lineItems.isNotEmpty
+            ? receipt.lineItems.first
+            : null;
 
         if (lineItem != null && lineItem.warrantyExpiryDate != null) {
           return dateFormat.format(lineItem.warrantyExpiryDate!.toLocal());
@@ -945,7 +1122,9 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
             }
           }
         }
-        lineItem ??= receipt.lineItems.isNotEmpty ? receipt.lineItems.first : null;
+        lineItem ??= receipt.lineItems.isNotEmpty
+            ? receipt.lineItems.first
+            : null;
 
         if (lineItem != null && lineItem.returnExpiryDate != null) {
           return dateFormat.format(lineItem.returnExpiryDate!.toLocal());
@@ -967,9 +1146,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
               // Product Header Card
               Text(
                 'Claim Information',
-                style: AppTextStyles.formLabel.copyWith(
-                  color: secondaryColor,
-                ),
+                style: AppTextStyles.formLabel.copyWith(color: secondaryColor),
               ),
               const SizedBox(height: 8),
               Container(
@@ -1038,21 +1215,27 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                 minLines: 6,
                 onChanged: (_) => setState(() {}),
                 decoration: InputDecoration(
-                  hintText: 'E.g., Screen has dead pixels, battery not holding charge, damage on arrival',
-                  hintStyle: AppTextStyles.bodySmall.copyWith(color: secondaryColor.withValues(alpha: 0.5)),
+                  hintText:
+                      'E.g., Screen has dead pixels, battery not holding charge, damage on arrival',
+                  hintStyle: AppTextStyles.bodySmall.copyWith(
+                    color: secondaryColor.withValues(alpha: 0.5),
+                  ),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.radiusLarge,
+                    ),
                     borderSide: BorderSide(color: AppColors.border(isDark)),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
-                    borderSide: BorderSide(
-                      color: AppColors.primary,
-                      width: 2,
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.radiusLarge,
                     ),
+                    borderSide: BorderSide(color: AppColors.primary, width: 2),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.radiusLarge,
+                    ),
                     borderSide: BorderSide(color: AppColors.border(isDark)),
                   ),
                   filled: true,
@@ -1083,7 +1266,12 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                     Material(
                       color: Colors.transparent,
                       child: InkWell(
-                        onTap: _isLoading ? null : () => setState(() => _isClaimTypeExpanded = !_isClaimTypeExpanded),
+                        onTap: _isLoading
+                            ? null
+                            : () => setState(
+                                () => _isClaimTypeExpanded =
+                                    !_isClaimTypeExpanded,
+                              ),
                         child: Container(
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(
@@ -1145,7 +1333,8 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                                   ),
                                   itemBuilder: (context, index) {
                                     final type = _claimTypeOptions[index];
-                                    final isSelected = _selectedClaimType == type;
+                                    final isSelected =
+                                        _selectedClaimType == type;
                                     return GestureDetector(
                                       onTap: () {
                                         setState(() {
@@ -1155,7 +1344,9 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                                       },
                                       child: Container(
                                         color: isSelected
-                                            ? AppColors.primary.withValues(alpha: 0.10)
+                                            ? AppColors.primary.withValues(
+                                                alpha: 0.10,
+                                              )
                                             : Colors.transparent,
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 12,
@@ -1169,19 +1360,24 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                                               weight: 600.0,
                                               color: isSelected
                                                   ? AppColors.primary
-                                                  : AppColors.textSecondary(isDark),
+                                                  : AppColors.textSecondary(
+                                                      isDark,
+                                                    ),
                                             ),
                                             const SizedBox(width: 12),
                                             Text(
                                               _formatClaimTypeText(type),
-                                              style: AppTextStyles.bodyMedium.copyWith(
-                                                color: isSelected
-                                                    ? AppColors.primary
-                                                    : AppColors.textSecondary(isDark),
-                                                fontWeight: isSelected
-                                                    ? FontWeight.w700
-                                                    : FontWeight.w500,
-                                              ),
+                                              style: AppTextStyles.bodyMedium
+                                                  .copyWith(
+                                                    color: isSelected
+                                                        ? AppColors.primary
+                                                        : AppColors.textSecondary(
+                                                            isDark,
+                                                          ),
+                                                    fontWeight: isSelected
+                                                        ? FontWeight.w700
+                                                        : FontWeight.w500,
+                                                  ),
                                             ),
                                           ],
                                         ),
@@ -1214,7 +1410,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-              
+
               if (_defectImagePaths.isNotEmpty)
                 Container(
                   height: 100,
@@ -1231,7 +1427,9 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                             GestureDetector(
                               onTap: () => _editDefectImage(index),
                               child: ClipRRect(
-                                borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
+                                borderRadius: BorderRadius.circular(
+                                  AppDimensions.radiusMedium,
+                                ),
                                 child: Image.file(
                                   File(_defectImagePaths[index]),
                                   width: 100,
@@ -1263,7 +1461,10 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                               bottom: 4,
                               left: 4,
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
                                 decoration: BoxDecoration(
                                   color: Colors.black.withValues(alpha: 0.6),
                                   borderRadius: BorderRadius.circular(8),
@@ -1284,7 +1485,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                     },
                   ),
                 ),
-              
+
               if (_defectImagePaths.length < 10)
                 SizedBox(
                   width: double.infinity,
@@ -1297,7 +1498,9 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                       weight: AppDimensions.iconWeightHeavy,
                     ),
                     label: Text(
-                      _defectImagePaths.isEmpty ? 'Add Defect Images' : 'Add More',
+                      _defectImagePaths.isEmpty
+                          ? 'Add Defect Images'
+                          : 'Add More',
                       style: AppTextStyles.bodySmall.copyWith(
                         color: AppColors.primary,
                         fontWeight: FontWeight.w600,
@@ -1306,25 +1509,37 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                     style: OutlinedButton.styleFrom(
                       side: BorderSide(color: AppColors.primary, width: 1.5),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
-
+                        borderRadius: BorderRadius.circular(
+                          AppDimensions.radiusLarge,
+                        ),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                     ),
                   ),
                 ),
-              
+
               if (_defectImagePaths.length >= 10)
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: AppColors.warning.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
-                    border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.radiusLarge,
+                    ),
+                    border: Border.all(
+                      color: AppColors.warning.withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Row(
                     children: [
-                      Icon(Symbols.info_rounded, size: 16, color: AppColors.warning),
+                      Icon(
+                        Symbols.info_rounded,
+                        size: 16,
+                        color: AppColors.warning,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -1346,14 +1561,21 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: AppColors.error.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.radiusLarge,
+                    ),
                     border: Border.all(
                       color: AppColors.error.withValues(alpha: 0.3),
                     ),
                   ),
                   child: Row(
                     children: [
-                      Icon(Symbols.error_rounded, color: AppColors.error, size: AppDimensions.iconMedium, weight: AppDimensions.iconWeightHeavy),
+                      Icon(
+                        Symbols.error_rounded,
+                        color: AppColors.error,
+                        size: AppDimensions.iconMedium,
+                        weight: AppDimensions.iconWeightHeavy,
+                      ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
@@ -1388,16 +1610,19 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
               onPressed: _isLoading ? null : _generateClaim,
               icon: _isLoading
                   ? SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        isDark ? Colors.white : Colors.black,
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          isDark ? Colors.white : Colors.black,
+                        ),
                       ),
+                    )
+                  : const Icon(
+                      Symbols.file_download_rounded,
+                      weight: AppDimensions.iconWeightHeavy,
                     ),
-                  )
-                  : const Icon(Symbols.file_download_rounded, weight: AppDimensions.iconWeightHeavy),
               label: Text(
                 _isLoading ? 'Generating PDF...' : 'Generate Claim PDF',
                 style: AppTextStyles.button,
@@ -1425,7 +1650,8 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
     final receiptAsync = ref.watch(receiptProvider(widget.receiptId));
     final productName = receiptAsync.maybeWhen(
       data: (receipt) {
-        if (receipt.productName != null && receipt.productName!.trim().isNotEmpty) {
+        if (receipt.productName != null &&
+            receipt.productName!.trim().isNotEmpty) {
           return receipt.productName!;
         }
         if (receipt.lineItems.isNotEmpty) {
@@ -1476,7 +1702,9 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
               Center(
                 child: Text(
                   'Your claim document has been generated successfully',
-                  style: AppTextStyles.bodySmall.copyWith(color: secondaryColor),
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: secondaryColor,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -1518,7 +1746,9 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                     _buildStackedDetailItem(
                       icon: Symbols.event_available_rounded,
                       label: 'Created',
-                      value: dateFormat.format(_generatedClaim!.createdAt.toLocal()),
+                      value: dateFormat.format(
+                        _generatedClaim!.createdAt.toLocal(),
+                      ),
                       isDark: isDark,
                     ),
                   ],
@@ -1547,8 +1777,13 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                     SizedBox(
                       height: 48,
                       child: ElevatedButton.icon(
-                        onPressed: _generatedClaim != null ? _downloadPdf : null,
-                        icon: const Icon(Symbols.file_download_rounded, weight: AppDimensions.iconWeightHeavy),
+                        onPressed: _generatedClaim != null
+                            ? _downloadPdf
+                            : null,
+                        icon: const Icon(
+                          Symbols.file_download_rounded,
+                          weight: AppDimensions.iconWeightHeavy,
+                        ),
                         label: const Text('Download PDF'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
@@ -1556,7 +1791,9 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                           elevation: 0,
                           shadowColor: Colors.transparent,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+                            borderRadius: BorderRadius.circular(
+                              AppDimensions.radiusXL,
+                            ),
                           ),
                         ),
                       ),
@@ -1568,13 +1805,18 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                       height: 48,
                       child: OutlinedButton.icon(
                         onPressed: _generatedClaim != null ? _openPdf : null,
-                        icon: const Icon(Symbols.open_in_new_rounded, weight: AppDimensions.iconWeightHeavy,),
+                        icon: const Icon(
+                          Symbols.open_in_new_rounded,
+                          weight: AppDimensions.iconWeightHeavy,
+                        ),
                         label: const Text('Open PDF'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.textSecondary(isDark),
                           side: BorderSide(color: AppColors.border(isDark)),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+                            borderRadius: BorderRadius.circular(
+                              AppDimensions.radiusXL,
+                            ),
                           ),
                         ),
                       ),
@@ -1586,13 +1828,18 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                       height: 48,
                       child: OutlinedButton.icon(
                         onPressed: _generatedClaim != null ? _sharePdf : null,
-                        icon: const Icon(Symbols.share_rounded, weight: AppDimensions.iconWeightHeavy,),
+                        icon: const Icon(
+                          Symbols.share_rounded,
+                          weight: AppDimensions.iconWeightHeavy,
+                        ),
                         label: const Text('Share PDF'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.textSecondary(isDark),
                           side: BorderSide(color: AppColors.border(isDark)),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+                            borderRadius: BorderRadius.circular(
+                              AppDimensions.radiusXL,
+                            ),
                           ),
                         ),
                       ),
@@ -1622,9 +1869,15 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                       weight: 700.0,
                     ),
                     tooltip: 'Status info',
-                    constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                    constraints: const BoxConstraints(
+                      minWidth: 28,
+                      minHeight: 28,
+                    ),
                     padding: EdgeInsets.zero,
-                    visualDensity: const VisualDensity(horizontal: -2, vertical: -2),
+                    visualDensity: const VisualDensity(
+                      horizontal: -2,
+                      vertical: -2,
+                    ),
                   ),
                 ],
               ),
@@ -1640,7 +1893,11 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                     Material(
                       color: Colors.transparent,
                       child: InkWell(
-                        onTap: _isUpdating ? null : () => setState(() => _isStatusExpanded = !_isStatusExpanded),
+                        onTap: _isUpdating
+                            ? null
+                            : () => setState(
+                                () => _isStatusExpanded = !_isStatusExpanded,
+                              ),
                         child: Container(
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(
@@ -1660,18 +1917,25 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                                   ),
                                   const SizedBox(width: 12),
                                   _isUpdating
-                                    ? SizedBox(
-                                        width: 16,
-                                        height: 16,
-                                        child: CircularProgressIndicator(strokeWidth: 2),
-                                      )
-                                    : Text(
-                                        _formatStatusText(_generatedClaim!.status),
-                                        style: AppTextStyles.bodyMedium.copyWith(
-                                          color: AppColors.textPrimary(isDark),
-                                          fontWeight: FontWeight.w500,
+                                      ? SizedBox(
+                                          width: 16,
+                                          height: 16,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
+                                        )
+                                      : Text(
+                                          _formatStatusText(
+                                            _generatedClaim!.status,
+                                          ),
+                                          style: AppTextStyles.bodyMedium
+                                              .copyWith(
+                                                color: AppColors.textPrimary(
+                                                  isDark,
+                                                ),
+                                                fontWeight: FontWeight.w500,
+                                              ),
                                         ),
-                                      ),
                                 ],
                               ),
                               if (!_isUpdating)
@@ -1709,10 +1973,13 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                                   ),
                                   itemBuilder: (context, index) {
                                     final status = _statusOptions[index];
-                                    final isSelected = _generatedClaim!.status == status;
+                                    final isSelected =
+                                        _generatedClaim!.status == status;
                                     return GestureDetector(
                                       onTap: () {
-                                        setState(() => _isStatusExpanded = false);
+                                        setState(
+                                          () => _isStatusExpanded = false,
+                                        );
                                         if (status == 'RESOLVED') {
                                           _showResolutionOutcomeDialog();
                                         } else {
@@ -1721,7 +1988,9 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                                       },
                                       child: Container(
                                         color: isSelected
-                                            ? AppColors.primary.withValues(alpha: 0.10)
+                                            ? AppColors.primary.withValues(
+                                                alpha: 0.10,
+                                              )
                                             : Colors.transparent,
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 12,
@@ -1735,19 +2004,24 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                                               weight: 600.0,
                                               color: isSelected
                                                   ? AppColors.primary
-                                                  : AppColors.textSecondary(isDark),
+                                                  : AppColors.textSecondary(
+                                                      isDark,
+                                                    ),
                                             ),
                                             const SizedBox(width: 12),
                                             Text(
                                               _formatStatusText(status),
-                                              style: AppTextStyles.bodyMedium.copyWith(
-                                                color: isSelected
-                                                    ? AppColors.primary
-                                                    : AppColors.textSecondary(isDark),
-                                                fontWeight: isSelected
-                                                    ? FontWeight.w700
-                                                    : FontWeight.w500,
-                                              ),
+                                              style: AppTextStyles.bodyMedium
+                                                  .copyWith(
+                                                    color: isSelected
+                                                        ? AppColors.primary
+                                                        : AppColors.textSecondary(
+                                                            isDark,
+                                                          ),
+                                                    fontWeight: isSelected
+                                                        ? FontWeight.w700
+                                                        : FontWeight.w500,
+                                                  ),
                                             ),
                                           ],
                                         ),
@@ -1802,16 +2076,26 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                 enabled: !_isUpdating,
                 style: AppTextStyles.bodySmall.copyWith(color: textColor),
                 decoration: InputDecoration(
-                  hintText: 'Add tracking numbers, support ticket IDs, or resolution notes...',
+                  hintText:
+                      'Add tracking numbers, support ticket IDs, or resolution notes...',
                   hintStyle: AppTextStyles.bodySmall.copyWith(
                     color: secondaryColor.withValues(alpha: 0.5),
                   ),
                   filled: true,
                   fillColor: cardColor,
                   contentPadding: const EdgeInsets.all(12),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppDimensions.radiusXL), borderSide: BorderSide(color: AppColors.border(isDark))),
-                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppDimensions.radiusXL), borderSide: BorderSide(color: AppColors.border(isDark))),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppDimensions.radiusXL), borderSide: BorderSide(color: AppColors.primary)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+                    borderSide: BorderSide(color: AppColors.border(isDark)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+                    borderSide: BorderSide(color: AppColors.border(isDark)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
+                    borderSide: BorderSide(color: AppColors.primary),
+                  ),
                 ),
               ),
             ],
@@ -1865,22 +2149,34 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
       children: [
         Row(
           children: [
-            Icon(icon, size: AppDimensions.iconTiny, weight: AppDimensions.iconWeightHeavy, color: AppColors.textSecondary(isDark)),
-            const SizedBox(width: 6),
-            Text(label, style: AppTextStyles.bodySmall.copyWith(
+            Icon(
+              icon,
+              size: AppDimensions.iconTiny,
+              weight: AppDimensions.iconWeightHeavy,
               color: AppColors.textSecondary(isDark),
-              fontWeight: FontWeight.w600,
-              fontSize: 12,
-            )),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textSecondary(isDark),
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 2),
-        Text(value, style: AppTextStyles.bodySmall.copyWith(
-          color: AppColors.textPrimary(isDark),
-          height: 1.2,
-        ), maxLines: maxLines, overflow: TextOverflow.ellipsis),
+        Text(
+          value,
+          style: AppTextStyles.bodySmall.copyWith(
+            color: AppColors.textPrimary(isDark),
+            height: 1.2,
+          ),
+          maxLines: maxLines,
+          overflow: TextOverflow.ellipsis,
+        ),
       ],
     );
   }
-
 }
