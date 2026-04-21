@@ -135,3 +135,5 @@ TODOS.md
 /docs
 /.tools/
 /.tools/flutter/
+.ruff_cache
+/log
