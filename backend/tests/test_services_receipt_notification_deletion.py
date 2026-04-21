@@ -17,7 +17,6 @@ from app.models import (
     ReceiptLineItem,
     ReceiptStatus,
     User,
-    UserNotificationPreferences,
 )
 from app.schemas import ReceiptCreate, ReceiptLineItemUpdate, ReceiptUpdate
 from app.services.deletion_service import DeletionService
