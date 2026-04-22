@@ -48,8 +48,3 @@ mypy==1.8.0
 
 # Logging
 structlog==25.5.0
-
-# Vulnerability fixes
-jaraco.context>=6.1.0
-wheel>=0.46.2
-starlette>=0.40.0
