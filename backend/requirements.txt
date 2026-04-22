@@ -33,7 +33,7 @@ reportlab==4.0.9
 
 # Validation & Utilities
 email-validator==2.1.0
-pillow==10.2.0
+pillow==12.2.0
 
 # Testing
 pytest==7.4.4
