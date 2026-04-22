@@ -104,6 +104,9 @@ cd "${DEPLOY_DIR}"
 echo "Logging in to GHCR..."
 echo "${GHCR_TOKEN}" | docker login ghcr.io -u "${GHCR_USERNAME}" --password-stdin >/dev/null
 
+BACKEND_IMAGE="${IMAGE_REPOSITORY}:${IMAGE_TAG}"
+export BACKEND_IMAGE
+
 CURRENT_IMAGE="$(docker inspect --format='{{.Config.Image}}' smart-receipt-api 2>/dev/null || true)"
 if [[ -n "${CURRENT_IMAGE}" ]]; then
   echo "Saving current image for rollback: ${CURRENT_IMAGE}"
