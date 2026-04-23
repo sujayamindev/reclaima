@@ -870,12 +870,13 @@ jobs:
             exit 1
           fi
 
-          if [ -z "$OCI_KNOWN_HOST" ]; then
-            echo "Missing required secret: OCI_KNOWN_HOST"
-            exit 1
+          if [ -n "$OCI_KNOWN_HOST" ]; then
+            printf '%s\n' "$OCI_KNOWN_HOST" >> ~/.ssh/known_hosts
+          else
+            echo "OCI_KNOWN_HOST not provided; configuring SSH to accept new hosts automatically."
+            printf "Host *\n\tStrictHostKeyChecking accept-new\n" > ~/.ssh/config
+            chmod 600 ~/.ssh/config
           fi
-
-          printf '%s\n' "$OCI_KNOWN_HOST" >> ~/.ssh/known_hosts
 
       - name: Sync deployment assets
         run: |
