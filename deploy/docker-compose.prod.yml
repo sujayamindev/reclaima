@@ -2,8 +2,10 @@ name: smart-receipt-prod
 
 x-backend-common: &backend-common
   image: ${BACKEND_IMAGE:?BACKEND_IMAGE is required}
-  env_file:
-    - /mnt/data/smart-receipt-and-warranty-manager/.env.prod
+  environment:
+    INFISICAL_MACHINE_IDENTITY_CLIENT_ID: ${INFISICAL_MACHINE_IDENTITY_CLIENT_ID:?INFISICAL_MACHINE_IDENTITY_CLIENT_ID is required}
+    INFISICAL_MACHINE_IDENTITY_CLIENT_SECRET: ${INFISICAL_MACHINE_IDENTITY_CLIENT_SECRET:?INFISICAL_MACHINE_IDENTITY_CLIENT_SECRET is required}
+    INFISICAL_PROJECT_ID: ${INFISICAL_PROJECT_ID:?INFISICAL_PROJECT_ID is required}
   restart: unless-stopped
   depends_on:
     postgres:
