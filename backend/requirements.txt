@@ -21,7 +21,7 @@ apscheduler==3.11.2
 
 # Utilities
 python-dotenv==1.2.2
-infisical-sdk>=2.3.0
+infisical-sdk>=1.0.3
 python-jose[cryptography]>=3.4.0
 passlib[bcrypt]==1.7.4
 python-dateutil==2.9.0.post0
