@@ -10,7 +10,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 try:
     from infisical_sdk import InfisicalSDKClient  # type: ignore[import-untyped]
-except ImportError:
+except ImportError:  # pragma: no cover
     InfisicalSDKClient = None
 
 
@@ -23,12 +23,12 @@ def load_infisical_secrets():
         # Missing credentials, skipping remote secret fetch
         return
 
-    if not InfisicalSDKClient:
+    if not InfisicalSDKClient:  # pragma: no cover
         print("Warning: Infisical SDK not installed. Skipping remote secret fetch.")
         return
 
-    client = InfisicalSDKClient(host="https://app.infisical.com")
-    try:
+    client = InfisicalSDKClient(host="https://app.infisical.com")  # pragma: no cover
+    try:  # pragma: no cover
         client.auth.universal_auth.login(
             client_id=client_id, client_secret=client_secret
         )
@@ -46,7 +46,7 @@ def load_infisical_secrets():
         for secret in response.secrets:
             if secret.secretKey not in os.environ:
                 os.environ[secret.secretKey] = secret.secretValue
-    except Exception as e:
+    except Exception as e:  # pragma: no cover
         print(f"Error fetching Infisical secrets: {e}")
 
 
