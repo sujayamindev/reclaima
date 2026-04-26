@@ -3,10 +3,51 @@ Core configuration module for Smart Receipt & Warranty Manager backend.
 Loads environment variables and provides application settings.
 """
 
+import os
 from functools import lru_cache
 from typing import List
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+try:
+    from infisical_sdk import InfisicalSDKClient
+except ImportError:
+    InfisicalSDKClient = None
+
+def load_infisical_secrets():
+    client_id = os.environ.get("INFISICAL_MACHINE_IDENTITY_CLIENT_ID")
+    client_secret = os.environ.get("INFISICAL_MACHINE_IDENTITY_CLIENT_SECRET")
+    project_id = os.environ.get("INFISICAL_PROJECT_ID")
+    
+    if not (client_id and client_secret and project_id):
+        # Missing credentials, skipping remote secret fetch
+        return
+        
+    if not InfisicalSDKClient:
+        print("Warning: Infisical SDK not installed. Skipping remote secret fetch.")
+        return
+
+    client = InfisicalSDKClient(host="https://app.infisical.com")
+    try:
+        client.auth.universal_auth.login(client_id=client_id, client_secret=client_secret)
+        response = client.secrets.list_secrets(
+            project_id=project_id,
+            environment_slug="production",
+            secret_path="/",
+            expand_secret_references=True,
+            view_secret_value=True,
+            recursive=False,
+            include_imports=True
+        )
+        
+        # Inject fetched secrets into the environment so BaseSettings can pick them up
+        for secret in response.secrets:
+            if secret.secretKey not in os.environ:
+                os.environ[secret.secretKey] = secret.secretValue
+    except Exception as e:
+        print(f"Error fetching Infisical secrets: {e}")
+
+# Pre-load secrets into the environment before pydantic parses them
+load_infisical_secrets()
 
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
@@ -86,7 +127,7 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
 
     model_config = SettingsConfigDict(
-        env_file=".env", case_sensitive=True, extra="ignore"
+        case_sensitive=True, extra="ignore"
     )
 
 
