@@ -35,7 +35,7 @@ def load_infisical_secrets():
         response = client.secrets.list_secrets(
             project_id=project_id,
             environment_slug="production",
-            secret_path="/",
+            secret_path="/",  # nosec B106
             expand_secret_references=True,
             view_secret_value=True,
             recursive=False,
