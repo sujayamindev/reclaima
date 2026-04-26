@@ -5,6 +5,13 @@ set -euo pipefail
 : "${GHCR_TOKEN:?GHCR_TOKEN is required}"
 : "${IMAGE_REPOSITORY:?IMAGE_REPOSITORY is required}"
 : "${IMAGE_TAG:?IMAGE_TAG is required}"
+: "${INFISICAL_CLIENT_ID:?INFISICAL_CLIENT_ID is required}"
+: "${INFISICAL_CLIENT_SECRET:?INFISICAL_CLIENT_SECRET is required}"
+: "${INFISICAL_PROJECT_ID:?INFISICAL_PROJECT_ID is required}"
+
+export INFISICAL_MACHINE_IDENTITY_CLIENT_ID="${INFISICAL_CLIENT_ID}"
+export INFISICAL_MACHINE_IDENTITY_CLIENT_SECRET="${INFISICAL_CLIENT_SECRET}"
+export INFISICAL_PROJECT_ID="${INFISICAL_PROJECT_ID}"
 
 DEPLOY_DIR="${DEPLOY_DIR:-/mnt/data/smart-receipt-and-warranty-manager/deploy}"
 ENV_FILE="${ENV_FILE:-/mnt/data/smart-receipt-and-warranty-manager/.env.prod}"
