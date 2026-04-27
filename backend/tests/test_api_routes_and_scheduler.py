@@ -507,8 +507,8 @@ async def test_claim_routes_success_and_errors(db_session, monkeypatch) -> None:
 @pytest.mark.asyncio
 async def test_claim_routes_cross_user_access(db_session, monkeypatch) -> None:
     # 1. Setup: Create User A and User B
-    user_a = _make_user(db_session, uid="user-a-uid", email="a@test.com")
-    user_b = _make_user(db_session, uid="user-b-uid", email="b@test.com")
+    user_a = _make_user(db_session, uid="user-a-uid")
+    user_b = _make_user(db_session, uid="user-b-uid")
 
     user_a_context = {"uid": user_a.firebase_uid}
     user_b_context = {"uid": user_b.firebase_uid}
