@@ -504,6 +504,130 @@ async def test_claim_routes_success_and_errors(db_session, monkeypatch) -> None:
     assert deleted.deleted_at is not None
 
 
+@pytest.mark.asyncio
+async def test_claim_routes_cross_user_access(db_session, monkeypatch) -> None:
+    # 1. Setup: Create User A and User B
+    user_a = _make_user(db_session, uid="user-a-uid", email="a@test.com")
+    user_b = _make_user(db_session, uid="user-b-uid", email="b@test.com")
+
+    user_a_context = {"uid": user_a.firebase_uid}
+    user_b_context = {"uid": user_b.firebase_uid}
+
+    # 2. Seed Data: Create a receipt and line item for User A
+    receipt_a = _make_receipt(db_session, str(user_a.id), with_line_item=True)
+    line_item_a = (
+        db_session.query(ReceiptLineItem)
+        .filter(ReceiptLineItem.receipt_id == str(receipt_a.id))
+        .first()
+    )
+    assert line_item_a is not None
+
+    # Mock S3 and PDF to allow Claim creation
+    class _DummyS3:
+        def __init__(self) -> None:
+            self.files: dict[str, bytes] = {}
+
+        def upload_file(self, file_content, object_key, content_type):
+            self.files[object_key] = file_content
+            return object_key
+
+        def file_exists(self, object_key):
+            return object_key in self.files
+
+        def generate_presigned_url(
+            self, object_key, expiration=3600, operation="get_object"
+        ):
+            return f"https://signed/{object_key}"
+
+    class _DummyPDF:
+        def generate_claim_pdf(self, **kwargs):
+            return b"%PDF-test"
+
+    monkeypatch.setattr(claims_api, "get_s3_service", lambda **kwargs: _DummyS3())
+    monkeypatch.setattr(claims_api, "get_pdf_service", lambda: _DummyPDF())
+
+    # Create Claim for User A
+    claim_a = await claims_api.create_claim(
+        receipt_id=str(receipt_a.id),
+        issue_description="Broken screen",
+        claim_type="warranty",
+        line_item_id=str(line_item_a.id),
+        defect_images=[],
+        current_user=user_a_context,
+        db=db_session,
+    )
+    claim_id_a = claim_a.id
+
+    # 3. Attack Simulation: User B tries to access User A's data
+
+    # A. User B tries to list claims filtering by User A's receipt
+    with pytest.raises(HTTPException) as exc:
+        await claims_api.list_claims(
+            receipt_id=str(receipt_a.id),
+            line_item_id=None,
+            current_user=user_b_context,
+            db=db_session,
+        )
+    assert exc.value.status_code == 403
+
+    # B. User B tries to list claims filtering by User A's line item (T-06 fix test)
+    # The query filters out the results, so it should return an empty list rather than 403
+    listed_by_line_item = await claims_api.list_claims(
+        receipt_id=None,
+        line_item_id=str(line_item_a.id),
+        current_user=user_b_context,
+        db=db_session,
+    )
+    assert len(listed_by_line_item) == 0
+
+    # C. User B tries to get User A's specific claim
+    with pytest.raises(HTTPException) as exc:
+        await claims_api.get_claim(
+            claim_id_a,
+            current_user=user_b_context,
+            db=db_session,
+        )
+    assert exc.value.status_code == 403
+
+    # D. User B tries to update User A's claim
+    with pytest.raises(HTTPException) as exc:
+        await claims_api.update_claim(
+            claim_id_a,
+            claim_update=ClaimDocumentUpdate(notes="hacked"),
+            current_user=user_b_context,
+            db=db_session,
+        )
+    assert exc.value.status_code == 403
+
+    # E. User B tries to resolve User A's claim
+    with pytest.raises(HTTPException) as exc:
+        await claims_api.resolve_claim(
+            claim_id_a,
+            resolution_data=ClaimResolutionRequest(outcome="REFUNDED"),
+            current_user=user_b_context,
+            db=db_session,
+        )
+    assert exc.value.status_code == 403
+
+    # F. User B tries to access User A's claim PDF
+    with pytest.raises(HTTPException) as exc:
+        await claims_api.access_claim_pdf(
+            claim_id_a,
+            current_user=user_b_context,
+            db=db_session,
+        )
+    assert exc.value.status_code == 403
+
+    # G. User B tries to delete User A's claim
+    with pytest.raises(HTTPException) as exc:
+        await claims_api.delete_claim(
+            claim_id_a,
+            current_user=user_b_context,
+            db=db_session,
+        )
+    assert exc.value.status_code == 403
+
+
 def test_scheduler_module_paths(monkeypatch) -> None:
     class _DummyScheduler:
         def __init__(self, timezone=None):
