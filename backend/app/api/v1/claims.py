@@ -452,8 +452,17 @@ async def list_claims(
         query = db.query(ClaimDocument).filter(ClaimDocument.deleted_at.is_(None))
 
         if line_item_id:
-            # Filter by specific line item (product)
-            query = query.filter(ClaimDocument.line_item_id == line_item_id)
+            # Filter by specific line item (product) and ensure user owns the receipt
+            user_receipt_ids = (
+                db.query(Receipt.id)
+                .filter(
+                    and_(Receipt.user_id == db_user_id, Receipt.deleted_at.is_(None))
+                )
+            )
+            query = query.filter(
+                ClaimDocument.line_item_id == line_item_id,
+                ClaimDocument.receipt_id.in_(user_receipt_ids)
+            )
         elif receipt_id:
             # Verify user owns the receipt
             receipt = _get_receipt_with_line_items(db, receipt_id)
