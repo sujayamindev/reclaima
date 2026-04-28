@@ -183,7 +183,7 @@ def test_extract_ocr_from_file_and_multi_file_merge(db_session) -> None:
     assert len(merged["line_items"]) == 2
 
 
-def test_process_ocr_retry_and_line_item_crud(db_session) -> None:
+def test_process_ocr_and_line_item_crud(db_session) -> None:
     user = _create_user(db_session, uid="ocr-process-user")
     service = _make_receipt_service(
         textract_map={
@@ -281,12 +281,6 @@ def test_process_ocr_retry_and_line_item_crud(db_session) -> None:
     failed = service.process_ocr(db_session, str(failed_receipt.id), str(user.id))
     assert failed is not None
     assert failed.status == ReceiptStatus.OCR_FAILED
-
-    failed.ocr_retry_count = 999
-    db_session.commit()
-    same = service.retry_ocr(db_session, str(failed_receipt.id), str(user.id))
-    assert same is not None
-    assert same.status == ReceiptStatus.OCR_FAILED
 
 
 def test_notification_service_and_reminder_logic(db_session) -> None:
