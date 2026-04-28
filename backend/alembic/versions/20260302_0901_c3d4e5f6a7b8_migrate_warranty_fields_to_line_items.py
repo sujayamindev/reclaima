@@ -77,9 +77,7 @@ def upgrade() -> None:
     connection = op.get_bind()
 
     # Fetch receipts that have any warranty/product data worth migrating
-    receipts = connection.execute(
-        sa.text(
-            """
+    receipts = connection.execute(sa.text("""
         SELECT id, product_name, product_category, product_image_url,
                warranty_period_months, warranty_expiry_date,
                return_period_days, return_expiry_date, purchase_date
@@ -91,9 +89,7 @@ def upgrade() -> None:
             OR return_expiry_date IS NOT NULL
             OR warranty_expiry_date IS NOT NULL
           )
-    """
-        )
-    ).fetchall()
+    """)).fetchall()
 
     for row in receipts:
         receipt_id = row[0]
@@ -110,8 +106,7 @@ def upgrade() -> None:
             # No line items — create a synthetic "Primary Item" row
             new_id = str(uuid.uuid4())
             connection.execute(
-                sa.text(
-                    """
+                sa.text("""
                 INSERT INTO receipt_line_items (
                     id, receipt_id, row_index,
                     item_description, product_name, product_category,
@@ -125,8 +120,7 @@ def upgrade() -> None:
                     :warranty_expiry_date, :return_period_days,
                     :return_expiry_date, NOW(), NOW()
                 )
-            """
-                ),
+            """),
                 {
                     "id": new_id,
                     "receipt_id": receipt_id,
@@ -145,8 +139,7 @@ def upgrade() -> None:
             # PostgreSQL does not support ORDER BY/LIMIT in UPDATE;
             # use a subquery that selects the target row's ctid instead.
             connection.execute(
-                sa.text(
-                    """
+                sa.text("""
                 UPDATE receipt_line_items
                 SET product_name = :product_name,
                     product_category = :product_category,
@@ -162,8 +155,7 @@ def upgrade() -> None:
                     ORDER BY row_index ASC
                     LIMIT 1
                 )
-            """
-                ),
+            """),
                 {
                     "receipt_id": receipt_id,
                     "product_name": row[1],
