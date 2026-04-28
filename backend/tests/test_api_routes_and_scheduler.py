@@ -18,7 +18,6 @@ from app.api.v1 import notifications as notifications_api
 from app.api.v1 import products as products_api
 from app.api.v1 import receipts as receipts_api
 from app.api.v1 import warranties as warranties_api
-from app.core import scheduler as scheduler_core
 from app.db.base import Base
 from app.models import ClaimDocument, Receipt, ReceiptLineItem, ReceiptStatus, User
 from app.schemas import (
@@ -628,75 +627,31 @@ async def test_claim_routes_cross_user_access(db_session, monkeypatch) -> None:
     assert exc.value.status_code == 403
 
 
-def test_scheduler_module_paths(monkeypatch) -> None:
-    class _DummyScheduler:
-        def __init__(self, timezone=None):
-            self.running = False
-            self.jobs = []
+def test_run_hard_delete_cleanup(monkeypatch) -> None:
+    from app.services import deletion_service
+    from app.db import session as db_session_module
+    from app.services import s3_service
 
-        def add_job(
-            self, func, trigger, id, name, replace_existing, misfire_grace_time
-        ):
-            self.jobs.append(
-                {
-                    "id": id,
-                    "name": name,
-                    "trigger": trigger,
-                    "next_run_time": datetime(2026, 1, 1, tzinfo=timezone.utc),
-                }
-            )
-
-        def start(self):
-            self.running = True
-
-        def shutdown(self, wait=True):
-            self.running = False
-
-        def get_jobs(self):
-            return [
-                type(
-                    "Job",
-                    (),
-                    {
-                        "id": j["id"],
-                        "name": j["name"],
-                        "next_run_time": j["next_run_time"],
-                    },
-                )
-                for j in self.jobs
-            ]
+    class _DummyS3:
+        pass
 
     class _DummyDeletionService:
         def __init__(self, s3):
             self.s3 = s3
 
         def run_hard_delete_job(self, db):
-            return {"total": 1}
+            return {"total": 1, "users": 0, "receipts": 0, "line_items": 0, "claims": 1}
 
     class _DummyDB:
         def close(self):
-            return None
+            pass
 
-    monkeypatch.setattr(scheduler_core, "BackgroundScheduler", _DummyScheduler)
-    monkeypatch.setattr(scheduler_core, "CronTrigger", lambda **kwargs: kwargs)
-    monkeypatch.setattr(scheduler_core, "DeletionService", _DummyDeletionService)
-    monkeypatch.setattr(scheduler_core, "SessionLocal", lambda: _DummyDB())
+        def rollback(self):
+            pass
 
-    # Imported lazily inside run_hard_delete_job.
-    import app.services.s3_service as s3_module
+    monkeypatch.setattr(db_session_module, "SessionLocal", lambda: _DummyDB())
+    monkeypatch.setattr(s3_service, "get_s3_service", lambda **kwargs: _DummyS3())
+    monkeypatch.setattr(deletion_service, "DeletionService", _DummyDeletionService)
 
-    monkeypatch.setattr(s3_module, "get_s3_service", lambda **kwargs: object())
-
-    scheduler_core.run_hard_delete_job()
-
-    scheduler_core.stop_scheduler()
-    scheduler_core.start_scheduler()
-    scheduler_core.start_scheduler()  # idempotency branch
-
-    status = scheduler_core.get_scheduler_status()
-    assert status["running"] is True
-    assert len(status["jobs"]) == 1
-
-    scheduler_core.stop_scheduler()
-    status_after = scheduler_core.get_scheduler_status()
-    assert status_after["running"] is False
+    # Execute the cleanup wrapper
+    deletion_service.run_hard_delete_cleanup()

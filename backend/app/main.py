@@ -52,6 +52,7 @@ async def lifespan(app: FastAPI):
         try:
             from apscheduler.schedulers.background import BackgroundScheduler  # type: ignore[import-untyped]
             from app.services.notification_service import notification_service
+            from app.services.deletion_service import run_hard_delete_cleanup
 
             scheduler = BackgroundScheduler(timezone="UTC")
             # Warranty reminders — daily at 3:00 AM UTC
@@ -72,7 +73,7 @@ async def lifespan(app: FastAPI):
             )
             # Hard-delete cleanup — daily at CLEANUP_HOUR UTC
             scheduler.add_job(
-                notification_service.run_hard_delete_cleanup,
+                run_hard_delete_cleanup,
                 "cron",
                 hour=settings.CLEANUP_HOUR,
                 minute=0,

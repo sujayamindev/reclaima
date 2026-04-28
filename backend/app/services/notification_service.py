@@ -179,42 +179,6 @@ class NotificationService:
         finally:
             db.close()
 
-    # ── APScheduler Job: Hard-delete cleanup ─────────────────────────────────
-
-    def run_hard_delete_cleanup(self) -> None:
-        """
-        Daily scheduler job — permanently delete records soft-deleted 30+ days ago.
-        Includes S3 file cleanup for GDPR compliance.
-        """
-        from app.db.session import SessionLocal
-        from app.services.deletion_service import DeletionService
-        from app.services.s3_service import get_s3_service
-        from app.core.config import settings
-
-        db = SessionLocal()
-        try:
-            # Get S3 service
-            s3_service = get_s3_service(
-                bucket_name=settings.AWS_S3_BUCKET,
-                use_mock=settings.USE_MOCK_AWS,
-                region=settings.AWS_REGION,
-            )
-
-            # Create deletion service and run job
-            deletion_service = DeletionService(s3_service)
-            results = deletion_service.run_hard_delete_job(db)
-
-            logger.info(
-                f"Hard-delete cleanup: {results['total']} total records removed "
-                f"({results['users']} users, {results['receipts']} receipts, "
-                f"{results['line_items']} line items, {results['claims']} claims)"
-            )
-        except Exception as exc:
-            db.rollback()
-            logger.error(f"Hard-delete cleanup failed: {exc}", exc_info=True)
-        finally:
-            db.close()
-
     # ── Internal helpers ──────────────────────────────────────────────────────
 
     def _send_expiry_reminders(self, db: Session, kind: str) -> None:
