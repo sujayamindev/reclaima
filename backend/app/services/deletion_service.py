@@ -44,7 +44,7 @@ class DeletionService:
     def hard_delete_claims(self, db: Session) -> int:
         """
         Hard delete claim documents that were soft-deleted > 30 days ago.
-        Also deletes associated PDF files from S3.
+        Also deletes associated PDF files and defect images from S3.
 
         Args:
             db: Database session
@@ -52,6 +52,8 @@ class DeletionService:
         Returns:
             Number of claims permanently deleted
         """
+        from app.models.claim_defect_image import ClaimDefectImage
+
         cutoff = self.get_retention_cutoff()
 
         # Find claims to delete
@@ -78,13 +80,23 @@ class DeletionService:
             if claim.generated_pdf_s3_key:
                 s3_keys_to_delete.append(claim.generated_pdf_s3_key)
 
+            # Collect S3 keys for ClaimDefectImage records
+            defect_images = (
+                db.query(ClaimDefectImage)
+                .filter(ClaimDefectImage.claim_id == claim.id)
+                .all()
+            )
+            for img in defect_images:
+                if img.s3_object_key:
+                    s3_keys_to_delete.append(img.s3_object_key)
+
         try:
             # Delete S3 files first
             if s3_keys_to_delete:
                 s3_results = self.s3_service.delete_files_bulk(s3_keys_to_delete)
                 successful_s3_deletes = sum(1 for v in s3_results.values() if v)
                 logger.info(
-                    f"Deleted {successful_s3_deletes}/{len(s3_keys_to_delete)} claim PDF files from S3"
+                    f"Deleted {successful_s3_deletes}/{len(s3_keys_to_delete)} claim artifacts from S3"
                 )
 
             # Delete from database
@@ -158,6 +170,8 @@ class DeletionService:
         Returns:
             Number of receipts permanently deleted
         """
+        from app.models.receipt_image import ReceiptImage
+
         cutoff = self.get_retention_cutoff()
 
         # Find receipts to delete
@@ -175,9 +189,19 @@ class DeletionService:
         s3_keys_to_delete = []
 
         for receipt in receipts_to_delete:
-            # Collect S3 keys for receipt images
+            # Collect S3 keys for legacy receipt images
             if receipt.s3_object_key:
                 s3_keys_to_delete.append(receipt.s3_object_key)
+
+            # Collect S3 keys for ReceiptImage records
+            receipt_images = (
+                db.query(ReceiptImage)
+                .filter(ReceiptImage.receipt_id == receipt.id)
+                .all()
+            )
+            for img in receipt_images:
+                if img.s3_object_key:
+                    s3_keys_to_delete.append(img.s3_object_key)
 
         try:
             # Delete S3 files first

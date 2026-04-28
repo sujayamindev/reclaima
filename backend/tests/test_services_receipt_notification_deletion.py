@@ -355,6 +355,10 @@ def test_notification_service_and_reminder_logic(db_session) -> None:
     assert any(p["data"]["type"] == "return" for p in sent_payloads)
 
 
+from app.models.receipt_image import ReceiptImage
+from app.models.claim_defect_image import ClaimDefectImage
+
+
 def test_deletion_service_hard_delete_job(db_session) -> None:
     user = _create_user(db_session, uid="delete-user")
     now = datetime.now(timezone.utc)
@@ -371,6 +375,21 @@ def test_deletion_service_hard_delete_job(db_session) -> None:
     db_session.add(receipt)
     db_session.flush()
 
+    receipt_img_front = ReceiptImage(
+        id=str(uuid.uuid4()),
+        receipt_id=str(receipt.id),
+        s3_object_key="old-receipt-front-key",
+        image_type="FRONT",
+    )
+    receipt_img_back = ReceiptImage(
+        id=str(uuid.uuid4()),
+        receipt_id=str(receipt.id),
+        s3_object_key="old-receipt-back-key",
+        image_type="BACK",
+    )
+    db_session.add(receipt_img_front)
+    db_session.add(receipt_img_back)
+
     item = ReceiptLineItem(
         id=str(uuid.uuid4()),
         receipt_id=str(receipt.id),
@@ -378,6 +397,9 @@ def test_deletion_service_hard_delete_job(db_session) -> None:
         item_description="Old Item",
         deleted_at=old,
     )
+    db_session.add(item)
+    db_session.flush()
+
     claim = ClaimDocument(
         id=str(uuid.uuid4()),
         receipt_id=str(receipt.id),
@@ -386,15 +408,25 @@ def test_deletion_service_hard_delete_job(db_session) -> None:
         generated_pdf_s3_key="old-claim-pdf",
         deleted_at=old,
     )
+    db_session.add(claim)
+    db_session.flush()
+
+    claim_img = ClaimDefectImage(
+        id=str(uuid.uuid4()),
+        claim_id=str(claim.id),
+        s3_object_key="old-claim-defect-img",
+    )
+    db_session.add(claim_img)
 
     user.deleted_at = old
-    db_session.add(item)
-    db_session.add(claim)
     db_session.commit()
 
     s3 = MockS3Service("delete-bucket")
     s3.upload_file(b"r", "old-receipt-key", "image/jpeg")
     s3.upload_file(b"c", "old-claim-pdf", "application/pdf")
+    s3.upload_file(b"rf", "old-receipt-front-key", "image/jpeg")
+    s3.upload_file(b"rb", "old-receipt-back-key", "image/jpeg")
+    s3.upload_file(b"ci", "old-claim-defect-img", "image/jpeg")
 
     deletion = DeletionService(s3)
     results = deletion.run_hard_delete_job(db_session)
@@ -404,3 +436,9 @@ def test_deletion_service_hard_delete_job(db_session) -> None:
     assert results["receipts"] == 1
     assert results["users"] == 1
     assert results["total"] == 4
+
+    assert not s3.file_exists("old-receipt-key")
+    assert not s3.file_exists("old-claim-pdf")
+    assert not s3.file_exists("old-receipt-front-key")
+    assert not s3.file_exists("old-receipt-back-key")
+    assert not s3.file_exists("old-claim-defect-img")
