@@ -17,6 +17,8 @@ from app.models import (
     ReceiptLineItem,
     ReceiptStatus,
     User,
+    ReceiptImage,
+    ClaimDefectImage,
 )
 from app.schemas import ReceiptCreate, ReceiptLineItemUpdate, ReceiptUpdate
 from app.services.deletion_service import DeletionService
@@ -353,10 +355,6 @@ def test_notification_service_and_reminder_logic(db_session) -> None:
     assert len(sent_payloads) >= 2
     assert any(p["data"]["type"] == "warranty" for p in sent_payloads)
     assert any(p["data"]["type"] == "return" for p in sent_payloads)
-
-
-from app.models.receipt_image import ReceiptImage
-from app.models.claim_defect_image import ClaimDefectImage
 
 
 def test_deletion_service_hard_delete_job(db_session) -> None:
