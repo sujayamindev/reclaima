@@ -37,7 +37,9 @@ async def get_notification_preferences(
     firebase_uid = current_user.get("uid")
     db_user = user_service.get_user_by_firebase_uid(db, firebase_uid)
     if not db_user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
 
     return notification_service.get_or_create_preferences(db, str(db_user.id))
 
@@ -59,7 +61,9 @@ async def save_notification_preferences(
     firebase_uid = current_user.get("uid")
     db_user = user_service.get_user_by_firebase_uid(db, firebase_uid)
     if not db_user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
 
     update_data = prefs_update.model_dump(exclude_unset=True)
     prefs = notification_service.update_preferences(db, str(db_user.id), update_data)
@@ -84,6 +88,8 @@ async def update_fcm_token(
     firebase_uid = current_user.get("uid")
     db_user = user_service.get_user_by_firebase_uid(db, firebase_uid)
     if not db_user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
 
     notification_service.update_fcm_token(db, str(db_user.id), body.token)

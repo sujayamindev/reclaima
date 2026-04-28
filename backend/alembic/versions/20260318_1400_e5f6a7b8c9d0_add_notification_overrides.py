@@ -14,13 +14,14 @@ Revision ID: e5f6a7b8c9d0
 Revises: d4e5f6a7b8c9
 Create Date: 2026-03-18 14:00:00.000000
 """
+
 from alembic import op
 import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'e5f6a7b8c9d0'
-down_revision = 'd4e5f6a7b8c9'
+revision = "e5f6a7b8c9d0"
+down_revision = "d4e5f6a7b8c9"
 branch_labels = None
 depends_on = None
 
@@ -28,20 +29,20 @@ depends_on = None
 def upgrade() -> None:
     # ── Add warranty_lead_days_override to receipt_line_items ──────────────────
     op.add_column(
-        'receipt_line_items',
-        sa.Column('warranty_lead_days_override', sa.Integer(), nullable=True),
+        "receipt_line_items",
+        sa.Column("warranty_lead_days_override", sa.Integer(), nullable=True),
     )
 
     # ── Add return_lead_days_override to receipt_line_items ────────────────────
     op.add_column(
-        'receipt_line_items',
-        sa.Column('return_lead_days_override', sa.Integer(), nullable=True),
+        "receipt_line_items",
+        sa.Column("return_lead_days_override", sa.Integer(), nullable=True),
     )
 
 
 def downgrade() -> None:
     # ── Remove return_lead_days_override from receipt_line_items ───────────────
-    op.drop_column('receipt_line_items', 'return_lead_days_override')
+    op.drop_column("receipt_line_items", "return_lead_days_override")
 
     # ── Remove warranty_lead_days_override from receipt_line_items ─────────────
-    op.drop_column('receipt_line_items', 'warranty_lead_days_override')
+    op.drop_column("receipt_line_items", "warranty_lead_days_override")

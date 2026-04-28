@@ -29,21 +29,26 @@ class UserNotificationPreferences(Base):
 
     # Notification toggles
     warranty_reminders_enabled = Column(Boolean, nullable=False, default=True)
-    return_reminders_enabled   = Column(Boolean, nullable=False, default=True)
-    ocr_notifications_enabled  = Column(Boolean, nullable=False, default=True)
+    return_reminders_enabled = Column(Boolean, nullable=False, default=True)
+    ocr_notifications_enabled = Column(Boolean, nullable=False, default=True)
 
     # Reminder lead times (how many days before expiry to send the push)
     warranty_lead_days = Column(Integer, nullable=False, default=30)
-    return_lead_days   = Column(Integer, nullable=False, default=3)
+    return_lead_days = Column(Integer, nullable=False, default=3)
 
     # Quiet hours (24-h clock, e.g. start=22, end=8 means 10 PM – 8 AM)
     quiet_hours_start = Column(Integer, nullable=True)  # 0-23
-    quiet_hours_end   = Column(Integer, nullable=True)  # 0-23
+    quiet_hours_end = Column(Integer, nullable=True)  # 0-23
 
     # Timestamps
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
     updated_at = Column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
     )
 
     # Relationship

@@ -14,13 +14,14 @@ Revision ID: f6a7b8c9d0e1
 Revises: e5f6a7b8c9d0
 Create Date: 2026-03-18 15:00:00.000000
 """
+
 from alembic import op
 import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'f6a7b8c9d0e1'
-down_revision = 'e5f6a7b8c9d0'
+revision = "f6a7b8c9d0e1"
+down_revision = "e5f6a7b8c9d0"
 branch_labels = None
 depends_on = None
 
@@ -28,9 +29,9 @@ depends_on = None
 def upgrade() -> None:
     # ── Add warranty_reminder_enabled to receipt_line_items ──────────────────
     op.add_column(
-        'receipt_line_items',
+        "receipt_line_items",
         sa.Column(
-            'warranty_reminder_enabled',
+            "warranty_reminder_enabled",
             sa.Boolean(),
             nullable=False,
             server_default=sa.true(),
@@ -39,9 +40,9 @@ def upgrade() -> None:
 
     # ── Add return_reminder_enabled to receipt_line_items ────────────────────
     op.add_column(
-        'receipt_line_items',
+        "receipt_line_items",
         sa.Column(
-            'return_reminder_enabled',
+            "return_reminder_enabled",
             sa.Boolean(),
             nullable=False,
             server_default=sa.true(),
@@ -51,7 +52,7 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     # ── Remove return_reminder_enabled from receipt_line_items ───────────────
-    op.drop_column('receipt_line_items', 'return_reminder_enabled')
+    op.drop_column("receipt_line_items", "return_reminder_enabled")
 
     # ── Remove warranty_reminder_enabled from receipt_line_items ─────────────
-    op.drop_column('receipt_line_items', 'warranty_reminder_enabled')
+    op.drop_column("receipt_line_items", "warranty_reminder_enabled")

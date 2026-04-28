@@ -13,18 +13,18 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '45678901defa'
-down_revision: Union[str, None] = '34567890cdef'
+revision: str = "45678901defa"
+down_revision: Union[str, None] = "34567890cdef"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
     op.add_column(
-        'users',
-        sa.Column('contact_number', sa.String(length=50), nullable=True),
+        "users",
+        sa.Column("contact_number", sa.String(length=50), nullable=True),
     )
 
 
 def downgrade() -> None:
-    op.drop_column('users', 'contact_number')
+    op.drop_column("users", "contact_number")

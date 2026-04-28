@@ -833,33 +833,6 @@ class ReceiptService:
             db.commit()
             return receipt
 
-    def retry_ocr(
-        self, db: Session, receipt_id: str, user_id: str
-    ) -> Optional[Receipt]:
-        """
-        Retry OCR processing for a failed receipt.
-
-        Args:
-            db: Database session
-            receipt_id: Receipt ID
-            user_id: User ID
-
-        Returns:
-            Updated receipt or None
-        """
-        receipt = self.get_receipt(db, receipt_id, user_id)
-
-        if not receipt:
-            return None
-
-        if receipt.ocr_retry_count >= settings.OCR_MAX_RETRIES:
-            logger.warning(f"Max OCR retries exceeded for receipt: {receipt_id}")
-            return receipt
-
-        setattr(receipt, "status", ReceiptStatus.PROCESSING)
-        db.commit()
-        return self.process_ocr(db, receipt_id, user_id)
-
     def create_line_item(
         self,
         db: Session,

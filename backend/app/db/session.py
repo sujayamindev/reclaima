@@ -24,7 +24,7 @@ def get_db() -> Generator[Session, None, None]:
     """
     FastAPI dependency that provides a database session.
     Automatically handles session cleanup.
-    
+
     Yields:
         Database session
     """
