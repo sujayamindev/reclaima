@@ -224,6 +224,10 @@ class NotificationService:
         for item, user, prefs in rows:
             # ── Check toggle ───────────────────────────────────────────────
             if kind == "warranty":
+                # Check item-level toggle first
+                if not getattr(item, "warranty_reminder_enabled", True):
+                    continue
+                # Check global user toggle
                 if prefs and not prefs.warranty_reminders_enabled:
                     continue
                 # Use per-item override if set, otherwise fall back to user's global preference
@@ -237,6 +241,10 @@ class NotificationService:
                     )
                 )
             else:
+                # Check item-level toggle first
+                if not getattr(item, "return_reminder_enabled", True):
+                    continue
+                # Check global user toggle
                 if prefs and not prefs.return_reminders_enabled:
                     continue
                 # Use per-item override if set, otherwise fall back to user's global preference
