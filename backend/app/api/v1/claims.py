@@ -364,10 +364,14 @@ async def resolve_claim(
     # Mark claim as RESOLVED
     setattr(claim, "status", "RESOLVED")
 
-    # Identify the primary item (for simplicity, using the first line item)
-    if receipt.line_items:
-        item = receipt.line_items[0]
+    # Get the specific line item associated with this claim
+    item = (
+        db.query(ReceiptLineItem)
+        .filter(ReceiptLineItem.id == claim.line_item_id)
+        .first()
+    )
 
+    if item:
         if resolution_data.outcome == "REFUNDED":
             setattr(item, "status", "ARCHIVED")
         elif resolution_data.outcome == "REPLACED":
@@ -378,7 +382,7 @@ async def resolve_claim(
                 new_item = ReceiptLineItem(
                     id=new_item_id,
                     receipt_id=receipt.id,
-                    row_index=len(receipt.line_items),
+                    row_index=len(receipt.line_items) if receipt.line_items else 0,
                     item_description=item.item_description,
                     product_name=item.product_name,
                     product_category=item.product_category,
@@ -392,15 +396,28 @@ async def resolve_claim(
                 setattr(item, "status", "ARCHIVED")
                 db.add(new_item)
             elif resolution_data.linked_item_id:
+                # Ensure the user owns the linked replacement item
                 linked_item = (
                     db.query(ReceiptLineItem)
-                    .filter(ReceiptLineItem.id == resolution_data.linked_item_id)
+                    .join(Receipt, Receipt.id == ReceiptLineItem.receipt_id)
+                    .filter(
+                        and_(
+                            ReceiptLineItem.id == resolution_data.linked_item_id,
+                            Receipt.user_id == db_user_id,
+                            Receipt.deleted_at.is_(None),
+                        )
+                    )
                     .first()
                 )
                 if linked_item:
                     setattr(linked_item, "replacement_for_id", _as_str(item.id))
                     setattr(item, "replaced_by_id", _as_str(linked_item.id))
-                setattr(item, "status", "ARCHIVED")
+                    setattr(item, "status", "ARCHIVED")
+                else:
+                    raise HTTPException(
+                        status_code=status.HTTP_403_FORBIDDEN,
+                        detail="Invalid linked replacement item or permission denied",
+                    )
 
     db.commit()
     db.refresh(claim)
