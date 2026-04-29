@@ -91,18 +91,15 @@ def test_list_receipts_without_auth():
 # API Documentation Tests
 # ============================================
 def test_openapi_schema():
-    """Test OpenAPI schema is accessible."""
+    """Test OpenAPI schema is hidden by default in production."""
     response = client.get("/openapi.json")
-    assert response.status_code == 200
-    data = response.json()
-    assert "info" in data
-    assert "paths" in data
+    assert response.status_code == 404
 
 
 def test_docs_endpoint():
-    """Test Swagger UI is accessible."""
+    """Test Swagger UI is hidden by default in production."""
     response = client.get("/docs")
-    assert response.status_code == 200
+    assert response.status_code == 404
 
 
 # ============================================

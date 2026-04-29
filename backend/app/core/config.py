@@ -61,7 +61,7 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Smart Receipt & Warranty Manager"
     VERSION: str = "0.1.0"
     API_V1_PREFIX: str = "/api/v1"
-    DEBUG: bool = True
+    DEBUG: bool = False
 
     # Security
     SECRET_KEY: str

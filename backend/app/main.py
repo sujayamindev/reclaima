@@ -101,9 +101,9 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
     description="Smart Receipt & Warranty Manager - Production-ready API for receipt digitization and warranty tracking",
-    docs_url="/docs",
-    redoc_url="/redoc",
-    openapi_url="/openapi.json",
+    docs_url="/docs" if settings.DEBUG else None,
+    redoc_url="/redoc" if settings.DEBUG else None,
+    openapi_url="/openapi.json" if settings.DEBUG else None,
     lifespan=lifespan,
 )
 
@@ -212,7 +212,7 @@ async def root():
 # ============================================
 # Development: Auto-reload notice
 # ============================================
-if settings.DEBUG:
+if settings.DEBUG:  # pragma: no cover
     logger.warning("⚠️  Running in DEBUG mode - Do not use in production!")
     logger.info("📚 API Documentation: http://localhost:8000/docs")
     logger.info(
