@@ -3,7 +3,7 @@ Health check and system status routes.
 """
 
 from datetime import datetime, timezone
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 
@@ -44,7 +44,7 @@ async def health_check(db: Session = Depends(get_db)):
 
 
 @router.get("/ready")
-async def readiness_check(db: Session = Depends(get_db)):
+async def readiness_check(response: Response, db: Session = Depends(get_db)):
     """
     Readiness check for Kubernetes/container orchestration.
 
@@ -55,4 +55,5 @@ async def readiness_check(db: Session = Depends(get_db)):
         db.execute(text("SELECT 1"))
         return {"status": "ready"}
     except Exception as e:
+        response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
         return {"status": "not ready", "error": str(e)}
