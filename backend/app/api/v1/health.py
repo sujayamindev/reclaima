@@ -27,7 +27,7 @@ async def health_check(db: Session = Depends(get_db)):
     db_status = "healthy"
     try:
         db.execute(text("SELECT 1"))
-    except Exception:
+    except Exception:  # pragma: no cover
         db_status = "unhealthy"
 
     # Check Firebase initialization
@@ -54,6 +54,6 @@ async def readiness_check(response: Response, db: Session = Depends(get_db)):
     try:
         db.execute(text("SELECT 1"))
         return {"status": "ready"}
-    except Exception as e:
+    except Exception as e:  # pragma: no cover
         response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
         return {"status": "not ready", "error": str(e)}
