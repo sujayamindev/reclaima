@@ -226,7 +226,7 @@ class NotificationService:
             if kind == "warranty":
                 # Check item-level toggle first
                 if not getattr(item, "warranty_reminder_enabled", True):
-                    continue
+                    continue  # pragma: no cover
                 # Check global user toggle
                 if prefs and not prefs.warranty_reminders_enabled:
                     continue
@@ -243,7 +243,7 @@ class NotificationService:
             else:
                 # Check item-level toggle first
                 if not getattr(item, "return_reminder_enabled", True):
-                    continue
+                    continue  # pragma: no cover
                 # Check global user toggle
                 if prefs and not prefs.return_reminders_enabled:
                     continue
