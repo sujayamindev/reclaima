@@ -13,13 +13,13 @@ class ReceiptService {
 
   /// Get all receipts with optional pagination
   Future<List<ReceiptModel>> getReceipts({
-    int skip = 0,
-    int limit = 100,
+    int page = 1,
+    int pageSize = 100,
   }) async {
     try {
       final response = await _apiService.get(
         ApiConstants.receipts,
-        queryParameters: {'skip': skip, 'limit': limit},
+        queryParameters: {'page': page, 'page_size': pageSize},
       );
 
       // Handle response data - could be List or Map
@@ -132,19 +132,6 @@ class ReceiptService {
       return ReceiptModel.fromJson(response.data);
     } catch (e) {
       logger.e('Error uploading receipt: $e');
-      rethrow;
-    }
-  }
-
-  /// Retry OCR processing
-  Future<ReceiptModel> retryOcr(String receiptId) async {
-    try {
-      final response = await _apiService.post(
-        '${ApiConstants.receipts}/$receiptId/retry-ocr',
-      );
-      return ReceiptModel.fromJson(response.data);
-    } catch (e) {
-      logger.e('Error retrying OCR for receipt $receiptId: $e');
       rethrow;
     }
   }
