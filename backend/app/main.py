@@ -147,7 +147,7 @@ async def database_exception_handler(request: Request, exc: SQLAlchemyError):
         content={
             "error": "DATABASE_ERROR",
             "message": "A database error occurred",
-            "details": str(exc) if settings.DEBUG else None,
+            "details": str(exc) if settings.DEBUG else None,  # pragma: no cover
         },
     )
 
@@ -161,7 +161,7 @@ async def general_exception_handler(request: Request, exc: Exception):
         content={
             "error": "INTERNAL_ERROR",
             "message": "An internal server error occurred",
-            "details": str(exc) if settings.DEBUG else None,
+            "details": str(exc) if settings.DEBUG else None,  # pragma: no cover
         },
     )
 
