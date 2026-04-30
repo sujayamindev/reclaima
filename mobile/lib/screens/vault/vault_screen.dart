@@ -453,8 +453,9 @@ class _ProductListItem extends StatelessWidget {
     if (item.isWarrantyExpired) return 'Warranty expired';
 
     // Priority 2: Warranty active but return expired
-    if (item.isReturnExpired && !item.isWarrantyExpired)
+    if (item.isReturnExpired && !item.isWarrantyExpired) {
       return 'Active warranty';
+    }
 
     // Priority 3: Return expires today (urgent)
     if (returnDays != null && returnDays == 0) {

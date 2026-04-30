@@ -488,14 +488,14 @@ async def list_claims(
             query = query.filter(ClaimDocument.receipt_id == receipt_id)
         else:
             # Filter by user's receipts
-            user_receipt_ids = (
+            user_receipt_rows = (
                 db.query(Receipt.id)
                 .filter(
                     and_(Receipt.user_id == db_user_id, Receipt.deleted_at.is_(None))
                 )
                 .all()
             )
-            receipt_ids = [r[0] for r in user_receipt_ids]
+            receipt_ids = [r[0] for r in user_receipt_rows]
             query = query.filter(ClaimDocument.receipt_id.in_(receipt_ids))
 
         claims = query.order_by(ClaimDocument.created_at.desc()).all()

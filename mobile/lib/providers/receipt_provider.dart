@@ -133,20 +133,6 @@ class ReceiptController extends StateNotifier<AsyncValue<void>> {
     }
   }
 
-  /// Retry OCR processing
-  Future<ReceiptModel?> retryOcr(String receiptId) async {
-    state = const AsyncValue.loading();
-
-    try {
-      final receipt = await _receiptService.retryOcr(receiptId);
-      state = const AsyncValue.data(null);
-      return receipt;
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
-      return null;
-    }
-  }
-
   /// Create a new line item on a receipt (for manual-entry receipts).
   Future<ReceiptLineItemModel?> createLineItem(
     String receiptId,

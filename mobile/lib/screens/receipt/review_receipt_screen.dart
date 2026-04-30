@@ -396,37 +396,52 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     final List<Map<String, dynamic>> itemsPayload = [];
     for (final form in _itemForms) {
       final liData = <String, dynamic>{};
-      if (form.existingId != null) liData['_existingId'] = form.existingId;
-      if (form.itemDescription != null)
+      if (form.existingId != null) {
+        liData['_existingId'] = form.existingId;
+      }
+      if (form.itemDescription != null) {
         liData['itemDescription'] = form.itemDescription;
-      if (form.unitPrice != null) liData['unitPrice'] = form.unitPrice;
+      }
+      if (form.unitPrice != null) {
+        liData['unitPrice'] = form.unitPrice;
+      }
 
       final productName = form.productNameCtrl.text.trim();
-      if (productName.isNotEmpty) liData['productName'] = productName;
+      if (productName.isNotEmpty) {
+        liData['productName'] = productName;
+      }
 
       final productCode = form.productCodeCtrl.text.trim();
-      if (productCode.isNotEmpty) liData['productCode'] = productCode;
+      if (productCode.isNotEmpty) {
+        liData['productCode'] = productCode;
+      }
 
       liData['productCategory'] = form.selectedCategory;
 
       if (form.warrantyPeriodCtrl.text.isNotEmpty) {
         final months = int.tryParse(form.warrantyPeriodCtrl.text);
-        if (months != null) liData['warrantyPeriodMonths'] = months;
+        if (months != null) {
+          liData['warrantyPeriodMonths'] = months;
+        }
       } else {
         liData['warrantyPeriodMonths'] = null;
       }
 
       if (form.returnPeriodCtrl.text.isNotEmpty) {
         final days = int.tryParse(form.returnPeriodCtrl.text);
-        if (days != null) liData['returnPeriodDays'] = days;
+        if (days != null) {
+          liData['returnPeriodDays'] = days;
+        }
       } else {
         liData['returnPeriodDays'] = null;
       }
 
-      if (form.warrantyLeadDaysOverride != null)
+      if (form.warrantyLeadDaysOverride != null) {
         liData['warrantyLeadDaysOverride'] = form.warrantyLeadDaysOverride;
-      if (form.returnLeadDaysOverride != null)
+      }
+      if (form.returnLeadDaysOverride != null) {
         liData['returnLeadDaysOverride'] = form.returnLeadDaysOverride;
+      }
       liData['warrantyReminderEnabled'] = form.warrantyReminderEnabled;
       liData['returnReminderEnabled'] = form.returnReminderEnabled;
       itemsPayload.add(liData);

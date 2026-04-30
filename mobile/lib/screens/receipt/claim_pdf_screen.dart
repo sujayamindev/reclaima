@@ -371,10 +371,11 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
       setState(() => _generatedClaim = updated);
     } catch (e) {
       logger.e('Error updating status: $e');
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('Failed: $e')));
+      }
     } finally {
       if (mounted) setState(() => _isUpdating = false);
     }
@@ -735,10 +736,11 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
       }
     } catch (e) {
       logger.e('Error resolving claim: $e');
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('Failed to resolve claim: $e')));
+      }
     } finally {
       if (mounted) setState(() => _isUpdating = false);
     }

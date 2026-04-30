@@ -352,8 +352,9 @@ class _ReceiptConfirmationScreenState
                         final hasReturn =
                             form.returnExpiryDate != null || returnDays != null;
 
-                        if (!hasWarranty && !hasReturn)
+                        if (!hasWarranty && !hasReturn) {
                           return const SizedBox.shrink();
+                        }
 
                         return Container(
                           margin: const EdgeInsets.only(bottom: 16),

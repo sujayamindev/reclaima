@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 import 'package:mobile/screens/main_shell.dart';
 import 'package:mobile/core/constants/app_theme.dart';
@@ -19,6 +20,8 @@ void main() {
   ) async {
     // Override backend-dependent providers to return empty/mock data
     final overrides = [
+      authStateProvider.overrideWith((ref) => const Stream.empty()),
+      currentUserProvider.overrideWith((ref) => null),
       userProfileProvider.overrideWith(
         (ref) async => UserModel(
           id: 'mock-id',
@@ -50,19 +53,19 @@ void main() {
     // To strictly test visibility, we ensure the Bottom Nav Bar renders correctly.
 
     // 2. Navigate to Vault tab
-    await tester.tap(find.text('Vault'));
+    await tester.tap(find.byIcon(Symbols.view_object_track_rounded));
     await tester.pumpAndSettle();
 
     // We expect the Vault screen to be built
     expect(find.byType(VaultScreen), findsOneWidget);
 
     // 3. Navigate to Claims tab
-    await tester.tap(find.text('Claims'));
+    await tester.tap(find.byIcon(Symbols.fiber_smart_record_rounded));
     await tester.pumpAndSettle();
     expect(find.byType(ClaimsHubScreen), findsOneWidget);
 
     // 4. Navigate to Settings tab
-    await tester.tap(find.text('Settings'));
+    await tester.tap(find.byIcon(Symbols.menu_rounded));
     await tester.pumpAndSettle();
     expect(find.byType(SettingsScreen), findsOneWidget);
   });
