@@ -48,22 +48,6 @@ class _StubProductImageService:
         return {"imageUrl": f"https://img.local/{query.replace(' ', '-')}"}
 
 
-@pytest.fixture()
-def db_session():
-    engine = create_engine(
-        "sqlite:///:memory:", connect_args={"check_same_thread": False}
-    )
-    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-    Base.metadata.create_all(bind=engine)
-
-    db = TestingSessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-        Base.metadata.drop_all(bind=engine)
-
-
 def _create_user(db_session, uid: str = "test-firebase-uid") -> User:
     user = User(
         id=str(uuid.uuid4()),
@@ -337,8 +321,28 @@ def test_notification_service_and_reminder_logic(db_session) -> None:
         return_expiry_date=return_target,
         return_period_days=30,
     )
+    disabled_warranty_item = ReceiptLineItem(
+        id=str(uuid.uuid4()),
+        receipt_id=str(receipt.id),
+        row_index=2,
+        item_description="Disabled Warranty",
+        warranty_expiry_date=warranty_target,
+        warranty_period_months=12,
+        warranty_reminder_enabled=False,
+    )
+    disabled_return_item = ReceiptLineItem(
+        id=str(uuid.uuid4()),
+        receipt_id=str(receipt.id),
+        row_index=3,
+        item_description="Disabled Return",
+        return_expiry_date=return_target,
+        return_period_days=30,
+        return_reminder_enabled=False,
+    )
     db_session.add(warranty_item)
     db_session.add(return_item)
+    db_session.add(disabled_warranty_item)
+    db_session.add(disabled_return_item)
     db_session.commit()
 
     sent_payloads = []
@@ -352,7 +356,8 @@ def test_notification_service_and_reminder_logic(db_session) -> None:
     service._send_expiry_reminders(db_session, kind="warranty")
     service._send_expiry_reminders(db_session, kind="return")
 
-    assert len(sent_payloads) >= 2
+    # Should only send 2 payloads (1 warranty, 1 return), not 4.
+    assert len(sent_payloads) == 2
     assert any(p["data"]["type"] == "warranty" for p in sent_payloads)
     assert any(p["data"]["type"] == "return" for p in sent_payloads)
 

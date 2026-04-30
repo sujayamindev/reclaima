@@ -374,7 +374,7 @@ async def resolve_claim(
     if item:
         if resolution_data.outcome == "REFUNDED":
             setattr(item, "status", "ARCHIVED")
-        elif resolution_data.outcome == "REPLACED":  # pragma: no cover
+        elif resolution_data.outcome == "REPLACED":
             if resolution_data.duplicate_details:
                 import uuid
 
@@ -413,7 +413,7 @@ async def resolve_claim(
                     setattr(linked_item, "replacement_for_id", _as_str(item.id))
                     setattr(item, "replaced_by_id", _as_str(linked_item.id))
                     setattr(item, "status", "ARCHIVED")
-                else:  # pragma: no cover
+                else:
                     raise HTTPException(
                         status_code=status.HTTP_403_FORBIDDEN,
                         detail="Invalid linked replacement item or permission denied",
