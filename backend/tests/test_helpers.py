@@ -1,7 +1,9 @@
 """Focused unit tests for pure helper functions and derived settings values."""
 
-from datetime import datetime, timezone
+import uuid
+from datetime import datetime, timezone, timedelta
 
+from app.models import User, Receipt, ReceiptStatus, ReceiptLineItem
 from app.api.v1.warranties import (
     _to_optional_datetime,
     _to_optional_int,
@@ -40,11 +42,6 @@ def test_settings_derived_values() -> None:
     assert settings.max_file_size_bytes == settings.MAX_FILE_SIZE_MB * 1024 * 1024
     assert "image/jpeg" in settings.allowed_file_types_list
     assert "image/png" in settings.allowed_file_types_list
-
-
-import uuid
-from datetime import timedelta
-from app.models import User, Receipt, ReceiptStatus, ReceiptLineItem
 
 
 def _create_user(db_session, uid: str = "test-firebase-uid") -> User:

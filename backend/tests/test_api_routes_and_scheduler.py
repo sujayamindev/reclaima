@@ -8,8 +8,6 @@ from datetime import datetime, timezone, timedelta
 
 import pytest
 from fastapi import HTTPException
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from starlette.datastructures import Headers, UploadFile
 
 from app.api.v1 import auth as auth_api
@@ -18,7 +16,6 @@ from app.api.v1 import notifications as notifications_api
 from app.api.v1 import products as products_api
 from app.api.v1 import receipts as receipts_api
 from app.api.v1 import warranties as warranties_api
-from app.db.base import Base
 from app.models import ClaimDocument, Receipt, ReceiptLineItem, ReceiptStatus, User
 from app.schemas import (
     ClaimDocumentUpdate,

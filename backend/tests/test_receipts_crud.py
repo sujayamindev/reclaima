@@ -17,9 +17,14 @@ def user_a(db_session):
 def user_b(db_session):
     return _create_user(db_session, uid="crud-user-b")
 
+
 def mock_auth(user_uuid: str, firebase_uid: str):
     app.dependency_overrides[get_current_user_id] = lambda: user_uuid
-    app.dependency_overrides[get_current_user] = lambda: {"uid": firebase_uid, "email": "test@test.com"}
+    app.dependency_overrides[get_current_user] = lambda: {
+        "uid": firebase_uid,
+        "email": "test@test.com",
+    }
+
 
 def cleanup_auth():
     app.dependency_overrides.pop(get_current_user_id, None)

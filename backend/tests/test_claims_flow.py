@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 
 from app.main import app
 from app.core.security import get_current_user, get_current_user_id
-from app.models import ClaimDocument, ReceiptLineItem, Receipt
+from app.models import ClaimDocument, ReceiptLineItem
 from tests.test_helpers import _create_user, _make_receipt
 
 client = TestClient(app, raise_server_exceptions=False)
@@ -19,12 +19,14 @@ def user_a(db_session):
 def user_b(db_session):
     return _create_user(db_session, uid="claims-user-b")
 
+
 def mock_auth(user_uuid: str, firebase_uid: str):
     app.dependency_overrides[get_current_user] = lambda: {
         "uid": firebase_uid,
         "email": "test@test.com",
     }
     app.dependency_overrides[get_current_user_id] = lambda: user_uuid
+
 
 def cleanup_auth():
     app.dependency_overrides.pop(get_current_user, None)

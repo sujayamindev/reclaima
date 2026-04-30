@@ -6,11 +6,7 @@ import uuid
 from datetime import datetime, timezone, timedelta
 from decimal import Decimal
 
-import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
-from app.db.base import Base
 from app.models import (
     ClaimDocument,
     Receipt,
