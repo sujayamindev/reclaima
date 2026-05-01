@@ -141,9 +141,9 @@ BACKEND_IMAGE="${IMAGE_REPOSITORY}:${IMAGE_TAG}"
 echo "Deploying image ${BACKEND_IMAGE}"
 export BACKEND_IMAGE
 
-docker compose -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}" pull api scheduler migrate
+docker compose -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}" pull api scheduler migrate krakend
 docker compose -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}" run --rm migrate
-docker compose -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}" up -d api scheduler
+docker compose -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}" up -d api scheduler krakend
 
 echo "Running post-deploy health checks: API endpoint and scheduler container"
 if wait_for_runtime_health "Deployment" && run_authenticated_smoke_test; then
