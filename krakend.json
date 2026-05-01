@@ -14,7 +14,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 0.083,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 0.41500000000000004
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -38,7 +43,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 0.083,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 0.41500000000000004
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -62,7 +72,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 0.083,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 0.41500000000000004
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -86,7 +101,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 0.083,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 0.41500000000000004
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -110,7 +130,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 0.083,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 0.41500000000000004
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -134,7 +159,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 0.083,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 0.41500000000000004
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -158,7 +188,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 0.083,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 0.41500000000000004
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -182,7 +217,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 0.166,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 0.8300000000000001
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -206,7 +246,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 0.166,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 0.8300000000000001
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -230,7 +275,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 0.166,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 0.8300000000000001
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -254,7 +304,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 0.166,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 0.8300000000000001
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -278,7 +333,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 1.66,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 8.299999999999999
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -302,7 +362,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 1.66,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 8.299999999999999
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -326,7 +391,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 1.66,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 8.299999999999999
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -350,7 +420,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 1.66,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 8.299999999999999
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -374,7 +449,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 1.66,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 8.299999999999999
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -398,7 +478,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 1.66,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 8.299999999999999
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -422,7 +507,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 1.66,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 8.299999999999999
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -446,7 +536,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 1.66,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 8.299999999999999
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -470,7 +565,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 1.66,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 8.299999999999999
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -494,7 +594,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 1.66,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 8.299999999999999
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -518,7 +623,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 1.66,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 8.299999999999999
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -542,7 +652,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 1.66,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 8.299999999999999
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -566,7 +681,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 1.66,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 8.299999999999999
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -590,7 +710,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 1.66,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 8.299999999999999
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -614,7 +739,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 1.66,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 8.299999999999999
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -638,7 +768,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 1.66,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 8.299999999999999
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -662,7 +797,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 1.66,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 8.299999999999999
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -686,7 +826,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 1.66,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 8.299999999999999
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -710,7 +855,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 1.66,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 8.299999999999999
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -734,7 +884,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 1.66,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 8.299999999999999
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -758,7 +913,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 1.66,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 8.299999999999999
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -782,7 +942,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 1.66,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 8.299999999999999
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -806,7 +971,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 1.66,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 8.299999999999999
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -830,7 +1000,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 1.66,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 8.299999999999999
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -854,7 +1029,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 1.66,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 8.299999999999999
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -878,7 +1058,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 1.66,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 8.299999999999999
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -902,7 +1087,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 1.66,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 8.299999999999999
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -926,7 +1116,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 1.66,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 8.299999999999999
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
@@ -950,7 +1145,12 @@
         "qos/ratelimit/router": {
           "max_rate": 0,
           "client_max_rate": 1.66,
-          "strategy": "ip"
+          "strategy": "ip",
+          "capacity": 8.299999999999999
+        },
+        "router": {
+          "return_error_msg": "Too Many Requests",
+          "return_error_code": 429
         }
       },
       "backend": [
