@@ -6,6 +6,7 @@ import '../services/receipt_service.dart';
 import '../services/product_image_service.dart';
 import '../services/notification_service.dart';
 import '../data/database/app_database.dart';
+import '../data/repositories/receipt_repository.dart';
 
 /// API Service provider
 final apiServiceProvider = Provider<ApiService>((ref) {
@@ -27,6 +28,13 @@ final authServiceProvider = Provider<AuthService>((ref) {
 final receiptServiceProvider = Provider<ReceiptService>((ref) {
   final apiService = ref.watch(apiServiceProvider);
   return ReceiptService(apiService);
+});
+
+/// Receipt Repository provider
+final receiptRepositoryProvider = Provider<ReceiptRepository>((ref) {
+  final service = ref.watch(receiptServiceProvider);
+  final db = ref.watch(databaseProvider);
+  return ReceiptRepository(service, db);
 });
 
 /// Product Image Service provider

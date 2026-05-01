@@ -2,24 +2,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/receipt_model.dart';
 import '../data/models/receipt_line_item_model.dart';
-import '../services/receipt_service.dart';
+import '../data/repositories/receipt_repository.dart';
 import 'auth_provider.dart';
 import 'service_providers.dart';
 
 /// Receipts list provider
-///
-/// Waits for [userProfileProvider] to resolve first so that the backend user
-/// record is guaranteed to exist before we query /receipts. This prevents a
-/// 500 race-condition where the HomeScreen loads and hits GET /receipts before
-/// POST /auth/register has finished creating the user row.
 final receiptsProvider = FutureProvider<List<ReceiptModel>>((ref) async {
-  // Block until the user profile is confirmed.
-  // userProfileProvider already handles auto-registration internally.
   final profile = await ref.watch(userProfileProvider.future);
   if (profile == null) return [];
 
-  final receiptService = ref.watch(receiptServiceProvider);
-  return await receiptService.getReceipts();
+  final repository = ref.watch(receiptRepositoryProvider);
+  return await repository.getReceipts();
 });
 
 /// Single receipt provider
@@ -31,8 +24,7 @@ final receiptProvider = FutureProvider.family<ReceiptModel, String>((
   return await receiptService.getReceipt(id);
 });
 
-/// Pre-signed S3 URL provider for the receipt image.
-/// Returns null if the receipt has no uploaded image.
+/// Pre-signed S3 URL provider
 final receiptImageUrlProvider = FutureProvider.family<String?, String>((
   ref,
   receiptId,
@@ -43,16 +35,16 @@ final receiptImageUrlProvider = FutureProvider.family<String?, String>((
 
 /// Receipt Controller
 class ReceiptController extends StateNotifier<AsyncValue<void>> {
-  final ReceiptService _receiptService;
+  final ReceiptRepository _repository;
 
-  ReceiptController(this._receiptService) : super(const AsyncValue.data(null));
+  ReceiptController(this._repository) : super(const AsyncValue.data(null));
 
   /// Create a new receipt
   Future<ReceiptModel?> createReceipt(Map<String, dynamic> data) async {
     state = const AsyncValue.loading();
-
     try {
-      final receipt = await _receiptService.createReceipt(data);
+      final receipt = await _repository.createReceipt(data);
+      await _repository.syncReceipts();
       state = const AsyncValue.data(null);
       return receipt;
     } catch (e, st) {
@@ -67,9 +59,9 @@ class ReceiptController extends StateNotifier<AsyncValue<void>> {
     Map<String, dynamic> data,
   ) async {
     state = const AsyncValue.loading();
-
     try {
-      final receipt = await _receiptService.updateReceipt(id, data);
+      final receipt = await _repository.updateReceipt(id, data);
+      await _repository.syncReceipts();
       state = const AsyncValue.data(null);
       return receipt;
     } catch (e, st) {
@@ -81,14 +73,11 @@ class ReceiptController extends StateNotifier<AsyncValue<void>> {
   /// Delete receipt
   Future<bool> deleteReceipt(String id, WidgetRef ref) async {
     state = const AsyncValue.loading();
-
     try {
-      await _receiptService.deleteReceipt(id);
-
-      // Invalidate providers to refresh UI
+      await _repository.deleteReceipt(id);
+      await _repository.syncReceipts();
       ref.invalidate(receiptsProvider);
       ref.invalidate(receiptProvider(id));
-
       state = const AsyncValue.data(null);
       return true;
     } catch (e, st) {
@@ -104,14 +93,11 @@ class ReceiptController extends StateNotifier<AsyncValue<void>> {
     WidgetRef ref,
   ) async {
     state = const AsyncValue.loading();
-
     try {
-      await _receiptService.deleteLineItem(receiptId, itemId);
-
-      // Invalidate providers to refresh UI
+      await _repository.deleteLineItem(receiptId, itemId);
+      await _repository.syncReceipts();
       ref.invalidate(receiptsProvider);
       ref.invalidate(receiptProvider(receiptId));
-
       state = const AsyncValue.data(null);
       return true;
     } catch (e, st) {
@@ -123,9 +109,9 @@ class ReceiptController extends StateNotifier<AsyncValue<void>> {
   /// Upload receipt file
   Future<ReceiptModel?> uploadReceipt(String receiptId, String filePath) async {
     state = const AsyncValue.loading();
-
     try {
-      final receipt = await _receiptService.uploadReceipt(receiptId, filePath);
+      final receipt = await _repository.uploadReceipt(receiptId, filePath);
+      await _repository.syncReceipts();
       state = const AsyncValue.data(null);
       return receipt;
     } catch (e, st) {
@@ -134,15 +120,15 @@ class ReceiptController extends StateNotifier<AsyncValue<void>> {
     }
   }
 
-  /// Create a new line item on a receipt (for manual-entry receipts).
+  /// Create a new line item
   Future<ReceiptLineItemModel?> createLineItem(
     String receiptId,
     Map<String, dynamic> data,
   ) async {
     state = const AsyncValue.loading();
-
     try {
-      final lineItem = await _receiptService.createLineItem(receiptId, data);
+      final lineItem = await _repository.createLineItem(receiptId, data);
+      await _repository.syncReceipts();
       state = const AsyncValue.data(null);
       return lineItem;
     } catch (e, st) {
@@ -151,20 +137,20 @@ class ReceiptController extends StateNotifier<AsyncValue<void>> {
     }
   }
 
-  /// Update a single line item's product / warranty fields.
+  /// Update a single line item
   Future<ReceiptLineItemModel?> updateLineItem(
     String receiptId,
     String itemId,
     Map<String, dynamic> data,
   ) async {
     state = const AsyncValue.loading();
-
     try {
-      final lineItem = await _receiptService.updateLineItem(
+      final lineItem = await _repository.updateLineItem(
         receiptId,
         itemId,
         data,
       );
+      await _repository.syncReceipts();
       state = const AsyncValue.data(null);
       return lineItem;
     } catch (e, st) {
@@ -173,18 +159,14 @@ class ReceiptController extends StateNotifier<AsyncValue<void>> {
     }
   }
 
-  /// Upload image to S3 and run OCR without creating a receipt record.
-  ///
-  /// Returns the OCR-extracted data map (camelCase keys) including
-  /// [s3ObjectKey] and [backImageS3Key] on success, or null on error.
+  /// Extract OCR
   Future<Map<String, dynamic>?> extractOcr(
     String? frontImagePath,
     String? backImagePath,
   ) async {
     state = const AsyncValue.loading();
-
     try {
-      final result = await _receiptService.extractOcr(
+      final result = await _repository.extractOcr(
         frontImagePath,
         backImagePath,
       );
@@ -200,6 +182,6 @@ class ReceiptController extends StateNotifier<AsyncValue<void>> {
 /// Receipt controller provider
 final receiptControllerProvider =
     StateNotifierProvider<ReceiptController, AsyncValue<void>>((ref) {
-      final receiptService = ref.watch(receiptServiceProvider);
-      return ReceiptController(receiptService);
+      final repository = ref.watch(receiptRepositoryProvider);
+      return ReceiptController(repository);
     });

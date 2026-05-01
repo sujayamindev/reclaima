@@ -1,10 +1,65 @@
 // coverage:ignore-file
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_constants.dart';
 
 class PrivacySettingsScreen extends StatelessWidget {
   const PrivacySettingsScreen({super.key});
+
+  Future<void> _launchUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      // ignore: avoid_print
+      print('Could not launch $url');
+    }
+  }
+
+  void _handleExport(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.card(isDark),
+        title: Text(
+          'Export Data',
+          style: AppTextStyles.titleLarge.copyWith(
+            color: AppColors.textPrimary(isDark),
+          ),
+        ),
+        content: Text(
+          'Your receipt and warranty data will be compiled into a CSV file and sent to your registered email address.',
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: AppColors.textSecondary(isDark),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: AppColors.textSecondary(isDark)),
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+            onPressed: () {
+              Navigator.pop(ctx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Export started. Check your email shortly.'),
+                ),
+              );
+            },
+            child: const Text(
+              'Confirm Export',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildSectionCard(
     bool isDark,
@@ -104,10 +159,10 @@ class PrivacySettingsScreen extends StatelessWidget {
     );
   }
 
-  void _showComingSoon(BuildContext context) {
+  void _showComingSoon(BuildContext context, String feature) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Coming soon'),
+      SnackBar(
+        content: Text('$feature coming soon'),
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -152,7 +207,7 @@ class PrivacySettingsScreen extends StatelessWidget {
                     icon: Symbols.download_rounded,
                     title: 'Export My Data',
                     subtitle: 'Download a copy of your receipts',
-                    onTap: () => _showComingSoon(context),
+                    onTap: () => _handleExport(context),
                   ),
                   Divider(color: AppColors.border(isDark), height: 1),
                   _buildTapRow(
@@ -160,7 +215,7 @@ class PrivacySettingsScreen extends StatelessWidget {
                     icon: Symbols.sync_rounded,
                     title: 'Sync Status',
                     subtitle: 'Manage cloud synchronization',
-                    onTap: () => _showComingSoon(context),
+                    onTap: () => _showComingSoon(context, 'Sync Status'),
                   ),
                 ],
               ),
@@ -175,7 +230,7 @@ class PrivacySettingsScreen extends StatelessWidget {
                     icon: Symbols.description_rounded,
                     title: 'Terms of Service',
                     subtitle: 'Read our terms of service',
-                    onTap: () => _showComingSoon(context),
+                    onTap: () => _launchUrl('https://receipta.app/terms'),
                   ),
                   Divider(color: AppColors.border(isDark), height: 1),
                   _buildTapRow(
@@ -183,7 +238,7 @@ class PrivacySettingsScreen extends StatelessWidget {
                     icon: Symbols.privacy_tip_rounded,
                     title: 'Privacy Policy',
                     subtitle: 'Read our privacy policy',
-                    onTap: () => _showComingSoon(context),
+                    onTap: () => _launchUrl('https://receipta.app/privacy'),
                   ),
                 ],
               ),

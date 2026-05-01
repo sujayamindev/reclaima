@@ -85,7 +85,6 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
   /// Sign in with Google
   Future<void> signInWithGoogle() async {
     state = const AsyncValue.loading();
-
     try {
       await _authService.signInWithGoogle();
       state = const AsyncValue.data(null);
@@ -94,6 +93,18 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
     }
   }
 
+  /// Sign in with Apple
+  Future<void> signInWithApple() async {
+    state = const AsyncValue.loading();
+    try {
+      await _authService.signInWithApple();
+      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  /// Sign out
   /// Send email verification
   Future<void> sendEmailVerification() async {
     state = const AsyncValue.loading();

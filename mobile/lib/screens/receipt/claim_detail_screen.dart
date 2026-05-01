@@ -11,6 +11,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../core/utils/formatters.dart';
 import '../../data/models/receipt_model.dart';
 import '../../providers/receipt_provider.dart';
+import '../../providers/claim_provider.dart';
 import '../../services/android_download_manager_service.dart';
 import '../receipt/add_receipt_screen.dart';
 import '../../services/claim_service.dart';
@@ -772,9 +773,7 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
             size: 22,
             weight: 800.0,
           ),
-          onPressed: () {
-            // TODO: Implement delete functionality
-          },
+          onPressed: _deleteClaim,
           tooltip: 'Delete',
           padding: const EdgeInsets.all(8),
           style: IconButton.styleFrom(
@@ -784,6 +783,75 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
         ),
       ],
     );
+  }
+
+  Future<void> _deleteClaim() async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.card(isDark),
+        title: Text(
+          'Delete Claim',
+          style: AppTextStyles.titleLarge.copyWith(
+            color: AppColors.textPrimary(isDark),
+          ),
+        ),
+        content: Text(
+          'Are you sure you want to delete this claim document? This action cannot be undone.',
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: AppColors.textSecondary(isDark),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              'Cancel',
+              style: AppTextStyles.buttonSmall.copyWith(
+                color: AppColors.textSecondary(isDark),
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              'Delete',
+              style: AppTextStyles.buttonSmall.copyWith(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    setState(() => _isUpdating = true);
+
+    try {
+      final claimService = ref.read(claimServiceProvider);
+      await claimService.deleteClaim(widget.claimId);
+
+      // Invalidate the claims provider to refresh the hub
+      ref.invalidate(userClaimsProvider);
+
+      if (!mounted) return;
+      Navigator.pop(context, true);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Claim deleted successfully')),
+      );
+    } catch (e) {
+      logger.e('Error deleting claim: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to delete claim: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _isUpdating = false);
+    }
   }
 
   @override

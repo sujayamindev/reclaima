@@ -10,8 +10,8 @@ Smart Receipt & Warranty Manager is a full-stack mobile application that:
 - ✅ Tracks warranty and return deadlines at the per-item level
 - ✅ Product image lookup via Brave Search Image API
 - ✅ LLM-based OCR cleanup via AWS Bedrock (Claude Haiku)
-- ⏳ Push notification reminders (FCM — planned)
-- ⏳ Claim-ready PDF document generation (planned)
+- ✅ Push notification reminders (FCM)
+- ✅ Claim-ready PDF document generation
 - ✅ Offline-first mobile architecture (Drift/SQLite)
 
 ---
@@ -42,7 +42,7 @@ FastAPI Backend (Dockerized)
 - **Migrations:** Alembic (5 migrations)
 - **Authentication:** Firebase Admin SDK (JWT verification)
 - **LLM:** AWS Bedrock (Claude Haiku) — OCR text cleanup
-- **Background Jobs:** APScheduler (planned)
+- **Background Jobs:** APScheduler
 - **Container:** Docker + Docker Compose
 
 ### Mobile
@@ -50,16 +50,16 @@ FastAPI Backend (Dockerized)
 - **State Management:** Riverpod
 - **Local Database:** Drift/SQLite (offline-first)
 - **Authentication:** Firebase Auth SDK
-- **Notifications:** Firebase Cloud Messaging (planned)
+- **Notifications:** Firebase Cloud Messaging
 - **Image Search:** Brave Search Image API (via backend)
 - **HTTP Client:** Dio
 
 ### Cloud Services
 - **Authentication:** Firebase Authentication
-- **OCR:** AWS Textract (mock + real)
-- **Storage:** AWS S3 (mock + real)
-- **LLM:** AWS Bedrock — Claude Haiku (mock + real)
-- **Notifications:** Firebase Cloud Messaging (planned)
+- **OCR:** AWS Textract
+- **Storage:** AWS S3
+- **LLM:** AWS Bedrock — Claude Haiku
+- **Notifications:** Firebase Cloud Messaging
 
 ---
 
@@ -175,7 +175,7 @@ uvicorn app.main:app --reload
 ```
 
 API will be available at: `http://localhost:8000`
-API docs: `http://localhost:8000/docs`
+API docs: `http://localhost:8000/docs` (accessible in DEBUG mode only)
 
 ### Mobile App Setup
 
@@ -203,70 +203,23 @@ flutter run
 
 ---
 
-## 🔧 Configuration
-
-### Backend Environment Variables (.env)
-
-```bash
-# Database
-DATABASE_URL=postgresql://user:password@localhost:5432/smart_receipt_db
-
-# Firebase
-FIREBASE_SERVICE_ACCOUNT_PATH=./firebase-service-account.json
-
-# AWS (Mock mode for development)
-AWS_ACCESS_KEY_ID=mock_access_key
-AWS_SECRET_ACCESS_KEY=mock_secret_key
-AWS_REGION=us-east-1
-AWS_S3_BUCKET=smart-receipt-storage
-USE_MOCK_AWS=true
-
-# Application
-SECRET_KEY=your-secret-key-here
-DEBUG=true
-ALLOWED_ORIGINS=http://localhost:8000,http://localhost:3000
-
-# Scheduler
-ENABLE_SCHEDULER=true
-```
-
-### Firebase Setup
-
-1. Create a Firebase project
-2. Enable Authentication (Email/Password provider)
-3. Enable Cloud Messaging
-4. Download service account JSON:
-   - Go to Project Settings → Service Accounts
-   - Generate new private key
-   - Save as `backend/firebase-service-account.json`
-
-### AWS Setup (Production)
-
-1. Create S3 bucket: `smart-receipt-storage`
-2. Enable S3 encryption (SSE-S3)
-3. Enable versioning
-4. Create IAM user with:
-   - S3 read/write permissions
-   - Textract read permissions
-5. Generate access keys
-6. Update `.env` with real credentials
-7. Set `USE_MOCK_AWS=false`
-
----
-
 ## 🧪 Testing
 
 ### Backend Tests
+Run all tests with a single command:
 ```bash
-cd backend
-pytest
-pytest --cov=app tests/
+cd backend && pytest
+```
+
+To run tests with coverage:
+```bash
+cd backend && pytest --cov=app tests/
 ```
 
 ### Mobile Tests
+Run all tests:
 ```bash
-cd mobile
-flutter test
+cd mobile && flutter test
 ```
 
 ---
@@ -277,45 +230,6 @@ flutter test
 - Workflow file: `.github/workflows/ci-cd.yml`
 - OCI production compose: `deploy/docker-compose.prod.yml`
 - OCI deployment script: `deploy/scripts/oci_deploy.sh`
-
----
-
-## 🐳 Docker Commands
-
-```bash
-# Start all services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop services
-docker-compose down
-
-# Rebuild containers
-docker-compose up -d --build
-
-# View running containers
-docker-compose ps
-```
-
----
-
-## 📊 Database Migrations
-
-```bash
-# Create new migration
-alembic revision --autogenerate -m "Description"
-
-# Apply migrations
-alembic upgrade head
-
-# Rollback one migration
-alembic downgrade -1
-
-# View migration history
-alembic history
-```
 
 ---
 
@@ -335,8 +249,8 @@ alembic history
 ## 📖 API Documentation
 
 Once the backend is running, visit:
-- **Swagger UI:** http://localhost:8000/docs
-- **ReDoc:** http://localhost:8000/redoc
+- **Swagger UI:** http://localhost:8000/docs (accessible in DEBUG mode only)
+- **ReDoc:** http://localhost:8000/redoc (accessible in DEBUG mode only)
 
 ---
 
@@ -357,15 +271,15 @@ Once the backend is running, visit:
 | Flutter Multi-Step Add Receipt Flow | ✅ Complete |
 | Flutter Home Screen (Redesigned) | ✅ Complete |
 | Flutter Product Detail Screen | ✅ Complete |
-| Flutter Settings Screen (UI) | ✅ UI only (no persistence) |
-| Social Login (Google/Apple) | ⏳ Buttons present, not wired |
-| Vault Tab | ⏳ Stub |
+| Flutter Settings Screen (UI) | ✅ Complete |
+| Vault Tab | ✅ Complete |
+| Settings Persistence | ✅ Complete |
+| Reminder System (APScheduler) | ✅ Complete |
+| Push Notifications (FCM) | ✅ Complete |
+| PDF Generation | ✅ Complete |
+| Real AWS Integration | ✅ Complete |
+| Social Login (Google/Apple) | ⏳ Google present, Apple hidden |
 | Stats Tab | ⏳ Stub |
-| Settings Persistence | ⏳ Planned |
-| Reminder System (APScheduler) | ⏳ Planned |
-| Push Notifications (FCM) | ⏳ Planned |
-| PDF Generation | ⏳ Planned |
-| Real AWS Integration | ⏳ Planned |
 
 ---
 
@@ -394,57 +308,28 @@ Once the backend is running, visit:
 - [x] Bottom nav shell with 4 tabs (`main_shell.dart`)
 - [x] Redesigned home screen (attention required, stats, recent receipts)
 - [x] Product detail screen
-- [x] Settings screen (UI only)
+- [x] Settings screen
 - [x] Multi-step add receipt flow (upload → review → confirm)
 - [x] OCR result polling & review/edit form
 - [x] Image capture & compression
 - [x] `ProductViewModel` + `ProductImageCard` widget
 
-### Phase 4: Vault, Stats & Notifications
-- [ ] Vault tab — full receipt list with search/filter
+### Phase 4: Vault, Stats & Notifications ✅
+- [x] Vault tab — full receipt list with search/filter
+- [x] Settings persistence — wired to backend
+- [x] APScheduler background jobs
+- [x] Firebase Cloud Messaging integration
+- [x] Warranty expiry reminders
+- [x] Return deadline reminders
 - [ ] Stats tab — spend charts, warranty calendar
-- [ ] Settings persistence — wire to backend
-- [ ] Social login (Google/Apple Sign-In)
-- [ ] APScheduler background jobs
-- [ ] Firebase Cloud Messaging integration
-- [ ] Warranty expiry reminders
-- [ ] Return deadline reminders
+- [ ] Social login (Apple Sign-In)
 
-### Phase 5: Production
+### Phase 5: Production ✅
 - [x] CI/CD pipeline for backend and mobile quality gates
 - [x] Automated backend image publish and OCI deployment workflow
-- [ ] Real AWS Textract & S3 integration
-- [ ] Claim PDF generation
-- [ ] Comprehensive testing (coverage ≥ 70%)
+- [x] Real AWS Textract & S3 integration
+- [x] Claim PDF generation
+- [x] Comprehensive testing (coverage ≥ 70%)
+- [x] Security hardening
 - [ ] Error tracking (Sentry)
 - [ ] Monitoring & logging
-- [ ] Security hardening
-
----
-
-## 📝 License
-
-This project is proprietary and confidential.
-
----
-
-## 👥 Team
-
-**Project Type:** Production-ready mobile application
-**Timeline:** 7-day prototype → Production deployment
-**Architecture:** Modular Monolith → Microservices-ready
-
----
-
-## 📞 Support
-
-For questions or issues, please contact the development team.
-
----
-
-**Built with ❤️ using FastAPI, Flutter, Firebase, and AWS**
-
----
-
-**Last Updated:** 2026-03-17
-**Status:** ✅ Home screen, product detail, and settings UI complete — Next: Vault tab, Stats tab, Social Login, Settings persistence

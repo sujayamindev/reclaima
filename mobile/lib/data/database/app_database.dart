@@ -112,14 +112,10 @@ class AppDatabase extends _$AppDatabase {
         // will remain in the physical table but are no longer mapped.
       }
       if (from < 3) {
-        // v2 → v3: Schema change - quantity and amount removed
-        // For fresh databases, onCreate handles this.
-        // For existing v2 databases, we recreate the table to match new schema.
-        // This is acceptable since the database is fresh (confirmed by user).
-
-        // Drop and recreate ReceiptLineItems table with new schema
-        await m.deleteTable('receipt_line_items');
-        await m.createTable(receiptLineItems);
+        // v2 → v3: Schema change - quantity and amount removed.
+        // In SQLite, we can just leave the columns in the physical table.
+        // Drift will stop using them since they are no longer defined in the ReceiptLineItems class.
+        // This preserves all other data in the table.
       }
     },
   );

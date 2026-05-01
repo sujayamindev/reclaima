@@ -4,6 +4,7 @@ import '../core/utils/logger.dart';
 import '../data/models/user_model.dart';
 import 'api_service.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import '../core/constants/app_constants.dart';
 
 /// Authentication service
@@ -149,6 +150,42 @@ class AuthService {
     } catch (e) {
       logger.e('Google signin error: $e');
       throw Exception('Google sign-in failed: $e'); // standardized throwing
+    }
+  }
+
+  /// Sign in with Apple
+  Future<UserCredential> signInWithApple() async {
+    try {
+      logger.i('Starting Apple sign-in flow');
+
+      final appleCredential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
+
+      final OAuthCredential credential = OAuthProvider('apple.com').credential(
+        idToken: appleCredential.identityToken,
+        accessToken: appleCredential.authorizationCode,
+      );
+
+      final userCredential = await _auth.signInWithCredential(credential);
+
+      // Register or update user in backend
+      try {
+        await registerInBackend(fullName: userCredential.user?.displayName);
+      } catch (e) {
+        logger.w('Backend registration failed during Apple signup: $e');
+      }
+
+      return userCredential;
+    } on FirebaseAuthException catch (e) {
+      logger.e('Firebase Apple signin error: ${e.code}');
+      rethrow;
+    } catch (e) {
+      logger.e('Apple signin error: $e');
+      throw Exception('Apple sign-in failed: $e');
     }
   }
 
