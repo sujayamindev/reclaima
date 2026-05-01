@@ -17,9 +17,11 @@
           "strategy": "ip",
           "capacity": 0.41500000000000004
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -46,9 +48,11 @@
           "strategy": "ip",
           "capacity": 0.41500000000000004
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -75,9 +79,11 @@
           "strategy": "ip",
           "capacity": 0.41500000000000004
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -104,9 +110,11 @@
           "strategy": "ip",
           "capacity": 0.41500000000000004
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -133,9 +141,11 @@
           "strategy": "ip",
           "capacity": 0.41500000000000004
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -162,9 +172,11 @@
           "strategy": "ip",
           "capacity": 0.41500000000000004
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -191,9 +203,11 @@
           "strategy": "ip",
           "capacity": 0.41500000000000004
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -220,9 +234,11 @@
           "strategy": "ip",
           "capacity": 0.8300000000000001
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -249,9 +265,11 @@
           "strategy": "ip",
           "capacity": 0.8300000000000001
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -278,9 +296,11 @@
           "strategy": "ip",
           "capacity": 0.8300000000000001
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -307,9 +327,11 @@
           "strategy": "ip",
           "capacity": 0.8300000000000001
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -336,9 +358,11 @@
           "strategy": "ip",
           "capacity": 8.299999999999999
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -365,9 +389,11 @@
           "strategy": "ip",
           "capacity": 8.299999999999999
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -394,9 +420,11 @@
           "strategy": "ip",
           "capacity": 8.299999999999999
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -423,9 +451,11 @@
           "strategy": "ip",
           "capacity": 8.299999999999999
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -452,9 +482,11 @@
           "strategy": "ip",
           "capacity": 8.299999999999999
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -481,9 +513,11 @@
           "strategy": "ip",
           "capacity": 8.299999999999999
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -510,9 +544,11 @@
           "strategy": "ip",
           "capacity": 8.299999999999999
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -539,9 +575,11 @@
           "strategy": "ip",
           "capacity": 8.299999999999999
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -568,9 +606,11 @@
           "strategy": "ip",
           "capacity": 8.299999999999999
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -597,9 +637,11 @@
           "strategy": "ip",
           "capacity": 8.299999999999999
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -626,9 +668,11 @@
           "strategy": "ip",
           "capacity": 8.299999999999999
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -655,9 +699,11 @@
           "strategy": "ip",
           "capacity": 8.299999999999999
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -684,9 +730,11 @@
           "strategy": "ip",
           "capacity": 8.299999999999999
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -713,9 +761,11 @@
           "strategy": "ip",
           "capacity": 8.299999999999999
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -742,9 +792,11 @@
           "strategy": "ip",
           "capacity": 8.299999999999999
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -771,9 +823,11 @@
           "strategy": "ip",
           "capacity": 8.299999999999999
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -800,9 +854,11 @@
           "strategy": "ip",
           "capacity": 8.299999999999999
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -829,9 +885,11 @@
           "strategy": "ip",
           "capacity": 8.299999999999999
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -858,9 +916,11 @@
           "strategy": "ip",
           "capacity": 8.299999999999999
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -887,9 +947,11 @@
           "strategy": "ip",
           "capacity": 8.299999999999999
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -916,9 +978,11 @@
           "strategy": "ip",
           "capacity": 8.299999999999999
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -945,9 +1009,11 @@
           "strategy": "ip",
           "capacity": 8.299999999999999
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -974,9 +1040,11 @@
           "strategy": "ip",
           "capacity": 8.299999999999999
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -1003,9 +1071,11 @@
           "strategy": "ip",
           "capacity": 8.299999999999999
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -1032,9 +1102,11 @@
           "strategy": "ip",
           "capacity": 8.299999999999999
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -1061,9 +1133,11 @@
           "strategy": "ip",
           "capacity": 8.299999999999999
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -1090,9 +1164,11 @@
           "strategy": "ip",
           "capacity": 8.299999999999999
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -1119,9 +1195,11 @@
           "strategy": "ip",
           "capacity": 8.299999999999999
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
@@ -1148,9 +1226,11 @@
           "strategy": "ip",
           "capacity": 8.299999999999999
         },
-        "router": {
-          "return_error_msg": "Too Many Requests",
-          "return_error_code": 429
+        "modifier/lua-endpoint": {
+          "sources": [
+            "/etc/krakend/rate_limit.lua"
+          ],
+          "pre": "local req = request.load(); if req:headers('X-Krakend-Error') == 'true' then custom_error('Too Many Requests', 429) end"
         }
       },
       "backend": [
