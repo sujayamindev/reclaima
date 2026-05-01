@@ -59,8 +59,8 @@ services:
     environment:
       # Override database URL to use Docker service name
       DATABASE_URL: postgresql://${DEV_POSTGRES_USER:-postgres}:${DEV_POSTGRES_PASSWORD:?DEV_POSTGRES_PASSWORD is required}@postgres:5432/${DEV_POSTGRES_DB:-smart_receipt_db}
-    ports:
-      - "8000:8000"
+    # ports:
+    #   - "8000:8000" # Isolated behind KrakenD Gateway
     volumes:
       - ./backend:/app
       - ./backend/firebase-service-account.json:/app/firebase-service-account.json:ro
@@ -98,6 +98,19 @@ services:
       - smart-receipt-network
     profiles:
       - tools  # Only start with: docker-compose --profile tools up
+
+  # KrakenD API Gateway
+  krakend:
+    image: devopsfaith/krakend:2.6.0
+    container_name: smart-receipt-gateway
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./krakend.json:/etc/krakend/krakend.json:ro
+    depends_on:
+      - backend
+    networks:
+      - smart-receipt-network
 
 volumes:
   postgres_data:

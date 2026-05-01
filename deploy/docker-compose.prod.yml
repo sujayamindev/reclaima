@@ -97,8 +97,12 @@ services:
         "--workers",
         "${API_WORKERS:-2}"
       ]
-    ports:
-      - "${API_PORT:-8000}:8000"
+    # ports:
+    #   - "${API_PORT:-8000}:8000" # Isolated behind KrakenD Gateway
+    networks:
+      smart-receipt-network:
+        aliases:
+          - backend
     healthcheck:
       test:
         [
@@ -139,6 +143,19 @@ services:
       timeout: 10s
       retries: 3
       start_period: 15s
+
+  krakend:
+    image: devopsfaith/krakend:2.6.0
+    container_name: smart-receipt-gateway-prod
+    restart: always
+    ports:
+      - "${API_PORT:-8000}:8080" # Map host port to KrakenD port 8080
+    volumes:
+      - ../krakend.json:/etc/krakend/krakend.json:ro
+    depends_on:
+      - api
+    networks:
+      - smart-receipt-network
 
 volumes:
   postgres_data:
