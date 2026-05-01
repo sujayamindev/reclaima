@@ -152,7 +152,6 @@ services:
       - "${API_PORT:-8000}:8080" # Map host port to KrakenD port 8080
     volumes:
       - ../krakend.json:/etc/krakend/krakend.json:ro
-      - ../scripts/lua/rate_limit.lua:/etc/krakend/rate_limit.lua:ro
     depends_on:
       - api
     networks:
