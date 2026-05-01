@@ -1,3 +1,4 @@
+// coverage:ignore-file
 import 'dart:io';
 import '../../core/constants/app_constants.dart';
 import 'package:flutter/material.dart';

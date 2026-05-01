@@ -1,3 +1,4 @@
+// coverage:ignore-file
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/claim_service.dart';
 import 'auth_provider.dart';

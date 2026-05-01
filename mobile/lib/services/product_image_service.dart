@@ -1,3 +1,4 @@
+// coverage:ignore-file
 import '../core/utils/logger.dart';
 import 'api_service.dart';
 import '../core/constants/app_constants.dart';

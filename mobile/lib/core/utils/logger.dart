@@ -1,3 +1,4 @@
+// coverage:ignore-file
 import 'package:logger/logger.dart';
 
 /// Global logger instance

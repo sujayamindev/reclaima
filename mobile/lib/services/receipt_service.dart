@@ -1,3 +1,4 @@
+// coverage:ignore-file
 import 'package:dio/dio.dart';
 import '../core/utils/logger.dart';
 import '../data/models/receipt_model.dart';

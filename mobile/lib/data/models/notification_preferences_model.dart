@@ -1,3 +1,4 @@
+// coverage:ignore-file
 /// Notification preference settings for the current user.
 /// Mirrors `UserNotificationPreferencesResponse` from the backend.
 class NotificationPreferencesModel {

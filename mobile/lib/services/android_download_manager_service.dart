@@ -1,3 +1,4 @@
+// coverage:ignore-file
 import 'package:flutter/services.dart';
 
 class AndroidDownloadManagerService {

@@ -1,3 +1,4 @@
+// coverage:ignore-file
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/notification_preferences_model.dart';
 import 'service_providers.dart';

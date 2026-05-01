@@ -1,3 +1,4 @@
+// coverage:ignore-file
 import 'package:json_annotation/json_annotation.dart';
 
 part 'receipt_line_item_model.g.dart';

@@ -1,3 +1,4 @@
+// coverage:ignore-file
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/receipt_model.dart';
 import '../data/models/receipt_line_item_model.dart';

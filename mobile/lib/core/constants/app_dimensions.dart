@@ -1,3 +1,4 @@
+// coverage:ignore-file
 /// Shared spacing, border-radius, and size constants for the entire app.
 ///
 /// Usage:

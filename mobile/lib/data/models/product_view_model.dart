@@ -1,3 +1,4 @@
+// coverage:ignore-file
 import 'receipt_model.dart';
 import 'receipt_line_item_model.dart';
 

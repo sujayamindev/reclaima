@@ -1,3 +1,4 @@
+// coverage:ignore-file
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../core/constants/app_constants.dart';

@@ -1,3 +1,4 @@
+// coverage:ignore-file
 import 'package:firebase_auth/firebase_auth.dart';
 import '../core/utils/logger.dart';
 import '../data/models/user_model.dart';

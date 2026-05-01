@@ -1,3 +1,4 @@
+// coverage:ignore-file
 import 'package:flutter/material.dart';
 
 /// Global navigator key used to push routes from outside the widget tree

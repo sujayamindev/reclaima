@@ -1,3 +1,4 @@
+// coverage:ignore-file
 // Theme & design system — single import for all screens:
 export 'app_colors.dart';
 export 'app_text_styles.dart';

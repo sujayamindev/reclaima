@@ -1,3 +1,4 @@
+// coverage:ignore-file
 import 'package:intl/intl.dart';
 
 /// Date formatting utilities
