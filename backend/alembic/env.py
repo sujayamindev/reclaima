@@ -13,17 +13,17 @@ import sys
 # Add parent directory to path to import app modules
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from app.db.base import Base
-from app.core.config import settings
+from app.db.base import Base  # noqa: E402
+from app.core.config import settings  # noqa: E402
 
 # Import all models to ensure they're registered with Base
-from app.models import (
-    User,
-    Receipt,
-    ClaimDocument,
-    ReceiptLineItem,
-    UserNotificationPreferences,
-)  # noqa: F401
+from app.models import (  # noqa: E402
+    User,  # noqa: F401
+    Receipt,  # noqa: F401
+    ClaimDocument,  # noqa: F401
+    ReceiptLineItem,  # noqa: F401
+    UserNotificationPreferences,  # noqa: F401
+)
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -81,6 +81,8 @@ def run_migrations_online() -> None:
 
     """
     configuration = config.get_section(config.config_ini_section)
+    if configuration is None:
+        configuration = {}
     configuration["sqlalchemy.url"] = get_url()
     connectable = engine_from_config(
         configuration,

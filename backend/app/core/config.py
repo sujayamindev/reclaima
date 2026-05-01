@@ -9,7 +9,7 @@ from typing import List
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 try:
-    from infisical_sdk import InfisicalSDKClient  # type: ignore[import-untyped]
+    from infisical_sdk import InfisicalSDKClient  # type: ignore[import-untyped, import-not-found]
 except ImportError:  # pragma: no cover
     InfisicalSDKClient = None
 

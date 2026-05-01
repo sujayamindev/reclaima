@@ -7,8 +7,8 @@ import uuid
 from datetime import datetime, timezone, timedelta
 
 import pytest
-from fastapi import HTTPException
-from starlette.datastructures import Headers, UploadFile
+from fastapi import HTTPException, UploadFile
+from starlette.datastructures import Headers
 
 from app.api.v1 import auth as auth_api
 from app.api.v1 import claims as claims_api
@@ -131,7 +131,9 @@ async def test_auth_routes_and_user_service_flow(db_session) -> None:
     assert updated_profile.contact_number == "+1 555 0000"
 
     await auth_api.delete_current_user_account(current_user=token, db=db_session)
-    assert service.get_user_by_id(db_session, str(existing.id)).deleted_at is not None
+    deleted_user = service.get_user_by_id(db_session, str(existing.id))
+    assert deleted_user is not None
+    assert deleted_user.deleted_at is not None
 
 
 @pytest.mark.asyncio

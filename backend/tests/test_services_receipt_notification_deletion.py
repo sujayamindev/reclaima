@@ -222,7 +222,7 @@ def test_process_ocr_and_line_item_crud(db_session) -> None:
             product_name="Wireless Mouse",
             warranty_period_months=12,
             return_period_days=14,
-            unit_price=Decimal("25.50"),
+            unit_price=25.50,
         ),
     )
     assert created_item is not None
@@ -417,7 +417,7 @@ def test_deletion_service_hard_delete_job(db_session) -> None:
     )
     db_session.add(claim_img)
 
-    user.deleted_at = old
+    user.deleted_at = old  # type: ignore[assignment]
     db_session.commit()
 
     s3 = MockS3Service("delete-bucket")

@@ -17,7 +17,6 @@ Create Date: 2026-03-02 09:01:00.000000
 
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
 import uuid
 
 # revision identifiers, used by Alembic.
