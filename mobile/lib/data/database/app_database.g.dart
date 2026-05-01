@@ -1,4 +1,3 @@
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
 part of 'app_database.dart';
@@ -12,274 +11,166 @@ class $ReceiptsTable extends Receipts with TableInfo<$ReceiptsTable, Receipt> {
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
-    'id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
   @override
   late final GeneratedColumn<String> userId = GeneratedColumn<String>(
-    'user_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _s3ObjectKeyMeta = const VerificationMeta(
-    's3ObjectKey',
-  );
+      'user_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _s3ObjectKeyMeta =
+      const VerificationMeta('s3ObjectKey');
   @override
   late final GeneratedColumn<String> s3ObjectKey = GeneratedColumn<String>(
-    's3_object_key',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _storeNameMeta = const VerificationMeta(
-    'storeName',
-  );
+      's3_object_key', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _storeNameMeta =
+      const VerificationMeta('storeName');
   @override
   late final GeneratedColumn<String> storeName = GeneratedColumn<String>(
-    'store_name',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _purchaseDateMeta = const VerificationMeta(
-    'purchaseDate',
-  );
+      'store_name', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _purchaseDateMeta =
+      const VerificationMeta('purchaseDate');
   @override
   late final GeneratedColumn<DateTime> purchaseDate = GeneratedColumn<DateTime>(
-    'purchase_date',
-    aliasedName,
-    true,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _totalAmountMeta = const VerificationMeta(
-    'totalAmount',
-  );
+      'purchase_date', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _totalAmountMeta =
+      const VerificationMeta('totalAmount');
   @override
   late final GeneratedColumn<double> totalAmount = GeneratedColumn<double>(
-    'total_amount',
-    aliasedName,
-    true,
-    type: DriftSqlType.double,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _currencyMeta = const VerificationMeta(
-    'currency',
-  );
+      'total_amount', aliasedName, true,
+      type: DriftSqlType.double, requiredDuringInsert: false);
+  static const VerificationMeta _currencyMeta =
+      const VerificationMeta('currency');
   @override
   late final GeneratedColumn<String> currency = GeneratedColumn<String>(
-    'currency',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
+      'currency', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _statusMeta = const VerificationMeta('status');
   @override
   late final GeneratedColumn<String> status = GeneratedColumn<String>(
-    'status',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _ocrRetryCountMeta = const VerificationMeta(
-    'ocrRetryCount',
-  );
+      'status', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _ocrRetryCountMeta =
+      const VerificationMeta('ocrRetryCount');
   @override
   late final GeneratedColumn<int> ocrRetryCount = GeneratedColumn<int>(
-    'ocr_retry_count',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(0),
-  );
-  static const VerificationMeta _lastOcrAttemptAtMeta = const VerificationMeta(
-    'lastOcrAttemptAt',
-  );
+      'ocr_retry_count', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _lastOcrAttemptAtMeta =
+      const VerificationMeta('lastOcrAttemptAt');
   @override
   late final GeneratedColumn<DateTime> lastOcrAttemptAt =
-      GeneratedColumn<DateTime>(
-        'last_ocr_attempt_at',
-        aliasedName,
-        true,
-        type: DriftSqlType.dateTime,
-        requiredDuringInsert: false,
-      );
+      GeneratedColumn<DateTime>('last_ocr_attempt_at', aliasedName, true,
+          type: DriftSqlType.dateTime, requiredDuringInsert: false);
   static const VerificationMeta _notesMeta = const VerificationMeta('notes');
   @override
   late final GeneratedColumn<String> notes = GeneratedColumn<String>(
-    'notes',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _invoiceNumberMeta = const VerificationMeta(
-    'invoiceNumber',
-  );
+      'notes', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _invoiceNumberMeta =
+      const VerificationMeta('invoiceNumber');
   @override
   late final GeneratedColumn<String> invoiceNumber = GeneratedColumn<String>(
-    'invoice_number',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _vendorAddressMeta = const VerificationMeta(
-    'vendorAddress',
-  );
+      'invoice_number', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _vendorAddressMeta =
+      const VerificationMeta('vendorAddress');
   @override
   late final GeneratedColumn<String> vendorAddress = GeneratedColumn<String>(
-    'vendor_address',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _vendorPhoneMeta = const VerificationMeta(
-    'vendorPhone',
-  );
+      'vendor_address', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _vendorPhoneMeta =
+      const VerificationMeta('vendorPhone');
   @override
   late final GeneratedColumn<String> vendorPhone = GeneratedColumn<String>(
-    'vendor_phone',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _vendorEmailMeta = const VerificationMeta(
-    'vendorEmail',
-  );
+      'vendor_phone', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _vendorEmailMeta =
+      const VerificationMeta('vendorEmail');
   @override
   late final GeneratedColumn<String> vendorEmail = GeneratedColumn<String>(
-    'vendor_email',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _vendorUrlMeta = const VerificationMeta(
-    'vendorUrl',
-  );
+      'vendor_email', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _vendorUrlMeta =
+      const VerificationMeta('vendorUrl');
   @override
   late final GeneratedColumn<String> vendorUrl = GeneratedColumn<String>(
-    'vendor_url',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _warrantyNotesMeta = const VerificationMeta(
-    'warrantyNotes',
-  );
+      'vendor_url', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _warrantyNotesMeta =
+      const VerificationMeta('warrantyNotes');
   @override
   late final GeneratedColumn<String> warrantyNotes = GeneratedColumn<String>(
-    'warranty_notes',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _remarksMeta = const VerificationMeta(
-    'remarks',
-  );
+      'warranty_notes', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _remarksMeta =
+      const VerificationMeta('remarks');
   @override
   late final GeneratedColumn<String> remarks = GeneratedColumn<String>(
-    'remarks',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
-  );
+      'remarks', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
   @override
   late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-    'created_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
-    'updatedAt',
-  );
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _updatedAtMeta =
+      const VerificationMeta('updatedAt');
   @override
   late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
-    'updated_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _syncedAtMeta = const VerificationMeta(
-    'syncedAt',
-  );
+      'updated_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _syncedAtMeta =
+      const VerificationMeta('syncedAt');
   @override
   late final GeneratedColumn<DateTime> syncedAt = GeneratedColumn<DateTime>(
-    'synced_at',
-    aliasedName,
-    true,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _localImagePathMeta = const VerificationMeta(
-    'localImagePath',
-  );
+      'synced_at', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _localImagePathMeta =
+      const VerificationMeta('localImagePath');
   @override
   late final GeneratedColumn<String> localImagePath = GeneratedColumn<String>(
-    'local_image_path',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
+      'local_image_path', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns => [
-    id,
-    userId,
-    s3ObjectKey,
-    storeName,
-    purchaseDate,
-    totalAmount,
-    currency,
-    status,
-    ocrRetryCount,
-    lastOcrAttemptAt,
-    notes,
-    invoiceNumber,
-    vendorAddress,
-    vendorPhone,
-    vendorEmail,
-    vendorUrl,
-    warrantyNotes,
-    remarks,
-    createdAt,
-    updatedAt,
-    syncedAt,
-    localImagePath,
-  ];
+        id,
+        userId,
+        s3ObjectKey,
+        storeName,
+        purchaseDate,
+        totalAmount,
+        currency,
+        status,
+        ocrRetryCount,
+        lastOcrAttemptAt,
+        notes,
+        invoiceNumber,
+        vendorAddress,
+        vendorPhone,
+        vendorEmail,
+        vendorUrl,
+        warrantyNotes,
+        remarks,
+        createdAt,
+        updatedAt,
+        syncedAt,
+        localImagePath
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
   static const String $name = 'receipts';
   @override
-  VerificationContext validateIntegrity(
-    Insertable<Receipt> instance, {
-    bool isInserting = false,
-  }) {
+  VerificationContext validateIntegrity(Insertable<Receipt> instance,
+      {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
@@ -288,171 +179,118 @@ class $ReceiptsTable extends Receipts with TableInfo<$ReceiptsTable, Receipt> {
       context.missing(_idMeta);
     }
     if (data.containsKey('user_id')) {
-      context.handle(
-        _userIdMeta,
-        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
-      );
+      context.handle(_userIdMeta,
+          userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta));
     } else if (isInserting) {
       context.missing(_userIdMeta);
     }
     if (data.containsKey('s3_object_key')) {
       context.handle(
-        _s3ObjectKeyMeta,
-        s3ObjectKey.isAcceptableOrUnknown(
-          data['s3_object_key']!,
           _s3ObjectKeyMeta,
-        ),
-      );
+          s3ObjectKey.isAcceptableOrUnknown(
+              data['s3_object_key']!, _s3ObjectKeyMeta));
     }
     if (data.containsKey('store_name')) {
-      context.handle(
-        _storeNameMeta,
-        storeName.isAcceptableOrUnknown(data['store_name']!, _storeNameMeta),
-      );
+      context.handle(_storeNameMeta,
+          storeName.isAcceptableOrUnknown(data['store_name']!, _storeNameMeta));
     }
     if (data.containsKey('purchase_date')) {
       context.handle(
-        _purchaseDateMeta,
-        purchaseDate.isAcceptableOrUnknown(
-          data['purchase_date']!,
           _purchaseDateMeta,
-        ),
-      );
+          purchaseDate.isAcceptableOrUnknown(
+              data['purchase_date']!, _purchaseDateMeta));
     }
     if (data.containsKey('total_amount')) {
       context.handle(
-        _totalAmountMeta,
-        totalAmount.isAcceptableOrUnknown(
-          data['total_amount']!,
           _totalAmountMeta,
-        ),
-      );
+          totalAmount.isAcceptableOrUnknown(
+              data['total_amount']!, _totalAmountMeta));
     }
     if (data.containsKey('currency')) {
-      context.handle(
-        _currencyMeta,
-        currency.isAcceptableOrUnknown(data['currency']!, _currencyMeta),
-      );
+      context.handle(_currencyMeta,
+          currency.isAcceptableOrUnknown(data['currency']!, _currencyMeta));
     }
     if (data.containsKey('status')) {
-      context.handle(
-        _statusMeta,
-        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
-      );
+      context.handle(_statusMeta,
+          status.isAcceptableOrUnknown(data['status']!, _statusMeta));
     } else if (isInserting) {
       context.missing(_statusMeta);
     }
     if (data.containsKey('ocr_retry_count')) {
       context.handle(
-        _ocrRetryCountMeta,
-        ocrRetryCount.isAcceptableOrUnknown(
-          data['ocr_retry_count']!,
           _ocrRetryCountMeta,
-        ),
-      );
+          ocrRetryCount.isAcceptableOrUnknown(
+              data['ocr_retry_count']!, _ocrRetryCountMeta));
     }
     if (data.containsKey('last_ocr_attempt_at')) {
       context.handle(
-        _lastOcrAttemptAtMeta,
-        lastOcrAttemptAt.isAcceptableOrUnknown(
-          data['last_ocr_attempt_at']!,
           _lastOcrAttemptAtMeta,
-        ),
-      );
+          lastOcrAttemptAt.isAcceptableOrUnknown(
+              data['last_ocr_attempt_at']!, _lastOcrAttemptAtMeta));
     }
     if (data.containsKey('notes')) {
       context.handle(
-        _notesMeta,
-        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
-      );
+          _notesMeta, notes.isAcceptableOrUnknown(data['notes']!, _notesMeta));
     }
     if (data.containsKey('invoice_number')) {
       context.handle(
-        _invoiceNumberMeta,
-        invoiceNumber.isAcceptableOrUnknown(
-          data['invoice_number']!,
           _invoiceNumberMeta,
-        ),
-      );
+          invoiceNumber.isAcceptableOrUnknown(
+              data['invoice_number']!, _invoiceNumberMeta));
     }
     if (data.containsKey('vendor_address')) {
       context.handle(
-        _vendorAddressMeta,
-        vendorAddress.isAcceptableOrUnknown(
-          data['vendor_address']!,
           _vendorAddressMeta,
-        ),
-      );
+          vendorAddress.isAcceptableOrUnknown(
+              data['vendor_address']!, _vendorAddressMeta));
     }
     if (data.containsKey('vendor_phone')) {
       context.handle(
-        _vendorPhoneMeta,
-        vendorPhone.isAcceptableOrUnknown(
-          data['vendor_phone']!,
           _vendorPhoneMeta,
-        ),
-      );
+          vendorPhone.isAcceptableOrUnknown(
+              data['vendor_phone']!, _vendorPhoneMeta));
     }
     if (data.containsKey('vendor_email')) {
       context.handle(
-        _vendorEmailMeta,
-        vendorEmail.isAcceptableOrUnknown(
-          data['vendor_email']!,
           _vendorEmailMeta,
-        ),
-      );
+          vendorEmail.isAcceptableOrUnknown(
+              data['vendor_email']!, _vendorEmailMeta));
     }
     if (data.containsKey('vendor_url')) {
-      context.handle(
-        _vendorUrlMeta,
-        vendorUrl.isAcceptableOrUnknown(data['vendor_url']!, _vendorUrlMeta),
-      );
+      context.handle(_vendorUrlMeta,
+          vendorUrl.isAcceptableOrUnknown(data['vendor_url']!, _vendorUrlMeta));
     }
     if (data.containsKey('warranty_notes')) {
       context.handle(
-        _warrantyNotesMeta,
-        warrantyNotes.isAcceptableOrUnknown(
-          data['warranty_notes']!,
           _warrantyNotesMeta,
-        ),
-      );
+          warrantyNotes.isAcceptableOrUnknown(
+              data['warranty_notes']!, _warrantyNotesMeta));
     }
     if (data.containsKey('remarks')) {
-      context.handle(
-        _remarksMeta,
-        remarks.isAcceptableOrUnknown(data['remarks']!, _remarksMeta),
-      );
+      context.handle(_remarksMeta,
+          remarks.isAcceptableOrUnknown(data['remarks']!, _remarksMeta));
     }
     if (data.containsKey('created_at')) {
-      context.handle(
-        _createdAtMeta,
-        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
-      );
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
     } else if (isInserting) {
       context.missing(_createdAtMeta);
     }
     if (data.containsKey('updated_at')) {
-      context.handle(
-        _updatedAtMeta,
-        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
-      );
+      context.handle(_updatedAtMeta,
+          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
     } else if (isInserting) {
       context.missing(_updatedAtMeta);
     }
     if (data.containsKey('synced_at')) {
-      context.handle(
-        _syncedAtMeta,
-        syncedAt.isAcceptableOrUnknown(data['synced_at']!, _syncedAtMeta),
-      );
+      context.handle(_syncedAtMeta,
+          syncedAt.isAcceptableOrUnknown(data['synced_at']!, _syncedAtMeta));
     }
     if (data.containsKey('local_image_path')) {
       context.handle(
-        _localImagePathMeta,
-        localImagePath.isAcceptableOrUnknown(
-          data['local_image_path']!,
           _localImagePathMeta,
-        ),
-      );
+          localImagePath.isAcceptableOrUnknown(
+              data['local_image_path']!, _localImagePathMeta));
     }
     return context;
   }
@@ -463,94 +301,50 @@ class $ReceiptsTable extends Receipts with TableInfo<$ReceiptsTable, Receipt> {
   Receipt map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return Receipt(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}id'],
-      )!,
-      userId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}user_id'],
-      )!,
-      s3ObjectKey: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}s3_object_key'],
-      ),
-      storeName: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}store_name'],
-      ),
-      purchaseDate: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}purchase_date'],
-      ),
-      totalAmount: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}total_amount'],
-      ),
-      currency: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}currency'],
-      ),
-      status: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}status'],
-      )!,
-      ocrRetryCount: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}ocr_retry_count'],
-      )!,
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      userId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}user_id'])!,
+      s3ObjectKey: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}s3_object_key']),
+      storeName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}store_name']),
+      purchaseDate: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}purchase_date']),
+      totalAmount: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}total_amount']),
+      currency: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}currency']),
+      status: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}status'])!,
+      ocrRetryCount: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}ocr_retry_count'])!,
       lastOcrAttemptAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}last_ocr_attempt_at'],
-      ),
-      notes: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}notes'],
-      ),
-      invoiceNumber: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}invoice_number'],
-      ),
-      vendorAddress: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}vendor_address'],
-      ),
-      vendorPhone: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}vendor_phone'],
-      ),
-      vendorEmail: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}vendor_email'],
-      ),
-      vendorUrl: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}vendor_url'],
-      ),
-      warrantyNotes: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}warranty_notes'],
-      ),
-      remarks: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}remarks'],
-      ),
-      createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}created_at'],
-      )!,
-      updatedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}updated_at'],
-      )!,
-      syncedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}synced_at'],
-      ),
+          DriftSqlType.dateTime, data['${effectivePrefix}last_ocr_attempt_at']),
+      notes: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}notes']),
+      invoiceNumber: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}invoice_number']),
+      vendorAddress: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}vendor_address']),
+      vendorPhone: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}vendor_phone']),
+      vendorEmail: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}vendor_email']),
+      vendorUrl: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}vendor_url']),
+      warrantyNotes: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}warranty_notes']),
+      remarks: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}remarks']),
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+      syncedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}synced_at']),
       localImagePath: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}local_image_path'],
-      ),
+          DriftSqlType.string, data['${effectivePrefix}local_image_path']),
     );
   }
 
@@ -583,30 +377,29 @@ class Receipt extends DataClass implements Insertable<Receipt> {
   final DateTime updatedAt;
   final DateTime? syncedAt;
   final String? localImagePath;
-  const Receipt({
-    required this.id,
-    required this.userId,
-    this.s3ObjectKey,
-    this.storeName,
-    this.purchaseDate,
-    this.totalAmount,
-    this.currency,
-    required this.status,
-    required this.ocrRetryCount,
-    this.lastOcrAttemptAt,
-    this.notes,
-    this.invoiceNumber,
-    this.vendorAddress,
-    this.vendorPhone,
-    this.vendorEmail,
-    this.vendorUrl,
-    this.warrantyNotes,
-    this.remarks,
-    required this.createdAt,
-    required this.updatedAt,
-    this.syncedAt,
-    this.localImagePath,
-  });
+  const Receipt(
+      {required this.id,
+      required this.userId,
+      this.s3ObjectKey,
+      this.storeName,
+      this.purchaseDate,
+      this.totalAmount,
+      this.currency,
+      required this.status,
+      required this.ocrRetryCount,
+      this.lastOcrAttemptAt,
+      this.notes,
+      this.invoiceNumber,
+      this.vendorAddress,
+      this.vendorPhone,
+      this.vendorEmail,
+      this.vendorUrl,
+      this.warrantyNotes,
+      this.remarks,
+      required this.createdAt,
+      required this.updatedAt,
+      this.syncedAt,
+      this.localImagePath});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -691,9 +484,8 @@ class Receipt extends DataClass implements Insertable<Receipt> {
       lastOcrAttemptAt: lastOcrAttemptAt == null && nullToAbsent
           ? const Value.absent()
           : Value(lastOcrAttemptAt),
-      notes: notes == null && nullToAbsent
-          ? const Value.absent()
-          : Value(notes),
+      notes:
+          notes == null && nullToAbsent ? const Value.absent() : Value(notes),
       invoiceNumber: invoiceNumber == null && nullToAbsent
           ? const Value.absent()
           : Value(invoiceNumber),
@@ -726,10 +518,8 @@ class Receipt extends DataClass implements Insertable<Receipt> {
     );
   }
 
-  factory Receipt.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
+  factory Receipt.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Receipt(
       id: serializer.fromJson<String>(json['id']),
@@ -741,9 +531,8 @@ class Receipt extends DataClass implements Insertable<Receipt> {
       currency: serializer.fromJson<String?>(json['currency']),
       status: serializer.fromJson<String>(json['status']),
       ocrRetryCount: serializer.fromJson<int>(json['ocrRetryCount']),
-      lastOcrAttemptAt: serializer.fromJson<DateTime?>(
-        json['lastOcrAttemptAt'],
-      ),
+      lastOcrAttemptAt:
+          serializer.fromJson<DateTime?>(json['lastOcrAttemptAt']),
       notes: serializer.fromJson<String?>(json['notes']),
       invoiceNumber: serializer.fromJson<String?>(json['invoiceNumber']),
       vendorAddress: serializer.fromJson<String?>(json['vendorAddress']),
@@ -787,77 +576,72 @@ class Receipt extends DataClass implements Insertable<Receipt> {
     };
   }
 
-  Receipt copyWith({
-    String? id,
-    String? userId,
-    Value<String?> s3ObjectKey = const Value.absent(),
-    Value<String?> storeName = const Value.absent(),
-    Value<DateTime?> purchaseDate = const Value.absent(),
-    Value<double?> totalAmount = const Value.absent(),
-    Value<String?> currency = const Value.absent(),
-    String? status,
-    int? ocrRetryCount,
-    Value<DateTime?> lastOcrAttemptAt = const Value.absent(),
-    Value<String?> notes = const Value.absent(),
-    Value<String?> invoiceNumber = const Value.absent(),
-    Value<String?> vendorAddress = const Value.absent(),
-    Value<String?> vendorPhone = const Value.absent(),
-    Value<String?> vendorEmail = const Value.absent(),
-    Value<String?> vendorUrl = const Value.absent(),
-    Value<String?> warrantyNotes = const Value.absent(),
-    Value<String?> remarks = const Value.absent(),
-    DateTime? createdAt,
-    DateTime? updatedAt,
-    Value<DateTime?> syncedAt = const Value.absent(),
-    Value<String?> localImagePath = const Value.absent(),
-  }) => Receipt(
-    id: id ?? this.id,
-    userId: userId ?? this.userId,
-    s3ObjectKey: s3ObjectKey.present ? s3ObjectKey.value : this.s3ObjectKey,
-    storeName: storeName.present ? storeName.value : this.storeName,
-    purchaseDate: purchaseDate.present ? purchaseDate.value : this.purchaseDate,
-    totalAmount: totalAmount.present ? totalAmount.value : this.totalAmount,
-    currency: currency.present ? currency.value : this.currency,
-    status: status ?? this.status,
-    ocrRetryCount: ocrRetryCount ?? this.ocrRetryCount,
-    lastOcrAttemptAt: lastOcrAttemptAt.present
-        ? lastOcrAttemptAt.value
-        : this.lastOcrAttemptAt,
-    notes: notes.present ? notes.value : this.notes,
-    invoiceNumber: invoiceNumber.present
-        ? invoiceNumber.value
-        : this.invoiceNumber,
-    vendorAddress: vendorAddress.present
-        ? vendorAddress.value
-        : this.vendorAddress,
-    vendorPhone: vendorPhone.present ? vendorPhone.value : this.vendorPhone,
-    vendorEmail: vendorEmail.present ? vendorEmail.value : this.vendorEmail,
-    vendorUrl: vendorUrl.present ? vendorUrl.value : this.vendorUrl,
-    warrantyNotes: warrantyNotes.present
-        ? warrantyNotes.value
-        : this.warrantyNotes,
-    remarks: remarks.present ? remarks.value : this.remarks,
-    createdAt: createdAt ?? this.createdAt,
-    updatedAt: updatedAt ?? this.updatedAt,
-    syncedAt: syncedAt.present ? syncedAt.value : this.syncedAt,
-    localImagePath: localImagePath.present
-        ? localImagePath.value
-        : this.localImagePath,
-  );
+  Receipt copyWith(
+          {String? id,
+          String? userId,
+          Value<String?> s3ObjectKey = const Value.absent(),
+          Value<String?> storeName = const Value.absent(),
+          Value<DateTime?> purchaseDate = const Value.absent(),
+          Value<double?> totalAmount = const Value.absent(),
+          Value<String?> currency = const Value.absent(),
+          String? status,
+          int? ocrRetryCount,
+          Value<DateTime?> lastOcrAttemptAt = const Value.absent(),
+          Value<String?> notes = const Value.absent(),
+          Value<String?> invoiceNumber = const Value.absent(),
+          Value<String?> vendorAddress = const Value.absent(),
+          Value<String?> vendorPhone = const Value.absent(),
+          Value<String?> vendorEmail = const Value.absent(),
+          Value<String?> vendorUrl = const Value.absent(),
+          Value<String?> warrantyNotes = const Value.absent(),
+          Value<String?> remarks = const Value.absent(),
+          DateTime? createdAt,
+          DateTime? updatedAt,
+          Value<DateTime?> syncedAt = const Value.absent(),
+          Value<String?> localImagePath = const Value.absent()}) =>
+      Receipt(
+        id: id ?? this.id,
+        userId: userId ?? this.userId,
+        s3ObjectKey: s3ObjectKey.present ? s3ObjectKey.value : this.s3ObjectKey,
+        storeName: storeName.present ? storeName.value : this.storeName,
+        purchaseDate:
+            purchaseDate.present ? purchaseDate.value : this.purchaseDate,
+        totalAmount: totalAmount.present ? totalAmount.value : this.totalAmount,
+        currency: currency.present ? currency.value : this.currency,
+        status: status ?? this.status,
+        ocrRetryCount: ocrRetryCount ?? this.ocrRetryCount,
+        lastOcrAttemptAt: lastOcrAttemptAt.present
+            ? lastOcrAttemptAt.value
+            : this.lastOcrAttemptAt,
+        notes: notes.present ? notes.value : this.notes,
+        invoiceNumber:
+            invoiceNumber.present ? invoiceNumber.value : this.invoiceNumber,
+        vendorAddress:
+            vendorAddress.present ? vendorAddress.value : this.vendorAddress,
+        vendorPhone: vendorPhone.present ? vendorPhone.value : this.vendorPhone,
+        vendorEmail: vendorEmail.present ? vendorEmail.value : this.vendorEmail,
+        vendorUrl: vendorUrl.present ? vendorUrl.value : this.vendorUrl,
+        warrantyNotes:
+            warrantyNotes.present ? warrantyNotes.value : this.warrantyNotes,
+        remarks: remarks.present ? remarks.value : this.remarks,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+        syncedAt: syncedAt.present ? syncedAt.value : this.syncedAt,
+        localImagePath:
+            localImagePath.present ? localImagePath.value : this.localImagePath,
+      );
   Receipt copyWithCompanion(ReceiptsCompanion data) {
     return Receipt(
       id: data.id.present ? data.id.value : this.id,
       userId: data.userId.present ? data.userId.value : this.userId,
-      s3ObjectKey: data.s3ObjectKey.present
-          ? data.s3ObjectKey.value
-          : this.s3ObjectKey,
+      s3ObjectKey:
+          data.s3ObjectKey.present ? data.s3ObjectKey.value : this.s3ObjectKey,
       storeName: data.storeName.present ? data.storeName.value : this.storeName,
       purchaseDate: data.purchaseDate.present
           ? data.purchaseDate.value
           : this.purchaseDate,
-      totalAmount: data.totalAmount.present
-          ? data.totalAmount.value
-          : this.totalAmount,
+      totalAmount:
+          data.totalAmount.present ? data.totalAmount.value : this.totalAmount,
       currency: data.currency.present ? data.currency.value : this.currency,
       status: data.status.present ? data.status.value : this.status,
       ocrRetryCount: data.ocrRetryCount.present
@@ -873,12 +657,10 @@ class Receipt extends DataClass implements Insertable<Receipt> {
       vendorAddress: data.vendorAddress.present
           ? data.vendorAddress.value
           : this.vendorAddress,
-      vendorPhone: data.vendorPhone.present
-          ? data.vendorPhone.value
-          : this.vendorPhone,
-      vendorEmail: data.vendorEmail.present
-          ? data.vendorEmail.value
-          : this.vendorEmail,
+      vendorPhone:
+          data.vendorPhone.present ? data.vendorPhone.value : this.vendorPhone,
+      vendorEmail:
+          data.vendorEmail.present ? data.vendorEmail.value : this.vendorEmail,
       vendorUrl: data.vendorUrl.present ? data.vendorUrl.value : this.vendorUrl,
       warrantyNotes: data.warrantyNotes.present
           ? data.warrantyNotes.value
@@ -924,29 +706,29 @@ class Receipt extends DataClass implements Insertable<Receipt> {
 
   @override
   int get hashCode => Object.hashAll([
-    id,
-    userId,
-    s3ObjectKey,
-    storeName,
-    purchaseDate,
-    totalAmount,
-    currency,
-    status,
-    ocrRetryCount,
-    lastOcrAttemptAt,
-    notes,
-    invoiceNumber,
-    vendorAddress,
-    vendorPhone,
-    vendorEmail,
-    vendorUrl,
-    warrantyNotes,
-    remarks,
-    createdAt,
-    updatedAt,
-    syncedAt,
-    localImagePath,
-  ]);
+        id,
+        userId,
+        s3ObjectKey,
+        storeName,
+        purchaseDate,
+        totalAmount,
+        currency,
+        status,
+        ocrRetryCount,
+        lastOcrAttemptAt,
+        notes,
+        invoiceNumber,
+        vendorAddress,
+        vendorPhone,
+        vendorEmail,
+        vendorUrl,
+        warrantyNotes,
+        remarks,
+        createdAt,
+        updatedAt,
+        syncedAt,
+        localImagePath
+      ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1048,11 +830,11 @@ class ReceiptsCompanion extends UpdateCompanion<Receipt> {
     this.syncedAt = const Value.absent(),
     this.localImagePath = const Value.absent(),
     this.rowid = const Value.absent(),
-  }) : id = Value(id),
-       userId = Value(userId),
-       status = Value(status),
-       createdAt = Value(createdAt),
-       updatedAt = Value(updatedAt);
+  })  : id = Value(id),
+        userId = Value(userId),
+        status = Value(status),
+        createdAt = Value(createdAt),
+        updatedAt = Value(updatedAt);
   static Insertable<Receipt> custom({
     Expression<String>? id,
     Expression<String>? userId,
@@ -1105,31 +887,30 @@ class ReceiptsCompanion extends UpdateCompanion<Receipt> {
     });
   }
 
-  ReceiptsCompanion copyWith({
-    Value<String>? id,
-    Value<String>? userId,
-    Value<String?>? s3ObjectKey,
-    Value<String?>? storeName,
-    Value<DateTime?>? purchaseDate,
-    Value<double?>? totalAmount,
-    Value<String?>? currency,
-    Value<String>? status,
-    Value<int>? ocrRetryCount,
-    Value<DateTime?>? lastOcrAttemptAt,
-    Value<String?>? notes,
-    Value<String?>? invoiceNumber,
-    Value<String?>? vendorAddress,
-    Value<String?>? vendorPhone,
-    Value<String?>? vendorEmail,
-    Value<String?>? vendorUrl,
-    Value<String?>? warrantyNotes,
-    Value<String?>? remarks,
-    Value<DateTime>? createdAt,
-    Value<DateTime>? updatedAt,
-    Value<DateTime?>? syncedAt,
-    Value<String?>? localImagePath,
-    Value<int>? rowid,
-  }) {
+  ReceiptsCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? userId,
+      Value<String?>? s3ObjectKey,
+      Value<String?>? storeName,
+      Value<DateTime?>? purchaseDate,
+      Value<double?>? totalAmount,
+      Value<String?>? currency,
+      Value<String>? status,
+      Value<int>? ocrRetryCount,
+      Value<DateTime?>? lastOcrAttemptAt,
+      Value<String?>? notes,
+      Value<String?>? invoiceNumber,
+      Value<String?>? vendorAddress,
+      Value<String?>? vendorPhone,
+      Value<String?>? vendorEmail,
+      Value<String?>? vendorUrl,
+      Value<String?>? warrantyNotes,
+      Value<String?>? remarks,
+      Value<DateTime>? createdAt,
+      Value<DateTime>? updatedAt,
+      Value<DateTime?>? syncedAt,
+      Value<String?>? localImagePath,
+      Value<int>? rowid}) {
     return ReceiptsCompanion(
       id: id ?? this.id,
       userId: userId ?? this.userId,
@@ -1272,286 +1053,179 @@ class $ReceiptLineItemsTable extends ReceiptLineItems
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
-    'id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _receiptIdMeta = const VerificationMeta(
-    'receiptId',
-  );
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _receiptIdMeta =
+      const VerificationMeta('receiptId');
   @override
   late final GeneratedColumn<String> receiptId = GeneratedColumn<String>(
-    'receipt_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES receipts (id) ON DELETE CASCADE',
-    ),
-  );
-  static const VerificationMeta _rowIndexMeta = const VerificationMeta(
-    'rowIndex',
-  );
+      'receipt_id', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES receipts (id) ON DELETE CASCADE'));
+  static const VerificationMeta _rowIndexMeta =
+      const VerificationMeta('rowIndex');
   @override
   late final GeneratedColumn<int> rowIndex = GeneratedColumn<int>(
-    'row_index',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(0),
-  );
-  static const VerificationMeta _productCodeMeta = const VerificationMeta(
-    'productCode',
-  );
+      'row_index', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _productCodeMeta =
+      const VerificationMeta('productCode');
   @override
   late final GeneratedColumn<String> productCode = GeneratedColumn<String>(
-    'product_code',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _itemDescriptionMeta = const VerificationMeta(
-    'itemDescription',
-  );
+      'product_code', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _itemDescriptionMeta =
+      const VerificationMeta('itemDescription');
   @override
   late final GeneratedColumn<String> itemDescription = GeneratedColumn<String>(
-    'item_description',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _unitPriceMeta = const VerificationMeta(
-    'unitPrice',
-  );
+      'item_description', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _unitPriceMeta =
+      const VerificationMeta('unitPrice');
   @override
   late final GeneratedColumn<double> unitPrice = GeneratedColumn<double>(
-    'unit_price',
-    aliasedName,
-    true,
-    type: DriftSqlType.double,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _productNameMeta = const VerificationMeta(
-    'productName',
-  );
+      'unit_price', aliasedName, true,
+      type: DriftSqlType.double, requiredDuringInsert: false);
+  static const VerificationMeta _productNameMeta =
+      const VerificationMeta('productName');
   @override
   late final GeneratedColumn<String> productName = GeneratedColumn<String>(
-    'product_name',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _productCategoryMeta = const VerificationMeta(
-    'productCategory',
-  );
+      'product_name', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _productCategoryMeta =
+      const VerificationMeta('productCategory');
   @override
   late final GeneratedColumn<String> productCategory = GeneratedColumn<String>(
-    'product_category',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _productImageUrlMeta = const VerificationMeta(
-    'productImageUrl',
-  );
+      'product_category', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _productImageUrlMeta =
+      const VerificationMeta('productImageUrl');
   @override
   late final GeneratedColumn<String> productImageUrl = GeneratedColumn<String>(
-    'product_image_url',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
+      'product_image_url', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _warrantyPeriodMonthsMeta =
       const VerificationMeta('warrantyPeriodMonths');
   @override
   late final GeneratedColumn<int> warrantyPeriodMonths = GeneratedColumn<int>(
-    'warranty_period_months',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
+      'warranty_period_months', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
   static const VerificationMeta _warrantyExpiryDateMeta =
       const VerificationMeta('warrantyExpiryDate');
   @override
   late final GeneratedColumn<DateTime> warrantyExpiryDate =
-      GeneratedColumn<DateTime>(
-        'warranty_expiry_date',
-        aliasedName,
-        true,
-        type: DriftSqlType.dateTime,
-        requiredDuringInsert: false,
-      );
-  static const VerificationMeta _returnPeriodDaysMeta = const VerificationMeta(
-    'returnPeriodDays',
-  );
+      GeneratedColumn<DateTime>('warranty_expiry_date', aliasedName, true,
+          type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _returnPeriodDaysMeta =
+      const VerificationMeta('returnPeriodDays');
   @override
   late final GeneratedColumn<int> returnPeriodDays = GeneratedColumn<int>(
-    'return_period_days',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _returnExpiryDateMeta = const VerificationMeta(
-    'returnExpiryDate',
-  );
+      'return_period_days', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _returnExpiryDateMeta =
+      const VerificationMeta('returnExpiryDate');
   @override
   late final GeneratedColumn<DateTime> returnExpiryDate =
-      GeneratedColumn<DateTime>(
-        'return_expiry_date',
-        aliasedName,
-        true,
-        type: DriftSqlType.dateTime,
-        requiredDuringInsert: false,
-      );
+      GeneratedColumn<DateTime>('return_expiry_date', aliasedName, true,
+          type: DriftSqlType.dateTime, requiredDuringInsert: false);
   static const VerificationMeta _warrantyLeadDaysOverrideMeta =
       const VerificationMeta('warrantyLeadDaysOverride');
   @override
   late final GeneratedColumn<int> warrantyLeadDaysOverride =
-      GeneratedColumn<int>(
-        'warranty_lead_days_override',
-        aliasedName,
-        true,
-        type: DriftSqlType.int,
-        requiredDuringInsert: false,
-      );
+      GeneratedColumn<int>('warranty_lead_days_override', aliasedName, true,
+          type: DriftSqlType.int, requiredDuringInsert: false);
   static const VerificationMeta _returnLeadDaysOverrideMeta =
       const VerificationMeta('returnLeadDaysOverride');
   @override
   late final GeneratedColumn<int> returnLeadDaysOverride = GeneratedColumn<int>(
-    'return_lead_days_override',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
+      'return_lead_days_override', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
   static const VerificationMeta _warrantyReminderEnabledMeta =
       const VerificationMeta('warrantyReminderEnabled');
   @override
   late final GeneratedColumn<bool> warrantyReminderEnabled =
-      GeneratedColumn<bool>(
-        'warranty_reminder_enabled',
-        aliasedName,
-        true,
-        type: DriftSqlType.bool,
-        requiredDuringInsert: false,
-        defaultConstraints: GeneratedColumn.constraintIsAlways(
-          'CHECK ("warranty_reminder_enabled" IN (0, 1))',
-        ),
-      );
+      GeneratedColumn<bool>('warranty_reminder_enabled', aliasedName, true,
+          type: DriftSqlType.bool,
+          requiredDuringInsert: false,
+          defaultConstraints: GeneratedColumn.constraintIsAlways(
+              'CHECK ("warranty_reminder_enabled" IN (0, 1))'));
   static const VerificationMeta _returnReminderEnabledMeta =
       const VerificationMeta('returnReminderEnabled');
   @override
   late final GeneratedColumn<bool> returnReminderEnabled =
-      GeneratedColumn<bool>(
-        'return_reminder_enabled',
-        aliasedName,
-        true,
-        type: DriftSqlType.bool,
-        requiredDuringInsert: false,
-        defaultConstraints: GeneratedColumn.constraintIsAlways(
-          'CHECK ("return_reminder_enabled" IN (0, 1))',
-        ),
-      );
+      GeneratedColumn<bool>('return_reminder_enabled', aliasedName, true,
+          type: DriftSqlType.bool,
+          requiredDuringInsert: false,
+          defaultConstraints: GeneratedColumn.constraintIsAlways(
+              'CHECK ("return_reminder_enabled" IN (0, 1))'));
   static const VerificationMeta _statusMeta = const VerificationMeta('status');
   @override
   late final GeneratedColumn<String> status = GeneratedColumn<String>(
-    'status',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultValue: const Constant('ACTIVE'),
-  );
-  static const VerificationMeta _replacementForIdMeta = const VerificationMeta(
-    'replacementForId',
-  );
+      'status', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('ACTIVE'));
+  static const VerificationMeta _replacementForIdMeta =
+      const VerificationMeta('replacementForId');
   @override
   late final GeneratedColumn<String> replacementForId = GeneratedColumn<String>(
-    'replacement_for_id',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _replacedByIdMeta = const VerificationMeta(
-    'replacedById',
-  );
+      'replacement_for_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _replacedByIdMeta =
+      const VerificationMeta('replacedById');
   @override
   late final GeneratedColumn<String> replacedById = GeneratedColumn<String>(
-    'replaced_by_id',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
-  );
+      'replaced_by_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
   @override
   late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-    'created_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
-    'updatedAt',
-  );
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _updatedAtMeta =
+      const VerificationMeta('updatedAt');
   @override
   late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
-    'updated_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
-  );
+      'updated_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns => [
-    id,
-    receiptId,
-    rowIndex,
-    productCode,
-    itemDescription,
-    unitPrice,
-    productName,
-    productCategory,
-    productImageUrl,
-    warrantyPeriodMonths,
-    warrantyExpiryDate,
-    returnPeriodDays,
-    returnExpiryDate,
-    warrantyLeadDaysOverride,
-    returnLeadDaysOverride,
-    warrantyReminderEnabled,
-    returnReminderEnabled,
-    status,
-    replacementForId,
-    replacedById,
-    createdAt,
-    updatedAt,
-  ];
+        id,
+        receiptId,
+        rowIndex,
+        productCode,
+        itemDescription,
+        unitPrice,
+        productName,
+        productCategory,
+        productImageUrl,
+        warrantyPeriodMonths,
+        warrantyExpiryDate,
+        returnPeriodDays,
+        returnExpiryDate,
+        warrantyLeadDaysOverride,
+        returnLeadDaysOverride,
+        warrantyReminderEnabled,
+        returnReminderEnabled,
+        status,
+        replacementForId,
+        replacedById,
+        createdAt,
+        updatedAt
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
   static const String $name = 'receipt_line_items';
   @override
-  VerificationContext validateIntegrity(
-    Insertable<ReceiptLineItem> instance, {
-    bool isInserting = false,
-  }) {
+  VerificationContext validateIntegrity(Insertable<ReceiptLineItem> instance,
+      {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
@@ -1560,179 +1234,124 @@ class $ReceiptLineItemsTable extends ReceiptLineItems
       context.missing(_idMeta);
     }
     if (data.containsKey('receipt_id')) {
-      context.handle(
-        _receiptIdMeta,
-        receiptId.isAcceptableOrUnknown(data['receipt_id']!, _receiptIdMeta),
-      );
+      context.handle(_receiptIdMeta,
+          receiptId.isAcceptableOrUnknown(data['receipt_id']!, _receiptIdMeta));
     } else if (isInserting) {
       context.missing(_receiptIdMeta);
     }
     if (data.containsKey('row_index')) {
-      context.handle(
-        _rowIndexMeta,
-        rowIndex.isAcceptableOrUnknown(data['row_index']!, _rowIndexMeta),
-      );
+      context.handle(_rowIndexMeta,
+          rowIndex.isAcceptableOrUnknown(data['row_index']!, _rowIndexMeta));
     }
     if (data.containsKey('product_code')) {
       context.handle(
-        _productCodeMeta,
-        productCode.isAcceptableOrUnknown(
-          data['product_code']!,
           _productCodeMeta,
-        ),
-      );
+          productCode.isAcceptableOrUnknown(
+              data['product_code']!, _productCodeMeta));
     }
     if (data.containsKey('item_description')) {
       context.handle(
-        _itemDescriptionMeta,
-        itemDescription.isAcceptableOrUnknown(
-          data['item_description']!,
           _itemDescriptionMeta,
-        ),
-      );
+          itemDescription.isAcceptableOrUnknown(
+              data['item_description']!, _itemDescriptionMeta));
     }
     if (data.containsKey('unit_price')) {
-      context.handle(
-        _unitPriceMeta,
-        unitPrice.isAcceptableOrUnknown(data['unit_price']!, _unitPriceMeta),
-      );
+      context.handle(_unitPriceMeta,
+          unitPrice.isAcceptableOrUnknown(data['unit_price']!, _unitPriceMeta));
     }
     if (data.containsKey('product_name')) {
       context.handle(
-        _productNameMeta,
-        productName.isAcceptableOrUnknown(
-          data['product_name']!,
           _productNameMeta,
-        ),
-      );
+          productName.isAcceptableOrUnknown(
+              data['product_name']!, _productNameMeta));
     }
     if (data.containsKey('product_category')) {
       context.handle(
-        _productCategoryMeta,
-        productCategory.isAcceptableOrUnknown(
-          data['product_category']!,
           _productCategoryMeta,
-        ),
-      );
+          productCategory.isAcceptableOrUnknown(
+              data['product_category']!, _productCategoryMeta));
     }
     if (data.containsKey('product_image_url')) {
       context.handle(
-        _productImageUrlMeta,
-        productImageUrl.isAcceptableOrUnknown(
-          data['product_image_url']!,
           _productImageUrlMeta,
-        ),
-      );
+          productImageUrl.isAcceptableOrUnknown(
+              data['product_image_url']!, _productImageUrlMeta));
     }
     if (data.containsKey('warranty_period_months')) {
       context.handle(
-        _warrantyPeriodMonthsMeta,
-        warrantyPeriodMonths.isAcceptableOrUnknown(
-          data['warranty_period_months']!,
           _warrantyPeriodMonthsMeta,
-        ),
-      );
+          warrantyPeriodMonths.isAcceptableOrUnknown(
+              data['warranty_period_months']!, _warrantyPeriodMonthsMeta));
     }
     if (data.containsKey('warranty_expiry_date')) {
       context.handle(
-        _warrantyExpiryDateMeta,
-        warrantyExpiryDate.isAcceptableOrUnknown(
-          data['warranty_expiry_date']!,
           _warrantyExpiryDateMeta,
-        ),
-      );
+          warrantyExpiryDate.isAcceptableOrUnknown(
+              data['warranty_expiry_date']!, _warrantyExpiryDateMeta));
     }
     if (data.containsKey('return_period_days')) {
       context.handle(
-        _returnPeriodDaysMeta,
-        returnPeriodDays.isAcceptableOrUnknown(
-          data['return_period_days']!,
           _returnPeriodDaysMeta,
-        ),
-      );
+          returnPeriodDays.isAcceptableOrUnknown(
+              data['return_period_days']!, _returnPeriodDaysMeta));
     }
     if (data.containsKey('return_expiry_date')) {
       context.handle(
-        _returnExpiryDateMeta,
-        returnExpiryDate.isAcceptableOrUnknown(
-          data['return_expiry_date']!,
           _returnExpiryDateMeta,
-        ),
-      );
+          returnExpiryDate.isAcceptableOrUnknown(
+              data['return_expiry_date']!, _returnExpiryDateMeta));
     }
     if (data.containsKey('warranty_lead_days_override')) {
       context.handle(
-        _warrantyLeadDaysOverrideMeta,
-        warrantyLeadDaysOverride.isAcceptableOrUnknown(
-          data['warranty_lead_days_override']!,
           _warrantyLeadDaysOverrideMeta,
-        ),
-      );
+          warrantyLeadDaysOverride.isAcceptableOrUnknown(
+              data['warranty_lead_days_override']!,
+              _warrantyLeadDaysOverrideMeta));
     }
     if (data.containsKey('return_lead_days_override')) {
       context.handle(
-        _returnLeadDaysOverrideMeta,
-        returnLeadDaysOverride.isAcceptableOrUnknown(
-          data['return_lead_days_override']!,
           _returnLeadDaysOverrideMeta,
-        ),
-      );
+          returnLeadDaysOverride.isAcceptableOrUnknown(
+              data['return_lead_days_override']!, _returnLeadDaysOverrideMeta));
     }
     if (data.containsKey('warranty_reminder_enabled')) {
       context.handle(
-        _warrantyReminderEnabledMeta,
-        warrantyReminderEnabled.isAcceptableOrUnknown(
-          data['warranty_reminder_enabled']!,
           _warrantyReminderEnabledMeta,
-        ),
-      );
+          warrantyReminderEnabled.isAcceptableOrUnknown(
+              data['warranty_reminder_enabled']!,
+              _warrantyReminderEnabledMeta));
     }
     if (data.containsKey('return_reminder_enabled')) {
       context.handle(
-        _returnReminderEnabledMeta,
-        returnReminderEnabled.isAcceptableOrUnknown(
-          data['return_reminder_enabled']!,
           _returnReminderEnabledMeta,
-        ),
-      );
+          returnReminderEnabled.isAcceptableOrUnknown(
+              data['return_reminder_enabled']!, _returnReminderEnabledMeta));
     }
     if (data.containsKey('status')) {
-      context.handle(
-        _statusMeta,
-        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
-      );
+      context.handle(_statusMeta,
+          status.isAcceptableOrUnknown(data['status']!, _statusMeta));
     }
     if (data.containsKey('replacement_for_id')) {
       context.handle(
-        _replacementForIdMeta,
-        replacementForId.isAcceptableOrUnknown(
-          data['replacement_for_id']!,
           _replacementForIdMeta,
-        ),
-      );
+          replacementForId.isAcceptableOrUnknown(
+              data['replacement_for_id']!, _replacementForIdMeta));
     }
     if (data.containsKey('replaced_by_id')) {
       context.handle(
-        _replacedByIdMeta,
-        replacedById.isAcceptableOrUnknown(
-          data['replaced_by_id']!,
           _replacedByIdMeta,
-        ),
-      );
+          replacedById.isAcceptableOrUnknown(
+              data['replaced_by_id']!, _replacedByIdMeta));
     }
     if (data.containsKey('created_at')) {
-      context.handle(
-        _createdAtMeta,
-        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
-      );
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
     } else if (isInserting) {
       context.missing(_createdAtMeta);
     }
     if (data.containsKey('updated_at')) {
-      context.handle(
-        _updatedAtMeta,
-        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
-      );
+      context.handle(_updatedAtMeta,
+          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
     } else if (isInserting) {
       context.missing(_updatedAtMeta);
     }
@@ -1745,94 +1364,54 @@ class $ReceiptLineItemsTable extends ReceiptLineItems
   ReceiptLineItem map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return ReceiptLineItem(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}id'],
-      )!,
-      receiptId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}receipt_id'],
-      )!,
-      rowIndex: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}row_index'],
-      )!,
-      productCode: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}product_code'],
-      ),
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      receiptId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}receipt_id'])!,
+      rowIndex: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}row_index'])!,
+      productCode: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}product_code']),
       itemDescription: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}item_description'],
-      ),
-      unitPrice: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}unit_price'],
-      ),
-      productName: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}product_name'],
-      ),
+          DriftSqlType.string, data['${effectivePrefix}item_description']),
+      unitPrice: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}unit_price']),
+      productName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}product_name']),
       productCategory: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}product_category'],
-      ),
+          DriftSqlType.string, data['${effectivePrefix}product_category']),
       productImageUrl: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}product_image_url'],
-      ),
+          DriftSqlType.string, data['${effectivePrefix}product_image_url']),
       warrantyPeriodMonths: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}warranty_period_months'],
-      ),
+          DriftSqlType.int, data['${effectivePrefix}warranty_period_months']),
       warrantyExpiryDate: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}warranty_expiry_date'],
-      ),
-      returnPeriodDays: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}return_period_days'],
-      ),
+          DriftSqlType.dateTime,
+          data['${effectivePrefix}warranty_expiry_date']),
+      returnPeriodDays: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}return_period_days']),
       returnExpiryDate: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}return_expiry_date'],
-      ),
+          DriftSqlType.dateTime, data['${effectivePrefix}return_expiry_date']),
       warrantyLeadDaysOverride: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}warranty_lead_days_override'],
-      ),
+          DriftSqlType.int,
+          data['${effectivePrefix}warranty_lead_days_override']),
       returnLeadDaysOverride: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}return_lead_days_override'],
-      ),
+          DriftSqlType.int,
+          data['${effectivePrefix}return_lead_days_override']),
       warrantyReminderEnabled: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}warranty_reminder_enabled'],
-      ),
+          DriftSqlType.bool,
+          data['${effectivePrefix}warranty_reminder_enabled']),
       returnReminderEnabled: attachedDatabase.typeMapping.read(
-        DriftSqlType.bool,
-        data['${effectivePrefix}return_reminder_enabled'],
-      ),
-      status: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}status'],
-      )!,
+          DriftSqlType.bool, data['${effectivePrefix}return_reminder_enabled']),
+      status: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}status'])!,
       replacementForId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}replacement_for_id'],
-      ),
-      replacedById: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}replaced_by_id'],
-      ),
-      createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}created_at'],
-      )!,
-      updatedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}updated_at'],
-      )!,
+          DriftSqlType.string, data['${effectivePrefix}replacement_for_id']),
+      replacedById: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}replaced_by_id']),
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
     );
   }
 
@@ -1865,30 +1444,29 @@ class ReceiptLineItem extends DataClass implements Insertable<ReceiptLineItem> {
   final String? replacedById;
   final DateTime createdAt;
   final DateTime updatedAt;
-  const ReceiptLineItem({
-    required this.id,
-    required this.receiptId,
-    required this.rowIndex,
-    this.productCode,
-    this.itemDescription,
-    this.unitPrice,
-    this.productName,
-    this.productCategory,
-    this.productImageUrl,
-    this.warrantyPeriodMonths,
-    this.warrantyExpiryDate,
-    this.returnPeriodDays,
-    this.returnExpiryDate,
-    this.warrantyLeadDaysOverride,
-    this.returnLeadDaysOverride,
-    this.warrantyReminderEnabled,
-    this.returnReminderEnabled,
-    required this.status,
-    this.replacementForId,
-    this.replacedById,
-    required this.createdAt,
-    required this.updatedAt,
-  });
+  const ReceiptLineItem(
+      {required this.id,
+      required this.receiptId,
+      required this.rowIndex,
+      this.productCode,
+      this.itemDescription,
+      this.unitPrice,
+      this.productName,
+      this.productCategory,
+      this.productImageUrl,
+      this.warrantyPeriodMonths,
+      this.warrantyExpiryDate,
+      this.returnPeriodDays,
+      this.returnExpiryDate,
+      this.warrantyLeadDaysOverride,
+      this.returnLeadDaysOverride,
+      this.warrantyReminderEnabled,
+      this.returnReminderEnabled,
+      required this.status,
+      this.replacementForId,
+      this.replacedById,
+      required this.createdAt,
+      required this.updatedAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1926,17 +1504,15 @@ class ReceiptLineItem extends DataClass implements Insertable<ReceiptLineItem> {
       map['return_expiry_date'] = Variable<DateTime>(returnExpiryDate);
     }
     if (!nullToAbsent || warrantyLeadDaysOverride != null) {
-      map['warranty_lead_days_override'] = Variable<int>(
-        warrantyLeadDaysOverride,
-      );
+      map['warranty_lead_days_override'] =
+          Variable<int>(warrantyLeadDaysOverride);
     }
     if (!nullToAbsent || returnLeadDaysOverride != null) {
       map['return_lead_days_override'] = Variable<int>(returnLeadDaysOverride);
     }
     if (!nullToAbsent || warrantyReminderEnabled != null) {
-      map['warranty_reminder_enabled'] = Variable<bool>(
-        warrantyReminderEnabled,
-      );
+      map['warranty_reminder_enabled'] =
+          Variable<bool>(warrantyReminderEnabled);
     }
     if (!nullToAbsent || returnReminderEnabled != null) {
       map['return_reminder_enabled'] = Variable<bool>(returnReminderEnabled);
@@ -2012,10 +1588,8 @@ class ReceiptLineItem extends DataClass implements Insertable<ReceiptLineItem> {
     );
   }
 
-  factory ReceiptLineItem.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
+  factory ReceiptLineItem.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return ReceiptLineItem(
       id: serializer.fromJson<String>(json['id']),
@@ -2027,28 +1601,21 @@ class ReceiptLineItem extends DataClass implements Insertable<ReceiptLineItem> {
       productName: serializer.fromJson<String?>(json['productName']),
       productCategory: serializer.fromJson<String?>(json['productCategory']),
       productImageUrl: serializer.fromJson<String?>(json['productImageUrl']),
-      warrantyPeriodMonths: serializer.fromJson<int?>(
-        json['warrantyPeriodMonths'],
-      ),
-      warrantyExpiryDate: serializer.fromJson<DateTime?>(
-        json['warrantyExpiryDate'],
-      ),
+      warrantyPeriodMonths:
+          serializer.fromJson<int?>(json['warrantyPeriodMonths']),
+      warrantyExpiryDate:
+          serializer.fromJson<DateTime?>(json['warrantyExpiryDate']),
       returnPeriodDays: serializer.fromJson<int?>(json['returnPeriodDays']),
-      returnExpiryDate: serializer.fromJson<DateTime?>(
-        json['returnExpiryDate'],
-      ),
-      warrantyLeadDaysOverride: serializer.fromJson<int?>(
-        json['warrantyLeadDaysOverride'],
-      ),
-      returnLeadDaysOverride: serializer.fromJson<int?>(
-        json['returnLeadDaysOverride'],
-      ),
-      warrantyReminderEnabled: serializer.fromJson<bool?>(
-        json['warrantyReminderEnabled'],
-      ),
-      returnReminderEnabled: serializer.fromJson<bool?>(
-        json['returnReminderEnabled'],
-      ),
+      returnExpiryDate:
+          serializer.fromJson<DateTime?>(json['returnExpiryDate']),
+      warrantyLeadDaysOverride:
+          serializer.fromJson<int?>(json['warrantyLeadDaysOverride']),
+      returnLeadDaysOverride:
+          serializer.fromJson<int?>(json['returnLeadDaysOverride']),
+      warrantyReminderEnabled:
+          serializer.fromJson<bool?>(json['warrantyReminderEnabled']),
+      returnReminderEnabled:
+          serializer.fromJson<bool?>(json['returnReminderEnabled']),
       status: serializer.fromJson<String>(json['status']),
       replacementForId: serializer.fromJson<String?>(json['replacementForId']),
       replacedById: serializer.fromJson<String?>(json['replacedById']),
@@ -2073,13 +1640,11 @@ class ReceiptLineItem extends DataClass implements Insertable<ReceiptLineItem> {
       'warrantyExpiryDate': serializer.toJson<DateTime?>(warrantyExpiryDate),
       'returnPeriodDays': serializer.toJson<int?>(returnPeriodDays),
       'returnExpiryDate': serializer.toJson<DateTime?>(returnExpiryDate),
-      'warrantyLeadDaysOverride': serializer.toJson<int?>(
-        warrantyLeadDaysOverride,
-      ),
+      'warrantyLeadDaysOverride':
+          serializer.toJson<int?>(warrantyLeadDaysOverride),
       'returnLeadDaysOverride': serializer.toJson<int?>(returnLeadDaysOverride),
-      'warrantyReminderEnabled': serializer.toJson<bool?>(
-        warrantyReminderEnabled,
-      ),
+      'warrantyReminderEnabled':
+          serializer.toJson<bool?>(warrantyReminderEnabled),
       'returnReminderEnabled': serializer.toJson<bool?>(returnReminderEnabled),
       'status': serializer.toJson<String>(status),
       'replacementForId': serializer.toJson<String?>(replacementForId),
@@ -2089,92 +1654,91 @@ class ReceiptLineItem extends DataClass implements Insertable<ReceiptLineItem> {
     };
   }
 
-  ReceiptLineItem copyWith({
-    String? id,
-    String? receiptId,
-    int? rowIndex,
-    Value<String?> productCode = const Value.absent(),
-    Value<String?> itemDescription = const Value.absent(),
-    Value<double?> unitPrice = const Value.absent(),
-    Value<String?> productName = const Value.absent(),
-    Value<String?> productCategory = const Value.absent(),
-    Value<String?> productImageUrl = const Value.absent(),
-    Value<int?> warrantyPeriodMonths = const Value.absent(),
-    Value<DateTime?> warrantyExpiryDate = const Value.absent(),
-    Value<int?> returnPeriodDays = const Value.absent(),
-    Value<DateTime?> returnExpiryDate = const Value.absent(),
-    Value<int?> warrantyLeadDaysOverride = const Value.absent(),
-    Value<int?> returnLeadDaysOverride = const Value.absent(),
-    Value<bool?> warrantyReminderEnabled = const Value.absent(),
-    Value<bool?> returnReminderEnabled = const Value.absent(),
-    String? status,
-    Value<String?> replacementForId = const Value.absent(),
-    Value<String?> replacedById = const Value.absent(),
-    DateTime? createdAt,
-    DateTime? updatedAt,
-  }) => ReceiptLineItem(
-    id: id ?? this.id,
-    receiptId: receiptId ?? this.receiptId,
-    rowIndex: rowIndex ?? this.rowIndex,
-    productCode: productCode.present ? productCode.value : this.productCode,
-    itemDescription: itemDescription.present
-        ? itemDescription.value
-        : this.itemDescription,
-    unitPrice: unitPrice.present ? unitPrice.value : this.unitPrice,
-    productName: productName.present ? productName.value : this.productName,
-    productCategory: productCategory.present
-        ? productCategory.value
-        : this.productCategory,
-    productImageUrl: productImageUrl.present
-        ? productImageUrl.value
-        : this.productImageUrl,
-    warrantyPeriodMonths: warrantyPeriodMonths.present
-        ? warrantyPeriodMonths.value
-        : this.warrantyPeriodMonths,
-    warrantyExpiryDate: warrantyExpiryDate.present
-        ? warrantyExpiryDate.value
-        : this.warrantyExpiryDate,
-    returnPeriodDays: returnPeriodDays.present
-        ? returnPeriodDays.value
-        : this.returnPeriodDays,
-    returnExpiryDate: returnExpiryDate.present
-        ? returnExpiryDate.value
-        : this.returnExpiryDate,
-    warrantyLeadDaysOverride: warrantyLeadDaysOverride.present
-        ? warrantyLeadDaysOverride.value
-        : this.warrantyLeadDaysOverride,
-    returnLeadDaysOverride: returnLeadDaysOverride.present
-        ? returnLeadDaysOverride.value
-        : this.returnLeadDaysOverride,
-    warrantyReminderEnabled: warrantyReminderEnabled.present
-        ? warrantyReminderEnabled.value
-        : this.warrantyReminderEnabled,
-    returnReminderEnabled: returnReminderEnabled.present
-        ? returnReminderEnabled.value
-        : this.returnReminderEnabled,
-    status: status ?? this.status,
-    replacementForId: replacementForId.present
-        ? replacementForId.value
-        : this.replacementForId,
-    replacedById: replacedById.present ? replacedById.value : this.replacedById,
-    createdAt: createdAt ?? this.createdAt,
-    updatedAt: updatedAt ?? this.updatedAt,
-  );
+  ReceiptLineItem copyWith(
+          {String? id,
+          String? receiptId,
+          int? rowIndex,
+          Value<String?> productCode = const Value.absent(),
+          Value<String?> itemDescription = const Value.absent(),
+          Value<double?> unitPrice = const Value.absent(),
+          Value<String?> productName = const Value.absent(),
+          Value<String?> productCategory = const Value.absent(),
+          Value<String?> productImageUrl = const Value.absent(),
+          Value<int?> warrantyPeriodMonths = const Value.absent(),
+          Value<DateTime?> warrantyExpiryDate = const Value.absent(),
+          Value<int?> returnPeriodDays = const Value.absent(),
+          Value<DateTime?> returnExpiryDate = const Value.absent(),
+          Value<int?> warrantyLeadDaysOverride = const Value.absent(),
+          Value<int?> returnLeadDaysOverride = const Value.absent(),
+          Value<bool?> warrantyReminderEnabled = const Value.absent(),
+          Value<bool?> returnReminderEnabled = const Value.absent(),
+          String? status,
+          Value<String?> replacementForId = const Value.absent(),
+          Value<String?> replacedById = const Value.absent(),
+          DateTime? createdAt,
+          DateTime? updatedAt}) =>
+      ReceiptLineItem(
+        id: id ?? this.id,
+        receiptId: receiptId ?? this.receiptId,
+        rowIndex: rowIndex ?? this.rowIndex,
+        productCode: productCode.present ? productCode.value : this.productCode,
+        itemDescription: itemDescription.present
+            ? itemDescription.value
+            : this.itemDescription,
+        unitPrice: unitPrice.present ? unitPrice.value : this.unitPrice,
+        productName: productName.present ? productName.value : this.productName,
+        productCategory: productCategory.present
+            ? productCategory.value
+            : this.productCategory,
+        productImageUrl: productImageUrl.present
+            ? productImageUrl.value
+            : this.productImageUrl,
+        warrantyPeriodMonths: warrantyPeriodMonths.present
+            ? warrantyPeriodMonths.value
+            : this.warrantyPeriodMonths,
+        warrantyExpiryDate: warrantyExpiryDate.present
+            ? warrantyExpiryDate.value
+            : this.warrantyExpiryDate,
+        returnPeriodDays: returnPeriodDays.present
+            ? returnPeriodDays.value
+            : this.returnPeriodDays,
+        returnExpiryDate: returnExpiryDate.present
+            ? returnExpiryDate.value
+            : this.returnExpiryDate,
+        warrantyLeadDaysOverride: warrantyLeadDaysOverride.present
+            ? warrantyLeadDaysOverride.value
+            : this.warrantyLeadDaysOverride,
+        returnLeadDaysOverride: returnLeadDaysOverride.present
+            ? returnLeadDaysOverride.value
+            : this.returnLeadDaysOverride,
+        warrantyReminderEnabled: warrantyReminderEnabled.present
+            ? warrantyReminderEnabled.value
+            : this.warrantyReminderEnabled,
+        returnReminderEnabled: returnReminderEnabled.present
+            ? returnReminderEnabled.value
+            : this.returnReminderEnabled,
+        status: status ?? this.status,
+        replacementForId: replacementForId.present
+            ? replacementForId.value
+            : this.replacementForId,
+        replacedById:
+            replacedById.present ? replacedById.value : this.replacedById,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+      );
   ReceiptLineItem copyWithCompanion(ReceiptLineItemsCompanion data) {
     return ReceiptLineItem(
       id: data.id.present ? data.id.value : this.id,
       receiptId: data.receiptId.present ? data.receiptId.value : this.receiptId,
       rowIndex: data.rowIndex.present ? data.rowIndex.value : this.rowIndex,
-      productCode: data.productCode.present
-          ? data.productCode.value
-          : this.productCode,
+      productCode:
+          data.productCode.present ? data.productCode.value : this.productCode,
       itemDescription: data.itemDescription.present
           ? data.itemDescription.value
           : this.itemDescription,
       unitPrice: data.unitPrice.present ? data.unitPrice.value : this.unitPrice,
-      productName: data.productName.present
-          ? data.productName.value
-          : this.productName,
+      productName:
+          data.productName.present ? data.productName.value : this.productName,
       productCategory: data.productCategory.present
           ? data.productCategory.value
           : this.productCategory,
@@ -2248,29 +1812,29 @@ class ReceiptLineItem extends DataClass implements Insertable<ReceiptLineItem> {
 
   @override
   int get hashCode => Object.hashAll([
-    id,
-    receiptId,
-    rowIndex,
-    productCode,
-    itemDescription,
-    unitPrice,
-    productName,
-    productCategory,
-    productImageUrl,
-    warrantyPeriodMonths,
-    warrantyExpiryDate,
-    returnPeriodDays,
-    returnExpiryDate,
-    warrantyLeadDaysOverride,
-    returnLeadDaysOverride,
-    warrantyReminderEnabled,
-    returnReminderEnabled,
-    status,
-    replacementForId,
-    replacedById,
-    createdAt,
-    updatedAt,
-  ]);
+        id,
+        receiptId,
+        rowIndex,
+        productCode,
+        itemDescription,
+        unitPrice,
+        productName,
+        productCategory,
+        productImageUrl,
+        warrantyPeriodMonths,
+        warrantyExpiryDate,
+        returnPeriodDays,
+        returnExpiryDate,
+        warrantyLeadDaysOverride,
+        returnLeadDaysOverride,
+        warrantyReminderEnabled,
+        returnReminderEnabled,
+        status,
+        replacementForId,
+        replacedById,
+        createdAt,
+        updatedAt
+      ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2372,10 +1936,10 @@ class ReceiptLineItemsCompanion extends UpdateCompanion<ReceiptLineItem> {
     required DateTime createdAt,
     required DateTime updatedAt,
     this.rowid = const Value.absent(),
-  }) : id = Value(id),
-       receiptId = Value(receiptId),
-       createdAt = Value(createdAt),
-       updatedAt = Value(updatedAt);
+  })  : id = Value(id),
+        receiptId = Value(receiptId),
+        createdAt = Value(createdAt),
+        updatedAt = Value(updatedAt);
   static Insertable<ReceiptLineItem> custom({
     Expression<String>? id,
     Expression<String>? receiptId,
@@ -2434,31 +1998,30 @@ class ReceiptLineItemsCompanion extends UpdateCompanion<ReceiptLineItem> {
     });
   }
 
-  ReceiptLineItemsCompanion copyWith({
-    Value<String>? id,
-    Value<String>? receiptId,
-    Value<int>? rowIndex,
-    Value<String?>? productCode,
-    Value<String?>? itemDescription,
-    Value<double?>? unitPrice,
-    Value<String?>? productName,
-    Value<String?>? productCategory,
-    Value<String?>? productImageUrl,
-    Value<int?>? warrantyPeriodMonths,
-    Value<DateTime?>? warrantyExpiryDate,
-    Value<int?>? returnPeriodDays,
-    Value<DateTime?>? returnExpiryDate,
-    Value<int?>? warrantyLeadDaysOverride,
-    Value<int?>? returnLeadDaysOverride,
-    Value<bool?>? warrantyReminderEnabled,
-    Value<bool?>? returnReminderEnabled,
-    Value<String>? status,
-    Value<String?>? replacementForId,
-    Value<String?>? replacedById,
-    Value<DateTime>? createdAt,
-    Value<DateTime>? updatedAt,
-    Value<int>? rowid,
-  }) {
+  ReceiptLineItemsCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? receiptId,
+      Value<int>? rowIndex,
+      Value<String?>? productCode,
+      Value<String?>? itemDescription,
+      Value<double?>? unitPrice,
+      Value<String?>? productName,
+      Value<String?>? productCategory,
+      Value<String?>? productImageUrl,
+      Value<int?>? warrantyPeriodMonths,
+      Value<DateTime?>? warrantyExpiryDate,
+      Value<int?>? returnPeriodDays,
+      Value<DateTime?>? returnExpiryDate,
+      Value<int?>? warrantyLeadDaysOverride,
+      Value<int?>? returnLeadDaysOverride,
+      Value<bool?>? warrantyReminderEnabled,
+      Value<bool?>? returnReminderEnabled,
+      Value<String>? status,
+      Value<String?>? replacementForId,
+      Value<String?>? replacedById,
+      Value<DateTime>? createdAt,
+      Value<DateTime>? updatedAt,
+      Value<int>? rowid}) {
     return ReceiptLineItemsCompanion(
       id: id ?? this.id,
       receiptId: receiptId ?? this.receiptId,
@@ -2524,9 +2087,8 @@ class ReceiptLineItemsCompanion extends UpdateCompanion<ReceiptLineItem> {
       map['warranty_period_months'] = Variable<int>(warrantyPeriodMonths.value);
     }
     if (warrantyExpiryDate.present) {
-      map['warranty_expiry_date'] = Variable<DateTime>(
-        warrantyExpiryDate.value,
-      );
+      map['warranty_expiry_date'] =
+          Variable<DateTime>(warrantyExpiryDate.value);
     }
     if (returnPeriodDays.present) {
       map['return_period_days'] = Variable<int>(returnPeriodDays.value);
@@ -2535,24 +2097,20 @@ class ReceiptLineItemsCompanion extends UpdateCompanion<ReceiptLineItem> {
       map['return_expiry_date'] = Variable<DateTime>(returnExpiryDate.value);
     }
     if (warrantyLeadDaysOverride.present) {
-      map['warranty_lead_days_override'] = Variable<int>(
-        warrantyLeadDaysOverride.value,
-      );
+      map['warranty_lead_days_override'] =
+          Variable<int>(warrantyLeadDaysOverride.value);
     }
     if (returnLeadDaysOverride.present) {
-      map['return_lead_days_override'] = Variable<int>(
-        returnLeadDaysOverride.value,
-      );
+      map['return_lead_days_override'] =
+          Variable<int>(returnLeadDaysOverride.value);
     }
     if (warrantyReminderEnabled.present) {
-      map['warranty_reminder_enabled'] = Variable<bool>(
-        warrantyReminderEnabled.value,
-      );
+      map['warranty_reminder_enabled'] =
+          Variable<bool>(warrantyReminderEnabled.value);
     }
     if (returnReminderEnabled.present) {
-      map['return_reminder_enabled'] = Variable<bool>(
-        returnReminderEnabled.value,
-      );
+      map['return_reminder_enabled'] =
+          Variable<bool>(returnReminderEnabled.value);
     }
     if (status.present) {
       map['status'] = Variable<String>(status.value);
@@ -2615,100 +2173,64 @@ class $UploadQueueTable extends UploadQueue
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
-    'id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _receiptIdMeta = const VerificationMeta(
-    'receiptId',
-  );
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _receiptIdMeta =
+      const VerificationMeta('receiptId');
   @override
   late final GeneratedColumn<String> receiptId = GeneratedColumn<String>(
-    'receipt_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _localImagePathMeta = const VerificationMeta(
-    'localImagePath',
-  );
+      'receipt_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _localImagePathMeta =
+      const VerificationMeta('localImagePath');
   @override
   late final GeneratedColumn<String> localImagePath = GeneratedColumn<String>(
-    'local_image_path',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _retryCountMeta = const VerificationMeta(
-    'retryCount',
-  );
+      'local_image_path', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _retryCountMeta =
+      const VerificationMeta('retryCount');
   @override
   late final GeneratedColumn<int> retryCount = GeneratedColumn<int>(
-    'retry_count',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(0),
-  );
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
-  );
+      'retry_count', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
   @override
   late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-    'created_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _lastAttemptAtMeta = const VerificationMeta(
-    'lastAttemptAt',
-  );
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _lastAttemptAtMeta =
+      const VerificationMeta('lastAttemptAt');
   @override
   late final GeneratedColumn<DateTime> lastAttemptAt =
-      GeneratedColumn<DateTime>(
-        'last_attempt_at',
-        aliasedName,
-        true,
-        type: DriftSqlType.dateTime,
-        requiredDuringInsert: false,
-      );
-  static const VerificationMeta _errorMessageMeta = const VerificationMeta(
-    'errorMessage',
-  );
+      GeneratedColumn<DateTime>('last_attempt_at', aliasedName, true,
+          type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _errorMessageMeta =
+      const VerificationMeta('errorMessage');
   @override
   late final GeneratedColumn<String> errorMessage = GeneratedColumn<String>(
-    'error_message',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
+      'error_message', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns => [
-    id,
-    receiptId,
-    localImagePath,
-    retryCount,
-    createdAt,
-    lastAttemptAt,
-    errorMessage,
-  ];
+        id,
+        receiptId,
+        localImagePath,
+        retryCount,
+        createdAt,
+        lastAttemptAt,
+        errorMessage
+      ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
   static const String $name = 'upload_queue';
   @override
-  VerificationContext validateIntegrity(
-    Insertable<UploadQueueData> instance, {
-    bool isInserting = false,
-  }) {
+  VerificationContext validateIntegrity(Insertable<UploadQueueData> instance,
+      {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
@@ -2717,55 +2239,42 @@ class $UploadQueueTable extends UploadQueue
       context.missing(_idMeta);
     }
     if (data.containsKey('receipt_id')) {
-      context.handle(
-        _receiptIdMeta,
-        receiptId.isAcceptableOrUnknown(data['receipt_id']!, _receiptIdMeta),
-      );
+      context.handle(_receiptIdMeta,
+          receiptId.isAcceptableOrUnknown(data['receipt_id']!, _receiptIdMeta));
     } else if (isInserting) {
       context.missing(_receiptIdMeta);
     }
     if (data.containsKey('local_image_path')) {
       context.handle(
-        _localImagePathMeta,
-        localImagePath.isAcceptableOrUnknown(
-          data['local_image_path']!,
           _localImagePathMeta,
-        ),
-      );
+          localImagePath.isAcceptableOrUnknown(
+              data['local_image_path']!, _localImagePathMeta));
     } else if (isInserting) {
       context.missing(_localImagePathMeta);
     }
     if (data.containsKey('retry_count')) {
       context.handle(
-        _retryCountMeta,
-        retryCount.isAcceptableOrUnknown(data['retry_count']!, _retryCountMeta),
-      );
+          _retryCountMeta,
+          retryCount.isAcceptableOrUnknown(
+              data['retry_count']!, _retryCountMeta));
     }
     if (data.containsKey('created_at')) {
-      context.handle(
-        _createdAtMeta,
-        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
-      );
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
     } else if (isInserting) {
       context.missing(_createdAtMeta);
     }
     if (data.containsKey('last_attempt_at')) {
       context.handle(
-        _lastAttemptAtMeta,
-        lastAttemptAt.isAcceptableOrUnknown(
-          data['last_attempt_at']!,
           _lastAttemptAtMeta,
-        ),
-      );
+          lastAttemptAt.isAcceptableOrUnknown(
+              data['last_attempt_at']!, _lastAttemptAtMeta));
     }
     if (data.containsKey('error_message')) {
       context.handle(
-        _errorMessageMeta,
-        errorMessage.isAcceptableOrUnknown(
-          data['error_message']!,
           _errorMessageMeta,
-        ),
-      );
+          errorMessage.isAcceptableOrUnknown(
+              data['error_message']!, _errorMessageMeta));
     }
     return context;
   }
@@ -2776,34 +2285,20 @@ class $UploadQueueTable extends UploadQueue
   UploadQueueData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return UploadQueueData(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}id'],
-      )!,
-      receiptId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}receipt_id'],
-      )!,
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      receiptId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}receipt_id'])!,
       localImagePath: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}local_image_path'],
-      )!,
-      retryCount: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}retry_count'],
-      )!,
-      createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}created_at'],
-      )!,
+          DriftSqlType.string, data['${effectivePrefix}local_image_path'])!,
+      retryCount: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}retry_count'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
       lastAttemptAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}last_attempt_at'],
-      ),
-      errorMessage: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}error_message'],
-      ),
+          DriftSqlType.dateTime, data['${effectivePrefix}last_attempt_at']),
+      errorMessage: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}error_message']),
     );
   }
 
@@ -2821,15 +2316,14 @@ class UploadQueueData extends DataClass implements Insertable<UploadQueueData> {
   final DateTime createdAt;
   final DateTime? lastAttemptAt;
   final String? errorMessage;
-  const UploadQueueData({
-    required this.id,
-    required this.receiptId,
-    required this.localImagePath,
-    required this.retryCount,
-    required this.createdAt,
-    this.lastAttemptAt,
-    this.errorMessage,
-  });
+  const UploadQueueData(
+      {required this.id,
+      required this.receiptId,
+      required this.localImagePath,
+      required this.retryCount,
+      required this.createdAt,
+      this.lastAttemptAt,
+      this.errorMessage});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -2863,10 +2357,8 @@ class UploadQueueData extends DataClass implements Insertable<UploadQueueData> {
     );
   }
 
-  factory UploadQueueData.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
+  factory UploadQueueData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return UploadQueueData(
       id: serializer.fromJson<String>(json['id']),
@@ -2892,25 +2384,25 @@ class UploadQueueData extends DataClass implements Insertable<UploadQueueData> {
     };
   }
 
-  UploadQueueData copyWith({
-    String? id,
-    String? receiptId,
-    String? localImagePath,
-    int? retryCount,
-    DateTime? createdAt,
-    Value<DateTime?> lastAttemptAt = const Value.absent(),
-    Value<String?> errorMessage = const Value.absent(),
-  }) => UploadQueueData(
-    id: id ?? this.id,
-    receiptId: receiptId ?? this.receiptId,
-    localImagePath: localImagePath ?? this.localImagePath,
-    retryCount: retryCount ?? this.retryCount,
-    createdAt: createdAt ?? this.createdAt,
-    lastAttemptAt: lastAttemptAt.present
-        ? lastAttemptAt.value
-        : this.lastAttemptAt,
-    errorMessage: errorMessage.present ? errorMessage.value : this.errorMessage,
-  );
+  UploadQueueData copyWith(
+          {String? id,
+          String? receiptId,
+          String? localImagePath,
+          int? retryCount,
+          DateTime? createdAt,
+          Value<DateTime?> lastAttemptAt = const Value.absent(),
+          Value<String?> errorMessage = const Value.absent()}) =>
+      UploadQueueData(
+        id: id ?? this.id,
+        receiptId: receiptId ?? this.receiptId,
+        localImagePath: localImagePath ?? this.localImagePath,
+        retryCount: retryCount ?? this.retryCount,
+        createdAt: createdAt ?? this.createdAt,
+        lastAttemptAt:
+            lastAttemptAt.present ? lastAttemptAt.value : this.lastAttemptAt,
+        errorMessage:
+            errorMessage.present ? errorMessage.value : this.errorMessage,
+      );
   UploadQueueData copyWithCompanion(UploadQueueCompanion data) {
     return UploadQueueData(
       id: data.id.present ? data.id.value : this.id,
@@ -2918,9 +2410,8 @@ class UploadQueueData extends DataClass implements Insertable<UploadQueueData> {
       localImagePath: data.localImagePath.present
           ? data.localImagePath.value
           : this.localImagePath,
-      retryCount: data.retryCount.present
-          ? data.retryCount.value
-          : this.retryCount,
+      retryCount:
+          data.retryCount.present ? data.retryCount.value : this.retryCount,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       lastAttemptAt: data.lastAttemptAt.present
           ? data.lastAttemptAt.value
@@ -2946,15 +2437,8 @@ class UploadQueueData extends DataClass implements Insertable<UploadQueueData> {
   }
 
   @override
-  int get hashCode => Object.hash(
-    id,
-    receiptId,
-    localImagePath,
-    retryCount,
-    createdAt,
-    lastAttemptAt,
-    errorMessage,
-  );
+  int get hashCode => Object.hash(id, receiptId, localImagePath, retryCount,
+      createdAt, lastAttemptAt, errorMessage);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2996,10 +2480,10 @@ class UploadQueueCompanion extends UpdateCompanion<UploadQueueData> {
     this.lastAttemptAt = const Value.absent(),
     this.errorMessage = const Value.absent(),
     this.rowid = const Value.absent(),
-  }) : id = Value(id),
-       receiptId = Value(receiptId),
-       localImagePath = Value(localImagePath),
-       createdAt = Value(createdAt);
+  })  : id = Value(id),
+        receiptId = Value(receiptId),
+        localImagePath = Value(localImagePath),
+        createdAt = Value(createdAt);
   static Insertable<UploadQueueData> custom({
     Expression<String>? id,
     Expression<String>? receiptId,
@@ -3022,16 +2506,15 @@ class UploadQueueCompanion extends UpdateCompanion<UploadQueueData> {
     });
   }
 
-  UploadQueueCompanion copyWith({
-    Value<String>? id,
-    Value<String>? receiptId,
-    Value<String>? localImagePath,
-    Value<int>? retryCount,
-    Value<DateTime>? createdAt,
-    Value<DateTime?>? lastAttemptAt,
-    Value<String?>? errorMessage,
-    Value<int>? rowid,
-  }) {
+  UploadQueueCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? receiptId,
+      Value<String>? localImagePath,
+      Value<int>? retryCount,
+      Value<DateTime>? createdAt,
+      Value<DateTime?>? lastAttemptAt,
+      Value<String?>? errorMessage,
+      Value<int>? rowid}) {
     return UploadQueueCompanion(
       id: id ?? this.id,
       receiptId: receiptId ?? this.receiptId,
@@ -3094,364 +2577,323 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $ReceiptsTable receipts = $ReceiptsTable(this);
-  late final $ReceiptLineItemsTable receiptLineItems = $ReceiptLineItemsTable(
-    this,
-  );
+  late final $ReceiptLineItemsTable receiptLineItems =
+      $ReceiptLineItemsTable(this);
   late final $UploadQueueTable uploadQueue = $UploadQueueTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [
-    receipts,
-    receiptLineItems,
-    uploadQueue,
-  ];
+  List<DatabaseSchemaEntity> get allSchemaEntities =>
+      [receipts, receiptLineItems, uploadQueue];
   @override
-  StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
-    WritePropagation(
-      on: TableUpdateQuery.onTableName(
-        'receipts',
-        limitUpdateKind: UpdateKind.delete,
-      ),
-      result: [TableUpdate('receipt_line_items', kind: UpdateKind.delete)],
-    ),
-  ]);
+  StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules(
+        [
+          WritePropagation(
+            on: TableUpdateQuery.onTableName('receipts',
+                limitUpdateKind: UpdateKind.delete),
+            result: [
+              TableUpdate('receipt_line_items', kind: UpdateKind.delete),
+            ],
+          ),
+        ],
+      );
 }
 
-typedef $$ReceiptsTableCreateCompanionBuilder =
-    ReceiptsCompanion Function({
-      required String id,
-      required String userId,
-      Value<String?> s3ObjectKey,
-      Value<String?> storeName,
-      Value<DateTime?> purchaseDate,
-      Value<double?> totalAmount,
-      Value<String?> currency,
-      required String status,
-      Value<int> ocrRetryCount,
-      Value<DateTime?> lastOcrAttemptAt,
-      Value<String?> notes,
-      Value<String?> invoiceNumber,
-      Value<String?> vendorAddress,
-      Value<String?> vendorPhone,
-      Value<String?> vendorEmail,
-      Value<String?> vendorUrl,
-      Value<String?> warrantyNotes,
-      Value<String?> remarks,
-      required DateTime createdAt,
-      required DateTime updatedAt,
-      Value<DateTime?> syncedAt,
-      Value<String?> localImagePath,
-      Value<int> rowid,
-    });
-typedef $$ReceiptsTableUpdateCompanionBuilder =
-    ReceiptsCompanion Function({
-      Value<String> id,
-      Value<String> userId,
-      Value<String?> s3ObjectKey,
-      Value<String?> storeName,
-      Value<DateTime?> purchaseDate,
-      Value<double?> totalAmount,
-      Value<String?> currency,
-      Value<String> status,
-      Value<int> ocrRetryCount,
-      Value<DateTime?> lastOcrAttemptAt,
-      Value<String?> notes,
-      Value<String?> invoiceNumber,
-      Value<String?> vendorAddress,
-      Value<String?> vendorPhone,
-      Value<String?> vendorEmail,
-      Value<String?> vendorUrl,
-      Value<String?> warrantyNotes,
-      Value<String?> remarks,
-      Value<DateTime> createdAt,
-      Value<DateTime> updatedAt,
-      Value<DateTime?> syncedAt,
-      Value<String?> localImagePath,
-      Value<int> rowid,
-    });
+typedef $$ReceiptsTableCreateCompanionBuilder = ReceiptsCompanion Function({
+  required String id,
+  required String userId,
+  Value<String?> s3ObjectKey,
+  Value<String?> storeName,
+  Value<DateTime?> purchaseDate,
+  Value<double?> totalAmount,
+  Value<String?> currency,
+  required String status,
+  Value<int> ocrRetryCount,
+  Value<DateTime?> lastOcrAttemptAt,
+  Value<String?> notes,
+  Value<String?> invoiceNumber,
+  Value<String?> vendorAddress,
+  Value<String?> vendorPhone,
+  Value<String?> vendorEmail,
+  Value<String?> vendorUrl,
+  Value<String?> warrantyNotes,
+  Value<String?> remarks,
+  required DateTime createdAt,
+  required DateTime updatedAt,
+  Value<DateTime?> syncedAt,
+  Value<String?> localImagePath,
+  Value<int> rowid,
+});
+typedef $$ReceiptsTableUpdateCompanionBuilder = ReceiptsCompanion Function({
+  Value<String> id,
+  Value<String> userId,
+  Value<String?> s3ObjectKey,
+  Value<String?> storeName,
+  Value<DateTime?> purchaseDate,
+  Value<double?> totalAmount,
+  Value<String?> currency,
+  Value<String> status,
+  Value<int> ocrRetryCount,
+  Value<DateTime?> lastOcrAttemptAt,
+  Value<String?> notes,
+  Value<String?> invoiceNumber,
+  Value<String?> vendorAddress,
+  Value<String?> vendorPhone,
+  Value<String?> vendorEmail,
+  Value<String?> vendorUrl,
+  Value<String?> warrantyNotes,
+  Value<String?> remarks,
+  Value<DateTime> createdAt,
+  Value<DateTime> updatedAt,
+  Value<DateTime?> syncedAt,
+  Value<String?> localImagePath,
+  Value<int> rowid,
+});
 
-class $$ReceiptsTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $ReceiptsTable,
-          Receipt,
-          $$ReceiptsTableFilterComposer,
-          $$ReceiptsTableOrderingComposer,
-          $$ReceiptsTableCreateCompanionBuilder,
-          $$ReceiptsTableUpdateCompanionBuilder
-        > {
+class $$ReceiptsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $ReceiptsTable,
+    Receipt,
+    $$ReceiptsTableFilterComposer,
+    $$ReceiptsTableOrderingComposer,
+    $$ReceiptsTableCreateCompanionBuilder,
+    $$ReceiptsTableUpdateCompanionBuilder> {
   $$ReceiptsTableTableManager(_$AppDatabase db, $ReceiptsTable table)
-    : super(
-        TableManagerState(
+      : super(TableManagerState(
           db: db,
           table: table,
-          filteringComposer: $$ReceiptsTableFilterComposer(
-            ComposerState(db, table),
+          filteringComposer:
+              $$ReceiptsTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$ReceiptsTableOrderingComposer(ComposerState(db, table)),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> userId = const Value.absent(),
+            Value<String?> s3ObjectKey = const Value.absent(),
+            Value<String?> storeName = const Value.absent(),
+            Value<DateTime?> purchaseDate = const Value.absent(),
+            Value<double?> totalAmount = const Value.absent(),
+            Value<String?> currency = const Value.absent(),
+            Value<String> status = const Value.absent(),
+            Value<int> ocrRetryCount = const Value.absent(),
+            Value<DateTime?> lastOcrAttemptAt = const Value.absent(),
+            Value<String?> notes = const Value.absent(),
+            Value<String?> invoiceNumber = const Value.absent(),
+            Value<String?> vendorAddress = const Value.absent(),
+            Value<String?> vendorPhone = const Value.absent(),
+            Value<String?> vendorEmail = const Value.absent(),
+            Value<String?> vendorUrl = const Value.absent(),
+            Value<String?> warrantyNotes = const Value.absent(),
+            Value<String?> remarks = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+            Value<DateTime?> syncedAt = const Value.absent(),
+            Value<String?> localImagePath = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ReceiptsCompanion(
+            id: id,
+            userId: userId,
+            s3ObjectKey: s3ObjectKey,
+            storeName: storeName,
+            purchaseDate: purchaseDate,
+            totalAmount: totalAmount,
+            currency: currency,
+            status: status,
+            ocrRetryCount: ocrRetryCount,
+            lastOcrAttemptAt: lastOcrAttemptAt,
+            notes: notes,
+            invoiceNumber: invoiceNumber,
+            vendorAddress: vendorAddress,
+            vendorPhone: vendorPhone,
+            vendorEmail: vendorEmail,
+            vendorUrl: vendorUrl,
+            warrantyNotes: warrantyNotes,
+            remarks: remarks,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            syncedAt: syncedAt,
+            localImagePath: localImagePath,
+            rowid: rowid,
           ),
-          orderingComposer: $$ReceiptsTableOrderingComposer(
-            ComposerState(db, table),
+          createCompanionCallback: ({
+            required String id,
+            required String userId,
+            Value<String?> s3ObjectKey = const Value.absent(),
+            Value<String?> storeName = const Value.absent(),
+            Value<DateTime?> purchaseDate = const Value.absent(),
+            Value<double?> totalAmount = const Value.absent(),
+            Value<String?> currency = const Value.absent(),
+            required String status,
+            Value<int> ocrRetryCount = const Value.absent(),
+            Value<DateTime?> lastOcrAttemptAt = const Value.absent(),
+            Value<String?> notes = const Value.absent(),
+            Value<String?> invoiceNumber = const Value.absent(),
+            Value<String?> vendorAddress = const Value.absent(),
+            Value<String?> vendorPhone = const Value.absent(),
+            Value<String?> vendorEmail = const Value.absent(),
+            Value<String?> vendorUrl = const Value.absent(),
+            Value<String?> warrantyNotes = const Value.absent(),
+            Value<String?> remarks = const Value.absent(),
+            required DateTime createdAt,
+            required DateTime updatedAt,
+            Value<DateTime?> syncedAt = const Value.absent(),
+            Value<String?> localImagePath = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ReceiptsCompanion.insert(
+            id: id,
+            userId: userId,
+            s3ObjectKey: s3ObjectKey,
+            storeName: storeName,
+            purchaseDate: purchaseDate,
+            totalAmount: totalAmount,
+            currency: currency,
+            status: status,
+            ocrRetryCount: ocrRetryCount,
+            lastOcrAttemptAt: lastOcrAttemptAt,
+            notes: notes,
+            invoiceNumber: invoiceNumber,
+            vendorAddress: vendorAddress,
+            vendorPhone: vendorPhone,
+            vendorEmail: vendorEmail,
+            vendorUrl: vendorUrl,
+            warrantyNotes: warrantyNotes,
+            remarks: remarks,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            syncedAt: syncedAt,
+            localImagePath: localImagePath,
+            rowid: rowid,
           ),
-          updateCompanionCallback:
-              ({
-                Value<String> id = const Value.absent(),
-                Value<String> userId = const Value.absent(),
-                Value<String?> s3ObjectKey = const Value.absent(),
-                Value<String?> storeName = const Value.absent(),
-                Value<DateTime?> purchaseDate = const Value.absent(),
-                Value<double?> totalAmount = const Value.absent(),
-                Value<String?> currency = const Value.absent(),
-                Value<String> status = const Value.absent(),
-                Value<int> ocrRetryCount = const Value.absent(),
-                Value<DateTime?> lastOcrAttemptAt = const Value.absent(),
-                Value<String?> notes = const Value.absent(),
-                Value<String?> invoiceNumber = const Value.absent(),
-                Value<String?> vendorAddress = const Value.absent(),
-                Value<String?> vendorPhone = const Value.absent(),
-                Value<String?> vendorEmail = const Value.absent(),
-                Value<String?> vendorUrl = const Value.absent(),
-                Value<String?> warrantyNotes = const Value.absent(),
-                Value<String?> remarks = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<DateTime?> syncedAt = const Value.absent(),
-                Value<String?> localImagePath = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => ReceiptsCompanion(
-                id: id,
-                userId: userId,
-                s3ObjectKey: s3ObjectKey,
-                storeName: storeName,
-                purchaseDate: purchaseDate,
-                totalAmount: totalAmount,
-                currency: currency,
-                status: status,
-                ocrRetryCount: ocrRetryCount,
-                lastOcrAttemptAt: lastOcrAttemptAt,
-                notes: notes,
-                invoiceNumber: invoiceNumber,
-                vendorAddress: vendorAddress,
-                vendorPhone: vendorPhone,
-                vendorEmail: vendorEmail,
-                vendorUrl: vendorUrl,
-                warrantyNotes: warrantyNotes,
-                remarks: remarks,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                syncedAt: syncedAt,
-                localImagePath: localImagePath,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String id,
-                required String userId,
-                Value<String?> s3ObjectKey = const Value.absent(),
-                Value<String?> storeName = const Value.absent(),
-                Value<DateTime?> purchaseDate = const Value.absent(),
-                Value<double?> totalAmount = const Value.absent(),
-                Value<String?> currency = const Value.absent(),
-                required String status,
-                Value<int> ocrRetryCount = const Value.absent(),
-                Value<DateTime?> lastOcrAttemptAt = const Value.absent(),
-                Value<String?> notes = const Value.absent(),
-                Value<String?> invoiceNumber = const Value.absent(),
-                Value<String?> vendorAddress = const Value.absent(),
-                Value<String?> vendorPhone = const Value.absent(),
-                Value<String?> vendorEmail = const Value.absent(),
-                Value<String?> vendorUrl = const Value.absent(),
-                Value<String?> warrantyNotes = const Value.absent(),
-                Value<String?> remarks = const Value.absent(),
-                required DateTime createdAt,
-                required DateTime updatedAt,
-                Value<DateTime?> syncedAt = const Value.absent(),
-                Value<String?> localImagePath = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => ReceiptsCompanion.insert(
-                id: id,
-                userId: userId,
-                s3ObjectKey: s3ObjectKey,
-                storeName: storeName,
-                purchaseDate: purchaseDate,
-                totalAmount: totalAmount,
-                currency: currency,
-                status: status,
-                ocrRetryCount: ocrRetryCount,
-                lastOcrAttemptAt: lastOcrAttemptAt,
-                notes: notes,
-                invoiceNumber: invoiceNumber,
-                vendorAddress: vendorAddress,
-                vendorPhone: vendorPhone,
-                vendorEmail: vendorEmail,
-                vendorUrl: vendorUrl,
-                warrantyNotes: warrantyNotes,
-                remarks: remarks,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                syncedAt: syncedAt,
-                localImagePath: localImagePath,
-                rowid: rowid,
-              ),
-        ),
-      );
+        ));
 }
 
 class $$ReceiptsTableFilterComposer
     extends FilterComposer<_$AppDatabase, $ReceiptsTable> {
   $$ReceiptsTableFilterComposer(super.$state);
   ColumnFilters<String> get id => $state.composableBuilder(
-    column: $state.table.id,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<String> get userId => $state.composableBuilder(
-    column: $state.table.userId,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.userId,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<String> get s3ObjectKey => $state.composableBuilder(
-    column: $state.table.s3ObjectKey,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.s3ObjectKey,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<String> get storeName => $state.composableBuilder(
-    column: $state.table.storeName,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.storeName,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<DateTime> get purchaseDate => $state.composableBuilder(
-    column: $state.table.purchaseDate,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.purchaseDate,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<double> get totalAmount => $state.composableBuilder(
-    column: $state.table.totalAmount,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.totalAmount,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<String> get currency => $state.composableBuilder(
-    column: $state.table.currency,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.currency,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<String> get status => $state.composableBuilder(
-    column: $state.table.status,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.status,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<int> get ocrRetryCount => $state.composableBuilder(
-    column: $state.table.ocrRetryCount,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.ocrRetryCount,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<DateTime> get lastOcrAttemptAt => $state.composableBuilder(
-    column: $state.table.lastOcrAttemptAt,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.lastOcrAttemptAt,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<String> get notes => $state.composableBuilder(
-    column: $state.table.notes,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.notes,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<String> get invoiceNumber => $state.composableBuilder(
-    column: $state.table.invoiceNumber,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.invoiceNumber,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<String> get vendorAddress => $state.composableBuilder(
-    column: $state.table.vendorAddress,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.vendorAddress,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<String> get vendorPhone => $state.composableBuilder(
-    column: $state.table.vendorPhone,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.vendorPhone,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<String> get vendorEmail => $state.composableBuilder(
-    column: $state.table.vendorEmail,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.vendorEmail,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<String> get vendorUrl => $state.composableBuilder(
-    column: $state.table.vendorUrl,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.vendorUrl,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<String> get warrantyNotes => $state.composableBuilder(
-    column: $state.table.warrantyNotes,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.warrantyNotes,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<String> get remarks => $state.composableBuilder(
-    column: $state.table.remarks,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.remarks,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<DateTime> get createdAt => $state.composableBuilder(
-    column: $state.table.createdAt,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.createdAt,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<DateTime> get updatedAt => $state.composableBuilder(
-    column: $state.table.updatedAt,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.updatedAt,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<DateTime> get syncedAt => $state.composableBuilder(
-    column: $state.table.syncedAt,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.syncedAt,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<String> get localImagePath => $state.composableBuilder(
-    column: $state.table.localImagePath,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.localImagePath,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ComposableFilter receiptLineItemsRefs(
-    ComposableFilter Function($$ReceiptLineItemsTableFilterComposer f) f,
-  ) {
-    final $$ReceiptLineItemsTableFilterComposer composer = $state
-        .composerBuilder(
-          composer: this,
-          getCurrentColumn: (t) => t.id,
-          referencedTable: $state.db.receiptLineItems,
-          getReferencedColumn: (t) => t.receiptId,
-          builder: (joinBuilder, parentComposers) =>
-              $$ReceiptLineItemsTableFilterComposer(
-                ComposerState(
-                  $state.db,
-                  $state.db.receiptLineItems,
-                  joinBuilder,
-                  parentComposers,
-                ),
-              ),
-        );
+      ComposableFilter Function($$ReceiptLineItemsTableFilterComposer f) f) {
+    final $$ReceiptLineItemsTableFilterComposer composer =
+        $state.composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.id,
+            referencedTable: $state.db.receiptLineItems,
+            getReferencedColumn: (t) => t.receiptId,
+            builder: (joinBuilder, parentComposers) =>
+                $$ReceiptLineItemsTableFilterComposer(ComposerState($state.db,
+                    $state.db.receiptLineItems, joinBuilder, parentComposers)));
     return f(composer);
   }
 }
@@ -3460,463 +2902,406 @@ class $$ReceiptsTableOrderingComposer
     extends OrderingComposer<_$AppDatabase, $ReceiptsTable> {
   $$ReceiptsTableOrderingComposer(super.$state);
   ColumnOrderings<String> get id => $state.composableBuilder(
-    column: $state.table.id,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<String> get userId => $state.composableBuilder(
-    column: $state.table.userId,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.userId,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<String> get s3ObjectKey => $state.composableBuilder(
-    column: $state.table.s3ObjectKey,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.s3ObjectKey,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<String> get storeName => $state.composableBuilder(
-    column: $state.table.storeName,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.storeName,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<DateTime> get purchaseDate => $state.composableBuilder(
-    column: $state.table.purchaseDate,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.purchaseDate,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<double> get totalAmount => $state.composableBuilder(
-    column: $state.table.totalAmount,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.totalAmount,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<String> get currency => $state.composableBuilder(
-    column: $state.table.currency,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.currency,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<String> get status => $state.composableBuilder(
-    column: $state.table.status,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.status,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<int> get ocrRetryCount => $state.composableBuilder(
-    column: $state.table.ocrRetryCount,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.ocrRetryCount,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<DateTime> get lastOcrAttemptAt => $state.composableBuilder(
-    column: $state.table.lastOcrAttemptAt,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.lastOcrAttemptAt,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<String> get notes => $state.composableBuilder(
-    column: $state.table.notes,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.notes,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<String> get invoiceNumber => $state.composableBuilder(
-    column: $state.table.invoiceNumber,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.invoiceNumber,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<String> get vendorAddress => $state.composableBuilder(
-    column: $state.table.vendorAddress,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.vendorAddress,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<String> get vendorPhone => $state.composableBuilder(
-    column: $state.table.vendorPhone,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.vendorPhone,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<String> get vendorEmail => $state.composableBuilder(
-    column: $state.table.vendorEmail,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.vendorEmail,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<String> get vendorUrl => $state.composableBuilder(
-    column: $state.table.vendorUrl,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.vendorUrl,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<String> get warrantyNotes => $state.composableBuilder(
-    column: $state.table.warrantyNotes,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.warrantyNotes,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<String> get remarks => $state.composableBuilder(
-    column: $state.table.remarks,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.remarks,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<DateTime> get createdAt => $state.composableBuilder(
-    column: $state.table.createdAt,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.createdAt,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<DateTime> get updatedAt => $state.composableBuilder(
-    column: $state.table.updatedAt,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.updatedAt,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<DateTime> get syncedAt => $state.composableBuilder(
-    column: $state.table.syncedAt,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.syncedAt,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<String> get localImagePath => $state.composableBuilder(
-    column: $state.table.localImagePath,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.localImagePath,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
-typedef $$ReceiptLineItemsTableCreateCompanionBuilder =
-    ReceiptLineItemsCompanion Function({
-      required String id,
-      required String receiptId,
-      Value<int> rowIndex,
-      Value<String?> productCode,
-      Value<String?> itemDescription,
-      Value<double?> unitPrice,
-      Value<String?> productName,
-      Value<String?> productCategory,
-      Value<String?> productImageUrl,
-      Value<int?> warrantyPeriodMonths,
-      Value<DateTime?> warrantyExpiryDate,
-      Value<int?> returnPeriodDays,
-      Value<DateTime?> returnExpiryDate,
-      Value<int?> warrantyLeadDaysOverride,
-      Value<int?> returnLeadDaysOverride,
-      Value<bool?> warrantyReminderEnabled,
-      Value<bool?> returnReminderEnabled,
-      Value<String> status,
-      Value<String?> replacementForId,
-      Value<String?> replacedById,
-      required DateTime createdAt,
-      required DateTime updatedAt,
-      Value<int> rowid,
-    });
-typedef $$ReceiptLineItemsTableUpdateCompanionBuilder =
-    ReceiptLineItemsCompanion Function({
-      Value<String> id,
-      Value<String> receiptId,
-      Value<int> rowIndex,
-      Value<String?> productCode,
-      Value<String?> itemDescription,
-      Value<double?> unitPrice,
-      Value<String?> productName,
-      Value<String?> productCategory,
-      Value<String?> productImageUrl,
-      Value<int?> warrantyPeriodMonths,
-      Value<DateTime?> warrantyExpiryDate,
-      Value<int?> returnPeriodDays,
-      Value<DateTime?> returnExpiryDate,
-      Value<int?> warrantyLeadDaysOverride,
-      Value<int?> returnLeadDaysOverride,
-      Value<bool?> warrantyReminderEnabled,
-      Value<bool?> returnReminderEnabled,
-      Value<String> status,
-      Value<String?> replacementForId,
-      Value<String?> replacedById,
-      Value<DateTime> createdAt,
-      Value<DateTime> updatedAt,
-      Value<int> rowid,
-    });
+typedef $$ReceiptLineItemsTableCreateCompanionBuilder
+    = ReceiptLineItemsCompanion Function({
+  required String id,
+  required String receiptId,
+  Value<int> rowIndex,
+  Value<String?> productCode,
+  Value<String?> itemDescription,
+  Value<double?> unitPrice,
+  Value<String?> productName,
+  Value<String?> productCategory,
+  Value<String?> productImageUrl,
+  Value<int?> warrantyPeriodMonths,
+  Value<DateTime?> warrantyExpiryDate,
+  Value<int?> returnPeriodDays,
+  Value<DateTime?> returnExpiryDate,
+  Value<int?> warrantyLeadDaysOverride,
+  Value<int?> returnLeadDaysOverride,
+  Value<bool?> warrantyReminderEnabled,
+  Value<bool?> returnReminderEnabled,
+  Value<String> status,
+  Value<String?> replacementForId,
+  Value<String?> replacedById,
+  required DateTime createdAt,
+  required DateTime updatedAt,
+  Value<int> rowid,
+});
+typedef $$ReceiptLineItemsTableUpdateCompanionBuilder
+    = ReceiptLineItemsCompanion Function({
+  Value<String> id,
+  Value<String> receiptId,
+  Value<int> rowIndex,
+  Value<String?> productCode,
+  Value<String?> itemDescription,
+  Value<double?> unitPrice,
+  Value<String?> productName,
+  Value<String?> productCategory,
+  Value<String?> productImageUrl,
+  Value<int?> warrantyPeriodMonths,
+  Value<DateTime?> warrantyExpiryDate,
+  Value<int?> returnPeriodDays,
+  Value<DateTime?> returnExpiryDate,
+  Value<int?> warrantyLeadDaysOverride,
+  Value<int?> returnLeadDaysOverride,
+  Value<bool?> warrantyReminderEnabled,
+  Value<bool?> returnReminderEnabled,
+  Value<String> status,
+  Value<String?> replacementForId,
+  Value<String?> replacedById,
+  Value<DateTime> createdAt,
+  Value<DateTime> updatedAt,
+  Value<int> rowid,
+});
 
-class $$ReceiptLineItemsTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $ReceiptLineItemsTable,
-          ReceiptLineItem,
-          $$ReceiptLineItemsTableFilterComposer,
-          $$ReceiptLineItemsTableOrderingComposer,
-          $$ReceiptLineItemsTableCreateCompanionBuilder,
-          $$ReceiptLineItemsTableUpdateCompanionBuilder
-        > {
+class $$ReceiptLineItemsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $ReceiptLineItemsTable,
+    ReceiptLineItem,
+    $$ReceiptLineItemsTableFilterComposer,
+    $$ReceiptLineItemsTableOrderingComposer,
+    $$ReceiptLineItemsTableCreateCompanionBuilder,
+    $$ReceiptLineItemsTableUpdateCompanionBuilder> {
   $$ReceiptLineItemsTableTableManager(
-    _$AppDatabase db,
-    $ReceiptLineItemsTable table,
-  ) : super(
-        TableManagerState(
+      _$AppDatabase db, $ReceiptLineItemsTable table)
+      : super(TableManagerState(
           db: db,
           table: table,
-          filteringComposer: $$ReceiptLineItemsTableFilterComposer(
-            ComposerState(db, table),
+          filteringComposer:
+              $$ReceiptLineItemsTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$ReceiptLineItemsTableOrderingComposer(ComposerState(db, table)),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> receiptId = const Value.absent(),
+            Value<int> rowIndex = const Value.absent(),
+            Value<String?> productCode = const Value.absent(),
+            Value<String?> itemDescription = const Value.absent(),
+            Value<double?> unitPrice = const Value.absent(),
+            Value<String?> productName = const Value.absent(),
+            Value<String?> productCategory = const Value.absent(),
+            Value<String?> productImageUrl = const Value.absent(),
+            Value<int?> warrantyPeriodMonths = const Value.absent(),
+            Value<DateTime?> warrantyExpiryDate = const Value.absent(),
+            Value<int?> returnPeriodDays = const Value.absent(),
+            Value<DateTime?> returnExpiryDate = const Value.absent(),
+            Value<int?> warrantyLeadDaysOverride = const Value.absent(),
+            Value<int?> returnLeadDaysOverride = const Value.absent(),
+            Value<bool?> warrantyReminderEnabled = const Value.absent(),
+            Value<bool?> returnReminderEnabled = const Value.absent(),
+            Value<String> status = const Value.absent(),
+            Value<String?> replacementForId = const Value.absent(),
+            Value<String?> replacedById = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ReceiptLineItemsCompanion(
+            id: id,
+            receiptId: receiptId,
+            rowIndex: rowIndex,
+            productCode: productCode,
+            itemDescription: itemDescription,
+            unitPrice: unitPrice,
+            productName: productName,
+            productCategory: productCategory,
+            productImageUrl: productImageUrl,
+            warrantyPeriodMonths: warrantyPeriodMonths,
+            warrantyExpiryDate: warrantyExpiryDate,
+            returnPeriodDays: returnPeriodDays,
+            returnExpiryDate: returnExpiryDate,
+            warrantyLeadDaysOverride: warrantyLeadDaysOverride,
+            returnLeadDaysOverride: returnLeadDaysOverride,
+            warrantyReminderEnabled: warrantyReminderEnabled,
+            returnReminderEnabled: returnReminderEnabled,
+            status: status,
+            replacementForId: replacementForId,
+            replacedById: replacedById,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            rowid: rowid,
           ),
-          orderingComposer: $$ReceiptLineItemsTableOrderingComposer(
-            ComposerState(db, table),
+          createCompanionCallback: ({
+            required String id,
+            required String receiptId,
+            Value<int> rowIndex = const Value.absent(),
+            Value<String?> productCode = const Value.absent(),
+            Value<String?> itemDescription = const Value.absent(),
+            Value<double?> unitPrice = const Value.absent(),
+            Value<String?> productName = const Value.absent(),
+            Value<String?> productCategory = const Value.absent(),
+            Value<String?> productImageUrl = const Value.absent(),
+            Value<int?> warrantyPeriodMonths = const Value.absent(),
+            Value<DateTime?> warrantyExpiryDate = const Value.absent(),
+            Value<int?> returnPeriodDays = const Value.absent(),
+            Value<DateTime?> returnExpiryDate = const Value.absent(),
+            Value<int?> warrantyLeadDaysOverride = const Value.absent(),
+            Value<int?> returnLeadDaysOverride = const Value.absent(),
+            Value<bool?> warrantyReminderEnabled = const Value.absent(),
+            Value<bool?> returnReminderEnabled = const Value.absent(),
+            Value<String> status = const Value.absent(),
+            Value<String?> replacementForId = const Value.absent(),
+            Value<String?> replacedById = const Value.absent(),
+            required DateTime createdAt,
+            required DateTime updatedAt,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              ReceiptLineItemsCompanion.insert(
+            id: id,
+            receiptId: receiptId,
+            rowIndex: rowIndex,
+            productCode: productCode,
+            itemDescription: itemDescription,
+            unitPrice: unitPrice,
+            productName: productName,
+            productCategory: productCategory,
+            productImageUrl: productImageUrl,
+            warrantyPeriodMonths: warrantyPeriodMonths,
+            warrantyExpiryDate: warrantyExpiryDate,
+            returnPeriodDays: returnPeriodDays,
+            returnExpiryDate: returnExpiryDate,
+            warrantyLeadDaysOverride: warrantyLeadDaysOverride,
+            returnLeadDaysOverride: returnLeadDaysOverride,
+            warrantyReminderEnabled: warrantyReminderEnabled,
+            returnReminderEnabled: returnReminderEnabled,
+            status: status,
+            replacementForId: replacementForId,
+            replacedById: replacedById,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            rowid: rowid,
           ),
-          updateCompanionCallback:
-              ({
-                Value<String> id = const Value.absent(),
-                Value<String> receiptId = const Value.absent(),
-                Value<int> rowIndex = const Value.absent(),
-                Value<String?> productCode = const Value.absent(),
-                Value<String?> itemDescription = const Value.absent(),
-                Value<double?> unitPrice = const Value.absent(),
-                Value<String?> productName = const Value.absent(),
-                Value<String?> productCategory = const Value.absent(),
-                Value<String?> productImageUrl = const Value.absent(),
-                Value<int?> warrantyPeriodMonths = const Value.absent(),
-                Value<DateTime?> warrantyExpiryDate = const Value.absent(),
-                Value<int?> returnPeriodDays = const Value.absent(),
-                Value<DateTime?> returnExpiryDate = const Value.absent(),
-                Value<int?> warrantyLeadDaysOverride = const Value.absent(),
-                Value<int?> returnLeadDaysOverride = const Value.absent(),
-                Value<bool?> warrantyReminderEnabled = const Value.absent(),
-                Value<bool?> returnReminderEnabled = const Value.absent(),
-                Value<String> status = const Value.absent(),
-                Value<String?> replacementForId = const Value.absent(),
-                Value<String?> replacedById = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => ReceiptLineItemsCompanion(
-                id: id,
-                receiptId: receiptId,
-                rowIndex: rowIndex,
-                productCode: productCode,
-                itemDescription: itemDescription,
-                unitPrice: unitPrice,
-                productName: productName,
-                productCategory: productCategory,
-                productImageUrl: productImageUrl,
-                warrantyPeriodMonths: warrantyPeriodMonths,
-                warrantyExpiryDate: warrantyExpiryDate,
-                returnPeriodDays: returnPeriodDays,
-                returnExpiryDate: returnExpiryDate,
-                warrantyLeadDaysOverride: warrantyLeadDaysOverride,
-                returnLeadDaysOverride: returnLeadDaysOverride,
-                warrantyReminderEnabled: warrantyReminderEnabled,
-                returnReminderEnabled: returnReminderEnabled,
-                status: status,
-                replacementForId: replacementForId,
-                replacedById: replacedById,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String id,
-                required String receiptId,
-                Value<int> rowIndex = const Value.absent(),
-                Value<String?> productCode = const Value.absent(),
-                Value<String?> itemDescription = const Value.absent(),
-                Value<double?> unitPrice = const Value.absent(),
-                Value<String?> productName = const Value.absent(),
-                Value<String?> productCategory = const Value.absent(),
-                Value<String?> productImageUrl = const Value.absent(),
-                Value<int?> warrantyPeriodMonths = const Value.absent(),
-                Value<DateTime?> warrantyExpiryDate = const Value.absent(),
-                Value<int?> returnPeriodDays = const Value.absent(),
-                Value<DateTime?> returnExpiryDate = const Value.absent(),
-                Value<int?> warrantyLeadDaysOverride = const Value.absent(),
-                Value<int?> returnLeadDaysOverride = const Value.absent(),
-                Value<bool?> warrantyReminderEnabled = const Value.absent(),
-                Value<bool?> returnReminderEnabled = const Value.absent(),
-                Value<String> status = const Value.absent(),
-                Value<String?> replacementForId = const Value.absent(),
-                Value<String?> replacedById = const Value.absent(),
-                required DateTime createdAt,
-                required DateTime updatedAt,
-                Value<int> rowid = const Value.absent(),
-              }) => ReceiptLineItemsCompanion.insert(
-                id: id,
-                receiptId: receiptId,
-                rowIndex: rowIndex,
-                productCode: productCode,
-                itemDescription: itemDescription,
-                unitPrice: unitPrice,
-                productName: productName,
-                productCategory: productCategory,
-                productImageUrl: productImageUrl,
-                warrantyPeriodMonths: warrantyPeriodMonths,
-                warrantyExpiryDate: warrantyExpiryDate,
-                returnPeriodDays: returnPeriodDays,
-                returnExpiryDate: returnExpiryDate,
-                warrantyLeadDaysOverride: warrantyLeadDaysOverride,
-                returnLeadDaysOverride: returnLeadDaysOverride,
-                warrantyReminderEnabled: warrantyReminderEnabled,
-                returnReminderEnabled: returnReminderEnabled,
-                status: status,
-                replacementForId: replacementForId,
-                replacedById: replacedById,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                rowid: rowid,
-              ),
-        ),
-      );
+        ));
 }
 
 class $$ReceiptLineItemsTableFilterComposer
     extends FilterComposer<_$AppDatabase, $ReceiptLineItemsTable> {
   $$ReceiptLineItemsTableFilterComposer(super.$state);
   ColumnFilters<String> get id => $state.composableBuilder(
-    column: $state.table.id,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<int> get rowIndex => $state.composableBuilder(
-    column: $state.table.rowIndex,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.rowIndex,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<String> get productCode => $state.composableBuilder(
-    column: $state.table.productCode,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.productCode,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<String> get itemDescription => $state.composableBuilder(
-    column: $state.table.itemDescription,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.itemDescription,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<double> get unitPrice => $state.composableBuilder(
-    column: $state.table.unitPrice,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.unitPrice,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<String> get productName => $state.composableBuilder(
-    column: $state.table.productName,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.productName,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<String> get productCategory => $state.composableBuilder(
-    column: $state.table.productCategory,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.productCategory,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<String> get productImageUrl => $state.composableBuilder(
-    column: $state.table.productImageUrl,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.productImageUrl,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<int> get warrantyPeriodMonths => $state.composableBuilder(
-    column: $state.table.warrantyPeriodMonths,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.warrantyPeriodMonths,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<DateTime> get warrantyExpiryDate => $state.composableBuilder(
-    column: $state.table.warrantyExpiryDate,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.warrantyExpiryDate,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<int> get returnPeriodDays => $state.composableBuilder(
-    column: $state.table.returnPeriodDays,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.returnPeriodDays,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<DateTime> get returnExpiryDate => $state.composableBuilder(
-    column: $state.table.returnExpiryDate,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.returnExpiryDate,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<int> get warrantyLeadDaysOverride => $state.composableBuilder(
-    column: $state.table.warrantyLeadDaysOverride,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.warrantyLeadDaysOverride,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<int> get returnLeadDaysOverride => $state.composableBuilder(
-    column: $state.table.returnLeadDaysOverride,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.returnLeadDaysOverride,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<bool> get warrantyReminderEnabled => $state.composableBuilder(
-    column: $state.table.warrantyReminderEnabled,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.warrantyReminderEnabled,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<bool> get returnReminderEnabled => $state.composableBuilder(
-    column: $state.table.returnReminderEnabled,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.returnReminderEnabled,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<String> get status => $state.composableBuilder(
-    column: $state.table.status,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.status,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<String> get replacementForId => $state.composableBuilder(
-    column: $state.table.replacementForId,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.replacementForId,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<String> get replacedById => $state.composableBuilder(
-    column: $state.table.replacedById,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.replacedById,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<DateTime> get createdAt => $state.composableBuilder(
-    column: $state.table.createdAt,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.createdAt,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<DateTime> get updatedAt => $state.composableBuilder(
-    column: $state.table.updatedAt,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.updatedAt,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   $$ReceiptsTableFilterComposer get receiptId {
     final $$ReceiptsTableFilterComposer composer = $state.composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.receiptId,
-      referencedTable: $state.db.receipts,
-      getReferencedColumn: (t) => t.id,
-      builder: (joinBuilder, parentComposers) => $$ReceiptsTableFilterComposer(
-        ComposerState(
-          $state.db,
-          $state.db.receipts,
-          joinBuilder,
-          parentComposers,
-        ),
-      ),
-    );
+        composer: this,
+        getCurrentColumn: (t) => t.receiptId,
+        referencedTable: $state.db.receipts,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) =>
+            $$ReceiptsTableFilterComposer(ComposerState(
+                $state.db, $state.db.receipts, joinBuilder, parentComposers)));
     return composer;
   }
 }
@@ -3925,330 +3310,281 @@ class $$ReceiptLineItemsTableOrderingComposer
     extends OrderingComposer<_$AppDatabase, $ReceiptLineItemsTable> {
   $$ReceiptLineItemsTableOrderingComposer(super.$state);
   ColumnOrderings<String> get id => $state.composableBuilder(
-    column: $state.table.id,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<int> get rowIndex => $state.composableBuilder(
-    column: $state.table.rowIndex,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.rowIndex,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<String> get productCode => $state.composableBuilder(
-    column: $state.table.productCode,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.productCode,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<String> get itemDescription => $state.composableBuilder(
-    column: $state.table.itemDescription,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.itemDescription,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<double> get unitPrice => $state.composableBuilder(
-    column: $state.table.unitPrice,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.unitPrice,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<String> get productName => $state.composableBuilder(
-    column: $state.table.productName,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.productName,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<String> get productCategory => $state.composableBuilder(
-    column: $state.table.productCategory,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.productCategory,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<String> get productImageUrl => $state.composableBuilder(
-    column: $state.table.productImageUrl,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.productImageUrl,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<int> get warrantyPeriodMonths => $state.composableBuilder(
-    column: $state.table.warrantyPeriodMonths,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.warrantyPeriodMonths,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<DateTime> get warrantyExpiryDate => $state.composableBuilder(
-    column: $state.table.warrantyExpiryDate,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.warrantyExpiryDate,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<int> get returnPeriodDays => $state.composableBuilder(
-    column: $state.table.returnPeriodDays,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.returnPeriodDays,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<DateTime> get returnExpiryDate => $state.composableBuilder(
-    column: $state.table.returnExpiryDate,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.returnExpiryDate,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<int> get warrantyLeadDaysOverride => $state.composableBuilder(
-    column: $state.table.warrantyLeadDaysOverride,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.warrantyLeadDaysOverride,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<int> get returnLeadDaysOverride => $state.composableBuilder(
-    column: $state.table.returnLeadDaysOverride,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.returnLeadDaysOverride,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<bool> get warrantyReminderEnabled => $state.composableBuilder(
-    column: $state.table.warrantyReminderEnabled,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.warrantyReminderEnabled,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<bool> get returnReminderEnabled => $state.composableBuilder(
-    column: $state.table.returnReminderEnabled,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.returnReminderEnabled,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<String> get status => $state.composableBuilder(
-    column: $state.table.status,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.status,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<String> get replacementForId => $state.composableBuilder(
-    column: $state.table.replacementForId,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.replacementForId,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<String> get replacedById => $state.composableBuilder(
-    column: $state.table.replacedById,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.replacedById,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<DateTime> get createdAt => $state.composableBuilder(
-    column: $state.table.createdAt,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.createdAt,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<DateTime> get updatedAt => $state.composableBuilder(
-    column: $state.table.updatedAt,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.updatedAt,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   $$ReceiptsTableOrderingComposer get receiptId {
     final $$ReceiptsTableOrderingComposer composer = $state.composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.receiptId,
-      referencedTable: $state.db.receipts,
-      getReferencedColumn: (t) => t.id,
-      builder: (joinBuilder, parentComposers) =>
-          $$ReceiptsTableOrderingComposer(
-            ComposerState(
-              $state.db,
-              $state.db.receipts,
-              joinBuilder,
-              parentComposers,
-            ),
-          ),
-    );
+        composer: this,
+        getCurrentColumn: (t) => t.receiptId,
+        referencedTable: $state.db.receipts,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder, parentComposers) =>
+            $$ReceiptsTableOrderingComposer(ComposerState(
+                $state.db, $state.db.receipts, joinBuilder, parentComposers)));
     return composer;
   }
 }
 
-typedef $$UploadQueueTableCreateCompanionBuilder =
-    UploadQueueCompanion Function({
-      required String id,
-      required String receiptId,
-      required String localImagePath,
-      Value<int> retryCount,
-      required DateTime createdAt,
-      Value<DateTime?> lastAttemptAt,
-      Value<String?> errorMessage,
-      Value<int> rowid,
-    });
-typedef $$UploadQueueTableUpdateCompanionBuilder =
-    UploadQueueCompanion Function({
-      Value<String> id,
-      Value<String> receiptId,
-      Value<String> localImagePath,
-      Value<int> retryCount,
-      Value<DateTime> createdAt,
-      Value<DateTime?> lastAttemptAt,
-      Value<String?> errorMessage,
-      Value<int> rowid,
-    });
+typedef $$UploadQueueTableCreateCompanionBuilder = UploadQueueCompanion
+    Function({
+  required String id,
+  required String receiptId,
+  required String localImagePath,
+  Value<int> retryCount,
+  required DateTime createdAt,
+  Value<DateTime?> lastAttemptAt,
+  Value<String?> errorMessage,
+  Value<int> rowid,
+});
+typedef $$UploadQueueTableUpdateCompanionBuilder = UploadQueueCompanion
+    Function({
+  Value<String> id,
+  Value<String> receiptId,
+  Value<String> localImagePath,
+  Value<int> retryCount,
+  Value<DateTime> createdAt,
+  Value<DateTime?> lastAttemptAt,
+  Value<String?> errorMessage,
+  Value<int> rowid,
+});
 
-class $$UploadQueueTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $UploadQueueTable,
-          UploadQueueData,
-          $$UploadQueueTableFilterComposer,
-          $$UploadQueueTableOrderingComposer,
-          $$UploadQueueTableCreateCompanionBuilder,
-          $$UploadQueueTableUpdateCompanionBuilder
-        > {
+class $$UploadQueueTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $UploadQueueTable,
+    UploadQueueData,
+    $$UploadQueueTableFilterComposer,
+    $$UploadQueueTableOrderingComposer,
+    $$UploadQueueTableCreateCompanionBuilder,
+    $$UploadQueueTableUpdateCompanionBuilder> {
   $$UploadQueueTableTableManager(_$AppDatabase db, $UploadQueueTable table)
-    : super(
-        TableManagerState(
+      : super(TableManagerState(
           db: db,
           table: table,
-          filteringComposer: $$UploadQueueTableFilterComposer(
-            ComposerState(db, table),
+          filteringComposer:
+              $$UploadQueueTableFilterComposer(ComposerState(db, table)),
+          orderingComposer:
+              $$UploadQueueTableOrderingComposer(ComposerState(db, table)),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> receiptId = const Value.absent(),
+            Value<String> localImagePath = const Value.absent(),
+            Value<int> retryCount = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime?> lastAttemptAt = const Value.absent(),
+            Value<String?> errorMessage = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              UploadQueueCompanion(
+            id: id,
+            receiptId: receiptId,
+            localImagePath: localImagePath,
+            retryCount: retryCount,
+            createdAt: createdAt,
+            lastAttemptAt: lastAttemptAt,
+            errorMessage: errorMessage,
+            rowid: rowid,
           ),
-          orderingComposer: $$UploadQueueTableOrderingComposer(
-            ComposerState(db, table),
+          createCompanionCallback: ({
+            required String id,
+            required String receiptId,
+            required String localImagePath,
+            Value<int> retryCount = const Value.absent(),
+            required DateTime createdAt,
+            Value<DateTime?> lastAttemptAt = const Value.absent(),
+            Value<String?> errorMessage = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              UploadQueueCompanion.insert(
+            id: id,
+            receiptId: receiptId,
+            localImagePath: localImagePath,
+            retryCount: retryCount,
+            createdAt: createdAt,
+            lastAttemptAt: lastAttemptAt,
+            errorMessage: errorMessage,
+            rowid: rowid,
           ),
-          updateCompanionCallback:
-              ({
-                Value<String> id = const Value.absent(),
-                Value<String> receiptId = const Value.absent(),
-                Value<String> localImagePath = const Value.absent(),
-                Value<int> retryCount = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime?> lastAttemptAt = const Value.absent(),
-                Value<String?> errorMessage = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => UploadQueueCompanion(
-                id: id,
-                receiptId: receiptId,
-                localImagePath: localImagePath,
-                retryCount: retryCount,
-                createdAt: createdAt,
-                lastAttemptAt: lastAttemptAt,
-                errorMessage: errorMessage,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String id,
-                required String receiptId,
-                required String localImagePath,
-                Value<int> retryCount = const Value.absent(),
-                required DateTime createdAt,
-                Value<DateTime?> lastAttemptAt = const Value.absent(),
-                Value<String?> errorMessage = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => UploadQueueCompanion.insert(
-                id: id,
-                receiptId: receiptId,
-                localImagePath: localImagePath,
-                retryCount: retryCount,
-                createdAt: createdAt,
-                lastAttemptAt: lastAttemptAt,
-                errorMessage: errorMessage,
-                rowid: rowid,
-              ),
-        ),
-      );
+        ));
 }
 
 class $$UploadQueueTableFilterComposer
     extends FilterComposer<_$AppDatabase, $UploadQueueTable> {
   $$UploadQueueTableFilterComposer(super.$state);
   ColumnFilters<String> get id => $state.composableBuilder(
-    column: $state.table.id,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<String> get receiptId => $state.composableBuilder(
-    column: $state.table.receiptId,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.receiptId,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<String> get localImagePath => $state.composableBuilder(
-    column: $state.table.localImagePath,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.localImagePath,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<int> get retryCount => $state.composableBuilder(
-    column: $state.table.retryCount,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.retryCount,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<DateTime> get createdAt => $state.composableBuilder(
-    column: $state.table.createdAt,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.createdAt,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<DateTime> get lastAttemptAt => $state.composableBuilder(
-    column: $state.table.lastAttemptAt,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.lastAttemptAt,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 
   ColumnFilters<String> get errorMessage => $state.composableBuilder(
-    column: $state.table.errorMessage,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.errorMessage,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
 }
 
 class $$UploadQueueTableOrderingComposer
     extends OrderingComposer<_$AppDatabase, $UploadQueueTable> {
   $$UploadQueueTableOrderingComposer(super.$state);
   ColumnOrderings<String> get id => $state.composableBuilder(
-    column: $state.table.id,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.id,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<String> get receiptId => $state.composableBuilder(
-    column: $state.table.receiptId,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.receiptId,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<String> get localImagePath => $state.composableBuilder(
-    column: $state.table.localImagePath,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.localImagePath,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<int> get retryCount => $state.composableBuilder(
-    column: $state.table.retryCount,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.retryCount,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<DateTime> get createdAt => $state.composableBuilder(
-    column: $state.table.createdAt,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.createdAt,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<DateTime> get lastAttemptAt => $state.composableBuilder(
-    column: $state.table.lastAttemptAt,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.lastAttemptAt,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 
   ColumnOrderings<String> get errorMessage => $state.composableBuilder(
-    column: $state.table.errorMessage,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
+      column: $state.table.errorMessage,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
 class $AppDatabaseManager {
