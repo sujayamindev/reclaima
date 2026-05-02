@@ -42,18 +42,11 @@ void main() async {
   const sentryDsn = String.fromEnvironment('SENTRY_DSN');
 
   if (sentryDsn.isNotEmpty) {
-    await SentryFlutter.init(
-      (options) {
-        options.dsn = sentryDsn;
-        options.tracesSampleRate = 1.0;
-        options.profilesSampleRate = 1.0;
-      },
-      appRunner: () => runApp(
-        const ProviderScope(
-          child: MyApp(),
-        ),
-      ),
-    );
+    await SentryFlutter.init((options) {
+      options.dsn = sentryDsn;
+      options.tracesSampleRate = 1.0;
+      options.profilesSampleRate = 1.0;
+    }, appRunner: () => runApp(const ProviderScope(child: MyApp())));
   } else {
     runApp(const ProviderScope(child: MyApp()));
   }
@@ -73,9 +66,7 @@ class MyApp extends ConsumerWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.light,
       navigatorKey: navigatorKey,
-      navigatorObservers: [
-        SentryNavigatorObserver(),
-      ],
+      navigatorObservers: [SentryNavigatorObserver()],
       // Named route used by NotificationService to deep-link into a product
       onGenerateRoute: (settings) {
         if (settings.name == '/product-detail') {
