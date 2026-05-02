@@ -279,7 +279,7 @@ Once the backend is running, visit:
 | PDF Generation | ✅ Complete |
 | Real AWS Integration | ✅ Complete |
 | Social Login (Google/Apple) | ⏳ Google present, Apple hidden |
-| Stats Tab | ⏳ Stub |
+| Error Tracking (Sentry) | ⏳ Planned |
 
 ---
 
@@ -321,7 +321,6 @@ Once the backend is running, visit:
 - [x] Firebase Cloud Messaging integration
 - [x] Warranty expiry reminders
 - [x] Return deadline reminders
-- [ ] Stats tab — spend charts, warranty calendar
 - [ ] Social login (Apple Sign-In)
 
 ### Phase 5: Production ✅

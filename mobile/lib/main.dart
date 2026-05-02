@@ -1,5 +1,6 @@
 // coverage:ignore-file
 import 'package:flutter/material.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -38,7 +39,24 @@ void main() async {
   // Register the background handler before runApp
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-  runApp(const ProviderScope(child: MyApp()));
+  const sentryDsn = String.fromEnvironment('SENTRY_DSN');
+
+  if (sentryDsn.isNotEmpty) {
+    await SentryFlutter.init(
+      (options) {
+        options.dsn = sentryDsn;
+        options.tracesSampleRate = 1.0;
+        options.profilesSampleRate = 1.0;
+      },
+      appRunner: () => runApp(
+        const ProviderScope(
+          child: MyApp(),
+        ),
+      ),
+    );
+  } else {
+    runApp(const ProviderScope(child: MyApp()));
+  }
 }
 
 class MyApp extends ConsumerWidget {
@@ -55,6 +73,9 @@ class MyApp extends ConsumerWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.light,
       navigatorKey: navigatorKey,
+      navigatorObservers: [
+        SentryNavigatorObserver(),
+      ],
       // Named route used by NotificationService to deep-link into a product
       onGenerateRoute: (settings) {
         if (settings.name == '/product-detail') {
