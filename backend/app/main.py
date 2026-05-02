@@ -46,7 +46,7 @@ if not settings.DEBUG and settings.SENTRY_DSN:
         # Set profiles_sample_rate to 1.0 to profile 100%
         # of sampled transactions.
         profiles_sample_rate=1.0,
-        environment=settings.ENVIRONMENT
+        environment=settings.ENVIRONMENT,
     )
 
 
