@@ -5,7 +5,8 @@ Loads environment variables and provides application settings.
 
 import os
 from functools import lru_cache
-from typing import List
+from typing import List, Optional
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 try:
@@ -56,6 +57,10 @@ load_infisical_secrets()
 
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
+
+    # Sentry
+    SENTRY_DSN: Optional[str] = Field(None, description="Sentry DSN for error tracking")
+    ENVIRONMENT: str = "production"
 
     # Application
     PROJECT_NAME: str = "Smart Receipt & Warranty Manager"
