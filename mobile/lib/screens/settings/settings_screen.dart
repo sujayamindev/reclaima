@@ -117,6 +117,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   const SizedBox(height: 16),
 
+                  // ── Debug & Verification ───────────────────────────
+                  _buildSectionCard(
+                    isDark,
+                    'Debug & Verification',
+                    Symbols.bug_report_rounded,
+                    [
+                      _buildTapRow(
+                        isDark,
+                        icon: Symbols.error_rounded,
+                        title: 'Test Sentry Crash',
+                        subtitle: 'Throw a deliberate exception',
+                        onTap: () {
+                          // This will be caught by Sentry and reported
+                          throw Exception('Sentry Verification Error');
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
                   // ── About ────────────────────────────────────────────
                   _buildSectionCard(isDark, 'About', Symbols.info_rounded, [
                     _buildInfoRow(isDark, 'App Version', _appVersion),
