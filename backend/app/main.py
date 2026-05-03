@@ -226,23 +226,6 @@ async def root():
 
 
 # ============================================
-# Sentry Debug Endpoint
-# ============================================
-@app.get("/sentry-debug")
-async def trigger_error():
-    """
-    Deliberately trigger an error to test Sentry integration.
-    Only enabled when Sentry is configured.
-    """
-    if not settings.SENTRY_DSN:
-        return {"status": "ignored", "message": "Sentry not configured"}
-
-    # This will raise a ZeroDivisionError
-    1 / 0
-    return {"status": "failed", "message": "This should never be reached"}
-
-
-# ============================================
 # Development: Auto-reload notice
 # ============================================
 if settings.DEBUG:

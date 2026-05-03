@@ -895,30 +895,6 @@
       ]
     },
     {
-      "endpoint": "/sentry-debug",
-      "method": "GET",
-      "output_encoding": "no-op",
-      "extra_config": {
-        "qos/ratelimit/router": {
-          "client_max_rate": 1.66,
-          "client_capacity": 8,
-          "strategy": "ip"
-        }
-      },
-      "backend": [
-        {
-          "url_pattern": "/sentry-debug",
-          "encoding": "no-op",
-          "sd": "static",
-          "method": "GET",
-          "host": [
-            "http://backend:8000"
-          ],
-          "disable_host_sanitize": false
-        }
-      ]
-    },
-    {
       "endpoint": "/",
       "method": "GET",
       "output_encoding": "no-op",
