@@ -236,7 +236,7 @@ async def trigger_error():
     """
     if not settings.SENTRY_DSN:
         return {"status": "ignored", "message": "Sentry not configured"}
-    
+
     # This will raise a ZeroDivisionError
     1 / 0
     return {"status": "failed", "message": "This should never be reached"}
