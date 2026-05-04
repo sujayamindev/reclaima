@@ -409,9 +409,12 @@ jobs:
 
       - name: Sync deployment assets
         run: |
-          ssh "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}" "mkdir -p /mnt/data/smart-receipt-and-warranty-manager/deploy/scripts /mnt/data/smart-receipt-and-warranty-manager/secrets"
+          ssh "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}" "mkdir -p /mnt/data/smart-receipt-and-warranty-manager/deploy/scripts /mnt/data/smart-receipt-and-warranty-manager/secrets /mnt/data/smart-receipt-and-warranty-manager/deploy/monitoring"
           scp krakend.json "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}:/mnt/data/smart-receipt-and-warranty-manager/krakend.json"
           scp deploy/docker-compose.prod.yml "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}:/mnt/data/smart-receipt-and-warranty-manager/deploy/docker-compose.prod.yml"
+          scp deploy/docker-compose.monitoring.yml "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}:/mnt/data/smart-receipt-and-warranty-manager/deploy/docker-compose.monitoring.yml"
+          scp deploy/monitoring/prometheus.yml "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}:/mnt/data/smart-receipt-and-warranty-manager/deploy/monitoring/prometheus.yml"
+          scp deploy/monitoring/promtail-config.yml "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}:/mnt/data/smart-receipt-and-warranty-manager/deploy/monitoring/promtail-config.yml"
           scp deploy/.env.prod.example "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}:/mnt/data/smart-receipt-and-warranty-manager/deploy/.env.prod.example"
           scp deploy/scripts/oci_deploy.sh "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}:/mnt/data/smart-receipt-and-warranty-manager/deploy/scripts/oci_deploy.sh"
 

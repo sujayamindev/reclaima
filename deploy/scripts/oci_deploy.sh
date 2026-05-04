@@ -148,6 +148,12 @@ docker compose -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}" restart krakend
 
 echo "Running post-deploy health checks: API endpoint and scheduler container"
 if wait_for_runtime_health "Deployment" && run_authenticated_smoke_test; then
+  # Start/update monitoring stack if it exists
+  MONITORING_COMPOSE="${DEPLOY_DIR}/docker-compose.monitoring.yml"
+  if [[ -f "${MONITORING_COMPOSE}" ]]; then
+    echo "Starting monitoring stack..."
+    docker compose -f "${MONITORING_COMPOSE}" --env-file "${ENV_FILE}" up -d
+  fi
   exit 0
 fi
 
