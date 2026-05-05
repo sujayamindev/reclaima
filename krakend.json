@@ -5,18 +5,14 @@
   "timeout": "60000ms",
   "cache_ttl": "300s",
   "output_encoding": "no-op",
-  "input_headers": [
-    "Authorization",
-    "Content-Type",
-    "Accept",
-    "X-App-Version",
-    "X-Platform"
-  ],
   "endpoints": [
     {
       "endpoint": "/api/v1/auth/login",
       "method": "POST",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 0.083,
@@ -41,6 +37,9 @@
       "endpoint": "/api/v1/auth/register",
       "method": "POST",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 0.083,
@@ -65,6 +64,9 @@
       "endpoint": "/api/v1/auth/refresh",
       "method": "POST",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 0.083,
@@ -89,6 +91,9 @@
       "endpoint": "/api/v1/auth/logout",
       "method": "POST",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 0.083,
@@ -113,6 +118,9 @@
       "endpoint": "/api/v1/auth/me",
       "method": "GET",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 0.083,
@@ -137,6 +145,9 @@
       "endpoint": "/api/v1/auth/me",
       "method": "PATCH",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 0.083,
@@ -161,6 +172,9 @@
       "endpoint": "/api/v1/auth/me",
       "method": "DELETE",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 0.083,
@@ -185,6 +199,9 @@
       "endpoint": "/api/v1/receipts/ocr-extract",
       "method": "POST",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 0.166,
@@ -209,6 +226,9 @@
       "endpoint": "/api/v1/receipts/{receipt_id}/upload",
       "method": "POST",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 0.166,
@@ -233,6 +253,9 @@
       "endpoint": "/api/v1/claims/{claim_id}/documents",
       "method": "POST",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 0.166,
@@ -257,6 +280,9 @@
       "endpoint": "/api/v1/claims/{claim_id}/defect-images",
       "method": "POST",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 0.166,
@@ -281,6 +307,9 @@
       "endpoint": "/api/v1/receipts",
       "method": "GET",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 1.66,
@@ -305,6 +334,9 @@
       "endpoint": "/api/v1/receipts",
       "method": "POST",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 1.66,
@@ -329,6 +361,9 @@
       "endpoint": "/api/v1/receipts/{receipt_id}",
       "method": "GET",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 1.66,
@@ -353,6 +388,9 @@
       "endpoint": "/api/v1/receipts/{receipt_id}",
       "method": "PATCH",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 1.66,
@@ -377,6 +415,9 @@
       "endpoint": "/api/v1/receipts/{receipt_id}",
       "method": "DELETE",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 1.66,
@@ -401,6 +442,9 @@
       "endpoint": "/api/v1/receipts/{receipt_id}/image-url",
       "method": "GET",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 1.66,
@@ -425,6 +469,9 @@
       "endpoint": "/api/v1/receipts/{receipt_id}/items",
       "method": "POST",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 1.66,
@@ -449,6 +496,9 @@
       "endpoint": "/api/v1/receipts/{receipt_id}/items/{item_id}",
       "method": "PATCH",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 1.66,
@@ -473,6 +523,9 @@
       "endpoint": "/api/v1/receipts/{receipt_id}/items/{item_id}",
       "method": "DELETE",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 1.66,
@@ -497,6 +550,9 @@
       "endpoint": "/api/v1/warranties",
       "method": "GET",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 1.66,
@@ -521,6 +577,9 @@
       "endpoint": "/api/v1/warranties/returns",
       "method": "GET",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 1.66,
@@ -545,6 +604,9 @@
       "endpoint": "/api/v1/products/image-search",
       "method": "GET",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 1.66,
@@ -569,6 +631,9 @@
       "endpoint": "/api/v1/notifications/preferences",
       "method": "GET",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 1.66,
@@ -593,6 +658,9 @@
       "endpoint": "/api/v1/notifications/preferences",
       "method": "PATCH",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 1.66,
@@ -614,9 +682,12 @@
       ]
     },
     {
-      "endpoint": "/api/v1/notifications/device-token",
+      "endpoint": "/api/v1/notifications/fcm-token",
       "method": "PATCH",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 1.66,
@@ -626,7 +697,7 @@
       },
       "backend": [
         {
-          "url_pattern": "/api/v1/notifications/device-token",
+          "url_pattern": "/api/v1/notifications/fcm-token",
           "encoding": "no-op",
           "sd": "static",
           "method": "PATCH",
@@ -641,6 +712,9 @@
       "endpoint": "/api/v1/claims",
       "method": "GET",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 1.66,
@@ -665,6 +739,9 @@
       "endpoint": "/api/v1/claims",
       "method": "POST",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 1.66,
@@ -689,6 +766,9 @@
       "endpoint": "/api/v1/claims/{claim_id}",
       "method": "GET",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 1.66,
@@ -713,6 +793,9 @@
       "endpoint": "/api/v1/claims/{claim_id}",
       "method": "PATCH",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 1.66,
@@ -737,6 +820,9 @@
       "endpoint": "/api/v1/claims/{claim_id}",
       "method": "DELETE",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 1.66,
@@ -761,6 +847,9 @@
       "endpoint": "/api/v1/claims/{claim_id}/documents",
       "method": "GET",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 1.66,
@@ -785,6 +874,9 @@
       "endpoint": "/api/v1/claims/{claim_id}/documents/{document_id}/url",
       "method": "GET",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 1.66,
@@ -809,6 +901,9 @@
       "endpoint": "/api/v1/claims/{claim_id}/defect-images",
       "method": "GET",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 1.66,
@@ -833,6 +928,9 @@
       "endpoint": "/api/v1/claims/{claim_id}/defect-images/{image_id}/url",
       "method": "GET",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 1.66,
@@ -857,6 +955,9 @@
       "endpoint": "/api/v1/health",
       "method": "GET",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 1.66,
@@ -881,6 +982,9 @@
       "endpoint": "/api/v1/ready",
       "method": "GET",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 1.66,
@@ -905,6 +1009,9 @@
       "endpoint": "/",
       "method": "GET",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 1.66,
@@ -929,6 +1036,9 @@
       "endpoint": "/docs",
       "method": "GET",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 1.66,
@@ -953,6 +1063,9 @@
       "endpoint": "/openapi.json",
       "method": "GET",
       "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
       "extra_config": {
         "qos/ratelimit/router": {
           "client_max_rate": 1.66,
