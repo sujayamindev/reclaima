@@ -5,6 +5,13 @@
   "timeout": "60000ms",
   "cache_ttl": "300s",
   "output_encoding": "no-op",
+  "input_headers": [
+    "Authorization",
+    "Content-Type",
+    "Accept",
+    "X-App-Version",
+    "X-Platform"
+  ],
   "endpoints": [
     {
       "endpoint": "/api/v1/auth/login",
