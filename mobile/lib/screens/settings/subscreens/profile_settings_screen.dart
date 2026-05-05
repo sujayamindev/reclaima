@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/logger.dart';
+import '../../../core/utils/validators.dart';
 import '../../../providers/auth_provider.dart';
 import '../../auth/login_screen.dart';
 
@@ -17,6 +18,7 @@ class ProfileSettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
+  final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _contactController = TextEditingController();
   final TextEditingController _currentPasswordController =
@@ -66,6 +68,8 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
   }
 
   Future<void> _saveProfile() async {
+    if (!_formKey.currentState!.validate()) return;
+    
     setState(() => _isSaving = true);
     try {
       await ref
@@ -316,6 +320,7 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
     bool obscureText = false,
     Widget? suffixIcon,
     List<TextInputFormatter>? inputFormatters,
+    String? Function(String?)? validator,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -337,6 +342,8 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
             inputFormatters: inputFormatters,
             readOnly: readOnly,
             obscureText: obscureText,
+            validator: validator,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             style: AppTextStyles.bodyMedium.copyWith(
               color: readOnly
                   ? AppColors.textSecondary(isDark)
@@ -457,271 +464,287 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
             AppDimensions.paddingPage,
             40,
           ),
-          child: Column(
-            children: [
-              _buildSectionCard(
-                isDark,
-                'Personal Information',
-                Symbols.person_rounded,
-                [
-                  _buildTextFieldRow(
-                    isDark,
-                    icon: Symbols.person_rounded,
-                    title: 'Full Name',
-                    hintText: 'Enter your name',
-                    controller: _nameController,
-                  ),
-                  const SizedBox(height: 6),
-                  _buildTextFieldRow(
-                    isDark,
-                    icon: Symbols.phone_rounded,
-                    title: 'Contact Number',
-                    hintText: '+1 234 567 8900',
-                    controller: _contactController,
-                    keyboardType: TextInputType.phone,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'[0-9+\- ()]')),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  _buildTextFieldRow(
-                    isDark,
-                    icon: Symbols.mail_rounded,
-                    title: 'Email',
-                    hintText: 'Your email',
-                    controller: TextEditingController(text: _userEmail),
-                    readOnly: true,
-                  ),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      style: FilledButton.styleFrom(
-                        elevation: 0,
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        shadowColor: Colors.transparent,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            AppDimensions.radiusXL,
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                _buildSectionCard(
+                  isDark,
+                  'Personal Information',
+                  Symbols.person_rounded,
+                  [
+                    _buildTextFieldRow(
+                      isDark,
+                      icon: Symbols.person_rounded,
+                      title: 'Full Name',
+                      hintText: 'Enter your name',
+                      controller: _nameController,
+                      validator: Validators.name,
+                    ),
+                    const SizedBox(height: 6),
+                    _buildTextFieldRow(
+                      isDark,
+                      icon: Symbols.phone_rounded,
+                      title: 'Contact Number',
+                      hintText: '+1 234 567 8900',
+                      controller: _contactController,
+                      keyboardType: TextInputType.phone,
+                      validator: Validators.phone,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[0-9+\- ()]')),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    _buildTextFieldRow(
+                      isDark,
+                      icon: Symbols.mail_rounded,
+                      title: 'Email',
+                      hintText: 'Your email',
+                      controller: TextEditingController(text: _userEmail),
+                      readOnly: true,
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        style: FilledButton.styleFrom(
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          shadowColor: Colors.transparent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              AppDimensions.radiusXL,
+                            ),
                           ),
                         ),
-                      ),
-                      onPressed: _isSaving ? null : _saveProfile,
-                      child: _isSaving
-                          ? SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation(
-                                  AppColors.onPrimary,
+                        onPressed: _isSaving ? null : _saveProfile,
+                        child: _isSaving
+                            ? SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation(
+                                    AppColors.onPrimary,
+                                  ),
                                 ),
-                              ),
-                            )
-                          : const Text('Save Profile'),
+                              )
+                            : const Text('Save Profile'),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
+                  ],
+                ),
+                const SizedBox(height: 16),
 
-              // ── Change Password ──────────────────────────────────────────
-              _buildSectionCard(isDark, 'Change Password', Symbols.lock_rounded, [
-                if (ref
-                        .read(currentUserProvider)
-                        ?.providerData
-                        .any((p) => p.providerId == 'password') ??
-                    false) ...[
-                  _buildTextFieldRow(
-                    isDark,
-                    icon: Symbols.key_rounded,
-                    title: 'Current Password',
-                    hintText: 'Enter current password',
-                    controller: _currentPasswordController,
-                    obscureText: _obscureCurrentPassword,
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscureCurrentPassword
-                            ? Symbols.visibility_rounded
-                            : Symbols.visibility_off_rounded,
-                        color: AppColors.textSecondary(isDark),
-                      ),
-                      onPressed: () {
-                        setState(
-                          () => _obscureCurrentPassword =
-                              !_obscureCurrentPassword,
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  _buildTextFieldRow(
-                    isDark,
-                    icon: Symbols.password_rounded,
-                    title: 'New Password',
-                    hintText: 'Enter new password',
-                    controller: _newPasswordController,
-                    obscureText: _obscureNewPassword,
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscureNewPassword
-                            ? Symbols.visibility_rounded
-                            : Symbols.visibility_off_rounded,
-                        color: AppColors.textSecondary(isDark),
-                      ),
-                      onPressed: () {
-                        setState(
-                          () => _obscureNewPassword = !_obscureNewPassword,
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  _buildTextFieldRow(
-                    isDark,
-                    icon: Symbols.password_rounded,
-                    title: 'Confirm New Password',
-                    hintText: 'Confirm new password',
-                    controller: _confirmPasswordController,
-                    obscureText: _obscureConfirmPassword,
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscureConfirmPassword
-                            ? Symbols.visibility_rounded
-                            : Symbols.visibility_off_rounded,
-                        color: AppColors.textSecondary(isDark),
-                      ),
-                      onPressed: () {
-                        setState(
-                          () => _obscureConfirmPassword =
-                              !_obscureConfirmPassword,
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            AppDimensions.radiusXL,
-                          ),
-                        ),
-                        side: BorderSide(color: AppColors.primary),
-                      ),
-                      onPressed: _isChangingPassword ? null : _changePassword,
-                      child: _isChangingPassword
-                          ? SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Text('Update Password'),
-                    ),
-                  ),
-                ] else ...[
-                  Builder(
-                    builder: (context) {
-                      final authUser = ref.read(currentUserProvider);
-                      final isApple =
-                          authUser?.providerData.any(
-                            (p) => p.providerId.contains('apple'),
-                          ) ??
-                          false;
-                      final providerName = isApple ? 'an Apple' : 'a Google';
-                      final shortName = isApple ? 'Apple' : 'Google';
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: Text(
-                          'You are signed in with $providerName account. Password changes are managed through $shortName.',
-                          style: AppTextStyles.bodySmall.copyWith(
+                // ── Change Password ──────────────────────────────────────────
+                _buildSectionCard(
+                  isDark,
+                  'Change Password',
+                  Symbols.lock_rounded,
+                  [
+                    if (ref
+                            .read(currentUserProvider)
+                            ?.providerData
+                            .any((p) => p.providerId == 'password') ??
+                        false) ...[
+                      _buildTextFieldRow(
+                        isDark,
+                        icon: Symbols.key_rounded,
+                        title: 'Current Password',
+                        hintText: 'Enter current password',
+                        controller: _currentPasswordController,
+                        obscureText: _obscureCurrentPassword,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscureCurrentPassword
+                                ? Symbols.visibility_rounded
+                                : Symbols.visibility_off_rounded,
                             color: AppColors.textSecondary(isDark),
                           ),
+                          onPressed: () {
+                            setState(
+                              () => _obscureCurrentPassword =
+                                  !_obscureCurrentPassword,
+                            );
+                          },
                         ),
-                      );
-                    },
-                  ),
-                ],
-              ]),
-              const SizedBox(height: 16),
+                      ),
+                      const SizedBox(height: 6),
+                      _buildTextFieldRow(
+                        isDark,
+                        icon: Symbols.password_rounded,
+                        title: 'New Password',
+                        hintText: 'Enter new password',
+                        controller: _newPasswordController,
+                        obscureText: _obscureNewPassword,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscureNewPassword
+                                ? Symbols.visibility_rounded
+                                : Symbols.visibility_off_rounded,
+                            color: AppColors.textSecondary(isDark),
+                          ),
+                          onPressed: () {
+                            setState(
+                              () => _obscureNewPassword = !_obscureNewPassword,
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      _buildTextFieldRow(
+                        isDark,
+                        icon: Symbols.password_rounded,
+                        title: 'Confirm New Password',
+                        hintText: 'Confirm new password',
+                        controller: _confirmPasswordController,
+                        obscureText: _obscureConfirmPassword,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscureConfirmPassword
+                                ? Symbols.visibility_rounded
+                                : Symbols.visibility_off_rounded,
+                            color: AppColors.textSecondary(isDark),
+                          ),
+                          onPressed: () {
+                            setState(
+                              () => _obscureConfirmPassword =
+                                  !_obscureConfirmPassword,
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                AppDimensions.radiusXL,
+                              ),
+                            ),
+                            side: BorderSide(color: AppColors.primary),
+                          ),
+                          onPressed: _isChangingPassword
+                              ? null
+                              : _changePassword,
+                          child: _isChangingPassword
+                              ? SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text('Update Password'),
+                        ),
+                      ),
+                    ] else ...[
+                      Builder(
+                        builder: (context) {
+                          final authUser = ref.read(currentUserProvider);
+                          final isApple = authUser?.providerData.any(
+                                (p) => p.providerId.contains('apple'),
+                              ) ??
+                              false;
+                          final providerName =
+                              isApple ? 'an Apple' : 'a Google';
+                          final shortName = isApple ? 'Apple' : 'Google';
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                            child: Text(
+                              'You are signed in with $providerName account. Password changes are managed through $shortName.',
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: AppColors.textSecondary(isDark),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 16),
 
-              // ── Danger Zone ─────────────────────────────────────────────
-              _buildSectionCard(
-                isDark,
-                'Danger Zone',
-                Symbols.warning_rounded,
-                [
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    horizontalTitleGap: 12,
-                    leading: Icon(
-                      Symbols.door_open_rounded,
-                      color: AppColors.error,
-                      weight: AppDimensions.iconWeightBold,
-                    ),
-                    title: Text(
-                      'Log Out',
-                      style: AppTextStyles.listTitle.copyWith(
+                // ── Danger Zone ─────────────────────────────────────────────
+                _buildSectionCard(
+                  isDark,
+                  'Danger Zone',
+                  Symbols.warning_rounded,
+                  [
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      horizontalTitleGap: 12,
+                      leading: Icon(
+                        Symbols.door_open_rounded,
                         color: AppColors.error,
+                        weight: AppDimensions.iconWeightBold,
                       ),
-                    ),
-                    subtitle: Text(
-                      'Sign out of your account on this device',
-                      style: AppTextStyles.caption.copyWith(
-                        color: AppColors.textSecondary(isDark),
-                      ),
-                    ),
-                    trailing: Icon(
-                      Symbols.chevron_right_rounded,
-                      size: AppDimensions.iconMedium,
-                      color: AppColors.muted(isDark),
-                    ),
-                    onTap: () async {
-                      await ref.read(authControllerProvider.notifier).signOut();
-                      if (!context.mounted) return;
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const LoginScreen(),
+                      title: Text(
+                        'Log Out',
+                        style: AppTextStyles.listTitle.copyWith(
+                          color: AppColors.error,
                         ),
-                        (route) => false,
-                      );
-                    },
-                  ),
-                  Divider(color: AppColors.border(isDark), height: 1),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    horizontalTitleGap: 12,
-                    leading: Icon(
-                      Symbols.delete_rounded,
-                      color: AppColors.error,
-                      weight: AppDimensions.iconWeightBold,
+                      ),
+                      subtitle: Text(
+                        'Sign out of your account on this device',
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.textSecondary(isDark),
+                        ),
+                      ),
+                      trailing: Icon(
+                        Symbols.chevron_right_rounded,
+                        size: AppDimensions.iconMedium,
+                        color: AppColors.muted(isDark),
+                      ),
+                      onTap: () async {
+                        await ref
+                            .read(authControllerProvider.notifier)
+                            .signOut();
+                        if (!context.mounted) return;
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const LoginScreen(),
+                          ),
+                          (route) => false,
+                        );
+                      },
                     ),
-                    title: Text(
-                      'Delete Account',
-                      style: AppTextStyles.listTitle.copyWith(
+                    Divider(color: AppColors.border(isDark), height: 1),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      horizontalTitleGap: 12,
+                      leading: Icon(
+                        Symbols.delete_rounded,
                         color: AppColors.error,
+                        weight: AppDimensions.iconWeightBold,
                       ),
-                    ),
-                    subtitle: Text(
-                      'Permanently remove all your data',
-                      style: AppTextStyles.caption.copyWith(
-                        color: AppColors.textSecondary(isDark),
+                      title: Text(
+                        'Delete Account',
+                        style: AppTextStyles.listTitle.copyWith(
+                          color: AppColors.error,
+                        ),
                       ),
+                      subtitle: Text(
+                        'Permanently remove all your data',
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.textSecondary(isDark),
+                        ),
+                      ),
+                      trailing: Icon(
+                        Symbols.chevron_right_rounded,
+                        size: AppDimensions.iconMedium,
+                        color: AppColors.muted(isDark),
+                      ),
+                      onTap: () => _showDeleteAccountDialog(isDark),
                     ),
-                    trailing: Icon(
-                      Symbols.chevron_right_rounded,
-                      size: AppDimensions.iconMedium,
-                      color: AppColors.muted(isDark),
-                    ),
-                    onTap: () => _showDeleteAccountDialog(isDark),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

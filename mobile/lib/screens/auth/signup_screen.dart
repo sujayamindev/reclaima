@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/app_constants.dart';
+import '../../core/utils/validators.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/app_primary_button.dart';
 import '../../widgets/app_text_field.dart';
@@ -157,12 +158,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                 controller: _nameController,
                                 icon: Symbols.person_rounded,
                                 placeholder: 'Enter your full name',
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter your full name';
-                                  }
-                                  return null;
-                                },
+                                validator: Validators.name,
                               ),
                               const SizedBox(height: 20),
 
@@ -173,15 +169,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                 icon: Symbols.mail_rounded,
                                 placeholder: 'name@example.com',
                                 keyboardType: TextInputType.emailAddress,
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter your email';
-                                  }
-                                  if (!value.contains('@')) {
-                                    return 'Please enter a valid email';
-                                  }
-                                  return null;
-                                },
+                                validator: Validators.email,
                               ),
                               const SizedBox(height: 20),
 
