@@ -1,5 +1,6 @@
 // coverage:ignore-file
 import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -12,6 +13,8 @@ import 'image_crop_rotate_screen.dart';
 import 'review_receipt_screen.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
+enum _PickMode { camera, gallery, pdf }
+
 class AddReceiptScreen extends ConsumerStatefulWidget {
   const AddReceiptScreen({super.key});
 
@@ -22,15 +25,17 @@ class AddReceiptScreen extends ConsumerStatefulWidget {
 class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
   String? _frontImagePath;
   String? _backImagePath;
+  String? _pdfPath;
+  String? _pdfFileName;
   final _picker = ImagePicker();
 
-  Future<void> _pickImage() async {
+  Future<void> _pickFile() async {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final sheetBg = AppColors.card(isDark);
     final textPrimary = AppColors.textPrimary(isDark);
     final borderColor = AppColors.border(isDark);
 
-    final source = await showModalBottomSheet<ImageSource>(
+    final mode = await showModalBottomSheet<_PickMode>(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
@@ -67,7 +72,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                   'Snap a Photo',
                   style: AppTextStyles.listTitle.copyWith(color: textPrimary),
                 ),
-                onTap: () => Navigator.pop(context, ImageSource.camera),
+                onTap: () => Navigator.pop(context, _PickMode.camera),
               ),
               ListTile(
                 leading: Container(
@@ -83,7 +88,23 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                   'Choose from Gallery',
                   style: AppTextStyles.listTitle.copyWith(color: textPrimary),
                 ),
-                onTap: () => Navigator.pop(context, ImageSource.gallery),
+                onTap: () => Navigator.pop(context, _PickMode.gallery),
+              ),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(AppDimensions.paddingCardSmall),
+                  child: const Icon(
+                    Symbols.picture_as_pdf_rounded,
+                    color: AppColors.primary,
+                    size: 24,
+                    weight: AppDimensions.iconWeightBold,
+                  ),
+                ),
+                title: Text(
+                  'Upload PDF',
+                  style: AppTextStyles.listTitle.copyWith(color: textPrimary),
+                ),
+                onTap: () => Navigator.pop(context, _PickMode.pdf),
               ),
               const SizedBox(height: 20),
             ],
@@ -92,27 +113,44 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
       ),
     );
 
-    if (source != null) {
+    if (mode == null) return;
+
+    if (mode == _PickMode.pdf) {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+      );
+      if (result != null && result.files.single.path != null) {
+        setState(() {
+          _pdfPath = result.files.single.path;
+          _pdfFileName = result.files.single.name;
+          _frontImagePath = null;
+          _backImagePath = null;
+        });
+      }
+    } else {
+      final source = mode == _PickMode.camera
+          ? ImageSource.camera
+          : ImageSource.gallery;
       final image = await _picker.pickImage(source: source);
       if (image != null) {
         if (!mounted) return;
 
-        // Navigate to crop/rotate screen
         final croppedImagePath = await Navigator.of(context).push<String>(
           MaterialPageRoute(
             builder: (_) => ImageCropRotateScreen(imagePath: image.path),
           ),
         );
 
-        // Add cropped image - first to front, then to back
         if (croppedImagePath != null) {
           setState(() {
+            _pdfPath = null;
+            _pdfFileName = null;
             if (_frontImagePath == null) {
               _frontImagePath = croppedImagePath;
             } else if (_backImagePath == null) {
               _backImagePath = croppedImagePath;
             } else {
-              // Both filled, replace front
               _frontImagePath = croppedImagePath;
             }
           });
@@ -131,15 +169,66 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
     });
   }
 
+  void _removePdf() {
+    setState(() {
+      _pdfPath = null;
+      _pdfFileName = null;
+    });
+  }
+
+  Future<bool> _validateFile(String path, {bool isPdf = false}) async {
+    final file = File(path);
+
+    final sizeBytes = await file.length();
+    if (sizeBytes > AppConstants.maxFileSizeMB * 1024 * 1024) {
+      if (mounted) {
+        AppSnackBar.showError(
+          context,
+          message: 'File is too large. Maximum size is ${AppConstants.maxFileSizeMB} MB.',
+        );
+      }
+      return false;
+    }
+
+    if (isPdf) {
+      final raf = await file.open();
+      final header = await raf.read(4);
+      await raf.close();
+      // %PDF = 0x25 0x50 0x44 0x46
+      if (header.length < 4 ||
+          header[0] != 0x25 || header[1] != 0x50 ||
+          header[2] != 0x44 || header[3] != 0x46) {
+        if (mounted) {
+          AppSnackBar.showError(
+            context,
+            message: 'The selected file is not a valid PDF.',
+          );
+        }
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   Future<void> _upload() async {
-    if (_frontImagePath == null && _backImagePath == null) return;
+    if (_frontImagePath == null && _backImagePath == null && _pdfPath == null) return;
+
+    if (_pdfPath != null) {
+      if (!await _validateFile(_pdfPath!, isPdf: true)) return;
+    } else {
+      if (_frontImagePath != null && !await _validateFile(_frontImagePath!)) return;
+      if (_backImagePath != null && !await _validateFile(_backImagePath!)) return;
+    }
+
     final controller = ref.read(receiptControllerProvider.notifier);
 
-    // Upload images → S3 + run OCR without creating a DB record.
-    // On failure the images are still preserved (permanent S3 path).
+    // Upload file(s) → S3 + run OCR without creating a DB record.
+    // On failure the files are still preserved (permanent S3 path).
     final ocrData = await controller.extractOcr(
       _frontImagePath,
       _backImagePath,
+      pdfPath: _pdfPath,
     );
 
     if (!mounted) return;
@@ -228,6 +317,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isUploading = ref.watch(receiptControllerProvider).isLoading;
 
     final backgroundColor = AppColors.background(isDark);
     final textPrimary = AppColors.textPrimary(isDark);
@@ -246,7 +336,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                 children: [
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: Icon(Symbols.arrow_back_rounded, color: textPrimary),
+                    icon: Icon(Symbols.arrow_back_rounded, color: textPrimary, weight: AppDimensions.iconWeightBold),
                     padding: const EdgeInsets.all(8),
                     style: IconButton.styleFrom(
                       backgroundColor: Colors.transparent,
@@ -285,7 +375,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Take a photo or upload from your gallery\nour AI will extract the details for you.',
+                            'Take a photo, upload from gallery, or attach a PDF. Our AI will extract the details for you.',
                             textAlign: TextAlign.center,
                             style: AppTextStyles.bodySmall.copyWith(
                               color: textSecondary,
@@ -297,10 +387,10 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
 
                     // -- Pick image button (original star design)
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+                      padding: const EdgeInsets.fromLTRB(24, 32, 24, 8),
                       child: Center(
                         child: GestureDetector(
-                          onTap: _pickImage,
+                          onTap: isUploading ? null : _pickFile,
                           child: Container(
                             width: 240,
                             height: 240,
@@ -359,7 +449,93 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                       ),
                     ),
 
-                    if (_frontImagePath != null || _backImagePath != null) ...[
+                    if (_pdfPath != null) ...[
+                      const SizedBox(height: 24),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Row(
+                          children: [
+                            Text(
+                              'SELECTED RECEIPT PREVIEW',
+                              style: AppTextStyles.capsLabel.copyWith(
+                                color: mutedText,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 14,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.card(isDark),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: AppColors.border(isDark),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(6),
+                                    child: const Icon(
+                                      Symbols.picture_as_pdf_rounded,
+                                      color: AppColors.primary,
+                                      size: 28,
+                                      weight: AppDimensions.iconWeightBold,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      _pdfFileName ?? 'receipt.pdf',
+                                      style: AppTextStyles.bodySmall.copyWith(
+                                        color: textPrimary,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Positioned(
+                              top: -5,
+                              right: -5,
+                              child: GestureDetector(
+                                onTap: isUploading ? null : _removePdf,
+                                child: Container(
+                                  width: 24,
+                                  height: 24,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.6),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: backgroundColor,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: const Icon(
+                                    Symbols.close_rounded,
+                                    color: Colors.white,
+                                    size: AppDimensions.iconTiny,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ] else if (_frontImagePath != null || _backImagePath != null) ...[
                       const SizedBox(height: 24),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -376,7 +552,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                       ),
                       const SizedBox(height: 12),
                       SizedBox(
-                        height: 128,
+                        height: 180,
                         child: ListView.builder(
                           scrollDirection: Axis.horizontal,
                           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -398,24 +574,24 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
 
                             return Padding(
                               padding: const EdgeInsets.only(right: 10),
-                              child: Stack(
+                              child: IntrinsicWidth(
+                                child: Stack(
                                 clipBehavior: Clip.none,
                                 children: [
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(16),
                                     child: Image.file(
                                       File(imagePath),
-                                      width: 108,
-                                      height: 108,
-                                      fit: BoxFit.cover,
+                                      height: 160,
+                                      fit: BoxFit.fitHeight,
+                                      cacheHeight: (160 * MediaQuery.of(context).devicePixelRatio).round(),
                                     ),
                                   ),
-                                  // Close button
                                   Positioned(
                                     top: -5,
                                     right: -5,
                                     child: GestureDetector(
-                                      onTap: () => _removeImage(imageType),
+                                      onTap: isUploading ? null : () => _removeImage(imageType),
                                       child: Container(
                                         width: 24,
                                         height: 24,
@@ -437,7 +613,6 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                                       ),
                                     ),
                                   ),
-                                  // Front/Back label
                                   Positioned(
                                     bottom: 24,
                                     left: 4,
@@ -465,6 +640,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                                     ),
                                   ),
                                 ],
+                              ),
                               ),
                             );
                           },
@@ -528,12 +704,12 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
           AppPrimaryButton.dark(
             onPressed:
                 (controllerState.isLoading ||
-                    (_frontImagePath == null && _backImagePath == null))
+                    (_frontImagePath == null && _backImagePath == null && _pdfPath == null))
                 ? null
                 : _upload,
             isLoading: controllerState.isLoading,
-            text: (_frontImagePath == null && _backImagePath == null)
-                ? 'Add at least one image'
+            text: (_frontImagePath == null && _backImagePath == null && _pdfPath == null)
+                ? 'Add an image or PDF'
                 : 'Upload Receipt',
           ),
         ],

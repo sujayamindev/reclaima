@@ -261,6 +261,7 @@ class _ClaimsHubScreenState extends ConsumerState<ClaimsHubScreen> {
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 80.0),
         child: FloatingActionButton(
+          heroTag: 'fab_claims',
           onPressed: () {
             final receipts = ref.read(receiptsProvider).valueOrNull;
             if (receipts != null) {

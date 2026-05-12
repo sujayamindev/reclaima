@@ -162,13 +162,15 @@ class ReceiptController extends StateNotifier<AsyncValue<void>> {
   /// Extract OCR
   Future<Map<String, dynamic>?> extractOcr(
     String? frontImagePath,
-    String? backImagePath,
-  ) async {
+    String? backImagePath, {
+    String? pdfPath,
+  }) async {
     state = const AsyncValue.loading();
     try {
       final result = await _repository.extractOcr(
         frontImagePath,
         backImagePath,
+        pdfPath: pdfPath,
       );
       state = const AsyncValue.data(null);
       return result;

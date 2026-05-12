@@ -27,6 +27,22 @@ from app.services.receipt_service import receipt_service
 
 logger = logging.getLogger(__name__)
 
+_FILE_MAGIC: dict[str, list[bytes]] = {
+    "image/jpeg": [b"\xff\xd8\xff"],
+    "image/jpg":  [b"\xff\xd8\xff"],
+    "image/png":  [b"\x89PNG\r\n\x1a\n"],
+    "application/pdf": [b"%PDF"],
+}
+
+
+def _assert_magic_bytes(content: bytes, content_type: str) -> None:
+    signatures = _FILE_MAGIC.get(content_type, [])
+    if signatures and not any(content.startswith(sig) for sig in signatures):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File content does not match its declared type. The file may be corrupt or mislabelled.",
+        )
+
 router = APIRouter(prefix="/receipts", tags=["Receipts"])
 
 
@@ -129,6 +145,8 @@ async def ocr_extract(
                 status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
                 detail=f"File too large. Maximum: {settings.MAX_FILE_SIZE_MB}MB",
             )
+
+        _assert_magic_bytes(content, file.content_type)
 
         return content, file.filename or "receipt", file.content_type or "image/jpeg"
 
@@ -353,6 +371,8 @@ async def upload_receipt_file(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
             detail=f"File too large. Maximum size: {settings.MAX_FILE_SIZE_MB}MB",
         )
+
+    _assert_magic_bytes(file_content, file.content_type)
 
     # Upload file and process OCR
     receipt = receipt_service.upload_receipt_file(

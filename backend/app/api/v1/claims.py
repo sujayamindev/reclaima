@@ -115,7 +115,11 @@ async def create_claim(
 
     # Validate each image
     ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/jpg", "image/png"}
-    MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
+    _DEFECT_IMAGE_MAGIC: dict[str, list[bytes]] = {
+        "image/jpeg": [b"\xff\xd8\xff"],
+        "image/jpg":  [b"\xff\xd8\xff"],
+        "image/png":  [b"\x89PNG\r\n\x1a\n"],
+    }
 
     for idx, img in enumerate(defect_images):
         if img.content_type not in ALLOWED_CONTENT_TYPES:
@@ -124,13 +128,21 @@ async def create_claim(
                 detail=f"Image {idx + 1}: Invalid format. Only JPG and PNG allowed.",
             )
 
-        # Read file to check size
+        # Read file to check size and signature
         img_content = await img.read()
-        if len(img_content) > MAX_FILE_SIZE:
+        if len(img_content) > settings.max_file_size_bytes:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail=f"Image {idx + 1}: File too large. Maximum {settings.MAX_FILE_SIZE_MB}MB per image.",
+            )
+
+        signatures = _DEFECT_IMAGE_MAGIC.get(img.content_type, [])
+        if signatures and not any(img_content.startswith(sig) for sig in signatures):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Image {idx + 1}: File too large. Maximum 5MB per image.",
+                detail=f"Image {idx + 1}: File content does not match its declared type. The file may be corrupt or mislabelled.",
             )
+
         # Reset file pointer for later reading
         await img.seek(0)
 

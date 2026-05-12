@@ -112,7 +112,7 @@ class _ImageCropRotateScreenState extends State<ImageCropRotateScreen> {
         iconTheme: IconThemeData(color: textPrimary),
         leading: IconButton(
           onPressed: () => Navigator.of(context).pop(),
-          icon: Icon(Symbols.arrow_back_rounded, color: textPrimary),
+          icon: Icon(Symbols.arrow_back_rounded, color: textPrimary, weight: AppDimensions.iconWeightBold),
         ),
       ),
       body: _isProcessing
@@ -121,16 +121,39 @@ class _ImageCropRotateScreenState extends State<ImageCropRotateScreen> {
               children: [
                 // Image Preview
                 Expanded(
-                  child: SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: borderColor),
-                        ),
-                        clipBehavior: Clip.antiAlias,
-                        child: Image.file(File(_currentImagePath)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: borderColor),
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: Image.file(
+                        File(_currentImagePath),
+                        key: ValueKey(_currentImagePath),
+                        fit: BoxFit.contain,
+                        // Decode at display resolution instead of full camera resolution.
+                        // Without this, a 12MP camera image takes ~10s to decode.
+                        cacheWidth: (MediaQuery.of(context).size.width *
+                                MediaQuery.of(context).devicePixelRatio)
+                            .round(),
+                        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                          if (wasSynchronouslyLoaded || frame != null) {
+                            return AnimatedOpacity(
+                              opacity: 1,
+                              duration: const Duration(milliseconds: 200),
+                              child: child,
+                            );
+                          }
+                          return Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.primary,
+                              strokeWidth: 2,
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ),
@@ -142,7 +165,7 @@ class _ImageCropRotateScreenState extends State<ImageCropRotateScreen> {
                   child: Text(
                     'Crop and rotate your receipt image to ensure quality documents. This helps make your warranty claims more credible.',
                     textAlign: TextAlign.center,
-                    style: AppTextStyles.bodySmall.copyWith(
+                    style: AppTextStyles.bodyXSmall.copyWith(
                       color: AppColors.textSecondary(isDark),
                     ),
                   ),

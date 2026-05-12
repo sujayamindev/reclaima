@@ -34,7 +34,7 @@ class AppConstants {
   static const String appVersion = '1.0.0';
 
   // File upload limits
-  static const int maxFileSizeMB = 5;
+  static const int maxFileSizeMB = 20;
   static const int maxFileSizeBytes = maxFileSizeMB * 1024 * 1024;
 
   // Allowed file types

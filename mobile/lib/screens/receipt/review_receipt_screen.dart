@@ -126,11 +126,69 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
   void initState() {
     super.initState();
     if (widget.ocrData != null) {
-      // OCR data already available — no polling required.
-      // _populateFromOcrData() is called inside build() guarded by _populated.
+      final ocrStatus = widget.ocrData!['ocrStatus'] as String?;
+      if (ocrStatus == 'failed' || _ocrExtractedNothing(widget.ocrData!)) {
+        WidgetsBinding.instance.addPostFrameCallback((_) => _showOcrFailedDialog());
+      }
     } else if (!widget.isManualEntry && widget.receiptId != null) {
       _startPolling();
     }
+  }
+
+  /// Returns true when OCR ran without error but found no usable data.
+  bool _ocrExtractedNothing(Map<String, dynamic> data) {
+    final hasStore = (data['storeName'] as String?)?.trim().isNotEmpty == true;
+    final hasAmount = data['totalAmount'] != null;
+    final hasInvoice = (data['invoiceNumber'] as String?)?.trim().isNotEmpty == true;
+    final hasDate = data['purchaseDate'] != null;
+    final hasItems = (data['lineItems'] as List<dynamic>?)?.isNotEmpty == true;
+    return !hasStore && !hasAmount && !hasInvoice && !hasDate && !hasItems;
+  }
+
+  void _showOcrFailedDialog() {
+    if (!mounted) return;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.card(isDark),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(
+              Symbols.warning_rounded,
+              color: AppColors.warning,
+              weight: AppDimensions.iconWeightBold,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'Couldn\'t Read Receipt',
+              style: AppTextStyles.titleLarge.copyWith(
+                color: AppColors.textPrimary(isDark),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Our AI couldn\'t find any details in your image. Please fill in the fields below manually.',
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: AppColors.textPrimary(isDark),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'Got it',
+              style: TextStyle(
+                color: AppColors.primary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _startPolling() {
@@ -495,7 +553,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                 children: [
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: Icon(Symbols.arrow_back_rounded, color: textPrimary),
+                    icon: Icon(Symbols.arrow_back_rounded, color: textPrimary, weight: AppDimensions.iconWeightBold),
                     padding: const EdgeInsets.all(8),
                     style: IconButton.styleFrom(
                       backgroundColor: Colors.transparent,
@@ -568,50 +626,11 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
 
   /// Build the review form using already-available OCR data.
   ///
-  /// Pre-populates form controllers and immediately shows the form with an
-  /// optional OCR-failed banner when [widget.ocrData] is present.
+  /// Pre-populates form controllers and shows the form. When OCR failed, a
+  /// popup dialog is shown via [_showOcrFailedDialog] scheduled in [initState].
   Widget _buildBodyFromOcrData(bool isDark, Color textPrimary) {
-    // Safe to call in build — guarded by the _populated flag.
     _populateFromOcrData(widget.ocrData!);
-    final ocrFailed = (widget.ocrData!['ocrStatus'] as String?) == 'failed';
-    if (!ocrFailed) {
-      return _buildFormBody(isDark, textPrimary);
-    }
-    // Show a warning banner above the form when OCR couldn't read the image.
-    return Column(
-      children: [
-        Container(
-          width: double.infinity,
-          margin: const EdgeInsets.fromLTRB(24, 8, 24, 0),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: AppColors.error.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
-            border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
-          ),
-          child: Row(
-            children: [
-              const Icon(
-                Symbols.warning_rounded,
-                color: AppColors.error,
-                size: AppDimensions.iconMedium,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  'Could not read receipt — please check the details below.',
-                  style: AppTextStyles.bodyXSmall.copyWith(
-                    color: AppColors.error,
-                    height: 1.4,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        Expanded(child: _buildFormBody(isDark, textPrimary)),
-      ],
-    );
+    return _buildFormBody(isDark, textPrimary);
   }
 
   // ─── State bodies ─────────────────────────────────────────────────────────

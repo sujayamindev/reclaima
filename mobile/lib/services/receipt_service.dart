@@ -188,44 +188,64 @@ class ReceiptService {
     }
   }
 
-  /// Upload a receipt image to S3, run OCR, and return extracted data.
+  /// Upload a receipt image or PDF to S3, run OCR, and return extracted data.
   ///
   /// Does NOT create a receipt record in the database. The [s3ObjectKey]
   /// and [backImageS3Key] returned in the map should be passed to [createReceipt]
   /// when the user saves on the confirmation screen.
+  ///
+  /// Pass [pdfPath] to upload a PDF instead of images. [pdfPath] is mutually
+  /// exclusive with [frontImagePath]/[backImagePath].
   Future<Map<String, dynamic>> extractOcr(
     String? frontImagePath,
-    String? backImagePath,
-  ) async {
+    String? backImagePath, {
+    String? pdfPath,
+  }) async {
     try {
       logger.i(
-        'OCR extract: uploading front=$frontImagePath, back=$backImagePath',
+        'OCR extract: uploading front=$frontImagePath, back=$backImagePath, pdf=$pdfPath',
       );
 
       final formData = FormData();
 
-      if (frontImagePath != null) {
+      if (pdfPath != null) {
+        final fileName = pdfPath.split(RegExp(r'[/\\]')).last;
         formData.files.add(
           MapEntry(
             'front_image',
             await MultipartFile.fromFile(
-              frontImagePath,
-              filename: 'front_image.jpg',
+              pdfPath,
+              filename: fileName,
+              contentType: DioMediaType('application', 'pdf'),
             ),
           ),
         );
-      }
+      } else {
+        if (frontImagePath != null) {
+          final fileName = frontImagePath.split(RegExp(r'[/\\]')).last;
+          formData.files.add(
+            MapEntry(
+              'front_image',
+              await MultipartFile.fromFile(
+                frontImagePath,
+                filename: fileName,
+              ),
+            ),
+          );
+        }
 
-      if (backImagePath != null) {
-        formData.files.add(
-          MapEntry(
-            'back_image',
-            await MultipartFile.fromFile(
-              backImagePath,
-              filename: 'back_image.jpg',
+        if (backImagePath != null) {
+          final fileName = backImagePath.split(RegExp(r'[/\\]')).last;
+          formData.files.add(
+            MapEntry(
+              'back_image',
+              await MultipartFile.fromFile(
+                backImagePath,
+                filename: fileName,
+              ),
             ),
-          ),
-        );
+          );
+        }
       }
 
       final response = await _apiService.post(

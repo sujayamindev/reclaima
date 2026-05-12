@@ -65,8 +65,11 @@ class ReceiptRepository {
     String itemId,
     Map<String, dynamic> data,
   ) => _remoteService.updateLineItem(receiptId, itemId, data);
-  Future<Map<String, dynamic>> extractOcr(String? front, String? back) =>
-      _remoteService.extractOcr(front, back);
+  Future<Map<String, dynamic>> extractOcr(
+    String? front,
+    String? back, {
+    String? pdfPath,
+  }) => _remoteService.extractOcr(front, back, pdfPath: pdfPath);
 
   ReceiptModel _mapToModel(Receipt r) {
     return ReceiptModel(

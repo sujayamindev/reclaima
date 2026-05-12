@@ -138,3 +138,4 @@ TODOS.md
 .ruff_cache
 /log
 /backend/.tmp_meta
+/.claude

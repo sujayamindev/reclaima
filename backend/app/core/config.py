@@ -95,7 +95,7 @@ class Settings(BaseSettings):
     USE_MOCK_AWS: bool = False
 
     # File Upload
-    MAX_FILE_SIZE_MB: int = 5
+    MAX_FILE_SIZE_MB: int = 20
     ALLOWED_FILE_TYPES: str = "image/jpeg,image/png,application/pdf"
 
     @property

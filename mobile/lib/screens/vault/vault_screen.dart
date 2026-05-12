@@ -189,6 +189,7 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 80.0),
         child: FloatingActionButton(
+          heroTag: 'fab_vault',
           onPressed: () => Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const AddReceiptScreen()),
