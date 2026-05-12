@@ -153,6 +153,14 @@ jobs:
           ENABLE_SCHEDULER: "false"
         run: bash ../scripts/ci/check_pytest.sh
 
+      - name: Alembic migration check
+        env:
+          DATABASE_URL: postgresql://ci_test_user:ci_test_pass@localhost:5432/ci_test_db
+          SECRET_KEY: ci-test-secret-key
+        run: |
+          alembic upgrade head
+          alembic check
+
       - name: Bandit security scan (no-regression gate)
         env:
           EVENT_NAME: ${{ github.event_name }}
