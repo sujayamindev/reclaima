@@ -28,7 +28,6 @@ env:
   FLUTTER_CHANNEL: stable
   FLUTTER_VERSION: "3.41.4"
   BACKEND_IMAGE_REPOSITORY: ghcr.io/${{ github.repository_owner }}/smart-receipt-backend
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
   BACKEND_COVERAGE_FLOOR: "70.0"
   MOBILE_COVERAGE_FLOOR: "60.0"
 
@@ -494,11 +493,11 @@ jobs:
 
       - name: Notify on deployment failure
         if: ${{ failure() && env.SLACK_DEPLOY_WEBHOOK != '' }}
-        uses: slackapi/slack-github-action@v1.26.0
+        uses: slackapi/slack-github-action@v2
         with:
+          webhook: ${{ secrets.SLACK_DEPLOY_WEBHOOK }}
+          webhook-type: incoming-webhook
           payload: |
             {
               "text": ":rotating_light: Production deploy failed for ${{ github.repository }} at commit ${{ github.sha }}. Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }
-        env:
-          SLACK_WEBHOOK_URL: ${{ env.SLACK_DEPLOY_WEBHOOK }}
