@@ -8,10 +8,8 @@ Widget _scaffold(void Function(BuildContext) onTap, String label) {
     theme: AppTheme.lightTheme,
     home: Scaffold(
       body: Builder(
-        builder: (ctx) => ElevatedButton(
-          onPressed: () => onTap(ctx),
-          child: Text(label),
-        ),
+        builder: (ctx) =>
+            ElevatedButton(onPressed: () => onTap(ctx), child: Text(label)),
       ),
     ),
   );
@@ -57,10 +55,7 @@ void main() {
 
     testWidgets('snackbar uses floating behavior', (tester) async {
       await tester.pumpWidget(
-        _scaffold(
-          (ctx) => AppSnackBar.showError(ctx, message: 'Error'),
-          'tap',
-        ),
+        _scaffold((ctx) => AppSnackBar.showError(ctx, message: 'Error'), 'tap'),
       );
       await tester.tap(find.text('tap'));
       await tester.pump();

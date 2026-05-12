@@ -46,9 +46,9 @@ ReceiptModel _receipt({
 }
 
 Widget _wrap(Widget child) => MaterialApp(
-      theme: AppTheme.lightTheme,
-      home: Scaffold(body: child),
-    );
+  theme: AppTheme.lightTheme,
+  home: Scaffold(body: child),
+);
 
 void main() {
   group('ProductSelectorSheet', () {
@@ -58,25 +58,35 @@ void main() {
       expect(find.text('Select Product to Claim'), findsOneWidget);
     });
 
-    testWidgets('shows empty state when receipts list is empty', (tester) async {
+    testWidgets('shows empty state when receipts list is empty', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(ProductSelectorSheet(receipts: const [])));
       await tester.pumpAndSettle();
       expect(find.text('No products found'), findsOneWidget);
     });
 
-    testWidgets('shows empty state when receipts have no line items',
-        (tester) async {
+    testWidgets('shows empty state when receipts have no line items', (
+      tester,
+    ) async {
       await tester.pumpWidget(
-        _wrap(ProductSelectorSheet(receipts: [_receipt(storeName: 'Best Buy')])),
+        _wrap(
+          ProductSelectorSheet(receipts: [_receipt(storeName: 'Best Buy')]),
+        ),
       );
       await tester.pumpAndSettle();
       expect(find.text('No products found'), findsOneWidget);
     });
 
-    testWidgets('renders product name and store name for active items',
-        (tester) async {
+    testWidgets('renders product name and store name for active items', (
+      tester,
+    ) async {
       final item = _item(productName: 'Laptop', receiptId: 'r1');
-      final receipt = _receipt(id: 'r1', storeName: 'Best Buy', lineItems: [item]);
+      final receipt = _receipt(
+        id: 'r1',
+        storeName: 'Best Buy',
+        lineItems: [item],
+      );
       await tester.pumpWidget(_wrap(ProductSelectorSheet(receipts: [receipt])));
       await tester.pumpAndSettle();
       expect(find.text('Laptop'), findsOneWidget);
@@ -112,8 +122,16 @@ void main() {
     testWidgets('search filters products by store name', (tester) async {
       final item1 = _item(id: 'i1', receiptId: 'r1', productName: 'Headphones');
       final item2 = _item(id: 'i2', receiptId: 'r2', productName: 'Keyboard');
-      final receipt1 = _receipt(id: 'r1', storeName: 'Apple Store', lineItems: [item1]);
-      final receipt2 = _receipt(id: 'r2', storeName: 'Amazon', lineItems: [item2]);
+      final receipt1 = _receipt(
+        id: 'r1',
+        storeName: 'Apple Store',
+        lineItems: [item1],
+      );
+      final receipt2 = _receipt(
+        id: 'r2',
+        storeName: 'Amazon',
+        lineItems: [item2],
+      );
       await tester.pumpWidget(
         _wrap(ProductSelectorSheet(receipts: [receipt1, receipt2])),
       );
@@ -134,8 +152,9 @@ void main() {
       expect(find.text('No products found'), findsOneWidget);
     });
 
-    testWidgets('uses itemDescription as fallback when productName is null',
-        (tester) async {
+    testWidgets('uses itemDescription as fallback when productName is null', (
+      tester,
+    ) async {
       final now = DateTime.now();
       final item = ReceiptLineItemModel(
         id: 'i1',
@@ -154,10 +173,7 @@ void main() {
 
     testWidgets('items with active warranty are included', (tester) async {
       final futureDate = DateTime.now().add(const Duration(days: 365));
-      final item = _item(
-        productName: 'TV',
-        warrantyExpiry: futureDate,
-      );
+      final item = _item(productName: 'TV', warrantyExpiry: futureDate);
       final receipt = _receipt(lineItems: [item]);
       await tester.pumpWidget(_wrap(ProductSelectorSheet(receipts: [receipt])));
       await tester.pumpAndSettle();
