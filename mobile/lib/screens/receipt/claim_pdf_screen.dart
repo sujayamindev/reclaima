@@ -837,10 +837,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
     } catch (e) {
       logger.e('Error sharing PDF: $e');
       if (!mounted) return;
-      AppSnackBar.showError(
-        context,
-        message: 'Failed to share PDF',
-      );
+      AppSnackBar.showError(context, message: 'Failed to share PDF');
     }
   }
 

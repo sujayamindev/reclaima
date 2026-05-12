@@ -131,11 +131,7 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
     } catch (e) {
       logger.e('Failed to change password: $e');
       if (mounted) {
-        AppSnackBar.showError(
-          context,
-          message:
-              'Failed to update password',
-        );
+        AppSnackBar.showError(context, message: 'Failed to update password');
       }
     } finally {
       if (mounted) setState(() => _isChangingPassword = false);
