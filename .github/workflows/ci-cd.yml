@@ -290,12 +290,30 @@ jobs:
           name: mobile-android-debug-apk
           path: mobile/build/app/outputs/flutter-apk/app-debug.apk
 
+  krakend_check:
+    name: KrakenD Config Check
+    needs:
+      - secret_scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Validate krakend.json
+        run: >-
+          docker run --rm
+          -v "${{ github.workspace }}:/etc/krakend"
+          devopsfaith/krakend:2
+          check -c /etc/krakend/krakend.json
+
   backend_image:
     name: Build and Publish Backend Image
     needs:
       - secret_scan
       - backend_ci
       - mobile_ci
+      - krakend_check
     if: >-
       github.ref == 'refs/heads/main' &&
       (
