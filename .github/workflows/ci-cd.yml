@@ -315,7 +315,6 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: read
-      security-events: write
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -331,6 +330,7 @@ jobs:
         with:
           category: "/language:python"
           output: results
+          upload: never
 
       - name: Upload SARIF artifact
         uses: actions/upload-artifact@v4
