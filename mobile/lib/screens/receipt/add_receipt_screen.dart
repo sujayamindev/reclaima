@@ -215,16 +215,19 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
   }
 
   Future<void> _upload() async {
-    if (_frontImagePath == null && _backImagePath == null && _pdfPath == null)
+    if (_frontImagePath == null && _backImagePath == null && _pdfPath == null) {
       return;
+    }
 
     if (_pdfPath != null) {
       if (!await _validateFile(_pdfPath!, isPdf: true)) return;
     } else {
-      if (_frontImagePath != null && !await _validateFile(_frontImagePath!))
+      if (_frontImagePath != null && !await _validateFile(_frontImagePath!)) {
         return;
-      if (_backImagePath != null && !await _validateFile(_backImagePath!))
+      }
+      if (_backImagePath != null && !await _validateFile(_backImagePath!)) {
         return;
+      }
     }
 
     final controller = ref.read(receiptControllerProvider.notifier);
