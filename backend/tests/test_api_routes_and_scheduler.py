@@ -423,7 +423,9 @@ async def test_claim_routes_success_and_errors(db_session, monkeypatch) -> None:
     monkeypatch.setattr(claims_api, "get_s3_service", lambda **kwargs: dummy_s3)
     monkeypatch.setattr(claims_api, "get_pdf_service", lambda: _DummyPDF())
 
-    one_image = [_upload_file("defect.jpg", "image/jpeg", b"\xff\xd8\xff" + b"image-data")]
+    one_image = [
+        _upload_file("defect.jpg", "image/jpeg", b"\xff\xd8\xff" + b"image-data")
+    ]
     created = await claims_api.create_claim(
         receipt_id=str(receipt.id),
         issue_description="Battery failure",
