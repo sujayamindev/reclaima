@@ -307,6 +307,44 @@ jobs:
           devopsfaith/krakend:2
           check -c /etc/krakend/krakend.json
 
+  codeql:
+    name: CodeQL SAST
+    needs:
+      - secret_scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: python
+          config-file: .github/codeql-config.yml
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:python"
+          output: results
+
+      - name: Upload SARIF artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: codeql-sarif
+          path: results/
+
+      - name: Block on error-level findings
+        run: |
+          count=$(jq '[.runs[].results[] | select(.level == "error")] | length' results/*.sarif)
+          echo "CodeQL error-level findings: $count"
+          [ "$count" -eq 0 ] || { echo "CodeQL found $count error-level finding(s). Review the codeql-sarif artifact."; exit 1; }
+
   backend_image:
     name: Build and Publish Backend Image
     needs:
@@ -314,6 +352,7 @@ jobs:
       - backend_ci
       - mobile_ci
       - krakend_check
+      - codeql
     if: >-
       github.ref == 'refs/heads/main' &&
       (
