@@ -9,6 +9,7 @@ import '../../providers/service_providers.dart';
 import '../../services/claim_service.dart';
 import '../../widgets/step_progress_bar.dart';
 import '../../widgets/product_image_card.dart';
+import '../../widgets/app_snackbar.dart';
 import 'product_detail_screen.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
@@ -139,8 +140,9 @@ class _ReceiptConfirmationScreenState
     if (!mounted) return;
 
     if (result == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to save. Please try again.')),
+      AppSnackBar.showError(
+        context,
+        message: 'Failed to save. Please try again.',
       );
       return;
     }

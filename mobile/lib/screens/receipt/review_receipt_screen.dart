@@ -10,6 +10,7 @@ import '../../providers/receipt_provider.dart';
 import '../../widgets/step_progress_bar.dart';
 import '../../widgets/app_primary_button.dart';
 import 'receipt_confirmation_screen.dart';
+import '../../widgets/app_snackbar.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
 class ReviewReceiptScreen extends ConsumerStatefulWidget {
@@ -345,8 +346,9 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     if (!isValid) return;
 
     if (_purchaseDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a purchase date.')),
+      AppSnackBar.showError(
+        context,
+        message: 'Please select a purchase date.',
       );
       return;
     }

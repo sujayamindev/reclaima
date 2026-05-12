@@ -1,4 +1,5 @@
 // coverage:ignore-file
+import '../../../widgets/app_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -69,7 +70,7 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
 
   Future<void> _saveProfile() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     setState(() => _isSaving = true);
     try {
       await ref
@@ -81,24 +82,15 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
       ref.invalidate(userProfileProvider);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Profile saved successfully'),
-            behavior: SnackBarBehavior.floating,
-            duration: Duration(milliseconds: 1500),
-          ),
+        AppSnackBar.showSuccess(
+          context,
+          message: 'Profile saved successfully',
         );
       }
     } catch (e) {
       logger.e('Failed to save profile: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Failed to save profile'),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: AppColors.error,
-          ),
-        );
+        AppSnackBar.showError(context, message: 'Failed to save profile');
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
@@ -107,23 +99,14 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
 
   Future<void> _changePassword() async {
     if (_newPasswordController.text != _confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('New passwords do not match'),
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: AppColors.error,
-        ),
-      );
+      AppSnackBar.showInfo(context, message: 'New passwords do not match');
       return;
     }
 
     if (_newPasswordController.text.length < 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Password must be at least 6 characters long'),
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: AppColors.error,
-        ),
+      AppSnackBar.showInfo(
+        context,
+        message: 'Password must be at least 6 characters long',
       );
       return;
     }
@@ -143,24 +126,18 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
         _newPasswordController.clear();
         _confirmPasswordController.clear();
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Password updated successfully'),
-            behavior: SnackBarBehavior.floating,
-          ),
+        AppSnackBar.showSuccess(
+          context,
+          message: 'Password updated successfully',
         );
       }
     } catch (e) {
       logger.e('Failed to change password: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
+        AppSnackBar.showError(
+          context,
+          message:
               'Failed to update password: ${e.toString().replaceAll("Exception: ", "")}',
-            ),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: AppColors.error,
-          ),
         );
       }
     } finally {
@@ -294,14 +271,9 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
           ),
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text(
-              'Failed to delete account. Please try again later.',
-            ),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: AppColors.error,
-          ),
+        AppSnackBar.showError(
+          context,
+          message: 'Failed to delete account. Please try again later.',
         );
       }
     } finally {
@@ -491,7 +463,9 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
                       keyboardType: TextInputType.phone,
                       validator: Validators.phone,
                       inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'[0-9+\- ()]')),
+                        FilteringTextInputFormatter.allow(
+                          RegExp(r'[0-9+\- ()]'),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 6),
@@ -645,12 +619,14 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
                       Builder(
                         builder: (context) {
                           final authUser = ref.read(currentUserProvider);
-                          final isApple = authUser?.providerData.any(
+                          final isApple =
+                              authUser?.providerData.any(
                                 (p) => p.providerId.contains('apple'),
                               ) ??
                               false;
-                          final providerName =
-                              isApple ? 'an Apple' : 'a Google';
+                          final providerName = isApple
+                              ? 'an Apple'
+                              : 'a Google';
                           final shortName = isApple ? 'Apple' : 'Google';
                           return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 8.0),

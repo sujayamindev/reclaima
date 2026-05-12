@@ -62,6 +62,10 @@ class AppTextField extends StatelessWidget {
             hintStyle: AppTextStyles.bodyMedium.copyWith(
               color: labelColor.withValues(alpha: 0.5),
             ),
+            errorStyle: AppTextStyles.caption.copyWith(
+              color: AppColors.error,
+              fontWeight: FontWeight.w500,
+            ),
             filled: true,
             fillColor: cardColor,
             prefixIcon: icon != null

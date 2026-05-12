@@ -1,4 +1,5 @@
 // coverage:ignore-file
+import '../../widgets/app_snackbar.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -50,9 +51,7 @@ class _ImageCropRotateScreenState extends State<ImageCropRotateScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Crop failed: $e')));
+        AppSnackBar.showError(context, message: 'Crop failed: $e');
       }
     } finally {
       if (mounted) {
@@ -81,9 +80,7 @@ class _ImageCropRotateScreenState extends State<ImageCropRotateScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Rotation failed: $e')));
+        AppSnackBar.showError(context, message: 'Rotation failed: $e');
       }
     } finally {
       if (mounted) {

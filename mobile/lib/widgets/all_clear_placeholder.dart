@@ -50,7 +50,7 @@ class AllClearPlaceholder extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Nothing at the moment. Add receipts to start tracking!',
+                    'Add receipts to start tracking!',
                     style: AppTextStyles.bodyXSmall.copyWith(
                       color: textSecondary,
                       height: 1.4,
@@ -75,10 +75,10 @@ class AllClearPlaceholder extends StatelessWidget {
               width: 100,
               child: Center(
                 child: Icon(
-                  Symbols.contextual_token_add_rounded,
+                  Symbols.clear_all,
                   size: 64,
                   color: primary,
-                  weight: AppDimensions.iconWeightNormal,
+                  weight: AppDimensions.iconWeightBold,
                 ),
               ),
             ),

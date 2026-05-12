@@ -12,6 +12,7 @@ import '../../data/models/receipt_line_item_model.dart';
 import '../../providers/receipt_provider.dart';
 import '../../core/utils/formatters.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import '../../widgets/app_snackbar.dart';
 import '../../widgets/app_primary_button.dart';
 import 'claims_list_screen.dart';
 
@@ -1828,25 +1829,17 @@ class _NotificationSettingsState extends State<_NotificationSettings> {
             'returnReminderEnabled': _returnReminder,
           });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Notification settings saved'),
-            duration: Duration(milliseconds: 1500),
-          ),
+        AppSnackBar.showSuccess(
+          context,
+          message: 'Notification settings saved',
         );
       }
     } catch (e, st) {
       logger.e('Failed to save notification settings: $e', stackTrace: st);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Failed to save notification settings',
-              style: TextStyle(color: Colors.white),
-            ),
-            backgroundColor: AppColors.error,
-            duration: Duration(milliseconds: 2000),
-          ),
+        AppSnackBar.showError(
+          context,
+          message: 'Failed to save notification settings',
         );
       }
     }

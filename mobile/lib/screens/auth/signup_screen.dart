@@ -1,4 +1,5 @@
 // coverage:ignore-file
+import '../../widgets/app_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -52,9 +53,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
     final state = ref.read(authControllerProvider);
     if (state.hasError) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: ${state.error}')));
+      AppSnackBar.showError(context, message: 'Error: ${state.error}');
     }
   }
 
@@ -194,15 +193,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                     );
                                   },
                                 ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter your password';
-                                  }
-                                  if (value.length < 6) {
-                                    return 'Password must be at least 6 characters';
-                                  }
-                                  return null;
-                                },
+                                validator: Validators.password,
                               ),
                               const SizedBox(height: 20),
 
@@ -227,15 +218,11 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                     );
                                   },
                                 ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please confirm your password';
-                                  }
-                                  if (value != _passwordController.text) {
-                                    return 'Passwords do not match';
-                                  }
-                                  return null;
-                                },
+                                validator: (value) =>
+                                    Validators.confirmPassword(
+                                      value,
+                                      _passwordController.text,
+                                    ),
                               ),
 
                               // Submit Button
@@ -338,14 +325,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                                 authControllerProvider,
                                               );
                                               if (state.hasError) {
-                                                ScaffoldMessenger.of(
+                                                AppSnackBar.showError(
                                                   context,
-                                                ).showSnackBar(
-                                                  SnackBar(
-                                                    content: Text(
+                                                  message:
                                                       'Error: ${state.error}',
-                                                    ),
-                                                  ),
                                                 );
                                               }
                                             },
@@ -363,14 +346,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                                         size: AppDimensions.iconMedium,
                                       ),
                                       onPressed: () {
-                                        ScaffoldMessenger.of(
+                                        AppSnackBar.showInfo(
                                           context,
-                                        ).showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
+                                          message:
                                               'Apple Sign-In is coming soon!',
-                                            ),
-                                          ),
                                         );
                                       },
                                     ),

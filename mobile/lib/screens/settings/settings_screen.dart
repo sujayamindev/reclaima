@@ -239,12 +239,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
       child: Row(
         children: [
-          Icon(
-            Symbols.circle_rounded,
-            size: AppDimensions.iconTiny,
-            color: AppColors.muted(isDark),
-            weight: 600.0,
-          ),
           const SizedBox(width: 12),
           Expanded(
             child: Text(

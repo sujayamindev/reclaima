@@ -1,4 +1,5 @@
 // coverage:ignore-file
+import '../../widgets/app_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -45,9 +46,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     final state = ref.read(authControllerProvider);
     if (state.hasError) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: ${state.error}')));
+      AppSnackBar.showError(context, message: 'Error: ${state.error}');
     }
   }
 
@@ -296,14 +295,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                 authControllerProvider,
                                               );
                                               if (state.hasError) {
-                                                ScaffoldMessenger.of(
+                                                AppSnackBar.showError(
                                                   context,
-                                                ).showSnackBar(
-                                                  SnackBar(
-                                                    content: Text(
+                                                  message:
                                                       'Error: ${state.error}',
-                                                    ),
-                                                  ),
                                                 );
                                               }
                                             },
@@ -321,14 +316,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                         size: AppDimensions.iconMedium,
                                       ),
                                       onPressed: () {
-                                        ScaffoldMessenger.of(
+                                        AppSnackBar.showInfo(
                                           context,
-                                        ).showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
+                                          message:
                                               'Apple Sign-In is coming soon!',
-                                            ),
-                                          ),
                                         );
                                       },
                                     ),

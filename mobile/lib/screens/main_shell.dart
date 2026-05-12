@@ -9,7 +9,8 @@ import 'settings/settings_screen.dart';
 
 // ── Nav index provider ────────────────────────────────────────────────────────
 
-final _navIndexProvider = StateProvider<int>((ref) => 0);
+final mainNavIndexProvider = StateProvider<int>((ref) => 0);
+final vaultSearchFocusTriggerProvider = StateProvider<bool>((ref) => false);
 
 // ── Main shell ────────────────────────────────────────────────────────────────
 
@@ -25,7 +26,7 @@ class MainShell extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final index = ref.watch(_navIndexProvider);
+    final index = ref.watch(mainNavIndexProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -34,7 +35,7 @@ class MainShell extends ConsumerWidget {
       bottomNavigationBar: _BottomNavBar(
         currentIndex: index,
         isDark: isDark,
-        onTap: (i) => ref.read(_navIndexProvider.notifier).state = i,
+        onTap: (i) => ref.read(mainNavIndexProvider.notifier).state = i,
       ),
     );
   }

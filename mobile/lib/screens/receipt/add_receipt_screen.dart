@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../widgets/app_snackbar.dart';
 import '../../core/constants/app_constants.dart';
 import '../../providers/receipt_provider.dart';
 import '../../widgets/step_progress_bar.dart';
@@ -55,16 +56,11 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
               ListTile(
                 leading: Container(
                   padding: const EdgeInsets.all(AppDimensions.paddingCardSmall),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(
-                      AppDimensions.radiusIconContainer,
-                    ),
-                  ),
                   child: const Icon(
                     Symbols.camera_alt_rounded,
                     color: AppColors.primary,
-                    size: AppDimensions.iconMedium,
+                    size: 24,
+                    weight: AppDimensions.iconWeightBold,
                   ),
                 ),
                 title: Text(
@@ -76,16 +72,11 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
               ListTile(
                 leading: Container(
                   padding: const EdgeInsets.all(AppDimensions.paddingCardSmall),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(
-                      AppDimensions.radiusIconContainer,
-                    ),
-                  ),
                   child: const Icon(
-                    Symbols.photo_library_rounded,
+                    Symbols.imagesmode_rounded,
                     color: AppColors.primary,
-                    size: AppDimensions.iconMedium,
+                    size: 24,
+                    weight: AppDimensions.iconWeightBold,
                   ),
                 ),
                 title: Text(
@@ -154,8 +145,9 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
     if (!mounted) return;
 
     if (ocrData == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Upload failed. Please try again.')),
+      AppSnackBar.showError(
+        context,
+        message: 'Upload failed. Please try again.',
       );
       return;
     }
@@ -184,7 +176,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            const Icon(Symbols.warning_rounded, color: AppColors.warning),
+            const Icon(Symbols.warning_rounded, color: AppColors.warning, weight: AppDimensions.iconWeightBold),
             const SizedBox(width: 8),
             Text(
               'Missing Image',
@@ -358,16 +350,6 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
                                     color: AppColors.onPrimary,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Upload front, then back',
-                                  style: AppTextStyles.caption.copyWith(
-                                    fontSize: 12,
-                                    color: AppColors.onPrimary.withValues(
-                                      alpha: 0.7,
-                                    ),
                                   ),
                                 ),
                               ],

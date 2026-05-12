@@ -14,10 +14,12 @@ import '../../providers/auth_provider.dart';
 import '../../providers/receipt_provider.dart';
 import '../receipt/product_detail_screen.dart';
 import '../receipt/claim_detail_screen.dart';
-import '../receipt/claims_list_screen.dart';
 import '../../services/claim_service.dart';
 import '../../providers/claim_provider.dart';
 import '../../widgets/all_clear_placeholder.dart';
+import '../../widgets/app_snackbar.dart';
+import '../../widgets/product_selector_sheet.dart';
+import '../main_shell.dart';
 
 // ── Attention item ─────────────────────────────────────────────────────────────
 
@@ -223,7 +225,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _ProductSelectorSheet(receipts: receipts),
+      builder: (context) => ProductSelectorSheet(receipts: receipts),
     );
   }
 
@@ -290,15 +292,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   iconColor: textSecondary,
                                   cardColor: card,
                                   borderColor: border,
-                                  onPressed: () {},
-                                ),
-                                const SizedBox(width: 10),
-                                _CircleIconButton(
-                                  icon: Symbols.notifications_rounded,
-                                  iconColor: textSecondary,
-                                  cardColor: card,
-                                  borderColor: border,
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    ref
+                                            .read(mainNavIndexProvider.notifier)
+                                            .state =
+                                        1;
+                                    ref
+                                            .read(
+                                              vaultSearchFocusTriggerProvider
+                                                  .notifier,
+                                            )
+                                            .state =
+                                        true;
+                                  },
                                 ),
                               ],
                             ),
@@ -472,14 +478,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           (r) => r.lineItems.any((i) => i.status != 'ARCHIVED'),
                         );
                         if (!hasProducts) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: const Text(
-                                'No products available to claim.',
-                              ),
-                              behavior: SnackBarBehavior.floating,
-                              backgroundColor: AppColors.error,
-                            ),
+                          AppSnackBar.showError(
+                            context,
+                            message: 'No products available to claim.',
                           );
                           return;
                         }
@@ -1112,7 +1113,7 @@ class _InsightsSection extends StatelessWidget {
               totalEligible == 0
                   ? "Add your first receipt to start tracking your coverage."
                   : '$scoreDisplay% of your products are actively protected',
-              style: AppTextStyles.spaceGrotesk.copyWith(
+              style: AppTextStyles.bodyXSmall.copyWith(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
                 color: textSecondary,
@@ -1206,239 +1207,6 @@ class _CircleIconButton extends StatelessWidget {
             weight: AppDimensions.iconWeightBold,
           ),
         ),
-      ),
-    );
-  }
-}
-
-// ── Product Selector Sheet ───────────────────────────────────────────────────
-
-class _ProductSelectorSheet extends StatefulWidget {
-  final List<ReceiptModel> receipts;
-
-  const _ProductSelectorSheet({required this.receipts});
-
-  @override
-  State<_ProductSelectorSheet> createState() => _ProductSelectorSheetState();
-}
-
-class _ProductSelectorSheetState extends State<_ProductSelectorSheet> {
-  String _searchQuery = '';
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = AppColors.background(isDark);
-    final textPrimary = AppColors.textPrimary(isDark);
-    final textSecondary = AppColors.textSecondary(isDark);
-
-    // Extract flatten products
-    final products = <Map<String, dynamic>>[];
-    for (final receipt in widget.receipts) {
-      for (final item in receipt.lineItems) {
-        if (item.status == 'ARCHIVED') continue;
-        if (_searchQuery.isNotEmpty) {
-          final query = _searchQuery.toLowerCase();
-          if (!item.displayName.toLowerCase().contains(query) &&
-              !(receipt.storeName?.toLowerCase().contains(query) ?? false)) {
-            continue;
-          }
-        }
-        products.add({
-          'receiptId': receipt.id,
-          'receiptStoreName': receipt.storeName ?? 'Unknown Store',
-          'lineItemId': item.id,
-          'productName': item.displayName,
-          'storeName': receipt.storeName,
-          'productImageUrl': item.productImageUrl,
-        });
-      }
-    }
-
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.85,
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppDimensions.radiusXXL),
-        ),
-      ),
-      child: Column(
-        children: [
-          const SizedBox(height: 12),
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: AppColors.border(isDark),
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          const SizedBox(height: 24),
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.paddingPage,
-            ),
-            child: Row(
-              children: [
-                Text(
-                  'Select Product to Claim',
-                  style: AppTextStyles.headingLarge.copyWith(
-                    color: textPrimary,
-                    fontSize: 20,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.paddingPage,
-            ),
-            child: TextField(
-              onChanged: (val) => setState(() => _searchQuery = val),
-              style: AppTextStyles.bodyMedium.copyWith(color: textPrimary),
-              decoration: InputDecoration(
-                hintText: 'Search products or stores...',
-                hintStyle: AppTextStyles.bodyMedium.copyWith(
-                  color: textSecondary.withValues(alpha: 0.5),
-                ),
-                prefixIcon: Icon(Symbols.search_rounded, color: textSecondary),
-                filled: true,
-                fillColor: AppColors.card(isDark),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
-                  borderSide: BorderSide(color: AppColors.border(isDark)),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
-                  borderSide: BorderSide(color: AppColors.border(isDark)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
-                  borderSide: BorderSide(color: AppColors.primary, width: 2),
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Expanded(
-            child: products.isEmpty
-                ? Center(
-                    child: Text(
-                      'No products found',
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: textSecondary,
-                      ),
-                    ),
-                  )
-                : ListView.separated(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.paddingPage,
-                      vertical: 8,
-                    ),
-                    itemCount: products.length,
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(height: 12),
-                    itemBuilder: (context, index) {
-                      final p = products[index];
-                      return GestureDetector(
-                        onTap: () {
-                          Navigator.pop(context); // Close sheet
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => ClaimsListScreen(
-                                receiptId: p['receiptId'],
-                                lineItemId: p['lineItemId'],
-                                receiptStoreName: p['receiptStoreName'],
-                              ),
-                            ),
-                          );
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: AppColors.card(isDark),
-                            borderRadius: BorderRadius.circular(
-                              AppDimensions.radiusXL,
-                            ),
-                            border: Border.all(color: AppColors.border(isDark)),
-                          ),
-                          child: Row(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(
-                                  AppDimensions.radiusMedium,
-                                ),
-                                child: Container(
-                                  width: 50,
-                                  height: 50,
-                                  color: Colors.white,
-                                  child: p['productImageUrl'] != null
-                                      ? CachedNetworkImage(
-                                          imageUrl: p['productImageUrl'],
-                                          fit: BoxFit.contain,
-                                          errorWidget: (_, _, _) => Icon(
-                                            Symbols.image_not_supported_rounded,
-                                            color: textSecondary.withValues(
-                                              alpha: 0.5,
-                                            ),
-                                            size: 24,
-                                          ),
-                                        )
-                                      : Icon(
-                                          Symbols.image_not_supported_rounded,
-                                          color: textSecondary.withValues(
-                                            alpha: 0.5,
-                                          ),
-                                          size: 24,
-                                        ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      p['productName'],
-                                      style: AppTextStyles.listTitle.copyWith(
-                                        color: textPrimary,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      p['storeName'] ?? 'Unknown Store',
-                                      style: AppTextStyles.caption.copyWith(
-                                        color: textSecondary,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Icon(
-                                Symbols.chevron_right_rounded,
-                                color: textSecondary,
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-          ),
-          const SizedBox(height: 16),
-        ],
       ),
     );
   }

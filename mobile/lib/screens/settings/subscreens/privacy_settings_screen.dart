@@ -1,4 +1,5 @@
 // coverage:ignore-file
+import '../../../widgets/app_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -45,10 +46,9 @@ class PrivacySettingsScreen extends StatelessWidget {
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
             onPressed: () {
               Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Export started. Check your email shortly.'),
-                ),
+              AppSnackBar.showSuccess(
+                context,
+                message: 'Export started. Check your email shortly.',
               );
             },
             child: const Text(
@@ -160,12 +160,7 @@ class PrivacySettingsScreen extends StatelessWidget {
   }
 
   void _showComingSoon(BuildContext context, String feature) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$feature coming soon'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    AppSnackBar.showInfo(context, message: '$feature coming soon');
   }
 
   @override
@@ -209,7 +204,6 @@ class PrivacySettingsScreen extends StatelessWidget {
                     subtitle: 'Download a copy of your receipts',
                     onTap: () => _handleExport(context),
                   ),
-                  Divider(color: AppColors.border(isDark), height: 1),
                   _buildTapRow(
                     isDark,
                     icon: Symbols.sync_rounded,
@@ -232,7 +226,6 @@ class PrivacySettingsScreen extends StatelessWidget {
                     subtitle: 'Read our terms of service',
                     onTap: () => _launchUrl('https://receipta.app/terms'),
                   ),
-                  Divider(color: AppColors.border(isDark), height: 1),
                   _buildTapRow(
                     isDark,
                     icon: Symbols.privacy_tip_rounded,

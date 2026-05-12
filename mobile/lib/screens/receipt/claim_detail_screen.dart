@@ -1,4 +1,5 @@
 // coverage:ignore-file
+import '../../widgets/app_snackbar.dart';
 import 'dart:io';
 import '../../core/constants/app_constants.dart';
 import 'package:flutter/material.dart';
@@ -127,9 +128,7 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
     } catch (e) {
       logger.e('Error saving claim changes: $e');
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed: $e')));
+        AppSnackBar.showError(context, message: 'Failed: $e');
       }
     } finally {
       if (mounted) setState(() => _isUpdating = false);
@@ -470,8 +469,9 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
 
       if (!mounted) return;
       if (outcome == 'REFUNDED') {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Item successfully archived.')),
+        AppSnackBar.showSuccess(
+          context,
+          message: 'Item successfully archived.',
         );
       } else if (outcome == 'REPAIRED') {
         showDialog(
@@ -510,8 +510,9 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
           ),
         );
       } else if (outcome == 'REPLACED') {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Item successfully archived.')),
+        AppSnackBar.showSuccess(
+          context,
+          message: 'Item successfully archived.',
         );
       }
 
@@ -521,9 +522,7 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
     } catch (e) {
       logger.e('Error resolving claim: $e');
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to resolve claim: $e')));
+        AppSnackBar.showError(context, message: 'Failed to resolve claim: $e');
       }
     } finally {
       if (mounted) setState(() => _isUpdating = false);
@@ -544,23 +543,19 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
         type: 'application/pdf',
       );
       if (openResult.type != ResultType.done && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              openResult.message.isNotEmpty
-                  ? openResult.message
-                  : 'No PDF app found on this device.',
-            ),
-          ),
+        AppSnackBar.showInfo(
+          context,
+          message: openResult.message.isNotEmpty
+              ? openResult.message
+              : 'No PDF app found on this device.',
         );
       }
     } catch (e) {
       logger.e('Error opening PDF: $e');
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Unable to open PDF. Please try Download instead.'),
-        ),
+      AppSnackBar.showError(
+        context,
+        message: 'Unable to open PDF. Please try Download instead.',
       );
     }
   }
@@ -596,19 +591,16 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
       await Dio().download(url, filePath);
 
       if (showSuccessMessage && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('PDF downloaded successfully.')),
-        );
+        AppSnackBar.showSuccess(context, message: 'PDF downloaded successfully.');
       }
 
       return filePath;
     } catch (e) {
       logger.e('Error downloading PDF file: $e');
       if (!mounted) return null;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Unable to download PDF. Please try again.'),
-        ),
+      AppSnackBar.showError(
+        context,
+        message: 'Unable to download PDF. Please try again.',
       );
       return null;
     }
@@ -647,8 +639,9 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
         await Dio().download(url, filePath);
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('PDF saved to Downloads folder.')),
+          AppSnackBar.showSuccess(
+            context,
+            message: 'PDF saved to Downloads folder.',
           );
         }
 
@@ -657,12 +650,10 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
     } catch (e) {
       logger.e('Error saving PDF to Downloads: $e');
       if (!mounted) return null;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
+      AppSnackBar.showError(
+        context,
+        message:
             'Unable to save to Downloads. Please check storage permissions.',
-          ),
-        ),
       );
       return null;
     }
@@ -670,37 +661,9 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
 
   void _showDownloadStartedMessage() {
     if (!mounted) return;
-
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-
-    messenger.showSnackBar(
-      SnackBar(
-        behavior: SnackBarBehavior.floating,
-        elevation: 0,
-        duration: const Duration(seconds: 6),
-        margin: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-        backgroundColor: AppColors.card(isDark),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusXL),
-          side: BorderSide(color: AppColors.border(isDark)),
-        ),
-        content: Row(
-          children: [
-            Expanded(
-              child: Text(
-                'Download started. Open notification to view file.',
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textPrimary(isDark),
-                  fontWeight: FontWeight.w500,
-                  fontSize: 12,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+    AppSnackBar.showInfo(
+      context,
+      message: 'Download started. Open notification to view file.',
     );
   }
 
@@ -715,10 +678,9 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
       setState(() => _claim = refreshedClaim);
 
       if (refreshedClaim.url == null || refreshedClaim.url!.trim().isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Claim PDF is not available yet. Try again shortly.'),
-          ),
+        AppSnackBar.showInfo(
+          context,
+          message: 'Claim PDF is not available yet. Try again shortly.',
         );
         return null;
       }
@@ -727,10 +689,9 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
     } catch (e) {
       logger.e('Error refreshing claim URL: $e');
       if (!mounted) return null;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Could not refresh PDF link. Please try again.'),
-        ),
+      AppSnackBar.showError(
+        context,
+        message: 'Could not refresh PDF link. Please try again.',
       );
       return null;
     }
@@ -839,15 +800,11 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
       if (!mounted) return;
       Navigator.pop(context, true);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Claim deleted successfully')),
-      );
+      AppSnackBar.showSuccess(context, message: 'Claim deleted successfully');
     } catch (e) {
       logger.e('Error deleting claim: $e');
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to delete claim: $e')));
+        AppSnackBar.showError(context, message: 'Failed to delete claim: $e');
       }
     } finally {
       if (mounted) setState(() => _isUpdating = false);

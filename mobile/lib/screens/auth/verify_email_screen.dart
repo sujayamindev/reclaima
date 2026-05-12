@@ -1,4 +1,5 @@
 // coverage:ignore-file
+import '../../widgets/app_snackbar.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -51,11 +52,9 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
       if (isVerified && mounted) {
         _timer?.cancel();
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Email successfully verified!'),
-            backgroundColor: Colors.white,
-          ),
+        AppSnackBar.showSuccess(
+          context,
+          message: 'Email successfully verified!',
         );
 
         Navigator.of(context).pushAndRemoveUntil(
@@ -98,18 +97,14 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
     if (mounted) {
       final state = ref.read(authControllerProvider);
       if (state.hasError) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to resend: ${state.error}'),
-            backgroundColor: AppColors.error,
-          ),
+        AppSnackBar.showError(
+          context,
+          message: 'Failed to resend: ${state.error}',
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Verification email resent.'),
-            backgroundColor: AppColors.primary,
-          ),
+        AppSnackBar.showSuccess(
+          context,
+          message: 'Verification email resent.',
         );
       }
     }

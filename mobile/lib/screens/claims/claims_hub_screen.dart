@@ -9,6 +9,7 @@ import '../../data/models/receipt_model.dart';
 import '../../providers/claim_provider.dart';
 import '../../providers/receipt_provider.dart';
 import '../../services/claim_service.dart';
+import '../../widgets/product_selector_sheet.dart';
 import '../receipt/claim_detail_screen.dart';
 
 // ── Filter enum ───────────────────────────────────────────────────────────
@@ -157,7 +158,7 @@ class _ClaimsHubScreenState extends ConsumerState<ClaimsHubScreen> {
               ),
               const SizedBox(height: 20),
               _buildInfoSection(
-                icon: Symbols.edit_rounded,
+                icon: Symbols.check_circle_rounded,
                 title: 'Updating Claim Status',
                 steps: [
                   'Open the claim you want to update',
@@ -257,6 +258,33 @@ class _ClaimsHubScreenState extends ConsumerState<ClaimsHubScreen> {
 
     return Scaffold(
       backgroundColor: bg,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 80.0),
+        child: FloatingActionButton(
+          onPressed: () {
+            final receipts = ref.read(receiptsProvider).valueOrNull;
+            if (receipts != null) {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) => ProductSelectorSheet(receipts: receipts),
+              );
+            }
+          },
+          backgroundColor: AppColors.primary,
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(100),
+          ),
+          child: Icon(
+            Symbols.add_rounded,
+            size: AppDimensions.iconLarge,
+            weight: AppDimensions.iconWeightBold,
+            color: AppColors.onPrimary,
+          ),
+        ),
+      ),
       body: SafeArea(
         child: claimsAsync.when(
           data: (allClaims) {

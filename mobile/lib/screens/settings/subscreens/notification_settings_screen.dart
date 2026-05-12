@@ -1,4 +1,5 @@
 // coverage:ignore-file
+import '../../../widgets/app_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/symbols.dart';
@@ -84,13 +85,7 @@ class _NotificationSettingsScreenState
     } catch (e) {
       logger.e('Failed to save preferences: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Failed to save preferences'),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: AppColors.error,
-          ),
-        );
+        AppSnackBar.showError(context, message: 'Failed to save preferences');
       }
     }
   }

@@ -1,4 +1,5 @@
 // coverage:ignore-file
+import '../widgets/app_snackbar.dart';
 import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -124,19 +125,9 @@ class NotificationService {
     // Show a banner using the global navigator / ScaffoldMessenger
     final ctx = navigatorKey.currentContext;
     if (ctx != null) {
-      ScaffoldMessenger.of(ctx).showSnackBar(
-        SnackBar(
-          content: Text(
-            notification.body ?? notification.title ?? 'New notification',
-          ),
-          behavior: SnackBarBehavior.floating,
-          action: message.data['receipt_id'] != null
-              ? SnackBarAction(
-                  label: 'View',
-                  onPressed: () => _handleNotificationTap(message),
-                )
-              : null,
-        ),
+      AppSnackBar.showInfo(
+        ctx,
+        message: notification.body ?? notification.title ?? 'New notification',
       );
     }
   }

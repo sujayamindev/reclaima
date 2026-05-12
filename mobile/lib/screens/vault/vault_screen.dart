@@ -8,7 +8,9 @@ import 'package:material_symbols_icons/symbols.dart';
 import '../../core/constants/app_constants.dart';
 import '../../data/models/receipt_line_item_model.dart';
 import '../../providers/receipt_provider.dart';
+import '../receipt/add_receipt_screen.dart';
 import '../receipt/product_detail_screen.dart';
+import '../main_shell.dart';
 
 // ── Filter enum ────────────────────────────────────────────────────────────
 
@@ -71,10 +73,12 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
   late VaultSortType _selectedSort = VaultSortType.recentlyAdded;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
 
   @override
   void dispose() {
     _searchController.dispose();
+    _searchFocusNode.dispose();
     super.dispose();
   }
 
@@ -163,6 +167,16 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(vaultSearchFocusTriggerProvider, (previous, next) {
+      if (next) {
+        _searchFocusNode.requestFocus();
+        Future.microtask(
+          () =>
+              ref.read(vaultSearchFocusTriggerProvider.notifier).state = false,
+        );
+      }
+    });
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final receiptsAsync = ref.watch(receiptsProvider);
 
@@ -172,6 +186,26 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
 
     return Scaffold(
       backgroundColor: bg,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 80.0),
+        child: FloatingActionButton(
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AddReceiptScreen()),
+          ),
+          backgroundColor: AppColors.primary,
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(100),
+          ),
+          child: Icon(
+            Symbols.add_rounded,
+            size: AppDimensions.iconLarge,
+            weight: AppDimensions.iconWeightBold,
+            color: AppColors.onPrimary,
+          ),
+        ),
+      ),
       body: SafeArea(
         child: receiptsAsync.when(
           data: (receipts) {
@@ -226,6 +260,7 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
                         ),
                         child: TextField(
                           controller: _searchController,
+                          focusNode: _searchFocusNode,
                           onChanged: (val) =>
                               setState(() => _searchQuery = val),
                           style: AppTextStyles.bodyMedium.copyWith(
