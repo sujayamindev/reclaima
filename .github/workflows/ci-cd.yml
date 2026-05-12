@@ -157,6 +157,8 @@ jobs:
         env:
           DATABASE_URL: postgresql://ci_test_user:ci_test_pass@localhost:5432/ci_test_db
           SECRET_KEY: ci-test-secret-key
+          AWS_ACCESS_KEY_ID: ci-mock-access-key
+          AWS_SECRET_ACCESS_KEY: ci-mock-secret-key
         run: |
           alembic upgrade head
           alembic check
