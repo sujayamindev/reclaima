@@ -58,9 +58,9 @@ class ReceiptLineItem(Base):
 
     # Per-item warranty & return tracking
     warranty_period_months = Column(Integer, nullable=True)  # Warranty duration
-    warranty_expiry_date = Column(DateTime(timezone=True), nullable=True, index=True)
+    warranty_expiry_date = Column(DateTime(timezone=True), nullable=True)
     return_period_days = Column(Integer, nullable=True)  # Return window
-    return_expiry_date = Column(DateTime(timezone=True), nullable=True, index=True)
+    return_expiry_date = Column(DateTime(timezone=True), nullable=True)
 
     # Per-item notification lead time overrides (NULL = use user's global setting)
     warranty_lead_days_override = Column(Integer, nullable=True)
