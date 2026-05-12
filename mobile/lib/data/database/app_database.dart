@@ -88,6 +88,9 @@ class UploadQueue extends Table {
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
+  // In-memory database for widget tests — avoids platform path_provider calls.
+  AppDatabase.forTesting() : super(NativeDatabase.memory());
+
   @override
   int get schemaVersion => 3;
 
