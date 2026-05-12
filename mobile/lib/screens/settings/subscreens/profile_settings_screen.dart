@@ -134,7 +134,7 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
         AppSnackBar.showError(
           context,
           message:
-              'Failed to update password: ${e.toString().replaceAll("Exception: ", "")}',
+              'Failed to update password',
         );
       }
     } finally {

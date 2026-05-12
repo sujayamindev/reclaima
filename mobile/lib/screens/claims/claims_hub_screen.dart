@@ -529,7 +529,7 @@ class _ClaimsHubScreenState extends ConsumerState<ClaimsHubScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  err.toString(),
+                  'Something went wrong. Please try again.',
                   style: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.textSecondary(isDark),
                   ),

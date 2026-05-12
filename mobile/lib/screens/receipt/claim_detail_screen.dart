@@ -86,7 +86,7 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
       logger.e('Error loading claim: $e');
       if (!mounted) return;
       setState(() {
-        _error = e.toString();
+        _error = 'Failed to load claim';
         _isLoading = false;
       });
     }

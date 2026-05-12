@@ -332,12 +332,12 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
     } catch (e) {
       logger.e('Error generating claim: $e');
       setState(() {
-        _error = e.toString();
+        _error = 'Failed to generate claim';
       });
 
       if (!mounted) return;
 
-      AppSnackBar.showError(context, message: 'Failed to generate claim: $e');
+      AppSnackBar.showError(context, message: 'Failed to generate claim');
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -839,7 +839,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
       if (!mounted) return;
       AppSnackBar.showError(
         context,
-        message: 'Failed to share PDF: ${e.toString()}',
+        message: 'Failed to share PDF',
       );
     }
   }
