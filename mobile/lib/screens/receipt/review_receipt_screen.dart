@@ -128,7 +128,9 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     if (widget.ocrData != null) {
       final ocrStatus = widget.ocrData!['ocrStatus'] as String?;
       if (ocrStatus == 'failed' || _ocrExtractedNothing(widget.ocrData!)) {
-        WidgetsBinding.instance.addPostFrameCallback((_) => _showOcrFailedDialog());
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => _showOcrFailedDialog(),
+        );
       }
     } else if (!widget.isManualEntry && widget.receiptId != null) {
       _startPolling();
@@ -139,7 +141,8 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
   bool _ocrExtractedNothing(Map<String, dynamic> data) {
     final hasStore = (data['storeName'] as String?)?.trim().isNotEmpty == true;
     final hasAmount = data['totalAmount'] != null;
-    final hasInvoice = (data['invoiceNumber'] as String?)?.trim().isNotEmpty == true;
+    final hasInvoice =
+        (data['invoiceNumber'] as String?)?.trim().isNotEmpty == true;
     final hasDate = data['purchaseDate'] != null;
     final hasItems = (data['lineItems'] as List<dynamic>?)?.isNotEmpty == true;
     return !hasStore && !hasAmount && !hasInvoice && !hasDate && !hasItems;
@@ -404,10 +407,7 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
     if (!isValid) return;
 
     if (_purchaseDate == null) {
-      AppSnackBar.showError(
-        context,
-        message: 'Please select a purchase date.',
-      );
+      AppSnackBar.showError(context, message: 'Please select a purchase date.');
       return;
     }
 
@@ -553,7 +553,11 @@ class _ReviewReceiptScreenState extends ConsumerState<ReviewReceiptScreen> {
                 children: [
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: Icon(Symbols.arrow_back_rounded, color: textPrimary, weight: AppDimensions.iconWeightBold),
+                    icon: Icon(
+                      Symbols.arrow_back_rounded,
+                      color: textPrimary,
+                      weight: AppDimensions.iconWeightBold,
+                    ),
                     padding: const EdgeInsets.all(8),
                     style: IconButton.styleFrom(
                       backgroundColor: Colors.transparent,

@@ -29,8 +29,8 @@ logger = logging.getLogger(__name__)
 
 _FILE_MAGIC: dict[str, list[bytes]] = {
     "image/jpeg": [b"\xff\xd8\xff"],
-    "image/jpg":  [b"\xff\xd8\xff"],
-    "image/png":  [b"\x89PNG\r\n\x1a\n"],
+    "image/jpg": [b"\xff\xd8\xff"],
+    "image/png": [b"\x89PNG\r\n\x1a\n"],
     "application/pdf": [b"%PDF"],
 }
 
@@ -42,6 +42,7 @@ def _assert_magic_bytes(content: bytes, content_type: str) -> None:
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="File content does not match its declared type. The file may be corrupt or mislabelled.",
         )
+
 
 router = APIRouter(prefix="/receipts", tags=["Receipts"])
 

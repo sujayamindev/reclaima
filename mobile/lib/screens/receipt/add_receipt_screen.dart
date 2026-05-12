@@ -184,7 +184,8 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
       if (mounted) {
         AppSnackBar.showError(
           context,
-          message: 'File is too large. Maximum size is ${AppConstants.maxFileSizeMB} MB.',
+          message:
+              'File is too large. Maximum size is ${AppConstants.maxFileSizeMB} MB.',
         );
       }
       return false;
@@ -196,8 +197,10 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
       await raf.close();
       // %PDF = 0x25 0x50 0x44 0x46
       if (header.length < 4 ||
-          header[0] != 0x25 || header[1] != 0x50 ||
-          header[2] != 0x44 || header[3] != 0x46) {
+          header[0] != 0x25 ||
+          header[1] != 0x50 ||
+          header[2] != 0x44 ||
+          header[3] != 0x46) {
         if (mounted) {
           AppSnackBar.showError(
             context,
@@ -212,13 +215,16 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
   }
 
   Future<void> _upload() async {
-    if (_frontImagePath == null && _backImagePath == null && _pdfPath == null) return;
+    if (_frontImagePath == null && _backImagePath == null && _pdfPath == null)
+      return;
 
     if (_pdfPath != null) {
       if (!await _validateFile(_pdfPath!, isPdf: true)) return;
     } else {
-      if (_frontImagePath != null && !await _validateFile(_frontImagePath!)) return;
-      if (_backImagePath != null && !await _validateFile(_backImagePath!)) return;
+      if (_frontImagePath != null && !await _validateFile(_frontImagePath!))
+        return;
+      if (_backImagePath != null && !await _validateFile(_backImagePath!))
+        return;
     }
 
     final controller = ref.read(receiptControllerProvider.notifier);
@@ -265,7 +271,11 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            const Icon(Symbols.warning_rounded, color: AppColors.warning, weight: AppDimensions.iconWeightBold),
+            const Icon(
+              Symbols.warning_rounded,
+              color: AppColors.warning,
+              weight: AppDimensions.iconWeightBold,
+            ),
             const SizedBox(width: 8),
             Text(
               'Missing Image',
@@ -336,7 +346,11 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                 children: [
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: Icon(Symbols.arrow_back_rounded, color: textPrimary, weight: AppDimensions.iconWeightBold),
+                    icon: Icon(
+                      Symbols.arrow_back_rounded,
+                      color: textPrimary,
+                      weight: AppDimensions.iconWeightBold,
+                    ),
                     padding: const EdgeInsets.all(8),
                     style: IconButton.styleFrom(
                       backgroundColor: Colors.transparent,
@@ -535,7 +549,8 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                           ],
                         ),
                       ),
-                    ] else if (_frontImagePath != null || _backImagePath != null) ...[
+                    ] else if (_frontImagePath != null ||
+                        _backImagePath != null) ...[
                       const SizedBox(height: 24),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -576,71 +591,78 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
                               padding: const EdgeInsets.only(right: 10),
                               child: IntrinsicWidth(
                                 child: Stack(
-                                clipBehavior: Clip.none,
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(16),
-                                    child: Image.file(
-                                      File(imagePath),
-                                      height: 160,
-                                      fit: BoxFit.fitHeight,
-                                      cacheHeight: (160 * MediaQuery.of(context).devicePixelRatio).round(),
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(16),
+                                      child: Image.file(
+                                        File(imagePath),
+                                        height: 160,
+                                        fit: BoxFit.fitHeight,
+                                        cacheHeight:
+                                            (160 *
+                                                    MediaQuery.of(
+                                                      context,
+                                                    ).devicePixelRatio)
+                                                .round(),
+                                      ),
                                     ),
-                                  ),
-                                  Positioned(
-                                    top: -5,
-                                    right: -5,
-                                    child: GestureDetector(
-                                      onTap: isUploading ? null : () => _removeImage(imageType),
+                                    Positioned(
+                                      top: -5,
+                                      right: -5,
+                                      child: GestureDetector(
+                                        onTap: isUploading
+                                            ? null
+                                            : () => _removeImage(imageType),
+                                        child: Container(
+                                          width: 24,
+                                          height: 24,
+                                          decoration: BoxDecoration(
+                                            color: Colors.black.withValues(
+                                              alpha: 0.6,
+                                            ),
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: backgroundColor,
+                                              width: 2,
+                                            ),
+                                          ),
+                                          child: const Icon(
+                                            Symbols.close_rounded,
+                                            color: Colors.white,
+                                            size: AppDimensions.iconTiny,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      bottom: 24,
+                                      left: 4,
                                       child: Container(
-                                        width: 24,
-                                        height: 24,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 3,
+                                        ),
                                         decoration: BoxDecoration(
                                           color: Colors.black.withValues(
                                             alpha: 0.6,
                                           ),
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: backgroundColor,
-                                            width: 2,
+                                          borderRadius: BorderRadius.circular(
+                                            AppDimensions.radiusXL,
                                           ),
                                         ),
-                                        child: const Icon(
-                                          Symbols.close_rounded,
-                                          color: Colors.white,
-                                          size: AppDimensions.iconTiny,
+                                        child: Text(
+                                          label,
+                                          style: AppTextStyles.caption.copyWith(
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                  Positioned(
-                                    bottom: 24,
-                                    left: 4,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 3,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.black.withValues(
-                                          alpha: 0.6,
-                                        ),
-                                        borderRadius: BorderRadius.circular(
-                                          AppDimensions.radiusXL,
-                                        ),
-                                      ),
-                                      child: Text(
-                                        label,
-                                        style: AppTextStyles.caption.copyWith(
-                                          color: Colors.white,
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                                  ],
+                                ),
                               ),
                             );
                           },
@@ -704,11 +726,16 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
           AppPrimaryButton.dark(
             onPressed:
                 (controllerState.isLoading ||
-                    (_frontImagePath == null && _backImagePath == null && _pdfPath == null))
+                    (_frontImagePath == null &&
+                        _backImagePath == null &&
+                        _pdfPath == null))
                 ? null
                 : _upload,
             isLoading: controllerState.isLoading,
-            text: (_frontImagePath == null && _backImagePath == null && _pdfPath == null)
+            text:
+                (_frontImagePath == null &&
+                    _backImagePath == null &&
+                    _pdfPath == null)
                 ? 'Add an image or PDF'
                 : 'Upload Receipt',
           ),

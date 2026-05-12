@@ -326,7 +326,8 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
       // Show success message
       AppSnackBar.showSuccess(
         context,
-        message: 'Claim generated successfully with ${claim.defectImages.length} defect images',
+        message:
+            'Claim generated successfully with ${claim.defectImages.length} defect images',
       );
     } catch (e) {
       logger.e('Error generating claim: $e');
@@ -722,10 +723,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
     } catch (e) {
       logger.e('Error resolving claim: $e');
       if (mounted) {
-        AppSnackBar.showError(
-          context,
-          message: 'Failed to resolve claim: $e',
-        );
+        AppSnackBar.showError(context, message: 'Failed to resolve claim: $e');
       }
     } finally {
       if (mounted) setState(() => _isUpdating = false);
@@ -820,10 +818,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
     if (filePath == null) {
       // Show loading indicator
       if (mounted) {
-        AppSnackBar.showInfo(
-          context,
-          message: 'Preparing PDF for sharing...',
-        );
+        AppSnackBar.showInfo(context, message: 'Preparing PDF for sharing...');
       }
 
       filePath = await _downloadPdfFile(showSuccessMessage: false);

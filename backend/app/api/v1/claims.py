@@ -117,8 +117,8 @@ async def create_claim(
     ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/jpg", "image/png"}
     _DEFECT_IMAGE_MAGIC: dict[str, list[bytes]] = {
         "image/jpeg": [b"\xff\xd8\xff"],
-        "image/jpg":  [b"\xff\xd8\xff"],
-        "image/png":  [b"\x89PNG\r\n\x1a\n"],
+        "image/jpg": [b"\xff\xd8\xff"],
+        "image/png": [b"\x89PNG\r\n\x1a\n"],
     }
 
     for idx, img in enumerate(defect_images):

@@ -226,10 +226,7 @@ class ReceiptService {
           formData.files.add(
             MapEntry(
               'front_image',
-              await MultipartFile.fromFile(
-                frontImagePath,
-                filename: fileName,
-              ),
+              await MultipartFile.fromFile(frontImagePath, filename: fileName),
             ),
           );
         }
@@ -239,10 +236,7 @@ class ReceiptService {
           formData.files.add(
             MapEntry(
               'back_image',
-              await MultipartFile.fromFile(
-                backImagePath,
-                filename: fileName,
-              ),
+              await MultipartFile.fromFile(backImagePath, filename: fileName),
             ),
           );
         }

@@ -112,7 +112,11 @@ class _ImageCropRotateScreenState extends State<ImageCropRotateScreen> {
         iconTheme: IconThemeData(color: textPrimary),
         leading: IconButton(
           onPressed: () => Navigator.of(context).pop(),
-          icon: Icon(Symbols.arrow_back_rounded, color: textPrimary, weight: AppDimensions.iconWeightBold),
+          icon: Icon(
+            Symbols.arrow_back_rounded,
+            color: textPrimary,
+            weight: AppDimensions.iconWeightBold,
+          ),
         ),
       ),
       body: _isProcessing
@@ -136,24 +140,26 @@ class _ImageCropRotateScreenState extends State<ImageCropRotateScreen> {
                         fit: BoxFit.contain,
                         // Decode at display resolution instead of full camera resolution.
                         // Without this, a 12MP camera image takes ~10s to decode.
-                        cacheWidth: (MediaQuery.of(context).size.width *
-                                MediaQuery.of(context).devicePixelRatio)
-                            .round(),
-                        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-                          if (wasSynchronouslyLoaded || frame != null) {
-                            return AnimatedOpacity(
-                              opacity: 1,
-                              duration: const Duration(milliseconds: 200),
-                              child: child,
-                            );
-                          }
-                          return Center(
-                            child: CircularProgressIndicator(
-                              color: AppColors.primary,
-                              strokeWidth: 2,
-                            ),
-                          );
-                        },
+                        cacheWidth:
+                            (MediaQuery.of(context).size.width *
+                                    MediaQuery.of(context).devicePixelRatio)
+                                .round(),
+                        frameBuilder:
+                            (context, child, frame, wasSynchronouslyLoaded) {
+                              if (wasSynchronouslyLoaded || frame != null) {
+                                return AnimatedOpacity(
+                                  opacity: 1,
+                                  duration: const Duration(milliseconds: 200),
+                                  child: child,
+                                );
+                              }
+                              return Center(
+                                child: CircularProgressIndicator(
+                                  color: AppColors.primary,
+                                  strokeWidth: 2,
+                                ),
+                              );
+                            },
                       ),
                     ),
                   ),

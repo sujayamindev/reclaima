@@ -82,10 +82,7 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
       ref.invalidate(userProfileProvider);
 
       if (mounted) {
-        AppSnackBar.showSuccess(
-          context,
-          message: 'Profile saved successfully',
-        );
+        AppSnackBar.showSuccess(context, message: 'Profile saved successfully');
       }
     } catch (e) {
       logger.e('Failed to save profile: $e');

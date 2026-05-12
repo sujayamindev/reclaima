@@ -102,10 +102,7 @@ class _VerifyEmailScreenState extends ConsumerState<VerifyEmailScreen> {
           message: 'Failed to resend: ${state.error}',
         );
       } else {
-        AppSnackBar.showSuccess(
-          context,
-          message: 'Verification email resent.',
-        );
+        AppSnackBar.showSuccess(context, message: 'Verification email resent.');
       }
     }
   }

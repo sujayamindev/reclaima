@@ -591,7 +591,10 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
       await Dio().download(url, filePath);
 
       if (showSuccessMessage && mounted) {
-        AppSnackBar.showSuccess(context, message: 'PDF downloaded successfully.');
+        AppSnackBar.showSuccess(
+          context,
+          message: 'PDF downloaded successfully.',
+        );
       }
 
       return filePath;
