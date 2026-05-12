@@ -5,6 +5,7 @@ Handles CRUD operations, file upload, OCR processing, and warranty calculations.
 
 import logging
 import json
+import os
 import uuid
 from typing import Optional, List, cast
 from datetime import datetime, timezone, timedelta
@@ -210,7 +211,8 @@ class ReceiptService:
         keys — FastAPI alias_generator converts to camelCase on the wire).
         """
         session_id = str(uuid.uuid4())
-        s3_object_key = f"users/{user_id}/receipts/{session_id}/{file_name}"
+        safe_name = os.path.basename(file_name)
+        s3_object_key = f"users/{user_id}/receipts/{session_id}/{safe_name}"
 
         logger.info(f"OCR extract: uploading to {s3_object_key}")
         self.s3_service.upload_file(file_content, s3_object_key, content_type)
@@ -324,7 +326,7 @@ class ReceiptService:
         front_ocr_result = None
         if front_image_data:
             file_content, file_name, content_type = front_image_data
-            front_s3_key = f"users/{user_id}/receipts/{session_id}/front_{file_name}"
+            front_s3_key = f"users/{user_id}/receipts/{session_id}/front_{os.path.basename(file_name)}"
 
             logger.info(f"OCR extract: uploading front image to {front_s3_key}")
             self.s3_service.upload_file(file_content, front_s3_key, content_type)
@@ -342,7 +344,7 @@ class ReceiptService:
         back_ocr_result = None
         if back_image_data:
             file_content, file_name, content_type = back_image_data
-            back_s3_key = f"users/{user_id}/receipts/{session_id}/back_{file_name}"
+            back_s3_key = f"users/{user_id}/receipts/{session_id}/back_{os.path.basename(file_name)}"
 
             logger.info(f"OCR extract: uploading back image to {back_s3_key}")
             self.s3_service.upload_file(file_content, back_s3_key, content_type)
@@ -580,7 +582,9 @@ class ReceiptService:
             return None
 
         # Generate S3 object key
-        s3_object_key = f"users/{user_id}/receipts/{receipt_id}/{file_name}"
+        s3_object_key = (
+            f"users/{user_id}/receipts/{receipt_id}/{os.path.basename(file_name)}"
+        )
 
         # Upload to S3
         self.s3_service.upload_file(

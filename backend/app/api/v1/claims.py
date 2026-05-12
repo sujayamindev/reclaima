@@ -3,6 +3,7 @@ Claims routes - Generate and manage warranty claim PDFs.
 """
 
 import logging
+import os
 import uuid
 from typing import Optional, List, cast
 from fastapi import (
@@ -66,10 +67,10 @@ def _get_receipt_with_line_items(db: Session, receipt_id: str) -> Optional[Recei
     response_model_by_alias=True,
 )
 async def create_claim(
-    receipt_id: str = Form(...),
-    issue_description: str = Form(...),
-    claim_type: str = Form("warranty"),
-    line_item_id: Optional[str] = Form(None),
+    receipt_id: str = Form(..., max_length=36),
+    issue_description: str = Form(..., max_length=2000),
+    claim_type: str = Form("warranty", max_length=20),
+    line_item_id: Optional[str] = Form(None, max_length=36),
     defect_images: List[UploadFile] = File(default=[]),
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -187,8 +188,8 @@ async def create_claim(
         defect_image_s3_keys = []
         for idx, img in enumerate(defect_images):
             img_content = await img.read()
-            # Extract file extension
-            file_name = img.filename or "defect.jpg"
+            # Extract file extension from basename only (prevents path traversal in S3 key)
+            file_name = os.path.basename(img.filename or "defect.jpg")
             ext = file_name.rsplit(".", 1)[-1] if "." in file_name else "jpg"
             img_uuid = str(uuid.uuid4())
             s3_key = f"users/{db_user_id}/claims/{claim_id}/defects/defect_{idx + 1}_{img_uuid}.{ext}"

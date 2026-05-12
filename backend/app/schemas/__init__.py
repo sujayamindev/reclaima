@@ -2,7 +2,7 @@
 Pydantic schemas for API request/response validation.
 """
 
-from pydantic import BaseModel, EmailStr, ConfigDict
+from pydantic import BaseModel, EmailStr, ConfigDict, Field
 from typing import Optional, List, Literal
 from datetime import datetime
 from enum import Enum
@@ -48,8 +48,8 @@ class UserCreate(UserBase):
 class UserUpdate(BaseModel):
     """User update schema."""
 
-    display_name: Optional[str] = None
-    contact_number: Optional[str] = None
+    display_name: Optional[str] = Field(None, max_length=200)
+    contact_number: Optional[str] = Field(None, max_length=30)
 
     model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
 
@@ -108,11 +108,11 @@ class ReceiptLineItemResponse(BaseModel):
 class ReceiptLineItemUpdate(BaseModel):
     """Partial update schema for a single line item."""
 
-    product_code: Optional[str] = None
-    item_description: Optional[str] = None
+    product_code: Optional[str] = Field(None, max_length=100)
+    item_description: Optional[str] = Field(None, max_length=500)
     unit_price: Optional[float] = None
-    product_name: Optional[str] = None
-    product_category: Optional[str] = None
+    product_name: Optional[str] = Field(None, max_length=300)
+    product_category: Optional[str] = Field(None, max_length=100)
     warranty_period_months: Optional[int] = None
     return_period_days: Optional[int] = None
     warranty_lead_days_override: Optional[int] = None
@@ -129,24 +129,24 @@ class ReceiptLineItemUpdate(BaseModel):
 class ReceiptBase(BaseModel):
     """Base receipt schema. Product/warranty fields now live on line items."""
 
-    store_name: Optional[str] = None
+    store_name: Optional[str] = Field(None, max_length=300)
     purchase_date: Optional[datetime] = None
     total_amount: Optional[float] = None
-    currency: Optional[str] = "USD"
-    notes: Optional[str] = None
+    currency: Optional[str] = Field("USD", max_length=10)
+    notes: Optional[str] = Field(None, max_length=2000)
 
     # Invoice / receipt identification
-    invoice_number: Optional[str] = None
+    invoice_number: Optional[str] = Field(None, max_length=100)
 
     # Vendor contact details
-    vendor_address: Optional[str] = None
-    vendor_phone: Optional[str] = None
-    vendor_email: Optional[str] = None
-    vendor_url: Optional[str] = None
+    vendor_address: Optional[str] = Field(None, max_length=500)
+    vendor_phone: Optional[str] = Field(None, max_length=30)
+    vendor_email: Optional[str] = Field(None, max_length=254)
+    vendor_url: Optional[str] = Field(None, max_length=2000)
 
     # Document-level OCR text fields
-    remarks: Optional[str] = None  # Remarks / serial number
-    warranty_notes: Optional[str] = None  # Warranty policy text
+    remarks: Optional[str] = Field(None, max_length=1000)  # Remarks / serial number
+    warranty_notes: Optional[str] = Field(None, max_length=5000)  # Warranty policy text
 
     model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
 
@@ -167,18 +167,18 @@ class ReceiptCreate(ReceiptBase):
 class ReceiptUpdate(BaseModel):
     """Receipt update schema (partial updates). Warranty fields are now on line items."""
 
-    store_name: Optional[str] = None
+    store_name: Optional[str] = Field(None, max_length=300)
     purchase_date: Optional[datetime] = None
     total_amount: Optional[float] = None
-    currency: Optional[str] = None
-    notes: Optional[str] = None
-    invoice_number: Optional[str] = None
-    vendor_address: Optional[str] = None
-    vendor_phone: Optional[str] = None
-    vendor_email: Optional[str] = None
-    vendor_url: Optional[str] = None
-    remarks: Optional[str] = None
-    warranty_notes: Optional[str] = None
+    currency: Optional[str] = Field(None, max_length=10)
+    notes: Optional[str] = Field(None, max_length=2000)
+    invoice_number: Optional[str] = Field(None, max_length=100)
+    vendor_address: Optional[str] = Field(None, max_length=500)
+    vendor_phone: Optional[str] = Field(None, max_length=30)
+    vendor_email: Optional[str] = Field(None, max_length=254)
+    vendor_url: Optional[str] = Field(None, max_length=2000)
+    remarks: Optional[str] = Field(None, max_length=1000)
+    warranty_notes: Optional[str] = Field(None, max_length=5000)
 
     model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
 
@@ -333,7 +333,7 @@ class ClaimDefectImageResponse(BaseModel):
 class ClaimDocumentBase(BaseModel):
     """Base claim document schema."""
 
-    issue_description: str
+    issue_description: str = Field(..., max_length=2000)
     claim_type: Optional[str] = "warranty"
 
     model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)

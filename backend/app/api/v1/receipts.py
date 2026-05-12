@@ -77,7 +77,20 @@ async def create_receipt(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
 
-    receipt = receipt_service.create_receipt(db, str(db_user.id), receipt_data)
+    user_id = str(db_user.id)
+
+    # Validate that any supplied S3 keys belong to this user's prefix so that
+    # a malicious caller cannot link another user's S3 file to their receipt.
+    expected_prefix = f"users/{user_id}/"
+    for key_field in ("s3_object_key", "back_image_s3_key"):
+        key_value = getattr(receipt_data, key_field, None)
+        if key_value and not key_value.startswith(expected_prefix):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Invalid {key_field}: does not belong to your account.",
+            )
+
+    receipt = receipt_service.create_receipt(db, user_id, receipt_data)
     return receipt
 
 
