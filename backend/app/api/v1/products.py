@@ -3,6 +3,7 @@ Product routes - Product image search via Google Custom Search.
 """
 
 import logging
+from typing import Optional
 from fastapi import APIRouter, Depends, Query
 
 from app.core.config import settings
@@ -29,9 +30,8 @@ def _get_image_service():
 
 @router.get("/image-search")
 async def search_product_image(
-    query: str = Query(
-        ...,
-        min_length=1,
+    query: Optional[str] = Query(
+        None,
         max_length=1000,
         description="Product name to search for",
     ),
@@ -45,6 +45,9 @@ async def search_product_image(
     should check imageUrl for null rather than handling 404 errors.
     Requires authentication.
     """
+    if not query or not query.strip():
+        return {"imageUrl": None}
+
     logger.info(
         f"Product image search requested by user {current_user.get('uid', '?')}: "
         f"{query!r}"

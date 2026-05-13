@@ -1,4 +1,5 @@
 // coverage:ignore-file
+import 'package:dio/dio.dart';
 import '../core/utils/logger.dart';
 import 'api_service.dart';
 import '../core/constants/app_constants.dart';
@@ -19,7 +20,14 @@ class ProductImageService {
       final response = await _apiService.get(
         ApiConstants.productImageSearch,
         queryParameters: {'query': productName.trim()},
+        // Accept any non-5xx status so 422/404 from the image-search
+        // endpoint don't throw — they mean "no image found", not an error.
+        options: Options(
+          validateStatus: (status) => status != null && status < 500,
+        ),
       );
+
+      if (response.statusCode != 200) return null;
 
       final data = response.data;
       if (data is Map<String, dynamic> && data.containsKey('imageUrl')) {
