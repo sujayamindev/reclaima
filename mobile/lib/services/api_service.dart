@@ -62,6 +62,10 @@ class ApiService {
   void _onError(DioException err, ErrorInterceptorHandler handler) {
     logger.e('Error: ${err.response?.statusCode} ${err.requestOptions.path}');
     logger.e('Message: ${err.message}');
+    final responseData = err.response?.data;
+    if (responseData != null) {
+      logger.e('Response body: $responseData');
+    }
     handler.next(err);
   }
 

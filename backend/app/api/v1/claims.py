@@ -262,6 +262,9 @@ async def create_claim(
         )
 
         response = ClaimDocumentResponse.model_validate(claim_with_images)
+        response.url = s3_service.generate_presigned_url(
+            s3_object_key, expiration=3600, operation="get_object"
+        )
         return response
 
     except HTTPException:
