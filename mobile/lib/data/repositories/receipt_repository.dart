@@ -18,7 +18,11 @@ class ReceiptRepository {
     final models = localReceipts.map((r) => _mapToModel(r)).toList();
 
     if (models.isEmpty || forceRefresh) {
-      return await syncReceipts();
+      try {
+        return await syncReceipts();
+      } catch (_) {
+        return models;
+      }
     }
 
     _syncInBackground();

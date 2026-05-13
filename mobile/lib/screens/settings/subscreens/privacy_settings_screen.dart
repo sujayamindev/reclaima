@@ -1,5 +1,4 @@
 // coverage:ignore-file
-import '../../../widgets/app_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -14,51 +13,6 @@ class PrivacySettingsScreen extends StatelessWidget {
       // ignore: avoid_print
       print('Could not launch $url');
     }
-  }
-
-  void _handleExport(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.card(isDark),
-        title: Text(
-          'Export Data',
-          style: AppTextStyles.titleLarge.copyWith(
-            color: AppColors.textPrimary(isDark),
-          ),
-        ),
-        content: Text(
-          'Your receipt and warranty data will be compiled into a CSV file and sent to your registered email address.',
-          style: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textSecondary(isDark),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              'Cancel',
-              style: TextStyle(color: AppColors.textSecondary(isDark)),
-            ),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-            onPressed: () {
-              Navigator.pop(ctx);
-              AppSnackBar.showSuccess(
-                context,
-                message: 'Export started. Check your email shortly.',
-              );
-            },
-            child: const Text(
-              'Confirm Export',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   Widget _buildSectionCard(
@@ -159,10 +113,6 @@ class PrivacySettingsScreen extends StatelessWidget {
     );
   }
 
-  void _showComingSoon(BuildContext context, String feature) {
-    AppSnackBar.showInfo(context, message: '$feature coming soon');
-  }
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -192,28 +142,6 @@ class PrivacySettingsScreen extends StatelessWidget {
           ),
           child: Column(
             children: [
-              _buildSectionCard(
-                isDark,
-                'Data Management',
-                Symbols.database_rounded,
-                [
-                  _buildTapRow(
-                    isDark,
-                    icon: Symbols.download_rounded,
-                    title: 'Export My Data',
-                    subtitle: 'Download a copy of your receipts',
-                    onTap: () => _handleExport(context),
-                  ),
-                  _buildTapRow(
-                    isDark,
-                    icon: Symbols.sync_rounded,
-                    title: 'Sync Status',
-                    subtitle: 'Manage cloud synchronization',
-                    onTap: () => _showComingSoon(context, 'Sync Status'),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
               _buildSectionCard(
                 isDark,
                 'Legal & Policies',

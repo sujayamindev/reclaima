@@ -45,6 +45,7 @@ void main() async {
     await SentryFlutter.init((options) {
       options.dsn = sentryDsn;
       options.tracesSampleRate = 1.0;
+      // ignore: experimental_member_use
       options.profilesSampleRate = 1.0;
     }, appRunner: () => runApp(const ProviderScope(child: MyApp())));
   } else {

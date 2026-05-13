@@ -8,8 +8,10 @@ import 'service_providers.dart';
 
 /// Receipts list provider
 final receiptsProvider = FutureProvider<List<ReceiptModel>>((ref) async {
-  final profile = await ref.watch(userProfileProvider.future);
-  if (profile == null) return [];
+  // Gate on Firebase auth (cached locally) rather than the backend profile fetch,
+  // so the local SQLite cache is still readable when the device is offline.
+  final firebaseUser = ref.watch(currentUserProvider);
+  if (firebaseUser == null) return [];
 
   final repository = ref.watch(receiptRepositoryProvider);
   return await repository.getReceipts();
