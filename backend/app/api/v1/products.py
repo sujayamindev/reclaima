@@ -30,7 +30,9 @@ def _get_image_service():
 
 
 class ImageSearchRequest(BaseModel):
-    query: Optional[str] = Field(None, max_length=1000, description="Product name to search for")
+    query: Optional[str] = Field(
+        None, max_length=1000, description="Product name to search for"
+    )
 
 
 @router.post("/image-search")

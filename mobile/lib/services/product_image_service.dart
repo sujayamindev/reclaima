@@ -21,10 +21,14 @@ class ProductImageService {
         data: {'query': productName.trim()},
       );
 
-      logger.d('Image search response: status=${response.statusCode} data=${response.data}');
+      logger.d(
+        'Image search response: status=${response.statusCode} data=${response.data}',
+      );
 
       if (response.statusCode != 200) {
-        logger.w('Image search non-200 status ${response.statusCode} for "$productName"');
+        logger.w(
+          'Image search non-200 status ${response.statusCode} for "$productName"',
+        );
         return null;
       }
 
@@ -35,9 +39,13 @@ class ProductImageService {
           logger.i('Product image found for "$productName": $url');
           return url;
         }
-        logger.w('Image search returned null/empty imageUrl for "$productName" (data: $data)');
+        logger.w(
+          'Image search returned null/empty imageUrl for "$productName" (data: $data)',
+        );
       } else {
-        logger.w('Image search unexpected response shape for "$productName": $data');
+        logger.w(
+          'Image search unexpected response shape for "$productName": $data',
+        );
       }
 
       return null;
