@@ -4,7 +4,8 @@ Product routes - Product image search via Google Custom Search.
 
 import logging
 from typing import Optional
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends
+from pydantic import BaseModel, Field
 
 from app.core.config import settings
 from app.core.security import get_current_user
@@ -28,13 +29,13 @@ def _get_image_service():
     return _image_service
 
 
-@router.get("/image-search")
+class ImageSearchRequest(BaseModel):
+    query: Optional[str] = Field(None, max_length=1000, description="Product name to search for")
+
+
+@router.post("/image-search")
 async def search_product_image(
-    query: Optional[str] = Query(
-        None,
-        max_length=1000,
-        description="Product name to search for",
-    ),
+    body: ImageSearchRequest,
     current_user: dict = Depends(get_current_user),
 ):
     """
@@ -45,6 +46,7 @@ async def search_product_image(
     should check imageUrl for null rather than handling 404 errors.
     Requires authentication.
     """
+    query = body.query
     if not query or not query.strip():
         return {"imageUrl": None}
 

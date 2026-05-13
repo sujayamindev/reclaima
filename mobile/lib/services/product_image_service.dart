@@ -1,5 +1,4 @@
 // coverage:ignore-file
-import 'package:dio/dio.dart';
 import '../core/utils/logger.dart';
 import 'api_service.dart';
 import '../core/constants/app_constants.dart';
@@ -17,25 +16,28 @@ class ProductImageService {
     if (productName.trim().isEmpty) return null;
 
     try {
-      final response = await _apiService.get(
+      final response = await _apiService.post(
         ApiConstants.productImageSearch,
-        queryParameters: {'query': productName.trim()},
-        // Accept any non-5xx status so 422/404 from the image-search
-        // endpoint don't throw — they mean "no image found", not an error.
-        options: Options(
-          validateStatus: (status) => status != null && status < 500,
-        ),
+        data: {'query': productName.trim()},
       );
 
-      if (response.statusCode != 200) return null;
+      logger.d('Image search response: status=${response.statusCode} data=${response.data}');
+
+      if (response.statusCode != 200) {
+        logger.w('Image search non-200 status ${response.statusCode} for "$productName"');
+        return null;
+      }
 
       final data = response.data;
       if (data is Map<String, dynamic> && data.containsKey('imageUrl')) {
         final url = data['imageUrl'] as String?;
         if (url != null && url.isNotEmpty) {
-          logger.i('Product image found for "$productName"');
+          logger.i('Product image found for "$productName": $url');
           return url;
         }
+        logger.w('Image search returned null/empty imageUrl for "$productName" (data: $data)');
+      } else {
+        logger.w('Image search unexpected response shape for "$productName": $data');
       }
 
       return null;

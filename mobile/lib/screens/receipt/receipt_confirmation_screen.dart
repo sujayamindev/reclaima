@@ -59,6 +59,7 @@ class _ReceiptConfirmationScreenState
   void initState() {
     super.initState();
     final productName = widget.formData['productName'] as String?;
+    logger.d('ConfirmationScreen initState: productName=$productName');
     if (productName != null && productName.trim().isNotEmpty) {
       _productImageFuture = ref
           .read(productImageServiceProvider)

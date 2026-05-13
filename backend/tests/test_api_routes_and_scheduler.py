@@ -213,7 +213,7 @@ async def test_notification_and_products_routes(db_session, monkeypatch) -> None
 
     monkeypatch.setattr(products_api, "_get_image_service", lambda: _ImageService())
     found = await products_api.search_product_image(
-        query="Laptop", current_user=current_user
+        body=products_api.ImageSearchRequest(query="Laptop"), current_user=current_user
     )
     assert found["imageUrl"].endswith("1.jpg")
 
@@ -223,18 +223,18 @@ async def test_notification_and_products_routes(db_session, monkeypatch) -> None
 
     monkeypatch.setattr(products_api, "_get_image_service", lambda: _NoImageService())
     not_found = await products_api.search_product_image(
-        query="Unknown", current_user=current_user
+        body=products_api.ImageSearchRequest(query="Unknown"), current_user=current_user
     )
     assert not_found["imageUrl"] is None
 
     # Missing / empty query — should return {"imageUrl": None} without calling the service
     empty = await products_api.search_product_image(
-        query=None, current_user=current_user
+        body=products_api.ImageSearchRequest(query=None), current_user=current_user
     )
     assert empty["imageUrl"] is None
 
     blank = await products_api.search_product_image(
-        query="   ", current_user=current_user
+        body=products_api.ImageSearchRequest(query="   "), current_user=current_user
     )
     assert blank["imageUrl"] is None
 
