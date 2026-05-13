@@ -3,7 +3,7 @@ Product routes - Product image search via Google Custom Search.
 """
 
 import logging
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Query
 
 from app.core.config import settings
 from app.core.security import get_current_user
@@ -32,7 +32,7 @@ async def search_product_image(
     query: str = Query(
         ...,
         min_length=1,
-        max_length=200,
+        max_length=1000,
         description="Product name to search for",
     ),
     current_user: dict = Depends(get_current_user),
@@ -40,7 +40,9 @@ async def search_product_image(
     """
     Search for a product image by product name.
 
-    Returns the first matching image result with URL, title, and source.
+    Returns the first matching image result with URL, title, and source,
+    or {"imageUrl": null} when nothing is found. Always 200 — callers
+    should check imageUrl for null rather than handling 404 errors.
     Requires authentication.
     """
     logger.info(
@@ -48,13 +50,10 @@ async def search_product_image(
         f"{query!r}"
     )
 
+    # Brave's query length limit is 400 chars; truncate silently if OCR produced more.
+    search_query = query[:400]
+
     service = _get_image_service()
-    result = await service.search_product_image(query)
+    result = await service.search_product_image(search_query)
 
-    if result is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="No product image found for the given query.",
-        )
-
-    return result
+    return result if result is not None else {"imageUrl": None}

@@ -222,11 +222,10 @@ async def test_notification_and_products_routes(db_session, monkeypatch) -> None
             return None
 
     monkeypatch.setattr(products_api, "_get_image_service", lambda: _NoImageService())
-    with pytest.raises(HTTPException) as exc:
-        await products_api.search_product_image(
-            query="Unknown", current_user=current_user
-        )
-    assert exc.value.status_code == 404
+    not_found = await products_api.search_product_image(
+        query="Unknown", current_user=current_user
+    )
+    assert not_found["imageUrl"] is None
 
 
 @pytest.mark.asyncio
