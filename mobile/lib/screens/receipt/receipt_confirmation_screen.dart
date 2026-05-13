@@ -254,10 +254,10 @@ class _ReceiptConfirmationScreenState
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
                     icon: Icon(
-                      Symbols.arrow_back_rounded, 
+                      Symbols.arrow_back_rounded,
                       color: textPrimary,
                       weight: AppDimensions.iconWeightBold,
-                      ),
+                    ),
                     padding: const EdgeInsets.all(8),
                     style: IconButton.styleFrom(
                       backgroundColor: Colors.transparent,
