@@ -1357,16 +1357,18 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                                     width: 100,
                                     height: 100,
                                     fit: BoxFit.cover,
-                                    cacheWidth: (100 *
-                                            MediaQuery.of(
-                                              context,
-                                            ).devicePixelRatio)
-                                        .round(),
-                                    cacheHeight: (100 *
-                                            MediaQuery.of(
-                                              context,
-                                            ).devicePixelRatio)
-                                        .round(),
+                                    cacheWidth:
+                                        (100 *
+                                                MediaQuery.of(
+                                                  context,
+                                                ).devicePixelRatio)
+                                            .round(),
+                                    cacheHeight:
+                                        (100 *
+                                                MediaQuery.of(
+                                                  context,
+                                                ).devicePixelRatio)
+                                            .round(),
                                   ),
                                 ),
                               ),
@@ -1379,7 +1381,9 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
                                     width: 24,
                                     height: 24,
                                     decoration: BoxDecoration(
-                                      color: Colors.black.withValues(alpha: 0.6),
+                                      color: Colors.black.withValues(
+                                        alpha: 0.6,
+                                      ),
                                       shape: BoxShape.circle,
                                       border: Border.all(
                                         color: AppColors.background(isDark),
