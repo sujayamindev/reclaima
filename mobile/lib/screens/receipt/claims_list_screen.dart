@@ -276,15 +276,6 @@ class _ClaimsListScreenState extends ConsumerState<ClaimsListScreen> {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 24),
-            Text(
-              'Tap the + button below to create your first claim',
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary(isDark),
-                fontStyle: FontStyle.italic,
-              ),
-              textAlign: TextAlign.center,
-            ),
           ],
         ),
       ),

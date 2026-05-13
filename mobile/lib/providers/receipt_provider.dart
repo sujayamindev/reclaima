@@ -14,7 +14,7 @@ final receiptsProvider = FutureProvider<List<ReceiptModel>>((ref) async {
   if (firebaseUser == null) return [];
 
   final repository = ref.watch(receiptRepositoryProvider);
-  return await repository.getReceipts();
+  return await repository.getReceipts(forceRefresh: true);
 });
 
 /// Single receipt provider

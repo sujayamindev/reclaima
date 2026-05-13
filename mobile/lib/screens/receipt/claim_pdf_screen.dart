@@ -273,13 +273,13 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
     for (int i = 0; i < _defectImagePaths.length; i++) {
       final file = File(_defectImagePaths[i]);
       final fileSize = await file.length();
-      const maxSize = 5 * 1024 * 1024; // 5MB
+      const maxSize = 20 * 1024 * 1024; // 20MB
 
       if (fileSize > maxSize) {
         if (!mounted) return;
         AppSnackBar.showError(
           context,
-          message: 'Image ${i + 1} is too large. Maximum size is 5MB.',
+          message: 'Image ${i + 1} is too large. Maximum size is 20MB.',
         );
         return;
       }
@@ -1332,73 +1332,94 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
 
               if (_defectImagePaths.isNotEmpty)
                 Container(
-                  height: 100,
+                  height: 114,
                   margin: const EdgeInsets.only(bottom: 12),
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.only(top: 8),
                     itemCount: _defectImagePaths.length,
                     itemBuilder: (context, index) {
-                      return Container(
-                        margin: const EdgeInsets.only(right: 12),
-                        width: 100,
-                        child: Stack(
-                          children: [
-                            GestureDetector(
-                              onTap: () => _editDefectImage(index),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(
-                                  AppDimensions.radiusMedium,
-                                ),
-                                child: Image.file(
-                                  File(_defectImagePaths[index]),
-                                  width: 100,
-                                  height: 100,
-                                  fit: BoxFit.cover,
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 10),
+                        child: SizedBox(
+                          width: 100,
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              GestureDetector(
+                                onTap: () => _editDefectImage(index),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(
+                                    AppDimensions.radiusMedium,
+                                  ),
+                                  child: Image.file(
+                                    File(_defectImagePaths[index]),
+                                    width: 100,
+                                    height: 100,
+                                    fit: BoxFit.cover,
+                                    cacheWidth: (100 *
+                                            MediaQuery.of(
+                                              context,
+                                            ).devicePixelRatio)
+                                        .round(),
+                                    cacheHeight: (100 *
+                                            MediaQuery.of(
+                                              context,
+                                            ).devicePixelRatio)
+                                        .round(),
+                                  ),
                                 ),
                               ),
-                            ),
-                            Positioned(
-                              top: 4,
-                              right: 4,
-                              child: GestureDetector(
-                                onTap: () => _removeDefectImage(index),
+                              Positioned(
+                                top: -5,
+                                right: -5,
+                                child: GestureDetector(
+                                  onTap: () => _removeDefectImage(index),
+                                  child: Container(
+                                    width: 24,
+                                    height: 24,
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withValues(alpha: 0.6),
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: AppColors.background(isDark),
+                                        width: 2,
+                                      ),
+                                    ),
+                                    child: const Icon(
+                                      Symbols.close_rounded,
+                                      color: Colors.white,
+                                      size: AppDimensions.iconTiny,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                bottom: 6,
+                                left: 4,
                                 child: Container(
-                                  padding: const EdgeInsets.all(4),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 3,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: Colors.black.withValues(alpha: 0.6),
-                                    shape: BoxShape.circle,
+                                    borderRadius: BorderRadius.circular(
+                                      AppDimensions.radiusXL,
+                                    ),
                                   ),
-                                  child: const Icon(
-                                    Symbols.close_rounded,
-                                    size: 16,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Positioned(
-                              bottom: 4,
-                              left: 4,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.6),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  '${index + 1}',
-                                  style: AppTextStyles.caption.copyWith(
-                                    color: Colors.white,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
+                                  child: Text(
+                                    '${index + 1}',
+                                    style: AppTextStyles.caption.copyWith(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       );
                     },
