@@ -602,7 +602,7 @@
     },
     {
       "endpoint": "/api/v1/products/image-search",
-      "method": "GET",
+      "method": "POST",
       "output_encoding": "no-op",
       "input_headers": [
         "*"
@@ -619,7 +619,7 @@
           "url_pattern": "/api/v1/products/image-search",
           "encoding": "no-op",
           "sd": "static",
-          "method": "GET",
+          "method": "POST",
           "host": [
             "http://backend:8000"
           ],
