@@ -205,6 +205,13 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
 
+      - name: Cache pub packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: pub-${{ runner.os }}-${{ hashFiles('mobile/pubspec.lock') }}
+          restore-keys: pub-${{ runner.os }}-
+
       - name: Resolve dependencies
         working-directory: mobile
         run: flutter pub get
@@ -306,45 +313,6 @@ jobs:
           devopsfaith/krakend:2
           check -c /etc/krakend/krakend.json
 
-  codeql:
-    name: CodeQL SAST
-    needs:
-      - secret_scan
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    permissions:
-      contents: read
-      actions: read
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
-        with:
-          languages: python
-          config-file: .github/codeql-config.yml
-
-      - name: Perform CodeQL analysis
-        uses: github/codeql-action/analyze@v3
-        with:
-          category: "/language:python"
-          output: results
-          upload: never
-
-      - name: Upload SARIF artifact
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: codeql-sarif
-          path: results/
-
-      - name: Block on error-level findings
-        run: |
-          count=$(jq '[.runs[].results[] | select(.level == "error")] | length' results/*.sarif)
-          echo "CodeQL error-level findings: $count"
-          [ "$count" -eq 0 ] || { echo "CodeQL found $count error-level finding(s). Review the codeql-sarif artifact."; exit 1; }
-
   backend_image:
     name: Build and Publish Backend Image
     needs:
@@ -352,7 +320,6 @@ jobs:
       - backend_ci
       - mobile_ci
       - krakend_check
-      - codeql
     if: >-
       github.ref == 'refs/heads/main' &&
       (

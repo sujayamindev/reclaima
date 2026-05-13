@@ -98,3 +98,51 @@ def test_auth_register_new_user(db_session, monkeypatch):
     app.dependency_overrides.pop(get_current_user, None)
     assert response2.status_code == 200
     assert response2.json()["id"] == data["id"]
+
+
+def test_auth_register_missing_uid(monkeypatch):
+    from app.core.security import get_current_user
+
+    def mock_get_current_user_no_uid():
+        return {"email": "no-uid@example.com"}
+
+    app.dependency_overrides[get_current_user] = mock_get_current_user_no_uid
+    response = client.post("/api/v1/auth/register")
+    app.dependency_overrides.pop(get_current_user, None)
+    assert response.status_code == 400
+
+
+def test_auth_get_me_not_found(monkeypatch):
+    from app.core.security import get_current_user
+
+    def mock_get_current_user_not_in_db():
+        return {"uid": "non-existent-uid", "email": "not-found@example.com"}
+
+    app.dependency_overrides[get_current_user] = mock_get_current_user_not_in_db
+    response = client.get("/api/v1/auth/me")
+    app.dependency_overrides.pop(get_current_user, None)
+    assert response.status_code == 404
+
+
+def test_auth_update_me_not_found(monkeypatch):
+    from app.core.security import get_current_user
+
+    def mock_get_current_user_not_in_db():
+        return {"uid": "non-existent-uid", "email": "not-found@example.com"}
+
+    app.dependency_overrides[get_current_user] = mock_get_current_user_not_in_db
+    response = client.patch("/api/v1/auth/me", json={"full_name": "New Name"})
+    app.dependency_overrides.pop(get_current_user, None)
+    assert response.status_code == 404
+
+
+def test_auth_delete_me_not_found(monkeypatch):
+    from app.core.security import get_current_user
+
+    def mock_get_current_user_not_in_db():
+        return {"uid": "non-existent-uid", "email": "not-found@example.com"}
+
+    app.dependency_overrides[get_current_user] = mock_get_current_user_not_in_db
+    response = client.delete("/api/v1/auth/me")
+    app.dependency_overrides.pop(get_current_user, None)
+    assert response.status_code == 404
