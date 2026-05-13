@@ -227,6 +227,17 @@ async def test_notification_and_products_routes(db_session, monkeypatch) -> None
     )
     assert not_found["imageUrl"] is None
 
+    # Missing / empty query — should return {"imageUrl": None} without calling the service
+    empty = await products_api.search_product_image(
+        query=None, current_user=current_user
+    )
+    assert empty["imageUrl"] is None
+
+    blank = await products_api.search_product_image(
+        query="   ", current_user=current_user
+    )
+    assert blank["imageUrl"] is None
+
 
 @pytest.mark.asyncio
 async def test_receipt_routes_branches(db_session, monkeypatch) -> None:
