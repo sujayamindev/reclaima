@@ -783,15 +783,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
     setState(() => _isCachingPdf = true);
 
     try {
-      // Use the URL already present in the creation response to avoid an
-      // unnecessary pdf-access round-trip immediately after creation.
-      final existingUrl = _generatedClaim?.url;
-      final filePath = await _downloadPdfFile(
-        showSuccessMessage: false,
-        urlOverride: (existingUrl != null && existingUrl.isNotEmpty)
-            ? existingUrl
-            : null,
-      );
+      final filePath = await _downloadPdfFile(showSuccessMessage: false);
       if (filePath != null && mounted) {
         setState(() {
           _cachedPdfPath = filePath;
@@ -849,11 +841,8 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
     }
   }
 
-  Future<String?> _downloadPdfFile({
-    bool showSuccessMessage = true,
-    String? urlOverride,
-  }) async {
-    final url = urlOverride ?? await _getFreshClaimUrl();
+  Future<String?> _downloadPdfFile({bool showSuccessMessage = true}) async {
+    final url = await _getFreshClaimUrl();
     if (url == null) return null;
 
     try {

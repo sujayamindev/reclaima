@@ -844,6 +844,33 @@
       ]
     },
     {
+      "endpoint": "/api/v1/claims/{claim_id}/pdf-access",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "*"
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "client_max_rate": 1.66,
+          "client_capacity": 8,
+          "strategy": "ip"
+        }
+      },
+      "backend": [
+        {
+          "url_pattern": "/api/v1/claims/{claim_id}/pdf-access",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "POST",
+          "host": [
+            "http://backend:8000"
+          ],
+          "disable_host_sanitize": false
+        }
+      ]
+    },
+    {
       "endpoint": "/api/v1/claims/{claim_id}/documents",
       "method": "GET",
       "output_encoding": "no-op",
