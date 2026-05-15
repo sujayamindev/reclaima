@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Receipta. — Smart Receipt & Warranty Manager</title>
+<link rel="stylesheet" href="colors_and_type.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..700,0..1,0&display=block">
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;color:#0F172A;background:#fff;-webkit-font-smoothing:antialiased}
+a{text-decoration:none;color:inherit}
+img{display:block}
+
+/* ── Layout */
+.wrap{max-width:1200px;margin:0 auto;padding:0 56px}
+.section{padding:96px 0}
+.section-sm{padding:64px 0}
+
+/* ── Dark sections */
+.dark-bg{background:#0F172A}
+
+/* ── Scroll fade */
+.fade{opacity:0;transform:translateY(24px);transition:opacity .55s ease,transform .55s ease}
+.fade.visible{opacity:1;transform:none}
+
+/* ── Section labels */
+.eyebrow{font:700 11px/1 'Inter',sans-serif;letter-spacing:.9px;text-transform:uppercase;color:#12E28C;display:flex;align-items:center;gap:8px;margin-bottom:16px}
+.eyebrow-dim{color:rgba(18,226,140,.7)}
+.h2{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:38px;letter-spacing:-.5px;line-height:1.1;color:#0F172A}
+.h2-light{color:#F1F5F9}
+.body-muted{font-size:16px;line-height:1.65;color:#475569;max-width:560px;margin-top:14px}
+.body-muted-light{color:rgba(241,245,249,.55)}
+
+/* ── Nav */
+nav{position:sticky;top:0;z-index:200;height:58px;display:flex;align-items:center;background:rgba(15,23,42,.95);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.07)}
+.nav-in{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:1200px;margin:0 auto;padding:0 56px}
+.wordmark{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:20px;letter-spacing:-.5px;color:#F1F5F9}
+.wordmark em{color:#12E28C;font-style:normal}
+.nav-links{display:flex;gap:28px;list-style:none}
+.nav-links a{font-size:13px;font-weight:500;color:rgba(241,245,249,.5);transition:color 150ms}
+.nav-links a:hover,.nav-links a.active{color:#F1F5F9}
+.btn-nav-cta{background:#12E28C;color:#0F172A;border:none;padding:7px 16px;border-radius:100px;font:700 13px/1 'Space Grotesk',sans-serif;cursor:pointer}
+
+/* ── Hero */
+.hero{background:#0F172A;padding:108px 0 88px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;right:14%;top:50%;transform:translateY(-50%);width:720px;height:720px;background:radial-gradient(circle,rgba(18,226,140,.06) 0%,transparent 65%);pointer-events:none}
+.hero-grid{display:grid;grid-template-columns:1fr 300px;gap:80px;align-items:center}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(18,226,140,.1);border:1px solid rgba(18,226,140,.22);border-radius:100px;padding:6px 14px 6px 10px;margin-bottom:28px}
+.hero-badge .dot{width:7px;height:7px;border-radius:50%;background:#12E28C;box-shadow:0 0 0 3px rgba(18,226,140,.2);animation:glow 2.2s ease-in-out infinite}
+@keyframes glow{0%,100%{box-shadow:0 0 0 3px rgba(18,226,140,.2)}50%{box-shadow:0 0 0 6px rgba(18,226,140,.06)}}
+.hero-badge span{font:700 11px/1 'Inter',sans-serif;letter-spacing:.7px;text-transform:uppercase;color:#12E28C}
+.hero-h1{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:60px;line-height:1.03;letter-spacing:-1.5px;color:#F1F5F9;margin-bottom:22px}
+.hero-h1 em{color:#12E28C;font-style:normal}
+.hero-sub{font-size:17px;line-height:1.65;color:rgba(241,245,249,.58);max-width:490px;margin-bottom:34px}
+.hero-tags{display:flex;flex-wrap:wrap;gap:8px}
+.tag{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(241,245,249,.65);padding:5px 12px;border-radius:100px;font:500 12px/1 'Inter',sans-serif}
+.btn-primary{background:#12E28C;color:#0F172A;border:none;height:48px;padding:0 24px;border-radius:100px;font:700 15px/1 'Space Grotesk',sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:10px}
+.btn-secondary{background:transparent;border:1px solid rgba(255,255,255,.18);color:rgba(241,245,249,.8);height:48px;padding:0 22px;border-radius:100px;font:600 15px/1 'Inter',sans-serif;cursor:pointer}
+
+/* ── Phone mockup */
+.phone-wrap{display:flex;justify-content:center}
+.phone{width:262px;height:558px;background:#0A0A0A;border-radius:44px;position:relative;overflow:hidden;box-shadow:0 52px 96px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.08),inset 0 0 0 1px rgba(255,255,255,.04)}
+.phone-island{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:96px;height:30px;background:#000;border-radius:20px;z-index:10}
+.phone-screen{position:absolute;inset:0;background:#F6F8F7;padding-top:52px;display:flex;flex-direction:column;overflow:hidden}
+
+/* ── Tech strip */
+.tech-strip{background:#FAFBF9;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0;padding:32px 0}
+.tech-strip-inner{display:flex;justify-content:center;align-items:flex-start;gap:40px;flex-wrap:wrap}
+.tech-strip-item{display:flex;flex-direction:column;align-items:center;gap:10px;flex-shrink:0}
+.tech-strip-item img{width:32px;height:32px;display:block}
+.tech-strip-item span{font:500 11px/1 'Inter',sans-serif;color:#94A3B8;letter-spacing:.2px;text-align:center}
+
+/* ── Why beats */
+.why-beat{margin-top:44px}
+.why-beat-h{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px;color:#0F172A;margin-bottom:10px}
+
+/* ── Steps */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0;position:relative;margin-top:56px}
+.steps::before{content:'';position:absolute;top:27px;left:14%;right:14%;height:2px;background:linear-gradient(90deg,#12E28C,rgba(18,226,140,.25));z-index:0}
+.step{display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 24px;position:relative;z-index:1}
+.step-num{width:54px;height:54px;border-radius:100px;background:#12E28C;color:#0F172A;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:20px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;box-shadow:0 0 0 10px rgba(18,226,140,.1)}
+.step h3{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;color:#0F172A;margin-bottom:8px}
+.step p{font-size:13px;color:#475569;line-height:1.65}
+
+/* ── Features */
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:56px}
+.feat-card{background:#fff;border:1px solid #E2E8F0;border-radius:20px;padding:28px}
+.feat-icon{width:44px;height:44px;border-radius:12px;background:rgba(71,85,105,.07);display:flex;align-items:center;justify-content:center;margin-bottom:18px}
+.feat-icon .material-symbols-rounded{font-size:22px;color:#475569;font-variation-settings:'FILL' 0,'wght' 700}
+.feat-card h3{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;color:#0F172A;margin-bottom:8px}
+.feat-card p{font-size:13px;color:#475569;line-height:1.65}
+.feat-tag{display:inline-block;margin-top:14px;font:600 10px/1 'Inter',sans-serif;letter-spacing:.5px;text-transform:uppercase;color:#64748B;background:rgba(71,85,105,.08);padding:4px 10px;border-radius:100px}
+
+/* ── Architecture diagram */
+.arch-wrap{margin-top:56px;display:flex;flex-direction:column;align-items:center;gap:0}
+.arch-row{display:flex;justify-content:center;gap:12px;width:100%}
+.arch-box{border-radius:16px;padding:18px 24px;display:flex;align-items:center;gap:12px}
+.arch-box.brand{background:rgba(18,226,140,.1);border:1px solid rgba(18,226,140,.28);flex:1;max-width:700px}
+.arch-box.neutral{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);flex:1;max-width:700px}
+.arch-box-icon .material-symbols-rounded{font-size:22px;font-variation-settings:'FILL' 1,'wght' 600}
+.arch-box-text .title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;color:#F1F5F9}
+.arch-box-text .sub{font-size:12px;color:rgba(241,245,249,.45);margin-top:3px;line-height:1.5}
+.arch-arrow{height:36px;display:flex;align-items:center;justify-content:center;gap:8px;color:rgba(241,245,249,.2)}
+.arch-arrow span{font:500 11px/1 'Inter',sans-serif;color:rgba(241,245,249,.3);letter-spacing:.3px}
+.arch-services{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;width:100%;max-width:900px}
+.arch-svc{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px 12px;text-align:center}
+.arch-svc .material-symbols-rounded{font-size:22px;color:#94A3B8;font-variation-settings:'FILL' 1,'wght' 600;margin-bottom:8px;display:block}
+.arch-svc .svc-name{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:12px;color:#CBD5E1}
+.arch-svc .svc-sub{font-size:10px;color:rgba(241,245,249,.3);margin-top:3px;line-height:1.4}
+
+/* ── AI Pipeline */
+.pipeline{display:grid;grid-template-columns:repeat(6,1fr);gap:0;margin-top:56px;position:relative}
+.pipeline::before{content:'';position:absolute;top:36px;left:5%;right:5%;height:2px;background:linear-gradient(90deg,rgba(18,226,140,.4),rgba(18,226,140,.1));z-index:0}
+.pipe-node{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:16px 14px;position:relative;z-index:1;margin:0 6px}
+.pipe-node.hi{background:rgba(18,226,140,.08);border-color:rgba(18,226,140,.28)}
+.pipe-node .p-step{font:700 9px/1 'Inter',sans-serif;letter-spacing:.6px;text-transform:uppercase;color:rgba(241,245,249,.3);margin-bottom:28px}
+.pipe-node .p-num{position:absolute;top:16px;right:14px;width:22px;height:22px;border-radius:100px;background:rgba(255,255,255,.06);font:700 11px/22px 'Space Grotesk',sans-serif;color:rgba(241,245,249,.3);text-align:center}
+.pipe-node.hi .p-num{background:rgba(18,226,140,.15);color:#12E28C}
+.pipe-node .p-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:14px;color:#F1F5F9;margin-bottom:4px}
+.pipe-node .p-sub{font-size:11px;color:rgba(241,245,249,.4);line-height:1.5}
+
+/* ── Code block */
+.code-wrap{margin-top:40px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.code-block{background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:hidden}
+.code-block .code-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid rgba(255,255,255,.07)}
+.code-block .code-hdr .lang{font:700 11px/1 'Inter',sans-serif;letter-spacing:.5px;text-transform:uppercase;color:rgba(241,245,249,.35)}
+.code-block .code-hdr .route{font:500 12px/1 'JetBrains Mono','ui-monospace',monospace;color:rgba(241,245,249,.5)}
+.code-block pre{padding:20px 18px;overflow-x:auto;font:400 12.5px/1.7 'JetBrains Mono','ui-monospace',monospace;color:rgba(241,245,249,.75)}
+.code-block pre .kw{color:#7dd3fc}
+.code-block pre .fn{color:#86efac}
+.code-block pre .str{color:#fde68a}
+.code-block pre .cm{color:rgba(241,245,249,.28);font-style:italic}
+.code-block pre .em{color:#12E28C}
+.code-block pre .key{color:#c4b5fd}
+
+/* ── Stack */
+.stack-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:56px}
+.stack-card{background:#F6F8F7;border:1px solid #E2E8F0;border-radius:20px;padding:28px}
+.stack-card .stack-hdr{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.stack-card h3{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:18px;color:#0F172A}
+.stack-card .stack-sub{font-size:13px;color:#475569;margin-bottom:22px}
+.tech-list{display:flex;flex-wrap:wrap;gap:8px}
+.tech-pill{background:#fff;border:1px solid #E2E8F0;border-radius:100px;padding:6px 14px;font:600 12px/1 'Inter',sans-serif;color:#334155;display:flex;align-items:center;gap:6px}
+.tech-pill .d{width:6px;height:6px;border-radius:100px;background:#12E28C;flex-shrink:0}
+
+/* ── API table */
+.api-table{width:100%;border-collapse:collapse;margin-top:48px}
+.api-table thead th{text-align:left;font:700 11px/1 'Inter',sans-serif;letter-spacing:.6px;text-transform:uppercase;color:#94A3B8;padding:0 16px 14px;border-bottom:1px solid #E2E8F0}
+.api-table tbody tr{border-bottom:1px solid #F1F5F9;transition:background 120ms}
+.api-table tbody tr:hover{background:#F8FAFA}
+.api-table td{padding:13px 16px;font-size:13px;vertical-align:middle}
+.method{display:inline-block;padding:3px 9px;border-radius:6px;font:700 11px/1 'JetBrains Mono',monospace;letter-spacing:.3px}
+.post{background:rgba(18,226,140,.12);color:#047a4a}
+.get{background:rgba(59,130,246,.12);color:#1d4ed8}
+.del{background:rgba(239,68,68,.12);color:#b91c1c}
+.endpoint{font-family:'JetBrains Mono',monospace;font-size:13px;color:#0F172A}
+.endpoint .param{color:#3B82F6}
+.api-desc{color:#475569}
+.api-badge{background:rgba(18,226,140,.1);color:#047a4a;padding:2px 8px;border-radius:100px;font:600 10px/1 'Inter',sans-serif;letter-spacing:.3px;text-transform:uppercase}
+
+/* ── CI/CD */
+.ci-tracks{display:flex;flex-direction:column;gap:28px;margin-top:48px}
+.ci-label{font:700 11px/1 'Inter',sans-serif;letter-spacing:.5px;text-transform:uppercase;color:#94A3B8;margin-bottom:14px}
+.pipeline-row{display:flex;align-items:center;overflow-x:auto;gap:0;padding-bottom:2px}
+.ci-stage{flex-shrink:0;background:#fff;border:1px solid #E2E8F0;border-radius:14px;padding:14px 18px;min-width:155px}
+.ci-stage.go{border-color:#12E28C;background:rgba(18,226,140,.05)}
+.ci-stage .ci-step{font:700 10px/1 'Inter',sans-serif;letter-spacing:.5px;text-transform:uppercase;color:#94A3B8;margin-bottom:6px}
+.ci-stage .ci-title{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13px;color:#0F172A;margin-bottom:3px}
+.ci-stage .ci-detail{font-size:11px;color:#94A3B8;line-height:1.5}
+.ci-arrow{flex-shrink:0;width:28px;display:flex;align-items:center;justify-content:center;color:#CBD5E1;font-size:15px}
+
+/* ── Footer */
+footer{background:#0F172A;padding:52px 0}
+.footer-in{display:flex;align-items:flex-start;justify-content:space-between;gap:40px}
+.footer-wordmark{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:22px;color:#F1F5F9;letter-spacing:-.5px}
+.footer-wordmark em{color:#12E28C;font-style:normal}
+.footer-tags{display:flex;flex-wrap:wrap;gap:8px;max-width:480px}
+.footer-tag{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:rgba(241,245,249,.45);padding:4px 12px;border-radius:100px;font:500 11px/1 'Inter',sans-serif}
+
+/* ── Util */
+.ms{font-family:'Material Symbols Rounded';font-variation-settings:'FILL' 0,'wght' 600;font-size:20px;line-height:1;font-style:normal}
+.divider{width:100%;height:1px;background:rgba(255,255,255,.07)}
+</style>
+</head>
+<body>
+
+<!-- ── NAV ────────────────────────────────────────────── -->
+<nav>
+  <div class="nav-in">
+    <a href="#top" class="wordmark">Receipta<em>.</em></a>
+    <ul class="nav-links">
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#architecture">Architecture</a></li>
+      <li><a href="#ai">AI pipeline</a></li>
+      <li><a href="#stack">Stack</a></li>
+      <li><a href="#api">API</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ── HERO ───────────────────────────────────────────── -->
+<section class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="hero-badge"><span class="dot"></span><span>In development · Play Store coming soon</span></div>
+      <h1 class="hero-h1">Never lose a<br><em>warranty</em><br>again.</h1>
+      <p class="hero-sub">Receipta. digitizes paper and PDF receipts, extracts per-line-item details with OCR + AI, and tracks every warranty and return deadline — so you file claims before they expire.</p>
+      <div class="hero-tags">
+        <span class="tag">Flutter</span><span class="tag">FastAPI</span><span class="tag">AWS Textract</span>
+        <span class="tag">Claude Haiku</span><span class="tag">Firebase</span><span class="tag">PostgreSQL</span>
+        <span class="tag">Offline-first</span>
+      </div>
+    </div>
+
+    <!-- Phone mockup -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="phone-island"></div>
+        <div class="phone-screen">
+          <!-- Top bar -->
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 18px 0">
+            <span style="font:700 17px/1 'Space Grotesk',sans-serif;color:#0F172A;letter-spacing:-.5px">Receipta<span style="color:#12E28C">.</span></span>
+            <span style="width:32px;height:32px;border-radius:100px;background:#fff;border:1px solid #E2E8F0;display:flex;align-items:center;justify-content:center"><i class="ms" style="font-size:15px;color:#475569">search</i></span>
+          </div>
+          <!-- Greeting -->
+          <div style="padding:14px 18px 0">
+            <div style="font-size:11px;color:#475569">Good morning,</div>
+            <div style="font:700 22px/1.15 'Space Grotesk',sans-serif;color:#0F172A;margin-top:2px">Alex 👋</div>
+          </div>
+          <!-- Stat pills -->
+          <div style="display:flex;gap:8px;padding:12px 18px 0">
+            <div style="flex:1;background:#fff;border:1px solid #E2E8F0;border-radius:100px;padding:5px 10px 5px 5px;display:flex;align-items:center;gap:6px">
+              <span style="width:24px;height:24px;border-radius:100px;background:rgba(71,85,105,.08);display:flex;align-items:center;justify-content:center"><i class="ms" style="font-size:12px;color:#475569">shopping_bag</i></span>
+              <span style="font:700 14px/1 'Space Grotesk',sans-serif;color:#0F172A">08</span>
+              <span style="font-size:9px;color:#475569;margin-left:auto">Total</span>
+            </div>
+            <div style="flex:1;background:#fff;border:1px solid #E2E8F0;border-radius:100px;padding:5px 10px 5px 5px;display:flex;align-items:center;gap:6px">
+              <span style="width:24px;height:24px;border-radius:100px;background:rgba(71,85,105,.08);display:flex;align-items:center;justify-content:center"><i class="ms" style="font-size:12px;color:#475569">shield</i></span>
+              <span style="font:700 14px/1 'Space Grotesk',sans-serif;color:#0F172A">06</span>
+              <span style="font-size:9px;color:#475569;margin-left:auto">Protected</span>
+            </div>
+          </div>
+          <!-- At a glance card -->
+          <div style="padding:14px 18px 0">
+            <div style="font:700 9px/1 'Inter',sans-serif;letter-spacing:.7px;text-transform:uppercase;color:#94A3B8;margin-bottom:9px">AT A GLANCE</div>
+            <div style="background:#fff;border:1px solid #E2E8F0;border-radius:16px;padding:12px;display:flex;gap:10px">
+              <div style="width:68px;flex:0 0 68px;border-radius:10px;background:rgba(239,68,68,.08);display:flex;align-items:center;justify-content:center;min-height:70px"><i class="ms" style="font-size:28px;color:#EF4444;font-variation-settings:'FILL' 0,'wght' 500">headphones</i></div>
+              <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between">
+                <div>
+                  <span style="background:rgba(239,68,68,.12);color:#EF4444;font:700 8px/1 'Inter',sans-serif;letter-spacing:.3px;text-transform:uppercase;padding:3px 7px;border-radius:100px">RETURN PERIOD</span>
+                  <div style="margin-top:5px;font:600 11px/1.2 'Space Grotesk',sans-serif;color:#0F172A">Sony WH-1000XM5</div>
+                  <div style="margin-top:2px;font-size:9px;color:#475569">Best Buy</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:3px;margin-top:8px">
+                  <i class="ms" style="font-size:10px;color:#EF4444">timer</i>
+                  <span style="font:700 9px/1 'Inter',sans-serif;color:#EF4444">3 days left</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Add new CTA -->
+          <div style="padding:12px 18px 0">
+            <div style="background:#12E28C;border-radius:100px;height:38px;display:flex;align-items:center;justify-content:center;gap:8px">
+              <span style="font:700 13px/1 'Space Grotesk',sans-serif;color:#0F172A">Add New</span>
+              <span style="width:24px;height:24px;border-radius:100px;background:rgba(15,23,42,.15);display:flex;align-items:center;justify-content:center"><i class="ms" style="font-size:13px;color:#0F172A;font-variation-settings:'wght' 700">arrow_right_alt</i></span>
+            </div>
+          </div>
+          <!-- Bottom nav -->
+          <div style="margin-top:auto;background:#fff;border-top:1px solid #F1F5F9;border-radius:22px 22px 0 0;height:56px;display:flex;align-items:center">
+            <div style="flex:1;display:flex;justify-content:center"><i class="ms" style="font-size:22px;color:#12E28C;font-variation-settings:'FILL' 1,'wght' 700">home</i></div>
+            <div style="flex:1;display:flex;justify-content:center"><i class="ms" style="font-size:22px;color:#94A3B8">view_object_track</i></div>
+            <div style="flex:1;display:flex;justify-content:center"><i class="ms" style="font-size:22px;color:#94A3B8">fiber_smart_record</i></div>
+            <div style="flex:1;display:flex;justify-content:center"><i class="ms" style="font-size:22px;color:#94A3B8">menu</i></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── TECH STRIP ─────────────────────────────────────── -->
+<div class="tech-strip">
+  <div class="wrap">
+    <div class="tech-strip-inner">
+      <div class="tech-strip-item fade">
+        <img src="https://cdn.simpleicons.org/flutter/54C5F8" width="32" height="32" alt="Flutter">
+        <span>Flutter</span>
+      </div>
+      <div class="tech-strip-item fade">
+        <img src="https://cdn.simpleicons.org/fastapi/009688" width="32" height="32" alt="FastAPI">
+        <span>FastAPI</span>
+      </div>
+      <div class="tech-strip-item fade">
+        <img src="https://cdn.simpleicons.org/postgresql/4169E1" width="32" height="32" alt="PostgreSQL">
+        <span>PostgreSQL</span>
+      </div>
+      <div class="tech-strip-item fade">
+        <img src="https://cdn.simpleicons.org/amazonwebservices/FF9900" width="32" height="32" alt="AWS Textract">
+        <span>AWS Textract</span>
+      </div>
+      <div class="tech-strip-item fade">
+        <img src="https://cdn.simpleicons.org/amazonwebservices/FF9900" width="32" height="32" alt="AWS Bedrock">
+        <span>AWS Bedrock</span>
+      </div>
+      <div class="tech-strip-item fade">
+        <img src="https://cdn.simpleicons.org/amazons3/569A31" width="32" height="32" alt="AWS S3">
+        <span>AWS S3</span>
+      </div>
+      <div class="tech-strip-item fade">
+        <img src="https://cdn.simpleicons.org/firebase/FFCA28" width="32" height="32" alt="Firebase">
+        <span>Firebase</span>
+      </div>
+      <div class="tech-strip-item fade">
+        <img src="https://cdn.simpleicons.org/docker/2496ED" width="32" height="32" alt="Docker">
+        <span>Docker</span>
+      </div>
+      <div class="tech-strip-item fade">
+        <img src="https://cdn.simpleicons.org/githubactions/2088FF" width="32" height="32" alt="GitHub Actions">
+        <span>GitHub Actions</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── WHY RECEIPTA EXISTS ───────────────────────────── -->
+<section class="section" id="why" style="background:#F6F8F7">
+  <div class="wrap">
+    <div class="eyebrow fade">Why it exists</div>
+    <h2 class="h2 fade">Why Receipta exists</h2>
+
+    <div class="why-beat fade">
+      <p class="why-beat-h">The problem</p>
+      <p class="body-muted" style="max-width:none">Most people have no idea when their warranties expire. Receipts get lost, warranty cards go unfiled, and return windows close before anyone notices. When something breaks, the process of finding proof of purchase, identifying warranty coverage, and drafting a claim is manual, scattered, and frustrating enough that most people don't bother.</p>
+    </div>
+
+    <div class="why-beat fade">
+      <p class="why-beat-h">What exists today</p>
+      <p class="body-muted" style="max-width:none">The tools that exist today solve half the problem at best. Business expense apps have strong OCR but treat receipts purely as financial records — no warranty tracking, no return window, no claim support. Dedicated warranty trackers let you log products and set reminders, but rely on manual entry, treat each receipt as a single item, and stop at the notification. None of them generate anything you can actually submit to a retailer or manufacturer.</p>
+    </div>
+
+    <div class="why-beat fade">
+      <p class="why-beat-h">What Receipta does differently</p>
+      <p class="body-muted" style="max-width:none">Receipta covers the full purchase-to-claim lifecycle in one place. Receipts are scanned using AWS Textract with a Claude Haiku cleanup layer that handles noisy, locally formatted receipts. Every line item is extracted individually, so a single receipt with five products creates five independently tracked entries, each with its own warranty period, return window, and reminder schedule. When a product fails, Receipta generates a structured PDF warranty claim document — with purchase details, issue description, and defect photos attached — ready to submit directly to a retailer or manufacturer. No consumer app in this space does this.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── THE PROBLEM ───────────────────────────────────── -->
+<section class="section" id="problem" style="background:#fff">
+  <div class="wrap" style="margin:0 auto">
+    <div class="eyebrow fade">The problem</div>
+    <h2 class="h2 fade">Warranties are built to be forgotten.</h2>
+    <p class="body-muted fade" style="max-width:none">Most people have no idea when their warranties expire. Receipts get lost, warranty cards go unfiled, and return windows close before anyone notices. When something breaks, the process of finding proof of purchase, identifying warranty coverage, and drafting a claim is manual, scattered, and frustrating enough that most people don't bother.</p>
+    <p class="body-muted fade" style="max-width:none">The tools that exist today solve half the problem at best. Business expense apps have strong OCR but treat receipts purely as financial records — no warranty tracking, no return window, no claim support. Dedicated warranty trackers let you log products and set reminders, but rely on manual entry, treat each receipt as a single item, and stop at the notification. None of them generate anything you can actually submit to a retailer or manufacturer.</p>
+    <p class="body-muted fade" style="max-width:none">No consumer app handles the complete lifecycle: scan a receipt, track every item on it, get reminded before deadlines, and produce a claim document when something goes wrong.</p>
+
+    <div style="margin-top:96px" class="fade">
+      <div class="eyebrow fade">The Solution</div>
+      <h2 class="h2 fade" style="margin-bottom:12px">What Receipta does differently</h2>
+      <p class="body-muted" style="max-width:none;margin-top:0">Receipta covers the full purchase-to-claim lifecycle in one place.</p>
+      <p class="body-muted" style="max-width:none">Receipts are scanned using AWS Textract with a Claude Haiku cleanup layer that handles noisy, locally formatted receipts — including bilingual layouts. Every line item is extracted individually, so a single receipt with five products creates five independently tracked entries, each with its own warranty period, return window, and reminder schedule.</p>
+      <p class="body-muted" style="max-width:none">When a product fails, Receipta generates a structured PDF warranty claim document — with purchase details, issue description, and defect photos attached — ready to submit directly to a retailer or manufacturer. No competitor in the consumer space does this.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── HOW IT WORKS ──────────────────────────────────── -->
+<section class="section" id="how" style="background:#F6F8F7">
+  <div class="wrap">
+    <div class="eyebrow fade">How it works</div>
+    <h2 class="h2 fade">Four steps.<br>Zero lost warranties.</h2>
+    <div class="steps">
+      <div class="step fade">
+        <div class="step-num">1</div>
+        <h3>Capture</h3>
+        <p>Snap a photo, pick from gallery, or upload a PDF. Front and back both sides supported. Up to 20 MB per upload.</p>
+      </div>
+      <div class="step fade">
+        <div class="step-num">2</div>
+        <h3>Extract</h3>
+        <p>AWS Textract reads every line. Claude Haiku fixes OCR noise — garbled names, transposed digits, broken totals.</p>
+      </div>
+      <div class="step fade">
+        <div class="step-num">3</div>
+        <h3>Track</h3>
+        <p>Each line item gets its own warranty and return countdown with configurable FCM push reminders.</p>
+      </div>
+      <div class="step fade">
+        <div class="step-num">4</div>
+        <h3>Claim</h3>
+        <p>One tap generates a claim-ready PDF with purchase details, defect photos, and retailer contact.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FEATURES ──────────────────────────────────────── -->
+<section class="section" id="features" style="background:#F6F8F7">
+  <div class="wrap">
+    <div class="eyebrow fade">Features</div>
+    <h2 class="h2 fade">Built for the full lifecycle.</h2>
+    <p class="body-muted fade">From photographing a receipt to filing a warranty claim — Receipta covers every step at the per-item level.</p>
+    <div class="feat-grid">
+      <div class="feat-card fade">
+        <div class="feat-icon"><span class="material-symbols-rounded">receipt_long</span></div>
+        <h3>Per-line-item extraction</h3>
+        <p>Not just totals — every line item becomes a tracked product with its own expiry dates, category, and product code.</p>
+        <span class="feat-tag">Detailed Itemization</span>
+      </div>
+      <div class="feat-card fade">
+        <div class="feat-icon"><span class="material-symbols-rounded">auto_awesome</span></div>
+        <h3>AI-powered OCR</h3>
+        <p>Dual-layer extraction using AWS Textract for raw data and Claude Haiku for intelligent cleanup, normalization, and field inference.</p>
+        <span class="feat-tag">AWS Textract · Claude Haiku</span>
+      </div>
+      <div class="feat-card fade">
+        <div class="feat-icon"><span class="material-symbols-rounded">timer</span></div>
+        <h3>Countdown tracking</h3>
+        <p>Warranty and return windows shown as live day countdowns, color-coded by urgency: green → amber → red as deadlines close.</p>
+        <span class="feat-tag">Per-item urgency</span>
+      </div>
+      <div class="feat-card fade">
+        <div class="feat-icon"><span class="material-symbols-rounded">wifi_off</span></div>
+        <h3>Offline-first</h3>
+        <p>Every receipt, line item, and claim is stored in Drift/SQLite and synced to the backend when online. Fully functional offline.</p>
+        <span class="feat-tag">Drift · SQLite</span>
+      </div>
+      <div class="feat-card fade">
+        <div class="feat-icon"><span class="material-symbols-rounded">notifications_active</span></div>
+        <h3>Smart push reminders</h3>
+        <p>APScheduler fires background jobs that push FCM notifications before warranty and return windows close. Lead days are configurable.</p>
+        <span class="feat-tag">FCM · APScheduler</span>
+      </div>
+      <div class="feat-card fade">
+        <div class="feat-icon"><span class="material-symbols-rounded">adf_scanner</span></div>
+        <h3>Claim PDF generation</h3>
+        <p>Generates a structured, print-ready PDF with purchase details, product images (Brave Search API), warranty dates, and store contact.</p>
+        <span class="feat-tag">Backend · Brave Search</span>
+      </div>
+      <div class="feat-card fade">
+        <div class="feat-icon"><span class="material-symbols-rounded">layers</span></div>
+        <h3>Dual-sided receipt scanning</h3>
+        <p>Both front and back receipt images are processed separately through the OCR pipeline. Results are merged — front image provides header fields (store, date, total), line items from both sides are combined into a single structured output. Both images are included in the generated claim PDF.</p>
+        <span class="feat-tag">Front &amp; back · OCR</span>
+      </div>
+      <div class="feat-card fade">
+        <div class="feat-icon"><span class="material-symbols-rounded">track_changes</span></div>
+        <h3>Claim lifecycle management</h3>
+        <p>Every warranty claim has a full status lifecycle: DRAFT → SUBMITTED → IN_PROGRESS → RESOLVED / DENIED. On resolution, three outcomes are supported — REFUNDED (item archived), REPAIRED (item stays active, user prompted to update warranty dates), REPLACED (original archived, replacement item created and linked). Replacement chains are tracked via linked records.</p>
+        <span class="feat-tag">DRAFT → RESOLVED</span>
+      </div>
+      <div class="feat-card fade">
+        <div class="feat-icon"><span class="material-symbols-rounded">image_search</span></div>
+        <h3>Product image auto-fetch</h3>
+        <p>After OCR processing, Receipta automatically fetches a product image for each line item via Brave Image Search. Results are ranked by domain trust — official brand sites and major retailers are preferred over marketplaces and aggregators. Images are stored and displayed on the product detail screen.</p>
+        <span class="feat-tag">Brave Search · auto</span>
+      </div>
+      <div class="feat-card fade">
+        <div class="feat-icon"><span class="material-symbols-rounded">call_split</span></div>
+        <h3>Quantity-aware line item expansion</h3>
+        <p>If a scanned receipt contains a line item with quantity greater than one, Receipta creates that many individual records — each independently tracked with its own warranty period, return window, and reminder schedule.</p>
+        <span class="feat-tag">Per-unit tracking</span>
+      </div>
+      <div class="feat-card fade">
+        <div class="feat-icon"><span class="material-symbols-rounded">tune</span></div>
+        <h3>Per-item notification controls</h3>
+        <p>Each product has its own notification configuration — independent lead day overrides for warranty and return reminders, and individual enable/disable toggles. Tapping a notification deep links directly to the specific product screen.</p>
+        <span class="feat-tag">Deep links · FCM</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── ARCHITECTURE ──────────────────────────────────── -->
+<section class="section dark-bg" id="architecture">
+  <div class="wrap">
+    <div class="eyebrow eyebrow-dim fade">System design</div>
+    <h2 class="h2 h2-light fade">Architecture at a glance.</h2>
+    <p class="body-muted body-muted-light fade">Modular monolith designed for microservices extraction. Mobile app and backend are independently deployable; all cloud services sit behind service interfaces.</p>
+
+    <div class="arch-wrap">
+      <!-- Mobile layer -->
+      <div class="arch-row fade">
+        <div class="arch-box brand">
+          <div class="arch-box-icon"><span class="material-symbols-rounded" style="color:#12E28C">phone_iphone</span></div>
+          <div class="arch-box-text">
+            <div class="title">Flutter Mobile App — iOS &amp; Android</div>
+            <div class="sub">Riverpod state management · Drift/SQLite offline store · Firebase Auth SDK · Firebase Cloud Messaging · Dio HTTP · image_cropper</div>
+          </div>
+        </div>
+      </div>
+      <div class="arch-arrow fade"><span style="font-size:18px;color:rgba(18,226,140,.4)">↓</span><span>Firebase JWT · HTTPS</span></div>
+      <!-- API layer -->
+      <div class="arch-row fade">
+        <div class="arch-box brand">
+          <div class="arch-box-icon"><span class="material-symbols-rounded" style="color:#12E28C">dns</span></div>
+          <div class="arch-box-text">
+            <div class="title">FastAPI Backend — OCI Compute (Docker)</div>
+            <div class="sub">Python 3.11 · SQLAlchemy ORM · Alembic migrations · APScheduler · Pydantic v2 · Firebase Admin JWT verification</div>
+          </div>
+        </div>
+      </div>
+      <div class="arch-arrow fade"><span style="font-size:18px;color:rgba(18,226,140,.4)">↓</span><span>Service layer</span></div>
+      <!-- Services layer -->
+      <div class="arch-services fade">
+        <div class="arch-svc">
+          <span class="material-symbols-rounded">database</span>
+          <div class="svc-name">PostgreSQL</div>
+          <div class="svc-sub">Receipts · items · claims · users</div>
+        </div>
+        <div class="arch-svc">
+          <span class="material-symbols-rounded">cloud_upload</span>
+          <div class="svc-name">AWS S3</div>
+          <div class="svc-sub">Receipt images · claim PDFs</div>
+        </div>
+        <div class="arch-svc">
+          <span class="material-symbols-rounded">document_scanner</span>
+          <div class="svc-name">AWS Textract</div>
+          <div class="svc-sub">DetectDocumentText · per-line blocks</div>
+        </div>
+        <div class="arch-svc">
+          <span class="material-symbols-rounded">smart_toy</span>
+          <div class="svc-name">AWS Bedrock</div>
+          <div class="svc-sub">Claude Haiku · OCR cleanup</div>
+        </div>
+        <div class="arch-svc">
+          <span class="material-symbols-rounded">notifications</span>
+          <div class="svc-name">FCM</div>
+          <div class="svc-sub">Push reminders · device tokens</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── AI PIPELINE ───────────────────────────────────── -->
+<div class="divider"></div>
+<section class="section-sm dark-bg" id="ai">
+  <div class="wrap">
+    <div class="eyebrow eyebrow-dim fade">AI pipeline</div>
+    <h2 class="h2 h2-light fade" style="font-size:30px">Receipt → structured data in &lt; 8 s</h2>
+
+    <div class="pipeline fade">
+      <div class="pipe-node">
+        <div class="p-step">01 · Input</div>
+        <div class="p-num">1</div>
+        <div class="p-title">Receipt file</div>
+        <div class="p-sub">JPEG · PNG · PDF · up to 20 MB · MIME validated on upload</div>
+      </div>
+      <div class="pipe-node">
+        <div class="p-step">02 · Storage</div>
+        <div class="p-num">2</div>
+        <div class="p-title">S3 upload</div>
+        <div class="p-sub">Pre-signed URL · permanent key · staging path for extraction</div>
+      </div>
+      <div class="pipe-node hi">
+        <div class="p-step">03 · OCR</div>
+        <div class="p-num">3</div>
+        <div class="p-title">AWS Textract</div>
+        <div class="p-sub">DetectDocumentText · per-line bounding boxes · confidence scores</div>
+      </div>
+      <div class="pipe-node hi">
+        <div class="p-step">04 · LLM</div>
+        <div class="p-num">4</div>
+        <div class="p-title">Claude Haiku</div>
+        <div class="p-sub">Fixes OCR noise · infers missing fields · normalises dates &amp; currency</div>
+      </div>
+      <div class="pipe-node">
+        <div class="p-step">05 · Output</div>
+        <div class="p-num">5</div>
+        <div class="p-title">Structured JSON</div>
+        <div class="p-sub">Vendor · invoice · line items · totals · dates · warranty periods</div>
+      </div>
+      <div class="pipe-node">
+        <div class="p-step">06 · Persist</div>
+        <div class="p-num">6</div>
+        <div class="p-title">PostgreSQL + Drift</div>
+        <div class="p-sub">Synced to backend · cached locally in SQLite for offline access</div>
+      </div>
+    </div>
+
+    <!-- Code snippets -->
+    <div class="code-wrap fade">
+      <div class="code-block">
+        <div class="code-hdr"><span class="lang">Python · FastAPI</span><span class="route">POST /api/v1/receipts/ocr-extract</span></div>
+        <pre><span class="cm"># Stateless — no DB write. Caller decides to persist.</span>
+<span class="kw">@router</span>.post(<span class="str">"/ocr-extract"</span>)
+<span class="kw">async def</span> <span class="fn">extract_receipt</span>(
+    file: UploadFile,
+    user: User = Depends(get_current_user),
+):
+    <span class="cm"># 1 · Upload to S3</span>
+    key = <span class="kw">await</span> s3_svc.<span class="fn">upload_file</span>(file)
+
+    <span class="cm"># 2 · OCR via AWS Textract</span>
+    blocks = <span class="kw">await</span> textract_svc.<span class="fn">detect_text</span>(key)
+
+    <span class="cm"># 3 · LLM cleanup via Claude Haiku (Bedrock)</span>
+    data = <span class="kw">await</span> bedrock_svc.<span class="fn">cleanup_ocr</span>(blocks)
+
+    <span class="kw">return</span> data  <span class="cm"># ReceiptExtractResponse</span></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-hdr"><span class="lang">JSON · response</span><span class="route">ReceiptExtractResponse</span></div>
+        <pre>{
+  <span class="key">"vendor"</span>:     <span class="str">"Best Buy"</span>,
+  <span class="key">"invoice_no"</span>: <span class="str">"BBY-20240312-8841"</span>,
+  <span class="key">"date"</span>:       <span class="str">"2024-03-12"</span>,
+  <span class="key">"currency"</span>:   <span class="str">"USD"</span>,
+  <span class="key">"total"</span>:      <span class="em">349.99</span>,
+  <span class="key">"line_items"</span>: [
+    {
+      <span class="key">"name"</span>:       <span class="str">"Sony WH-1000XM5"</span>,
+      <span class="key">"qty"</span>:        <span class="em">1</span>,
+      <span class="key">"unit_price"</span>: <span class="em">349.99</span>,
+      <span class="key">"category"</span>:   <span class="str">"Electronics"</span>
+    }
+  ]
+}</pre>
+      </div>
+    </div>
+
+    <!-- Claude prompt detail -->
+    <div class="code-wrap fade" style="grid-template-columns:1fr;margin-top:16px">
+      <div class="code-block">
+        <div class="code-hdr"><span class="lang">Python · Bedrock service</span><span class="route">bedrock_service.py · cleanup_ocr()</span></div>
+        <pre>SYSTEM_PROMPT = <span class="str">"""You are an OCR cleanup assistant for retail receipts.
+Given raw AWS Textract block output, return a single JSON object with:
+  vendor, invoice_no, date (ISO 8601), currency, total, line_items[].
+Each line item: name, qty, unit_price, category.
+Fix OCR errors (garbled characters, transposed digits).
+Infer missing fields where context is clear. Return only valid JSON."""</span>
+
+<span class="kw">async def</span> <span class="fn">cleanup_ocr</span>(self, blocks: list[dict]) -> ReceiptExtractResponse:
+    raw_text = <span class="fn">_blocks_to_text</span>(blocks)
+    response = <span class="kw">await</span> self.client.<span class="fn">invoke_model</span>(
+        modelId=<span class="str">"anthropic.claude-haiku-20240307-v1:0"</span>,
+        body={<span class="str">"system"</span>: SYSTEM_PROMPT, <span class="str">"messages"</span>: [{<span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: raw_text}]},
+    )
+    <span class="kw">return</span> ReceiptExtractResponse.<span class="fn">model_validate_json</span>(response[<span class="str">"content"</span>][<span class="em">0</span>][<span class="str">"text"</span>])</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── TECH STACK ─────────────────────────────────────── -->
+<section class="section" id="stack" style="background:#fff">
+  <div class="wrap">
+    <div class="eyebrow fade">Tech stack</div>
+    <h2 class="h2 fade">The right tool for each layer.</h2>
+    <div class="stack-grid fade">
+      <div class="stack-card">
+        <div class="stack-hdr">
+          <i class="ms" style="font-size:22px;color:#12E28C;font-variation-settings:'FILL' 1,'wght' 700">dns</i>
+          <h3>Backend</h3>
+        </div>
+        <p class="stack-sub">Python 3.11 · deployed as a Dockerised FastAPI service on OCI Compute</p>
+        <div class="tech-list">
+          <span class="tech-pill"><span class="d"></span>FastAPI</span>
+          <span class="tech-pill"><span class="d"></span>PostgreSQL</span>
+          <span class="tech-pill"><span class="d"></span>SQLAlchemy ORM</span>
+          <span class="tech-pill"><span class="d"></span>Alembic</span>
+          <span class="tech-pill"><span class="d"></span>Pydantic v2</span>
+          <span class="tech-pill"><span class="d"></span>Firebase Admin SDK</span>
+          <span class="tech-pill"><span class="d"></span>AWS S3</span>
+          <span class="tech-pill"><span class="d"></span>AWS Textract</span>
+          <span class="tech-pill"><span class="d"></span>AWS Bedrock</span>
+          <span class="tech-pill"><span class="d"></span>Claude Haiku</span>
+          <span class="tech-pill"><span class="d"></span>APScheduler</span>
+          <span class="tech-pill"><span class="d"></span>Pytest</span>
+          <span class="tech-pill"><span class="d"></span>Docker</span>
+          <span class="tech-pill"><span class="d"></span>OCI Compute</span>
+        </div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-hdr">
+          <i class="ms" style="font-size:22px;color:#12E28C;font-variation-settings:'FILL' 1,'wght' 700">phone_iphone</i>
+          <h3>Mobile</h3>
+        </div>
+        <p class="stack-sub">Flutter 3 · cross-platform iOS &amp; Android · offline-first with local SQLite</p>
+        <div class="tech-list">
+          <span class="tech-pill"><span class="d"></span>Flutter 3</span>
+          <span class="tech-pill"><span class="d"></span>Riverpod</span>
+          <span class="tech-pill"><span class="d"></span>Drift / SQLite</span>
+          <span class="tech-pill"><span class="d"></span>Firebase Auth</span>
+          <span class="tech-pill"><span class="d"></span>Firebase Cloud Messaging</span>
+          <span class="tech-pill"><span class="d"></span>Dio</span>
+          <span class="tech-pill"><span class="d"></span>Material Symbols</span>
+          <span class="tech-pill"><span class="d"></span>Space Grotesk · Inter</span>
+          <span class="tech-pill"><span class="d"></span>Brave Search API</span>
+          <span class="tech-pill"><span class="d"></span>image_cropper</span>
+          <span class="tech-pill"><span class="d"></span>flutter_image_compress</span>
+          <span class="tech-pill"><span class="d"></span>Google Sign-In</span>
+          <span class="tech-pill"><span class="d"></span>open_filex</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── API REFERENCE ──────────────────────────────────── -->
+<section class="section-sm" id="api" style="background:#F6F8F7">
+  <div class="wrap">
+    <div class="eyebrow fade">API reference</div>
+    <h2 class="h2 fade">Versioned REST API.</h2>
+    <p class="body-muted fade">All routes under <code style="font-family:'JetBrains Mono',monospace;font-size:13px;background:#fff;border:1px solid #E2E8F0;padding:2px 8px;border-radius:6px">/api/v1</code> — Firebase JWT verified on every authenticated request via Firebase Admin SDK.</p>
+    <table class="api-table fade">
+      <thead><tr>
+        <th>Method</th><th>Endpoint</th><th>Description</th><th></th>
+      </tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="method post">POST</span></td>
+          <td class="endpoint">/auth/register</td>
+          <td class="api-desc">Register a new user and verify Firebase token</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><span class="method get">GET</span></td>
+          <td class="endpoint">/auth/me</td>
+          <td class="api-desc">Return authenticated user profile</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><span class="method post">POST</span></td>
+          <td class="endpoint">/receipts/ocr-extract</td>
+          <td class="api-desc">Upload image/PDF → S3 → Textract → Claude Haiku → structured JSON. <em style="color:#94A3B8">Stateless — no DB write.</em></td>
+          <td><span class="api-badge">Key endpoint</span></td>
+        </tr>
+        <tr>
+          <td><span class="method post">POST</span></td>
+          <td class="endpoint">/receipts</td>
+          <td class="api-desc">Create a receipt record from OCR-reviewed data</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><span class="method get">GET</span></td>
+          <td class="endpoint">/receipts/<span class="param">{id}</span>/image-url</td>
+          <td class="api-desc">Return a pre-signed S3 URL for the receipt image</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><span class="method get">GET</span></td>
+          <td class="endpoint">/warranties</td>
+          <td class="api-desc">List all warranty records with expiry countdowns</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><span class="method get">GET</span></td>
+          <td class="endpoint">/products/image-search</td>
+          <td class="api-desc">Brave Search API proxy — returns product image URL for a query string</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><span class="method post">POST</span></td>
+          <td class="endpoint">/notifications/fcm-token</td>
+          <td class="api-desc">Register a device FCM token for push notification delivery</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><span class="method get">GET</span></td>
+          <td class="endpoint">/health</td>
+          <td class="api-desc">Liveness probe — OCI health checks and CI gate</td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ── CI/CD ──────────────────────────────────────────── -->
+<section class="section" id="cicd" style="background:#fff">
+  <div class="wrap">
+    <div class="eyebrow fade">CI / CD</div>
+    <h2 class="h2 fade">Automated quality gates on every push.</h2>
+    <p class="body-muted fade">Four independent GitHub Actions pipelines run on every commit to <code style="font-family:'JetBrains Mono',monospace;font-size:13px;background:#F6F8F7;border:1px solid #E2E8F0;padding:2px 8px;border-radius:6px">main</code>. The backend ships only if all gates pass.</p>
+    <div class="ci-tracks">
+      <div class="fade">
+        <div class="ci-label">Backend pipeline</div>
+        <div class="pipeline-row">
+          <div class="ci-stage go">
+            <div class="ci-step">Trigger</div>
+            <div class="ci-title">Push / PR</div>
+            <div class="ci-detail">main · any open PR</div>
+          </div>
+          <div class="ci-arrow">→</div>
+          <div class="ci-stage">
+            <div class="ci-step">Quality gate</div>
+            <div class="ci-title">Backend CI</div>
+            <div class="ci-detail">pytest · ≥70% · ruff · mypy</div>
+          </div>
+          <div class="ci-arrow">→</div>
+          <div class="ci-stage">
+            <div class="ci-step">Build</div>
+            <div class="ci-title">Docker build</div>
+            <div class="ci-detail">Multi-stage · python:3.11-slim</div>
+          </div>
+          <div class="ci-arrow">→</div>
+          <div class="ci-stage">
+            <div class="ci-step">Publish</div>
+            <div class="ci-title">Push image</div>
+            <div class="ci-detail">GHCR · SHA + semver tag</div>
+          </div>
+          <div class="ci-arrow">→</div>
+          <div class="ci-stage">
+            <div class="ci-step">Deploy</div>
+            <div class="ci-title">OCI deploy</div>
+            <div class="ci-detail">SSH · docker compose pull + up -d</div>
+          </div>
+        </div>
+      </div>
+      <div class="fade">
+        <div class="ci-label">Mobile pipelines</div>
+        <div class="pipeline-row">
+          <div class="ci-stage go">
+            <div class="ci-step">Trigger</div>
+            <div class="ci-title">Push / PR</div>
+            <div class="ci-detail">main · any open PR</div>
+          </div>
+          <div class="ci-arrow">→</div>
+          <div class="ci-stage">
+            <div class="ci-step">Android CI</div>
+            <div class="ci-title">Flutter build</div>
+            <div class="ci-detail">flutter analyze · test · APK</div>
+          </div>
+          <div class="ci-arrow">→</div>
+          <div class="ci-stage">
+            <div class="ci-step">iOS CI</div>
+            <div class="ci-title">Xcode build</div>
+            <div class="ci-detail">macOS runner · xcodebuild</div>
+          </div>
+          <div class="ci-arrow">→</div>
+          <div class="ci-stage">
+            <div class="ci-step">Security</div>
+            <div class="ci-title">Secret scan</div>
+            <div class="ci-detail">gitleaks · blocks on leak</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ─────────────────────────────────────────── -->
+<footer>
+  <div class="wrap">
+    <div class="footer-in">
+      <div>
+        <div class="footer-wordmark">Receipta<em>.</em></div>
+        <div style="margin-top:8px;font-size:13px;color:rgba(241,245,249,.38)">Smart Receipt &amp; Warranty Manager</div>
+      </div>
+      <div class="footer-tags">
+        <span class="footer-tag">Flutter</span>
+        <span class="footer-tag">FastAPI</span>
+        <span class="footer-tag">AWS Textract</span>
+        <span class="footer-tag">Claude Haiku</span>
+        <span class="footer-tag">Firebase</span>
+        <span class="footer-tag">PostgreSQL</span>
+        <span class="footer-tag">OCI</span>
+        <span class="footer-tag">Docker</span>
+        <span class="footer-tag">GitHub Actions</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ── Scroll fade-in
+const observer = new IntersectionObserver(
+  entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
+  { threshold: 0.12 }
+);
+document.querySelectorAll('.fade').forEach(el => observer.observe(el));
+
+// ── Active nav on scroll
+const sections = document.querySelectorAll('section[id], div[id]');
+const links = document.querySelectorAll('.nav-links a');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => { if (window.scrollY >= s.offsetTop - 130) current = s.id; });
+  links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current));
+}, { passive: true });
+</script>
+</body>
+</html>
