@@ -17,6 +17,7 @@ import '../receipt/image_crop_rotate_screen.dart';
 import '../../providers/receipt_provider.dart';
 import '../../services/android_download_manager_service.dart';
 import '../../services/claim_service.dart';
+import '../../providers/service_providers.dart';
 import '../../core/utils/logger.dart';
 import '../../data/models/receipt_line_item_model.dart';
 
@@ -135,8 +136,8 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
 
     setState(() => _isUpdating = true);
     try {
-      final claimService = ref.read(claimServiceProvider);
-      final updated = await claimService.updateClaim(
+      final claimRepository = ref.read(claimRepositoryProvider);
+      final updated = await claimRepository.updateClaim(
         _generatedClaim!.id,
         notes: currentNotes,
       );
@@ -294,14 +295,14 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
       logger.i(
         'Generating claim PDF with ${_defectImagePaths.length} defect images...',
       );
-      final claimService = ref.read(claimServiceProvider);
+      final claimRepository = ref.read(claimRepositoryProvider);
 
       // Convert paths to File objects
       final defectImageFiles = _defectImagePaths
           .map((path) => File(path))
           .toList();
 
-      final claim = await claimService.generateClaimPdf(
+      final claim = await claimRepository.generateClaimPdf(
         receiptId: widget.receiptId,
         issueDescription: issueDesc,
         claimType: _selectedClaimType,
@@ -349,8 +350,8 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
     if (_generatedClaim == null) return;
     setState(() => _isUpdating = true);
     try {
-      final claimService = ref.read(claimServiceProvider);
-      final updated = await claimService.updateClaim(
+      final claimRepository = ref.read(claimRepositoryProvider);
+      final updated = await claimRepository.updateClaim(
         _generatedClaim!.id,
         status: newStatus,
       );
@@ -664,8 +665,8 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
     if (_generatedClaim == null) return;
     setState(() => _isUpdating = true);
     try {
-      final claimService = ref.read(claimServiceProvider);
-      final updated = await claimService.resolveClaim(
+      final claimRepository = ref.read(claimRepositoryProvider);
+      final updated = await claimRepository.resolveClaim(
         _generatedClaim!.id,
         outcome,
         duplicateDetails: duplicateDetails ? true : null,
@@ -940,8 +941,8 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
     if (_generatedClaim == null) return null;
 
     try {
-      final claimService = ref.read(claimServiceProvider);
-      final refreshedClaim = await claimService.accessClaimPdf(
+      final claimRepository = ref.read(claimRepositoryProvider);
+      final refreshedClaim = await claimRepository.accessClaimPdf(
         _generatedClaim!.id,
       );
 

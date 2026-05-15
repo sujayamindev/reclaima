@@ -1,0 +1,12 @@
+title = "gitleaks config"
+
+# Extend the default ruleset so all built-in rules still apply.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Ignore Dart code-generated files (*.g.dart, *.freezed.dart) — auto-generated from project source, cannot contain real secrets."
+paths = [
+  '''.*\.g\.dart$''',
+  '''.*\.freezed\.dart$''',
+]

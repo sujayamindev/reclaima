@@ -16,6 +16,7 @@ import '../../providers/claim_provider.dart';
 import '../../services/android_download_manager_service.dart';
 import '../receipt/add_receipt_screen.dart';
 import '../../services/claim_service.dart';
+import '../../providers/service_providers.dart';
 import '../../core/utils/logger.dart';
 
 /// Screen for viewing and managing an existing warranty claim
@@ -71,8 +72,8 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
 
     try {
       logger.i('Loading claim ${widget.claimId}');
-      final claimService = ref.read(claimServiceProvider);
-      final claim = await claimService.getClaim(widget.claimId);
+      final claimRepository = ref.read(claimRepositoryProvider);
+      final claim = await claimRepository.getClaim(widget.claimId);
 
       if (!mounted) return;
       setState(() {
@@ -112,8 +113,8 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
 
     setState(() => _isUpdating = true);
     try {
-      final claimService = ref.read(claimServiceProvider);
-      final updated = await claimService.updateClaim(
+      final claimRepository = ref.read(claimRepositoryProvider);
+      final updated = await claimRepository.updateClaim(
         _claim!.id,
         status: statusChanged ? pendingStatus : null,
         notes: notesChanged ? notesText : null,
@@ -456,8 +457,8 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
     if (_claim == null) return;
     setState(() => _isUpdating = true);
     try {
-      final claimService = ref.read(claimServiceProvider);
-      final updated = await claimService.resolveClaim(
+      final claimRepository = ref.read(claimRepositoryProvider);
+      final updated = await claimRepository.resolveClaim(
         _claim!.id,
         outcome,
         duplicateDetails: duplicateDetails ? true : null,
@@ -674,8 +675,8 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
     if (_claim == null) return null;
 
     try {
-      final claimService = ref.read(claimServiceProvider);
-      final refreshedClaim = await claimService.accessClaimPdf(_claim!.id);
+      final claimRepository = ref.read(claimRepositoryProvider);
+      final refreshedClaim = await claimRepository.accessClaimPdf(_claim!.id);
 
       if (!mounted) return refreshedClaim.url;
       setState(() => _claim = refreshedClaim);
@@ -794,8 +795,8 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
     setState(() => _isUpdating = true);
 
     try {
-      final claimService = ref.read(claimServiceProvider);
-      await claimService.deleteClaim(widget.claimId);
+      final claimRepository = ref.read(claimRepositoryProvider);
+      await claimRepository.deleteClaim(widget.claimId);
 
       // Invalidate the claims provider to refresh the hub
       ref.invalidate(userClaimsProvider);

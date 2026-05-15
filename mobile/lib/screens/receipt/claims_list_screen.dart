@@ -6,6 +6,7 @@ import '../../core/constants/app_constants.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/utils/logger.dart';
 import '../../services/claim_service.dart';
+import '../../providers/service_providers.dart';
 import 'claim_detail_screen.dart';
 import 'claim_pdf_screen.dart';
 
@@ -47,8 +48,8 @@ class _ClaimsListScreenState extends ConsumerState<ClaimsListScreen> {
       logger.i(
         'Loading claims for product ${widget.lineItemId ?? "all"} in receipt ${widget.receiptId}',
       );
-      final claimService = ref.read(claimServiceProvider);
-      final claims = await claimService.getClaims(
+      final claimRepository = ref.read(claimRepositoryProvider);
+      final claims = await claimRepository.getClaims(
         receiptId: widget.receiptId,
         lineItemId: widget.lineItemId,
       );

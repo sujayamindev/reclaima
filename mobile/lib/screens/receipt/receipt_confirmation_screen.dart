@@ -6,7 +6,6 @@ import '../../core/utils/logger.dart';
 import '../../providers/receipt_provider.dart';
 import '../../providers/claim_provider.dart';
 import '../../providers/service_providers.dart';
-import '../../services/claim_service.dart';
 import '../../widgets/step_progress_bar.dart';
 import '../../widgets/product_image_card.dart';
 import '../../widgets/app_snackbar.dart';
@@ -190,11 +189,11 @@ class _ReceiptConfirmationScreenState
     final pendingClaimId = ref.read(pendingReplacementClaimIdProvider);
     if (pendingClaimId != null) {
       try {
-        final claimService = ref.read(claimServiceProvider);
+        final claimRepository = ref.read(claimRepositoryProvider);
         final newLineItemId = firstProcessedItemId;
 
         if (newLineItemId != null) {
-          await claimService.resolveClaim(
+          await claimRepository.resolveClaim(
             pendingClaimId,
             'REPLACED',
             linkedItemId: newLineItemId,

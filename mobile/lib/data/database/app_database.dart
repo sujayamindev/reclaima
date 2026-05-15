@@ -84,7 +84,46 @@ class UploadQueue extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-@DriftDatabase(tables: [Receipts, ReceiptLineItems, UploadQueue])
+/// Claim documents table
+class ClaimDocuments extends Table {
+  TextColumn get id => text()();
+  TextColumn get receiptId => text()();
+  TextColumn get lineItemId => text().nullable()();
+  TextColumn get issueDescription => text()();
+  TextColumn get claimType => text().nullable()();
+  TextColumn get status => text().withDefault(const Constant('SUBMITTED'))();
+  TextColumn get notes => text().nullable()();
+  TextColumn get generatedPdfS3Key => text().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+  DateTimeColumn get syncedAt => dateTime().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Defect images associated with a claim document
+class ClaimDefectImages extends Table {
+  TextColumn get id => text()();
+  TextColumn get claimId =>
+      text().references(ClaimDocuments, #id, onDelete: KeyAction.cascade)();
+  TextColumn get s3ObjectKey => text()();
+  IntColumn get displayOrder => integer().withDefault(const Constant(0))();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+@DriftDatabase(
+  tables: [
+    Receipts,
+    ReceiptLineItems,
+    UploadQueue,
+    ClaimDocuments,
+    ClaimDefectImages,
+  ],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
@@ -92,7 +131,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting() : super(NativeDatabase.memory());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -119,6 +158,11 @@ class AppDatabase extends _$AppDatabase {
         // In SQLite, we can just leave the columns in the physical table.
         // Drift will stop using them since they are no longer defined in the ReceiptLineItems class.
         // This preserves all other data in the table.
+      }
+      if (from < 4) {
+        // v3 → v4: Claim documents and defect images added for offline support.
+        await m.createTable(claimDocuments);
+        await m.createTable(claimDefectImages);
       }
     },
   );
@@ -176,6 +220,53 @@ class AppDatabase extends _$AppDatabase {
       errorMessage: Value(errorMsg),
     ),
   );
+
+  // Claim operations
+
+  /// Get claims, optionally filtered by receipt or line item
+  Future<List<ClaimDocument>> getClaims({
+    String? receiptId,
+    String? lineItemId,
+  }) {
+    final query = select(claimDocuments);
+    if (lineItemId != null) {
+      query.where((c) => c.lineItemId.equals(lineItemId));
+    } else if (receiptId != null) {
+      query.where((c) => c.receiptId.equals(receiptId));
+    }
+    return query.get();
+  }
+
+  /// Get a single claim by ID
+  Future<ClaimDocument?> getClaimById(String id) =>
+      (select(claimDocuments)..where((c) => c.id.equals(id))).getSingleOrNull();
+
+  /// Upsert a claim and replace its defect images atomically
+  Future<void> upsertClaimWithImages(
+    ClaimDocumentsCompanion claim,
+    List<ClaimDefectImagesCompanion> images,
+  ) async {
+    await transaction(() async {
+      await into(claimDocuments).insertOnConflictUpdate(claim);
+      await (delete(
+        claimDefectImages,
+      )..where((i) => i.claimId.equals(claim.id.value))).go();
+      for (final img in images) {
+        await into(claimDefectImages).insertOnConflictUpdate(img);
+      }
+    });
+  }
+
+  /// Get defect images for a claim, ordered by display position
+  Future<List<ClaimDefectImage>> getDefectImagesForClaim(String claimId) =>
+      (select(claimDefectImages)
+            ..where((i) => i.claimId.equals(claimId))
+            ..orderBy([(i) => OrderingTerm.asc(i.displayOrder)]))
+          .get();
+
+  /// Delete a claim (cascades to its defect images)
+  Future<int> deleteClaimById(String id) =>
+      (delete(claimDocuments)..where((c) => c.id.equals(id))).go();
 }
 
 /// Open database connection

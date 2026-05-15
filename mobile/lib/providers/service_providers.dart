@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/receipt_service.dart';
+import '../services/claim_service.dart';
 import '../services/product_image_service.dart';
 import '../services/notification_service.dart';
 import '../data/database/app_database.dart';
 import '../data/repositories/receipt_repository.dart';
+import '../data/repositories/claim_repository.dart';
 
 /// API Service provider
 final apiServiceProvider = Provider<ApiService>((ref) {
@@ -35,6 +37,13 @@ final receiptRepositoryProvider = Provider<ReceiptRepository>((ref) {
   final service = ref.watch(receiptServiceProvider);
   final db = ref.watch(databaseProvider);
   return ReceiptRepository(service, db);
+});
+
+/// Claim Repository provider
+final claimRepositoryProvider = Provider<ClaimRepository>((ref) {
+  final service = ref.watch(claimServiceProvider);
+  final db = ref.watch(databaseProvider);
+  return ClaimRepository(service, db);
 });
 
 /// Product Image Service provider

@@ -3089,6 +3089,1056 @@ class UploadQueueCompanion extends UpdateCompanion<UploadQueueData> {
   }
 }
 
+class $ClaimDocumentsTable extends ClaimDocuments
+    with TableInfo<$ClaimDocumentsTable, ClaimDocument> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ClaimDocumentsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _receiptIdMeta = const VerificationMeta(
+    'receiptId',
+  );
+  @override
+  late final GeneratedColumn<String> receiptId = GeneratedColumn<String>(
+    'receipt_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _lineItemIdMeta = const VerificationMeta(
+    'lineItemId',
+  );
+  @override
+  late final GeneratedColumn<String> lineItemId = GeneratedColumn<String>(
+    'line_item_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _issueDescriptionMeta = const VerificationMeta(
+    'issueDescription',
+  );
+  @override
+  late final GeneratedColumn<String> issueDescription = GeneratedColumn<String>(
+    'issue_description',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _claimTypeMeta = const VerificationMeta(
+    'claimType',
+  );
+  @override
+  late final GeneratedColumn<String> claimType = GeneratedColumn<String>(
+    'claim_type',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('SUBMITTED'),
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _generatedPdfS3KeyMeta = const VerificationMeta(
+    'generatedPdfS3Key',
+  );
+  @override
+  late final GeneratedColumn<String> generatedPdfS3Key =
+      GeneratedColumn<String>(
+        'generated_pdf_s3_key',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _syncedAtMeta = const VerificationMeta(
+    'syncedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> syncedAt = GeneratedColumn<DateTime>(
+    'synced_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    receiptId,
+    lineItemId,
+    issueDescription,
+    claimType,
+    status,
+    notes,
+    generatedPdfS3Key,
+    createdAt,
+    updatedAt,
+    syncedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'claim_documents';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ClaimDocument> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('receipt_id')) {
+      context.handle(
+        _receiptIdMeta,
+        receiptId.isAcceptableOrUnknown(data['receipt_id']!, _receiptIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_receiptIdMeta);
+    }
+    if (data.containsKey('line_item_id')) {
+      context.handle(
+        _lineItemIdMeta,
+        lineItemId.isAcceptableOrUnknown(
+          data['line_item_id']!,
+          _lineItemIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('issue_description')) {
+      context.handle(
+        _issueDescriptionMeta,
+        issueDescription.isAcceptableOrUnknown(
+          data['issue_description']!,
+          _issueDescriptionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_issueDescriptionMeta);
+    }
+    if (data.containsKey('claim_type')) {
+      context.handle(
+        _claimTypeMeta,
+        claimType.isAcceptableOrUnknown(data['claim_type']!, _claimTypeMeta),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('generated_pdf_s3_key')) {
+      context.handle(
+        _generatedPdfS3KeyMeta,
+        generatedPdfS3Key.isAcceptableOrUnknown(
+          data['generated_pdf_s3_key']!,
+          _generatedPdfS3KeyMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('synced_at')) {
+      context.handle(
+        _syncedAtMeta,
+        syncedAt.isAcceptableOrUnknown(data['synced_at']!, _syncedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ClaimDocument map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ClaimDocument(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      receiptId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}receipt_id'],
+      )!,
+      lineItemId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}line_item_id'],
+      ),
+      issueDescription: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}issue_description'],
+      )!,
+      claimType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}claim_type'],
+      ),
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      ),
+      generatedPdfS3Key: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}generated_pdf_s3_key'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      syncedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}synced_at'],
+      ),
+    );
+  }
+
+  @override
+  $ClaimDocumentsTable createAlias(String alias) {
+    return $ClaimDocumentsTable(attachedDatabase, alias);
+  }
+}
+
+class ClaimDocument extends DataClass implements Insertable<ClaimDocument> {
+  final String id;
+  final String receiptId;
+  final String? lineItemId;
+  final String issueDescription;
+  final String? claimType;
+  final String status;
+  final String? notes;
+  final String? generatedPdfS3Key;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final DateTime? syncedAt;
+  const ClaimDocument({
+    required this.id,
+    required this.receiptId,
+    this.lineItemId,
+    required this.issueDescription,
+    this.claimType,
+    required this.status,
+    this.notes,
+    this.generatedPdfS3Key,
+    required this.createdAt,
+    required this.updatedAt,
+    this.syncedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['receipt_id'] = Variable<String>(receiptId);
+    if (!nullToAbsent || lineItemId != null) {
+      map['line_item_id'] = Variable<String>(lineItemId);
+    }
+    map['issue_description'] = Variable<String>(issueDescription);
+    if (!nullToAbsent || claimType != null) {
+      map['claim_type'] = Variable<String>(claimType);
+    }
+    map['status'] = Variable<String>(status);
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
+    if (!nullToAbsent || generatedPdfS3Key != null) {
+      map['generated_pdf_s3_key'] = Variable<String>(generatedPdfS3Key);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || syncedAt != null) {
+      map['synced_at'] = Variable<DateTime>(syncedAt);
+    }
+    return map;
+  }
+
+  ClaimDocumentsCompanion toCompanion(bool nullToAbsent) {
+    return ClaimDocumentsCompanion(
+      id: Value(id),
+      receiptId: Value(receiptId),
+      lineItemId: lineItemId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lineItemId),
+      issueDescription: Value(issueDescription),
+      claimType: claimType == null && nullToAbsent
+          ? const Value.absent()
+          : Value(claimType),
+      status: Value(status),
+      notes: notes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(notes),
+      generatedPdfS3Key: generatedPdfS3Key == null && nullToAbsent
+          ? const Value.absent()
+          : Value(generatedPdfS3Key),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      syncedAt: syncedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(syncedAt),
+    );
+  }
+
+  factory ClaimDocument.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ClaimDocument(
+      id: serializer.fromJson<String>(json['id']),
+      receiptId: serializer.fromJson<String>(json['receiptId']),
+      lineItemId: serializer.fromJson<String?>(json['lineItemId']),
+      issueDescription: serializer.fromJson<String>(json['issueDescription']),
+      claimType: serializer.fromJson<String?>(json['claimType']),
+      status: serializer.fromJson<String>(json['status']),
+      notes: serializer.fromJson<String?>(json['notes']),
+      generatedPdfS3Key: serializer.fromJson<String?>(
+        json['generatedPdfS3Key'],
+      ),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      syncedAt: serializer.fromJson<DateTime?>(json['syncedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'receiptId': serializer.toJson<String>(receiptId),
+      'lineItemId': serializer.toJson<String?>(lineItemId),
+      'issueDescription': serializer.toJson<String>(issueDescription),
+      'claimType': serializer.toJson<String?>(claimType),
+      'status': serializer.toJson<String>(status),
+      'notes': serializer.toJson<String?>(notes),
+      'generatedPdfS3Key': serializer.toJson<String?>(generatedPdfS3Key),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'syncedAt': serializer.toJson<DateTime?>(syncedAt),
+    };
+  }
+
+  ClaimDocument copyWith({
+    String? id,
+    String? receiptId,
+    Value<String?> lineItemId = const Value.absent(),
+    String? issueDescription,
+    Value<String?> claimType = const Value.absent(),
+    String? status,
+    Value<String?> notes = const Value.absent(),
+    Value<String?> generatedPdfS3Key = const Value.absent(),
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    Value<DateTime?> syncedAt = const Value.absent(),
+  }) => ClaimDocument(
+    id: id ?? this.id,
+    receiptId: receiptId ?? this.receiptId,
+    lineItemId: lineItemId.present ? lineItemId.value : this.lineItemId,
+    issueDescription: issueDescription ?? this.issueDescription,
+    claimType: claimType.present ? claimType.value : this.claimType,
+    status: status ?? this.status,
+    notes: notes.present ? notes.value : this.notes,
+    generatedPdfS3Key: generatedPdfS3Key.present
+        ? generatedPdfS3Key.value
+        : this.generatedPdfS3Key,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    syncedAt: syncedAt.present ? syncedAt.value : this.syncedAt,
+  );
+  ClaimDocument copyWithCompanion(ClaimDocumentsCompanion data) {
+    return ClaimDocument(
+      id: data.id.present ? data.id.value : this.id,
+      receiptId: data.receiptId.present ? data.receiptId.value : this.receiptId,
+      lineItemId: data.lineItemId.present
+          ? data.lineItemId.value
+          : this.lineItemId,
+      issueDescription: data.issueDescription.present
+          ? data.issueDescription.value
+          : this.issueDescription,
+      claimType: data.claimType.present ? data.claimType.value : this.claimType,
+      status: data.status.present ? data.status.value : this.status,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      generatedPdfS3Key: data.generatedPdfS3Key.present
+          ? data.generatedPdfS3Key.value
+          : this.generatedPdfS3Key,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      syncedAt: data.syncedAt.present ? data.syncedAt.value : this.syncedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ClaimDocument(')
+          ..write('id: $id, ')
+          ..write('receiptId: $receiptId, ')
+          ..write('lineItemId: $lineItemId, ')
+          ..write('issueDescription: $issueDescription, ')
+          ..write('claimType: $claimType, ')
+          ..write('status: $status, ')
+          ..write('notes: $notes, ')
+          ..write('generatedPdfS3Key: $generatedPdfS3Key, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncedAt: $syncedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    receiptId,
+    lineItemId,
+    issueDescription,
+    claimType,
+    status,
+    notes,
+    generatedPdfS3Key,
+    createdAt,
+    updatedAt,
+    syncedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ClaimDocument &&
+          other.id == this.id &&
+          other.receiptId == this.receiptId &&
+          other.lineItemId == this.lineItemId &&
+          other.issueDescription == this.issueDescription &&
+          other.claimType == this.claimType &&
+          other.status == this.status &&
+          other.notes == this.notes &&
+          other.generatedPdfS3Key == this.generatedPdfS3Key &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.syncedAt == this.syncedAt);
+}
+
+class ClaimDocumentsCompanion extends UpdateCompanion<ClaimDocument> {
+  final Value<String> id;
+  final Value<String> receiptId;
+  final Value<String?> lineItemId;
+  final Value<String> issueDescription;
+  final Value<String?> claimType;
+  final Value<String> status;
+  final Value<String?> notes;
+  final Value<String?> generatedPdfS3Key;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> syncedAt;
+  final Value<int> rowid;
+  const ClaimDocumentsCompanion({
+    this.id = const Value.absent(),
+    this.receiptId = const Value.absent(),
+    this.lineItemId = const Value.absent(),
+    this.issueDescription = const Value.absent(),
+    this.claimType = const Value.absent(),
+    this.status = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.generatedPdfS3Key = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.syncedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ClaimDocumentsCompanion.insert({
+    required String id,
+    required String receiptId,
+    this.lineItemId = const Value.absent(),
+    required String issueDescription,
+    this.claimType = const Value.absent(),
+    this.status = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.generatedPdfS3Key = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.syncedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       receiptId = Value(receiptId),
+       issueDescription = Value(issueDescription),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<ClaimDocument> custom({
+    Expression<String>? id,
+    Expression<String>? receiptId,
+    Expression<String>? lineItemId,
+    Expression<String>? issueDescription,
+    Expression<String>? claimType,
+    Expression<String>? status,
+    Expression<String>? notes,
+    Expression<String>? generatedPdfS3Key,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? syncedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (receiptId != null) 'receipt_id': receiptId,
+      if (lineItemId != null) 'line_item_id': lineItemId,
+      if (issueDescription != null) 'issue_description': issueDescription,
+      if (claimType != null) 'claim_type': claimType,
+      if (status != null) 'status': status,
+      if (notes != null) 'notes': notes,
+      if (generatedPdfS3Key != null) 'generated_pdf_s3_key': generatedPdfS3Key,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (syncedAt != null) 'synced_at': syncedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ClaimDocumentsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? receiptId,
+    Value<String?>? lineItemId,
+    Value<String>? issueDescription,
+    Value<String?>? claimType,
+    Value<String>? status,
+    Value<String?>? notes,
+    Value<String?>? generatedPdfS3Key,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<DateTime?>? syncedAt,
+    Value<int>? rowid,
+  }) {
+    return ClaimDocumentsCompanion(
+      id: id ?? this.id,
+      receiptId: receiptId ?? this.receiptId,
+      lineItemId: lineItemId ?? this.lineItemId,
+      issueDescription: issueDescription ?? this.issueDescription,
+      claimType: claimType ?? this.claimType,
+      status: status ?? this.status,
+      notes: notes ?? this.notes,
+      generatedPdfS3Key: generatedPdfS3Key ?? this.generatedPdfS3Key,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      syncedAt: syncedAt ?? this.syncedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (receiptId.present) {
+      map['receipt_id'] = Variable<String>(receiptId.value);
+    }
+    if (lineItemId.present) {
+      map['line_item_id'] = Variable<String>(lineItemId.value);
+    }
+    if (issueDescription.present) {
+      map['issue_description'] = Variable<String>(issueDescription.value);
+    }
+    if (claimType.present) {
+      map['claim_type'] = Variable<String>(claimType.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (generatedPdfS3Key.present) {
+      map['generated_pdf_s3_key'] = Variable<String>(generatedPdfS3Key.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (syncedAt.present) {
+      map['synced_at'] = Variable<DateTime>(syncedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ClaimDocumentsCompanion(')
+          ..write('id: $id, ')
+          ..write('receiptId: $receiptId, ')
+          ..write('lineItemId: $lineItemId, ')
+          ..write('issueDescription: $issueDescription, ')
+          ..write('claimType: $claimType, ')
+          ..write('status: $status, ')
+          ..write('notes: $notes, ')
+          ..write('generatedPdfS3Key: $generatedPdfS3Key, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('syncedAt: $syncedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ClaimDefectImagesTable extends ClaimDefectImages
+    with TableInfo<$ClaimDefectImagesTable, ClaimDefectImage> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ClaimDefectImagesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _claimIdMeta = const VerificationMeta(
+    'claimId',
+  );
+  @override
+  late final GeneratedColumn<String> claimId = GeneratedColumn<String>(
+    'claim_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES claim_documents (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _s3ObjectKeyMeta = const VerificationMeta(
+    's3ObjectKey',
+  );
+  @override
+  late final GeneratedColumn<String> s3ObjectKey = GeneratedColumn<String>(
+    's3_object_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _displayOrderMeta = const VerificationMeta(
+    'displayOrder',
+  );
+  @override
+  late final GeneratedColumn<int> displayOrder = GeneratedColumn<int>(
+    'display_order',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    claimId,
+    s3ObjectKey,
+    displayOrder,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'claim_defect_images';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ClaimDefectImage> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('claim_id')) {
+      context.handle(
+        _claimIdMeta,
+        claimId.isAcceptableOrUnknown(data['claim_id']!, _claimIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_claimIdMeta);
+    }
+    if (data.containsKey('s3_object_key')) {
+      context.handle(
+        _s3ObjectKeyMeta,
+        s3ObjectKey.isAcceptableOrUnknown(
+          data['s3_object_key']!,
+          _s3ObjectKeyMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_s3ObjectKeyMeta);
+    }
+    if (data.containsKey('display_order')) {
+      context.handle(
+        _displayOrderMeta,
+        displayOrder.isAcceptableOrUnknown(
+          data['display_order']!,
+          _displayOrderMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ClaimDefectImage map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ClaimDefectImage(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      claimId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}claim_id'],
+      )!,
+      s3ObjectKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}s3_object_key'],
+      )!,
+      displayOrder: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}display_order'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ClaimDefectImagesTable createAlias(String alias) {
+    return $ClaimDefectImagesTable(attachedDatabase, alias);
+  }
+}
+
+class ClaimDefectImage extends DataClass
+    implements Insertable<ClaimDefectImage> {
+  final String id;
+  final String claimId;
+  final String s3ObjectKey;
+  final int displayOrder;
+  final DateTime createdAt;
+  const ClaimDefectImage({
+    required this.id,
+    required this.claimId,
+    required this.s3ObjectKey,
+    required this.displayOrder,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['claim_id'] = Variable<String>(claimId);
+    map['s3_object_key'] = Variable<String>(s3ObjectKey);
+    map['display_order'] = Variable<int>(displayOrder);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  ClaimDefectImagesCompanion toCompanion(bool nullToAbsent) {
+    return ClaimDefectImagesCompanion(
+      id: Value(id),
+      claimId: Value(claimId),
+      s3ObjectKey: Value(s3ObjectKey),
+      displayOrder: Value(displayOrder),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory ClaimDefectImage.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ClaimDefectImage(
+      id: serializer.fromJson<String>(json['id']),
+      claimId: serializer.fromJson<String>(json['claimId']),
+      s3ObjectKey: serializer.fromJson<String>(json['s3ObjectKey']),
+      displayOrder: serializer.fromJson<int>(json['displayOrder']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'claimId': serializer.toJson<String>(claimId),
+      's3ObjectKey': serializer.toJson<String>(s3ObjectKey),
+      'displayOrder': serializer.toJson<int>(displayOrder),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  ClaimDefectImage copyWith({
+    String? id,
+    String? claimId,
+    String? s3ObjectKey,
+    int? displayOrder,
+    DateTime? createdAt,
+  }) => ClaimDefectImage(
+    id: id ?? this.id,
+    claimId: claimId ?? this.claimId,
+    s3ObjectKey: s3ObjectKey ?? this.s3ObjectKey,
+    displayOrder: displayOrder ?? this.displayOrder,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  ClaimDefectImage copyWithCompanion(ClaimDefectImagesCompanion data) {
+    return ClaimDefectImage(
+      id: data.id.present ? data.id.value : this.id,
+      claimId: data.claimId.present ? data.claimId.value : this.claimId,
+      s3ObjectKey: data.s3ObjectKey.present
+          ? data.s3ObjectKey.value
+          : this.s3ObjectKey,
+      displayOrder: data.displayOrder.present
+          ? data.displayOrder.value
+          : this.displayOrder,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ClaimDefectImage(')
+          ..write('id: $id, ')
+          ..write('claimId: $claimId, ')
+          ..write('s3ObjectKey: $s3ObjectKey, ')
+          ..write('displayOrder: $displayOrder, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, claimId, s3ObjectKey, displayOrder, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ClaimDefectImage &&
+          other.id == this.id &&
+          other.claimId == this.claimId &&
+          other.s3ObjectKey == this.s3ObjectKey &&
+          other.displayOrder == this.displayOrder &&
+          other.createdAt == this.createdAt);
+}
+
+class ClaimDefectImagesCompanion extends UpdateCompanion<ClaimDefectImage> {
+  final Value<String> id;
+  final Value<String> claimId;
+  final Value<String> s3ObjectKey;
+  final Value<int> displayOrder;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const ClaimDefectImagesCompanion({
+    this.id = const Value.absent(),
+    this.claimId = const Value.absent(),
+    this.s3ObjectKey = const Value.absent(),
+    this.displayOrder = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ClaimDefectImagesCompanion.insert({
+    required String id,
+    required String claimId,
+    required String s3ObjectKey,
+    this.displayOrder = const Value.absent(),
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       claimId = Value(claimId),
+       s3ObjectKey = Value(s3ObjectKey),
+       createdAt = Value(createdAt);
+  static Insertable<ClaimDefectImage> custom({
+    Expression<String>? id,
+    Expression<String>? claimId,
+    Expression<String>? s3ObjectKey,
+    Expression<int>? displayOrder,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (claimId != null) 'claim_id': claimId,
+      if (s3ObjectKey != null) 's3_object_key': s3ObjectKey,
+      if (displayOrder != null) 'display_order': displayOrder,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ClaimDefectImagesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? claimId,
+    Value<String>? s3ObjectKey,
+    Value<int>? displayOrder,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return ClaimDefectImagesCompanion(
+      id: id ?? this.id,
+      claimId: claimId ?? this.claimId,
+      s3ObjectKey: s3ObjectKey ?? this.s3ObjectKey,
+      displayOrder: displayOrder ?? this.displayOrder,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (claimId.present) {
+      map['claim_id'] = Variable<String>(claimId.value);
+    }
+    if (s3ObjectKey.present) {
+      map['s3_object_key'] = Variable<String>(s3ObjectKey.value);
+    }
+    if (displayOrder.present) {
+      map['display_order'] = Variable<int>(displayOrder.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ClaimDefectImagesCompanion(')
+          ..write('id: $id, ')
+          ..write('claimId: $claimId, ')
+          ..write('s3ObjectKey: $s3ObjectKey, ')
+          ..write('displayOrder: $displayOrder, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -3097,6 +4147,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     this,
   );
   late final $UploadQueueTable uploadQueue = $UploadQueueTable(this);
+  late final $ClaimDocumentsTable claimDocuments = $ClaimDocumentsTable(this);
+  late final $ClaimDefectImagesTable claimDefectImages =
+      $ClaimDefectImagesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3105,6 +4158,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     receipts,
     receiptLineItems,
     uploadQueue,
+    claimDocuments,
+    claimDefectImages,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -3114,6 +4169,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('receipt_line_items', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'claim_documents',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('claim_defect_images', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -4250,6 +5312,457 @@ class $$UploadQueueTableOrderingComposer
   );
 }
 
+typedef $$ClaimDocumentsTableCreateCompanionBuilder =
+    ClaimDocumentsCompanion Function({
+      required String id,
+      required String receiptId,
+      Value<String?> lineItemId,
+      required String issueDescription,
+      Value<String?> claimType,
+      Value<String> status,
+      Value<String?> notes,
+      Value<String?> generatedPdfS3Key,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<DateTime?> syncedAt,
+      Value<int> rowid,
+    });
+typedef $$ClaimDocumentsTableUpdateCompanionBuilder =
+    ClaimDocumentsCompanion Function({
+      Value<String> id,
+      Value<String> receiptId,
+      Value<String?> lineItemId,
+      Value<String> issueDescription,
+      Value<String?> claimType,
+      Value<String> status,
+      Value<String?> notes,
+      Value<String?> generatedPdfS3Key,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<DateTime?> syncedAt,
+      Value<int> rowid,
+    });
+
+class $$ClaimDocumentsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ClaimDocumentsTable,
+          ClaimDocument,
+          $$ClaimDocumentsTableFilterComposer,
+          $$ClaimDocumentsTableOrderingComposer,
+          $$ClaimDocumentsTableCreateCompanionBuilder,
+          $$ClaimDocumentsTableUpdateCompanionBuilder
+        > {
+  $$ClaimDocumentsTableTableManager(
+    _$AppDatabase db,
+    $ClaimDocumentsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer: $$ClaimDocumentsTableFilterComposer(
+            ComposerState(db, table),
+          ),
+          orderingComposer: $$ClaimDocumentsTableOrderingComposer(
+            ComposerState(db, table),
+          ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> receiptId = const Value.absent(),
+                Value<String?> lineItemId = const Value.absent(),
+                Value<String> issueDescription = const Value.absent(),
+                Value<String?> claimType = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<String?> generatedPdfS3Key = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> syncedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ClaimDocumentsCompanion(
+                id: id,
+                receiptId: receiptId,
+                lineItemId: lineItemId,
+                issueDescription: issueDescription,
+                claimType: claimType,
+                status: status,
+                notes: notes,
+                generatedPdfS3Key: generatedPdfS3Key,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncedAt: syncedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String receiptId,
+                Value<String?> lineItemId = const Value.absent(),
+                required String issueDescription,
+                Value<String?> claimType = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<String?> generatedPdfS3Key = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<DateTime?> syncedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ClaimDocumentsCompanion.insert(
+                id: id,
+                receiptId: receiptId,
+                lineItemId: lineItemId,
+                issueDescription: issueDescription,
+                claimType: claimType,
+                status: status,
+                notes: notes,
+                generatedPdfS3Key: generatedPdfS3Key,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                syncedAt: syncedAt,
+                rowid: rowid,
+              ),
+        ),
+      );
+}
+
+class $$ClaimDocumentsTableFilterComposer
+    extends FilterComposer<_$AppDatabase, $ClaimDocumentsTable> {
+  $$ClaimDocumentsTableFilterComposer(super.$state);
+  ColumnFilters<String> get id => $state.composableBuilder(
+    column: $state.table.id,
+    builder: (column, joinBuilders) =>
+        ColumnFilters(column, joinBuilders: joinBuilders),
+  );
+
+  ColumnFilters<String> get receiptId => $state.composableBuilder(
+    column: $state.table.receiptId,
+    builder: (column, joinBuilders) =>
+        ColumnFilters(column, joinBuilders: joinBuilders),
+  );
+
+  ColumnFilters<String> get lineItemId => $state.composableBuilder(
+    column: $state.table.lineItemId,
+    builder: (column, joinBuilders) =>
+        ColumnFilters(column, joinBuilders: joinBuilders),
+  );
+
+  ColumnFilters<String> get issueDescription => $state.composableBuilder(
+    column: $state.table.issueDescription,
+    builder: (column, joinBuilders) =>
+        ColumnFilters(column, joinBuilders: joinBuilders),
+  );
+
+  ColumnFilters<String> get claimType => $state.composableBuilder(
+    column: $state.table.claimType,
+    builder: (column, joinBuilders) =>
+        ColumnFilters(column, joinBuilders: joinBuilders),
+  );
+
+  ColumnFilters<String> get status => $state.composableBuilder(
+    column: $state.table.status,
+    builder: (column, joinBuilders) =>
+        ColumnFilters(column, joinBuilders: joinBuilders),
+  );
+
+  ColumnFilters<String> get notes => $state.composableBuilder(
+    column: $state.table.notes,
+    builder: (column, joinBuilders) =>
+        ColumnFilters(column, joinBuilders: joinBuilders),
+  );
+
+  ColumnFilters<String> get generatedPdfS3Key => $state.composableBuilder(
+    column: $state.table.generatedPdfS3Key,
+    builder: (column, joinBuilders) =>
+        ColumnFilters(column, joinBuilders: joinBuilders),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $state.composableBuilder(
+    column: $state.table.createdAt,
+    builder: (column, joinBuilders) =>
+        ColumnFilters(column, joinBuilders: joinBuilders),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $state.composableBuilder(
+    column: $state.table.updatedAt,
+    builder: (column, joinBuilders) =>
+        ColumnFilters(column, joinBuilders: joinBuilders),
+  );
+
+  ColumnFilters<DateTime> get syncedAt => $state.composableBuilder(
+    column: $state.table.syncedAt,
+    builder: (column, joinBuilders) =>
+        ColumnFilters(column, joinBuilders: joinBuilders),
+  );
+
+  ComposableFilter claimDefectImagesRefs(
+    ComposableFilter Function($$ClaimDefectImagesTableFilterComposer f) f,
+  ) {
+    final $$ClaimDefectImagesTableFilterComposer composer = $state
+        .composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $state.db.claimDefectImages,
+          getReferencedColumn: (t) => t.claimId,
+          builder: (joinBuilder, parentComposers) =>
+              $$ClaimDefectImagesTableFilterComposer(
+                ComposerState(
+                  $state.db,
+                  $state.db.claimDefectImages,
+                  joinBuilder,
+                  parentComposers,
+                ),
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$ClaimDocumentsTableOrderingComposer
+    extends OrderingComposer<_$AppDatabase, $ClaimDocumentsTable> {
+  $$ClaimDocumentsTableOrderingComposer(super.$state);
+  ColumnOrderings<String> get id => $state.composableBuilder(
+    column: $state.table.id,
+    builder: (column, joinBuilders) =>
+        ColumnOrderings(column, joinBuilders: joinBuilders),
+  );
+
+  ColumnOrderings<String> get receiptId => $state.composableBuilder(
+    column: $state.table.receiptId,
+    builder: (column, joinBuilders) =>
+        ColumnOrderings(column, joinBuilders: joinBuilders),
+  );
+
+  ColumnOrderings<String> get lineItemId => $state.composableBuilder(
+    column: $state.table.lineItemId,
+    builder: (column, joinBuilders) =>
+        ColumnOrderings(column, joinBuilders: joinBuilders),
+  );
+
+  ColumnOrderings<String> get issueDescription => $state.composableBuilder(
+    column: $state.table.issueDescription,
+    builder: (column, joinBuilders) =>
+        ColumnOrderings(column, joinBuilders: joinBuilders),
+  );
+
+  ColumnOrderings<String> get claimType => $state.composableBuilder(
+    column: $state.table.claimType,
+    builder: (column, joinBuilders) =>
+        ColumnOrderings(column, joinBuilders: joinBuilders),
+  );
+
+  ColumnOrderings<String> get status => $state.composableBuilder(
+    column: $state.table.status,
+    builder: (column, joinBuilders) =>
+        ColumnOrderings(column, joinBuilders: joinBuilders),
+  );
+
+  ColumnOrderings<String> get notes => $state.composableBuilder(
+    column: $state.table.notes,
+    builder: (column, joinBuilders) =>
+        ColumnOrderings(column, joinBuilders: joinBuilders),
+  );
+
+  ColumnOrderings<String> get generatedPdfS3Key => $state.composableBuilder(
+    column: $state.table.generatedPdfS3Key,
+    builder: (column, joinBuilders) =>
+        ColumnOrderings(column, joinBuilders: joinBuilders),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $state.composableBuilder(
+    column: $state.table.createdAt,
+    builder: (column, joinBuilders) =>
+        ColumnOrderings(column, joinBuilders: joinBuilders),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $state.composableBuilder(
+    column: $state.table.updatedAt,
+    builder: (column, joinBuilders) =>
+        ColumnOrderings(column, joinBuilders: joinBuilders),
+  );
+
+  ColumnOrderings<DateTime> get syncedAt => $state.composableBuilder(
+    column: $state.table.syncedAt,
+    builder: (column, joinBuilders) =>
+        ColumnOrderings(column, joinBuilders: joinBuilders),
+  );
+}
+
+typedef $$ClaimDefectImagesTableCreateCompanionBuilder =
+    ClaimDefectImagesCompanion Function({
+      required String id,
+      required String claimId,
+      required String s3ObjectKey,
+      Value<int> displayOrder,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$ClaimDefectImagesTableUpdateCompanionBuilder =
+    ClaimDefectImagesCompanion Function({
+      Value<String> id,
+      Value<String> claimId,
+      Value<String> s3ObjectKey,
+      Value<int> displayOrder,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+class $$ClaimDefectImagesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ClaimDefectImagesTable,
+          ClaimDefectImage,
+          $$ClaimDefectImagesTableFilterComposer,
+          $$ClaimDefectImagesTableOrderingComposer,
+          $$ClaimDefectImagesTableCreateCompanionBuilder,
+          $$ClaimDefectImagesTableUpdateCompanionBuilder
+        > {
+  $$ClaimDefectImagesTableTableManager(
+    _$AppDatabase db,
+    $ClaimDefectImagesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          filteringComposer: $$ClaimDefectImagesTableFilterComposer(
+            ComposerState(db, table),
+          ),
+          orderingComposer: $$ClaimDefectImagesTableOrderingComposer(
+            ComposerState(db, table),
+          ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> claimId = const Value.absent(),
+                Value<String> s3ObjectKey = const Value.absent(),
+                Value<int> displayOrder = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ClaimDefectImagesCompanion(
+                id: id,
+                claimId: claimId,
+                s3ObjectKey: s3ObjectKey,
+                displayOrder: displayOrder,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String claimId,
+                required String s3ObjectKey,
+                Value<int> displayOrder = const Value.absent(),
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => ClaimDefectImagesCompanion.insert(
+                id: id,
+                claimId: claimId,
+                s3ObjectKey: s3ObjectKey,
+                displayOrder: displayOrder,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+        ),
+      );
+}
+
+class $$ClaimDefectImagesTableFilterComposer
+    extends FilterComposer<_$AppDatabase, $ClaimDefectImagesTable> {
+  $$ClaimDefectImagesTableFilterComposer(super.$state);
+  ColumnFilters<String> get id => $state.composableBuilder(
+    column: $state.table.id,
+    builder: (column, joinBuilders) =>
+        ColumnFilters(column, joinBuilders: joinBuilders),
+  );
+
+  ColumnFilters<String> get s3ObjectKey => $state.composableBuilder(
+    column: $state.table.s3ObjectKey,
+    builder: (column, joinBuilders) =>
+        ColumnFilters(column, joinBuilders: joinBuilders),
+  );
+
+  ColumnFilters<int> get displayOrder => $state.composableBuilder(
+    column: $state.table.displayOrder,
+    builder: (column, joinBuilders) =>
+        ColumnFilters(column, joinBuilders: joinBuilders),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $state.composableBuilder(
+    column: $state.table.createdAt,
+    builder: (column, joinBuilders) =>
+        ColumnFilters(column, joinBuilders: joinBuilders),
+  );
+
+  $$ClaimDocumentsTableFilterComposer get claimId {
+    final $$ClaimDocumentsTableFilterComposer composer = $state.composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.claimId,
+      referencedTable: $state.db.claimDocuments,
+      getReferencedColumn: (t) => t.id,
+      builder: (joinBuilder, parentComposers) =>
+          $$ClaimDocumentsTableFilterComposer(
+            ComposerState(
+              $state.db,
+              $state.db.claimDocuments,
+              joinBuilder,
+              parentComposers,
+            ),
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ClaimDefectImagesTableOrderingComposer
+    extends OrderingComposer<_$AppDatabase, $ClaimDefectImagesTable> {
+  $$ClaimDefectImagesTableOrderingComposer(super.$state);
+  ColumnOrderings<String> get id => $state.composableBuilder(
+    column: $state.table.id,
+    builder: (column, joinBuilders) =>
+        ColumnOrderings(column, joinBuilders: joinBuilders),
+  );
+
+  ColumnOrderings<String> get s3ObjectKey => $state.composableBuilder(
+    column: $state.table.s3ObjectKey,
+    builder: (column, joinBuilders) =>
+        ColumnOrderings(column, joinBuilders: joinBuilders),
+  );
+
+  ColumnOrderings<int> get displayOrder => $state.composableBuilder(
+    column: $state.table.displayOrder,
+    builder: (column, joinBuilders) =>
+        ColumnOrderings(column, joinBuilders: joinBuilders),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $state.composableBuilder(
+    column: $state.table.createdAt,
+    builder: (column, joinBuilders) =>
+        ColumnOrderings(column, joinBuilders: joinBuilders),
+  );
+
+  $$ClaimDocumentsTableOrderingComposer get claimId {
+    final $$ClaimDocumentsTableOrderingComposer composer = $state
+        .composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.claimId,
+          referencedTable: $state.db.claimDocuments,
+          getReferencedColumn: (t) => t.id,
+          builder: (joinBuilder, parentComposers) =>
+              $$ClaimDocumentsTableOrderingComposer(
+                ComposerState(
+                  $state.db,
+                  $state.db.claimDocuments,
+                  joinBuilder,
+                  parentComposers,
+                ),
+              ),
+        );
+    return composer;
+  }
+}
+
 class $AppDatabaseManager {
   final _$AppDatabase _db;
   $AppDatabaseManager(this._db);
@@ -4259,4 +5772,8 @@ class $AppDatabaseManager {
       $$ReceiptLineItemsTableTableManager(_db, _db.receiptLineItems);
   $$UploadQueueTableTableManager get uploadQueue =>
       $$UploadQueueTableTableManager(_db, _db.uploadQueue);
+  $$ClaimDocumentsTableTableManager get claimDocuments =>
+      $$ClaimDocumentsTableTableManager(_db, _db.claimDocuments);
+  $$ClaimDefectImagesTableTableManager get claimDefectImages =>
+      $$ClaimDefectImagesTableTableManager(_db, _db.claimDefectImages);
 }
