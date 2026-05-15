@@ -387,6 +387,8 @@ async def resolve_claim(
     if item:
         if resolution_data.outcome == "REFUNDED":
             setattr(item, "status", "ARCHIVED")
+        elif resolution_data.outcome == "REPAIRED":
+            pass  # Item stays ACTIVE; claim is marked RESOLVED above
         elif resolution_data.outcome == "REPLACED":
             if resolution_data.duplicate_details:
                 import uuid

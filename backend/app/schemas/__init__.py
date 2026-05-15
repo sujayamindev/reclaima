@@ -378,7 +378,7 @@ class ClaimDocumentResponse(ClaimDocumentBase):
 class ClaimResolutionRequest(BaseModel):
     """Claim resolution schema."""
 
-    outcome: str  # "REFUNDED", "REPAIRED", "REPLACED"
+    outcome: Literal["REFUNDED", "REPAIRED", "REPLACED"]
     linked_item_id: Optional[str] = None
     duplicate_details: bool = False
 
