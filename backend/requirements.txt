@@ -54,3 +54,7 @@ mypy==1.20.2
 # Logging & Monitoring
 structlog==25.5.0
 sentry-sdk[fastapi]==2.13.0
+
+# Security overrides
+wheel>=0.46.2
+jaraco.context>=6.1.0

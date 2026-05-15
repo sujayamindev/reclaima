@@ -38,6 +38,35 @@ def cleanup_auth():
 # ============================================
 
 
+def test_resolve_claim_repaired(db_session, user_a):
+    mock_auth(str(user_a.id), user_a.firebase_uid)
+    receipt = _make_receipt(db_session, str(user_a.id), with_line_item=True)
+    item = (
+        db_session.query(ReceiptLineItem)
+        .filter(ReceiptLineItem.receipt_id == str(receipt.id))
+        .first()
+    )
+
+    claim = ClaimDocument(
+        id=str(uuid.uuid4()),
+        receipt_id=str(receipt.id),
+        line_item_id=str(item.id),
+        issue_description="Broken",
+        status="PENDING",
+    )
+    db_session.add(claim)
+    db_session.commit()
+
+    payload = {"outcome": "REPAIRED"}
+    resp = client.post(f"/api/v1/claims/{claim.id}/resolve", json=payload)
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "RESOLVED"
+
+    db_session.refresh(item)
+    assert item.status == "ACTIVE"  # Should remain active
+    cleanup_auth()
+
+
 def test_resolve_claim_refunded(db_session, user_a):
     mock_auth(str(user_a.id), user_a.firebase_uid)
     receipt = _make_receipt(db_session, str(user_a.id), with_line_item=True)

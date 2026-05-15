@@ -156,7 +156,7 @@ async def ocr_extract(
 
         if len(content) > settings.max_file_size_bytes:
             raise HTTPException(
-                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                status_code=status.HTTP_413_CONTENT_TOO_LARGE,
                 detail=f"File too large. Maximum: {settings.MAX_FILE_SIZE_MB}MB",
             )
 
@@ -382,7 +382,7 @@ async def upload_receipt_file(
     # Validate file size
     if len(file_content) > settings.max_file_size_bytes:
         raise HTTPException(
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            status_code=status.HTTP_413_CONTENT_TOO_LARGE,
             detail=f"File too large. Maximum size: {settings.MAX_FILE_SIZE_MB}MB",
         )
 
