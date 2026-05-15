@@ -36,9 +36,9 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
 COPY --from=builder /venv /venv
 COPY . .
 
-# Upgrade system-level pip/setuptools/wheel to fix CVE-2026-23949 and CVE-2026-24049
-# (base image ships setuptools 79 / wheel 0.45 which contain vulnerable vendored packages)
-RUN pip install --no-cache-dir --upgrade setuptools wheel
+# Upgrade system-level setuptools/wheel to fix CVE-2026-23949 and CVE-2026-24049.
+# Must use absolute path: PATH puts /venv/bin first, so bare `pip` hits the venv, not system Python.
+RUN /usr/local/bin/pip install --no-cache-dir --upgrade setuptools wheel
 
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 USER appuser
