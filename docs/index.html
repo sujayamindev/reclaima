@@ -1017,6 +1017,132 @@
       line-height: 1;
       font-style: normal
     }
+
+    /* ═══════════════════════════════════════════════════════════════
+       RESPONSIVE STYLES — all rules are inside media queries.
+       Desktop layout (1024px+) is completely untouched.
+       ═══════════════════════════════════════════════════════════════ */
+
+    /* ── TABLET · max-width 768px ────────────────────────────────── */
+    @media (max-width: 768px) {
+
+      /* Layout */
+      .wrap { padding: 0 24px }
+      .nav-in { padding: 0 24px }
+      .section { padding: 64px 0 }
+
+      /* Typography */
+      .h2 { font-size: 30px }
+
+      /* Hero */
+      .hero { padding: 72px 0 56px }
+      .hero-grid { grid-template-columns: 1fr; gap: 40px }
+      .hero-h1 { font-size: 44px }
+
+      /* Phone mockup — keep visible but scaled down */
+      .phone { width: 200px; height: 426px }
+
+      /* Tech strip — reduce gap so items wrap tidily */
+      .tech-strip-inner { gap: 40px }
+
+      /* Steps — 2 columns, hide connecting horizontal line */
+      .steps { grid-template-columns: repeat(2, 1fr); gap: 32px }
+      .steps::before { display: none }
+
+      /* Features grid — 2 columns */
+      .feat-grid { grid-template-columns: repeat(2, 1fr) }
+
+      /* Architecture services — 3 columns instead of 5 */
+      .arch-services { grid-template-columns: repeat(3, 1fr) }
+
+      /* AI Pipeline — 3 columns instead of 6 */
+      .pipeline { grid-template-columns: repeat(3, 1fr); gap: 12px }
+
+      /* Code blocks — single column */
+      .code-wrap { grid-template-columns: 1fr }
+
+      /* Tech stack — single column */
+      .stack-grid { grid-template-columns: 1fr }
+
+      /* Footer — stack brand row vertically */
+      .footer-brand-row { flex-direction: column }
+      .footer-socials { padding-top: 20px }
+    }
+
+    /* ── MOBILE · max-width 480px ────────────────────────────────── */
+    @media (max-width: 480px) {
+
+      /* Layout */
+      .wrap { padding: 0 16px }
+      .nav-in { padding: 0 16px }
+      .section { padding: 48px 0 }
+
+      /* Nav — hide anchor links, keep wordmark only */
+      .nav-links { display: none }
+
+      /* Typography */
+      .h2 { font-size: 24px; letter-spacing: -.3px }
+      .body-muted { font-size: 14px }
+
+      /* Hero */
+      .hero { padding: 52px 0 44px }
+      .hero-grid { grid-template-columns: 1fr; gap: 32px }
+      .hero-h1 { font-size: 36px; letter-spacing: -1px; margin-bottom: 16px }
+      .hero-sub { font-size: 15px; margin-bottom: 24px }
+      .hero-badge { margin-bottom: 20px }
+
+      /* Phone mockup — hide on very small screens */
+      .phone-wrap { display: none }
+
+      /* Tech strip — tighten gap so items don't overflow */
+      .tech-strip-inner { gap: 24px }
+
+      /* Steps — single column, hide connecting line */
+      .steps { grid-template-columns: 1fr; gap: 28px; margin-top: 36px }
+      .steps::before { display: none }
+      .step { padding: 0 8px }
+
+      /* Features grid — single column */
+      .feat-grid { grid-template-columns: 1fr }
+
+      /* Screenshots — reduce card height for small screens */
+      .screenshots-scroll { padding: 24px 16px 12px }
+      .screenshot-item img { height: 340px }
+
+      /* Architecture services — 2 columns */
+      .arch-services { grid-template-columns: repeat(2, 1fr) }
+
+      /* AI Pipeline — convert to horizontal scroll strip */
+      .pipeline {
+        display: flex;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        scrollbar-color: var(--c-dim) transparent;
+        gap: 10px;
+        padding-bottom: 12px;
+        margin-left: -16px;
+        margin-right: -16px;
+        padding-left: 16px;
+        padding-right: 16px;
+        margin-top: 36px
+      }
+      .pipe-node { flex-shrink: 0; width: 158px; margin: 0 }
+
+      /* Code blocks — single column, slightly smaller mono font */
+      .code-wrap { grid-template-columns: 1fr }
+      .code-block pre { font-size: 11px; line-height: 1.6 }
+
+      /* Tech stack — single column */
+      .stack-grid { grid-template-columns: 1fr }
+
+      /* API table — wrap in horizontal scroll without restructuring */
+      .api-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch }
+
+      /* Footer — stack to column, align socials left */
+      .footer-brand-row { flex-direction: column; align-items: flex-start }
+      .footer-socials { padding-top: 20px }
+    }
   </style>
 </head>
 

@@ -22,7 +22,6 @@ apscheduler==3.11.2
 # Utilities
 python-dotenv==1.2.2
 infisicalsdk>=1.0.3
-python-jose[cryptography]>=3.4.0
 passlib[bcrypt]==1.7.4
 python-dateutil==2.9.0.post0
 
@@ -58,3 +57,4 @@ sentry-sdk[fastapi]==2.13.0
 # Security overrides
 wheel>=0.46.2
 jaraco.context>=6.1.0
+pyjwt>=2.13.0

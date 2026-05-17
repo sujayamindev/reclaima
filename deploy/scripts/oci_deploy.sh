@@ -76,6 +76,26 @@ read_alembic_revision_from_output() {
   awk '/^[0-9a-f]+/ {print $1; exit}'
 }
 
+remove_orphaned_container() {
+  local name="$1"
+  if ! docker inspect "${name}" &>/dev/null; then
+    return 0
+  fi
+  local project state
+  project="$(docker inspect --format='{{index .Config.Labels "com.docker.compose.project"}}' "${name}" 2>/dev/null || true)"
+  state="$(docker inspect --format='{{.State.Status}}' "${name}" 2>/dev/null || echo missing)"
+  if [[ "${project}" = "smart-receipt-prod" ]]; then
+    return 0
+  fi
+  if [[ "${state}" = "running" ]]; then
+    echo "ERROR: Container ${name} is running but belongs to compose project '${project:-none}'." \
+         "Remove or stop it manually before deploying." >&2
+    exit 1
+  fi
+  echo "Removing orphaned stopped container ${name} (project: ${project:-none})..."
+  docker rm "${name}"
+}
+
 run_authenticated_smoke_test() {
   if [[ -z "${SMOKE_TEST_TOKEN}" ]]; then
     echo "SMOKE_TEST_TOKEN not provided; skipping authenticated smoke test."
@@ -119,6 +139,12 @@ if [[ -n "${CURRENT_IMAGE}" ]]; then
   echo "Saving current image for rollback: ${CURRENT_IMAGE}"
   printf '%s\n' "${CURRENT_IMAGE}" > "${PREVIOUS_IMAGE_FILE}"
 fi
+
+# Remove any named containers that exist outside this compose project so that
+# docker compose up can (re)create them cleanly.
+for _orphan in smart-receipt-db smart-receipt-api smart-receipt-scheduler smart-receipt-gateway-prod; do
+  remove_orphaned_container "${_orphan}"
+done
 
 docker compose -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}" up -d postgres
 
