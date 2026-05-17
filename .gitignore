@@ -132,7 +132,7 @@ Thumbs.db
 
 TODOS.md
 *.sql
-/docs
+/docs-private/
 /.tools/
 /.tools/flutter/
 .ruff_cache
@@ -141,3 +141,6 @@ TODOS.md
 /.claude
 CLAUDE.md
 /memory
+/.playwright
+/.agents
+skills-lock.json
