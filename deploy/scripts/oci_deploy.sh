@@ -13,6 +13,28 @@ export INFISICAL_MACHINE_IDENTITY_CLIENT_ID="${INFISICAL_CLIENT_ID}"
 export INFISICAL_MACHINE_IDENTITY_CLIENT_SECRET="${INFISICAL_CLIENT_SECRET}"
 export INFISICAL_PROJECT_ID="${INFISICAL_PROJECT_ID}"
 
+echo "Fetching deploy-time credentials from Infisical..."
+INFISICAL_TOKEN=$(infisical login \
+  --method=universal-auth \
+  --client-id="${INFISICAL_MACHINE_IDENTITY_CLIENT_ID}" \
+  --client-secret="${INFISICAL_MACHINE_IDENTITY_CLIENT_SECRET}" \
+  --silent --plain)
+export INFISICAL_TOKEN
+
+POSTGRES_PASSWORD=$(infisical secrets get POSTGRES_PASSWORD \
+  --env=prod \
+  --projectId="${INFISICAL_PROJECT_ID}" \
+  --path=/ \
+  --plain --silent)
+export POSTGRES_PASSWORD
+
+DATABASE_URL=$(infisical secrets get DATABASE_URL \
+  --env=prod \
+  --projectId="${INFISICAL_PROJECT_ID}" \
+  --path=/ \
+  --plain --silent)
+export DATABASE_URL
+
 DEPLOY_DIR="${DEPLOY_DIR:-/mnt/data/smart-receipt-and-warranty-manager/deploy}"
 ENV_FILE="${ENV_FILE:-/mnt/data/smart-receipt-and-warranty-manager/.env.prod}"
 COMPOSE_FILE="${COMPOSE_FILE:-${DEPLOY_DIR}/docker-compose.prod.yml}"

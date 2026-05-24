@@ -51,8 +51,6 @@ services:
     container_name: smart-receipt-db
     restart: unless-stopped
     <<: *postgres-resources
-    env_file:
-      - /mnt/data/smart-receipt-and-warranty-manager/.env.prod
     environment:
       POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
@@ -73,6 +71,7 @@ services:
     restart: "no"
     environment:
       ENABLE_SCHEDULER: "false"
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
       INFISICAL_MACHINE_IDENTITY_CLIENT_ID: ${INFISICAL_MACHINE_IDENTITY_CLIENT_ID:?INFISICAL_MACHINE_IDENTITY_CLIENT_ID is required}
       INFISICAL_MACHINE_IDENTITY_CLIENT_SECRET: ${INFISICAL_MACHINE_IDENTITY_CLIENT_SECRET:?INFISICAL_MACHINE_IDENTITY_CLIENT_SECRET is required}
       INFISICAL_PROJECT_ID: ${INFISICAL_PROJECT_ID:?INFISICAL_PROJECT_ID is required}
@@ -150,8 +149,12 @@ services:
     restart: always
     ports:
       - "${API_PORT:-8000}:8080" # Map host port to KrakenD port 8080
+    environment:
+      FC_ENABLE: "1"
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:?FIREBASE_PROJECT_ID is required}
     volumes:
-      - ../krakend.json:/etc/krakend/krakend.json:ro
+      - ../krakend.tmpl:/etc/krakend/krakend.tmpl:ro
+    command: ["krakend", "run", "-c", "/etc/krakend/krakend.tmpl"]
     depends_on:
       - api
     networks:
