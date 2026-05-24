@@ -13,7 +13,15 @@ export INFISICAL_MACHINE_IDENTITY_CLIENT_ID="${INFISICAL_CLIENT_ID}"
 export INFISICAL_MACHINE_IDENTITY_CLIENT_SECRET="${INFISICAL_CLIENT_SECRET}"
 export INFISICAL_PROJECT_ID="${INFISICAL_PROJECT_ID}"
 
-echo "Fetching deploy-time credentials from Infisical..."
+DEPLOY_DIR="${DEPLOY_DIR:-/mnt/data/smart-receipt-and-warranty-manager/deploy}"
+ENV_FILE="${ENV_FILE:-/mnt/data/smart-receipt-and-warranty-manager/.env.prod}"
+
+if [[ ! -f "${ENV_FILE}" ]]; then
+  echo "Environment file not found: ${ENV_FILE}" >&2
+  exit 1
+fi
+
+echo "Fetching POSTGRES_PASSWORD from Infisical..."
 INFISICAL_TOKEN=$(infisical login \
   --method=universal-auth \
   --client-id="${INFISICAL_MACHINE_IDENTITY_CLIENT_ID}" \
@@ -28,15 +36,19 @@ POSTGRES_PASSWORD=$(infisical secrets get POSTGRES_PASSWORD \
   --plain --silent)
 export POSTGRES_PASSWORD
 
-DATABASE_URL=$(infisical secrets get DATABASE_URL \
-  --env=prod \
-  --projectId="${INFISICAL_PROJECT_ID}" \
-  --path=/ \
-  --plain --silent)
+# Construct DATABASE_URL from the Infisical password + identifiers in .env.prod.
+# Single source of truth for the password = POSTGRES_PASSWORD. Avoids drift
+# between a separately-stored DATABASE_URL and POSTGRES_PASSWORD on rotation.
+# Assumes POSTGRES_PASSWORD contains no URL-special characters (@ : / ? # %).
+_POSTGRES_USER=$(grep '^POSTGRES_USER=' "${ENV_FILE}" | cut -d'=' -f2-)
+_POSTGRES_DB=$(grep '^POSTGRES_DB=' "${ENV_FILE}" | cut -d'=' -f2-)
+if [[ -z "${_POSTGRES_USER}" ]] || [[ -z "${_POSTGRES_DB}" ]]; then
+  echo "POSTGRES_USER or POSTGRES_DB missing from ${ENV_FILE}" >&2
+  exit 1
+fi
+DATABASE_URL="postgresql://${_POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${_POSTGRES_DB}"
 export DATABASE_URL
 
-DEPLOY_DIR="${DEPLOY_DIR:-/mnt/data/smart-receipt-and-warranty-manager/deploy}"
-ENV_FILE="${ENV_FILE:-/mnt/data/smart-receipt-and-warranty-manager/.env.prod}"
 COMPOSE_FILE="${COMPOSE_FILE:-${DEPLOY_DIR}/docker-compose.prod.yml}"
 API_PORT="${API_PORT:-8000}"
 BACKEND_IMAGE="${IMAGE_REPOSITORY}:${IMAGE_TAG}"
@@ -140,11 +152,6 @@ run_authenticated_smoke_test() {
 
 if [[ ! -f "${COMPOSE_FILE}" ]]; then
   echo "Compose file not found: ${COMPOSE_FILE}" >&2
-  exit 1
-fi
-
-if [[ ! -f "${ENV_FILE}" ]]; then
-  echo "Environment file not found: ${ENV_FILE}" >&2
   exit 1
 fi
 

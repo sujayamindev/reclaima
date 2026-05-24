@@ -306,12 +306,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Validate krakend.json
+      - name: Validate krakend.tmpl
         run: >-
           docker run --rm
+          -e FC_ENABLE=1
+          -e FIREBASE_PROJECT_ID=ci-placeholder
           -v "${{ github.workspace }}:/etc/krakend"
           devopsfaith/krakend:2
-          check -c /etc/krakend/krakend.json
+          check -c /etc/krakend/krakend.tmpl
 
   backend_image:
     name: Build and Publish Backend Image
@@ -457,9 +459,10 @@ jobs:
 
       - name: Sync deployment assets
         run: |
-          ssh "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}" "mkdir -p /mnt/data/smart-receipt-and-warranty-manager/deploy/scripts /mnt/data/smart-receipt-and-warranty-manager/secrets /mnt/data/smart-receipt-and-warranty-manager/deploy/monitoring"
-          scp krakend.json "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}:/mnt/data/smart-receipt-and-warranty-manager/krakend.json"
+          ssh "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}" "mkdir -p /mnt/data/smart-receipt-and-warranty-manager/deploy/scripts /mnt/data/smart-receipt-and-warranty-manager/secrets /mnt/data/smart-receipt-and-warranty-manager/deploy/monitoring /mnt/data/smart-receipt-and-warranty-manager/deploy/postgres"
+          scp krakend.tmpl "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}:/mnt/data/smart-receipt-and-warranty-manager/krakend.tmpl"
           scp deploy/docker-compose.prod.yml "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}:/mnt/data/smart-receipt-and-warranty-manager/deploy/docker-compose.prod.yml"
+          scp deploy/postgres/pg_hba.conf "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}:/mnt/data/smart-receipt-and-warranty-manager/deploy/postgres/pg_hba.conf"
           scp deploy/docker-compose.monitoring.yml "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}:/mnt/data/smart-receipt-and-warranty-manager/deploy/docker-compose.monitoring.yml"
           scp deploy/monitoring/prometheus.yml "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}:/mnt/data/smart-receipt-and-warranty-manager/deploy/monitoring/prometheus.yml"
           scp deploy/monitoring/promtail-config.yml "${{ secrets.OCI_USER }}@${{ secrets.OCI_HOST }}:/mnt/data/smart-receipt-and-warranty-manager/deploy/monitoring/promtail-config.yml"

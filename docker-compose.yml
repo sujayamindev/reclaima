@@ -105,8 +105,12 @@ services:
     container_name: smart-receipt-gateway
     ports:
       - "8080:8080"
+    environment:
+      FC_ENABLE: "1"
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:?FIREBASE_PROJECT_ID is required}
     volumes:
-      - ./krakend.json:/etc/krakend/krakend.json:ro
+      - ./krakend.tmpl:/etc/krakend/krakend.tmpl:ro
+    command: ["krakend", "run", "-c", "/etc/krakend/krakend.tmpl"]
     depends_on:
       - backend
     networks:

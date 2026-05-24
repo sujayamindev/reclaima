@@ -55,8 +55,15 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
+      POSTGRES_HOST_AUTH_METHOD: scram-sha-256
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./postgres/pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
+    command:
+      - "postgres"
+      - "-c"
+      - "hba_file=/etc/postgresql/pg_hba.conf"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 10s
@@ -82,6 +89,7 @@ services:
     container_name: smart-receipt-api
     environment:
       ENABLE_SCHEDULER: "false"
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
       INFISICAL_MACHINE_IDENTITY_CLIENT_ID: ${INFISICAL_MACHINE_IDENTITY_CLIENT_ID:?INFISICAL_MACHINE_IDENTITY_CLIENT_ID is required}
       INFISICAL_MACHINE_IDENTITY_CLIENT_SECRET: ${INFISICAL_MACHINE_IDENTITY_CLIENT_SECRET:?INFISICAL_MACHINE_IDENTITY_CLIENT_SECRET is required}
       INFISICAL_PROJECT_ID: ${INFISICAL_PROJECT_ID:?INFISICAL_PROJECT_ID is required}
@@ -118,6 +126,7 @@ services:
     container_name: smart-receipt-scheduler
     environment:
       ENABLE_SCHEDULER: "true"
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
       INFISICAL_MACHINE_IDENTITY_CLIENT_ID: ${INFISICAL_MACHINE_IDENTITY_CLIENT_ID:?INFISICAL_MACHINE_IDENTITY_CLIENT_ID is required}
       INFISICAL_MACHINE_IDENTITY_CLIENT_SECRET: ${INFISICAL_MACHINE_IDENTITY_CLIENT_SECRET:?INFISICAL_MACHINE_IDENTITY_CLIENT_SECRET is required}
       INFISICAL_PROJECT_ID: ${INFISICAL_PROJECT_ID:?INFISICAL_PROJECT_ID is required}
