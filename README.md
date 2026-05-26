@@ -24,31 +24,31 @@ Reclaima fills that gap. Scan a paper or PDF receipt and Reclaima extracts every
 ## Architecture
 
 ```
-                                 ┌─────────────────────────────────────────────────────────────────┐
-                                 │               Flutter Mobile App  ·  iOS & Android              │
-                                 │   Riverpod · Drift/SQLite offline · Firebase Auth SDK · FCM     │
-                                 │                    Dio HTTP · image_cropper                     │
-                                 └──────────────────────────────┬──────────────────────────────────┘
-                                                                │  ↕  Firebase JWT · HTTPS
-                                 ┌──────────────────────────────┴──────────────────────────────────┐
-                                 │                     KrakenD API Gateway                         │
-                                 │       port 8080 · JWT validation · rate limiting · routing      │
-                                 └──────────────────────────────┬──────────────────────────────────┘
-                                                                │  ↕  proxied requests · port 8000
-                                 ┌──────────────────────────────┴──────────────────────────────────┐
-                                 │             FastAPI Backend  ·  OCI Compute (Docker)            │
-                                 │       Python 3.11 · SQLAlchemy ORM · Alembic · APScheduler      │
-                                 │           Pydantic v2 · Firebase Admin JWT verification         │
-                                 └─────┬────────────┬─────────────┬──────────────┬────────────┬────┘
-                                       │            │             │              │            │
-                                       ▼            ▼             ▼              ▼            ▼
-                                   PostgreSQL     AWS S3     AWS Textract    AWS Bedrock     FCM
-                                   ──────────     ──────     ────────────    ──────────      ───
-                                   Receipts       Receipt    AnalyzeExp.     Claude Haiku   Push
-                                   Items          images     Structured      OCR cleanup    reminders
-                                   Claims         PDFs       expense                        Device
-                                   Users          Cascade    fields                         tokens
-                                                  deletion   Line items
+┌─────────────────────────────────────────────────────────────────┐
+│               Flutter Mobile App  ·  iOS & Android              │
+│   Riverpod · Drift/SQLite offline · Firebase Auth SDK · FCM     │
+│                    Dio HTTP · image_cropper                     │
+└──────────────────────────────┬──────────────────────────────────┘
+                               │  ↕  Firebase JWT · HTTPS
+┌──────────────────────────────┴──────────────────────────────────┐
+│                     KrakenD API Gateway                         │
+│       port 8080 · JWT validation · rate limiting · routing      │
+└──────────────────────────────┬──────────────────────────────────┘
+                               │  ↕  proxied requests · port 8000
+┌──────────────────────────────┴──────────────────────────────────┐
+│             FastAPI Backend  ·  OCI Compute (Docker)            │
+│       Python 3.11 · SQLAlchemy ORM · Alembic · APScheduler      │
+│           Pydantic v2 · Firebase Admin JWT verification         │
+└─────┬────────────┬─────────────┬──────────────┬────────────┬────┘
+      │            │             │              │            │
+      ▼            ▼             ▼              ▼            ▼
+  PostgreSQL     AWS S3     AWS Textract    AWS Bedrock     FCM
+  ──────────     ──────     ────────────    ──────────      ───
+  Receipts       Receipt    AnalyzeExp.     Claude Haiku   Push
+  Items          images     Structured      OCR cleanup    reminders
+  Claims         PDFs       expense                        Device
+  Users          Cascade    fields                         tokens
+                 deletion   Line items
 ```
 
 Flutter authenticates with Firebase and passes JWTs to KrakenD. KrakenD validates the token using Firebase's public JWK endpoint and proxies to FastAPI — the backend port is intentionally never exposed directly. FastAPI handles all request-response logic and runs APScheduler jobs for warranty and return deadline reminders.
@@ -137,25 +137,25 @@ A deployment can pass every CI check, build a valid image, and still fail to sta
 ## CI/CD Pipeline
 
 ```
-             ┌──────────┐  ┌──────────────┐  ┌─── PARALLEL ──────────────────┐  ┌─────────────────┐  ┌─────────────────┐
-             │ TRIGGER  │  │   SECURITY   │  │  Backend CI                   │  │  BUILD · main   │  │  DEPLOY · main  │
-             │          │  │              │  │  ruff · black · mypy          │  │                 │  │                 │
-             │ Push/PR  ├─>│ Secret Scan  ├─>│  pytest ≥70% · alembic        ├─>│ Docker Build    ├─>│ OCI Deploy      │
-             │ main     │  │ Gitleaks     │  │  bandit · pip-audit           │  │ arm64 + amd64   │  │ SCP assets      │
-             │ open PRs │  │ gates all    │  ├───────────────────────────────┤  │ Trivy · SBOM    │  │ deploy script   │
-             │ manual   │  │ downstream   │  │  Mobile CI                    │  │ Cosign · GHCR   │  │ smoke test      │
-             └──────────┘  └──────────────┘  │  build_runner · dart format   │  │ sha+latest-prod │  │ Slack on fail   │
-                                             │  flutter analyze · test ≥60%  │  └─────────────────┘  └─────────────────┘
-                                             │  Android APK                  │
-                                             ├───────────────────────────────┤
-                                             │  KrakenD Config               │
-                                             │  krakend check                │
-                                             │  official Docker image        │
-                                             └───────────────────────────────┘
+┌──────────┐  ┌──────────────┐  ┌─── PARALLEL ──────────────────┐  ┌─────────────────┐  ┌─────────────────┐
+│ TRIGGER  │  │   SECURITY   │  │  Backend CI                   │  │  BUILD · main   │  │  DEPLOY · main  │
+│          │  │              │  │  ruff · black · mypy          │  │                 │  │                 │
+│ Push/PR  ├─>│ Secret Scan  ├─>│  pytest ≥70% · alembic        ├─>│ Docker Build    ├─>│ OCI Deploy      │
+│ main     │  │ Gitleaks     │  │  bandit · pip-audit           │  │ arm64 + amd64   │  │ SCP assets      │
+│ open PRs │  │ gates all    │  ├───────────────────────────────┤  │ Trivy · SBOM    │  │ deploy script   │
+│ manual   │  │ downstream   │  │  Mobile CI                    │  │ Cosign · GHCR   │  │ smoke test      │
+└──────────┘  └──────────────┘  │  build_runner · dart format   │  │ sha+latest-prod │  │ Slack on fail   │
+                                │  flutter analyze · test ≥60%  │  └─────────────────┘  └─────────────────┘
+                                │  Android APK                  │
+                                ├───────────────────────────────┤
+                                │  KrakenD Config               │
+                                │  krakend check                │
+                                │  official Docker image        │
+                                └───────────────────────────────┘
 ```
 
 Secret Scan gates all downstream jobs — if Gitleaks finds a credential anywhere in the commit or history, nothing else runs. The three parallel quality gates must all pass before Docker Build starts. Build and deploy only trigger on pushes to `main`.
 
 ---
 
-© 2026 [Sujaya Manith Mindev](https://www.linkedin.com/in/sujayamindev) · [🔗 Project Page](https://sujayamindev.github.io/reclaima)
+© 2026 [Sujaya Manith Mindev](https://www.linkedin.com/in/sujayamindev) · [Project Page](https://sujayamindev.github.io/reclaima)
