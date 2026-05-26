@@ -4,6 +4,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Meta description -->
+  <meta name="description" content="Scan any receipt and Reclaima handles the rest — per-item extraction, deadline tracking, and a ready-to-submit claim PDF when something goes wrong.">
+
+  <!-- Open Graph -->
+  <meta property="og:type"        content="website">
+  <meta property="og:url"         content="https://sujayamindev.github.io/reclaima">
+  <meta property="og:title"       content="Reclaima — Smart Receipt & Warranty Manager">
+  <meta property="og:description" content="Scan any receipt and Reclaima handles the rest — per-item extraction, deadline tracking, and a ready-to-submit claim PDF when something goes wrong.">
+  <meta property="og:image"       content="https://sujayamindev.github.io/reclaima/assets/screenshots/image.png">
+
+  <!-- Twitter card -->
+  <meta name="twitter:card"        content="summary_large_image">
+  <meta name="twitter:title"       content="Reclaima — Smart Receipt & Warranty Manager">
+  <meta name="twitter:description" content="Scan any receipt and Reclaima handles the rest — per-item extraction, deadline tracking, and a ready-to-submit claim PDF when something goes wrong.">
+  <meta name="twitter:image"       content="https://sujayamindev.github.io/reclaima/assets/screenshots/image.png">
+
   <title>Reclaima. — Smart Receipt & Warranty Manager</title>
   <link rel="stylesheet" href="colors_and_type.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap">
@@ -46,22 +63,11 @@
       padding: 0 56px
     }
 
-.section {
+    .section {
       padding: 96px 0;
       background: var(--section-bg)
     }
 
-    /* ── Scroll fade */
-    .fade {
-      opacity: 0;
-      transform: translateY(24px);
-      transition: opacity .55s ease, transform .55s ease
-    }
-
-    .fade.visible {
-      opacity: 1;
-      transform: none
-    }
 
     /* ── Section labels */
     .eyebrow {
@@ -88,7 +94,7 @@
       font-size: 16px;
       line-height: 1.65;
       color: var(--c-text);
-      max-width: 560px;
+      max-width: 50vw;
       margin-top: 14px
     }
 
@@ -158,7 +164,10 @@
 
     /* ── Hero */
     .hero {
-      background: var(--hero-bg);
+      background-color: var(--hero-bg);
+      background-image: radial-gradient(circle, rgba(255, 255, 255, .05) 1px, transparent 1.5px);
+      background-size: 14px 14px;
+      background-position: 0 0;
       padding: 108px 0 88px;
       position: relative;
       overflow: hidden
@@ -181,45 +190,6 @@
       grid-template-columns: 1fr 300px;
       gap: 80px;
       align-items: center
-    }
-
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(18, 226, 140, .1);
-      border: 1px solid rgba(18, 226, 140, .22);
-      border-radius: 100px;
-      padding: 6px 14px 6px 10px;
-      margin-bottom: 28px
-    }
-
-    .hero-badge .dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--c-accent);
-      box-shadow: 0 0 0 3px rgba(18, 226, 140, .2);
-      animation: glow 2.2s ease-in-out infinite
-    }
-
-    @keyframes glow {
-
-      0%,
-      100% {
-        box-shadow: 0 0 0 3px rgba(18, 226, 140, .2)
-      }
-
-      50% {
-        box-shadow: 0 0 0 6px rgba(18, 226, 140, .06)
-      }
-    }
-
-    .hero-badge span {
-      font: 700 11px/1 'Inter', sans-serif;
-      letter-spacing: .7px;
-      text-transform: uppercase;
-      color: var(--c-accent)
     }
 
     .hero-h1 {
@@ -347,7 +317,7 @@
 
     .step-num {
       width: 58px;
-      height: 58px; 
+      height: 58px;
       border-radius: 100px;
       border: 5px solid var(--c-white);
       background: var(--c-accent);
@@ -922,7 +892,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--c-dim);
+      color: var(--c-accent);
       font-size: 24px
     }
 
@@ -940,6 +910,87 @@
       color: var(--c-accent);
       text-align: center;
       margin-bottom: 2px
+    }
+
+    /* ── Decisions */
+    .decisions-list {
+      display: flex;
+      flex-direction: column;
+      gap: 44px;
+      margin-top: 56px
+    }
+
+    .decision-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px
+    }
+
+    .decision-group-label {
+      font: 700 11px/1 'Inter', sans-serif;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      color: var(--c-muted);
+      margin-bottom: 6px
+    }
+
+    .decision {
+      background: var(--c-white);
+      border: 1px solid var(--c-border);
+      border-radius: 14px;
+      overflow: hidden
+    }
+
+    .decision>summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-weight: 600;
+      font-size: 15px;
+      letter-spacing: -.1px;
+      line-height: 1.45;
+      color: var(--c-dark)
+    }
+
+    .decision>summary::-webkit-details-marker {
+      display: none
+    }
+
+    .decision>summary::marker {
+      content: ''
+    }
+
+    .decision>summary .chev {
+      flex-shrink: 0;
+      width: 26px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--c-text);
+      transition: transform 220ms ease
+    }
+
+    .decision>summary .chev .material-symbols-rounded {
+      font-size: 22px;
+      font-variation-settings: 'FILL' 0, 'wght' 600
+    }
+
+    .decision[open]>summary .chev {
+      transform: rotate(180deg)
+    }
+
+    .decision .answer {
+      padding: 14px 22px 20px;
+      font-size: 14px;
+      line-height: 1.75;
+      color: var(--c-text);
+      border-top: 1px solid var(--c-light)
     }
 
     /* ── Footer */
@@ -1027,90 +1078,201 @@
     @media (max-width: 768px) {
 
       /* Layout */
-      .wrap { padding: 0 24px }
-      .nav-in { padding: 0 24px }
-      .section { padding: 64px 0 }
+      .wrap {
+        padding: 0 24px
+      }
+
+      .nav-in {
+        padding: 0 24px
+      }
+
+      .section {
+        padding: 64px 0
+      }
 
       /* Typography */
-      .h2 { font-size: 30px }
+      .h2 {
+        font-size: 30px
+      }
 
       /* Hero */
-      .hero { padding: 72px 0 56px }
-      .hero-grid { grid-template-columns: 1fr; gap: 40px }
-      .hero-h1 { font-size: 44px }
+      .hero {
+        padding: 72px 0 56px
+      }
+
+      .hero-grid {
+        grid-template-columns: 1fr;
+        gap: 40px
+      }
+
+      .hero-h1 {
+        font-size: 44px
+      }
 
       /* Phone mockup — keep visible but scaled down */
-      .phone { width: 200px; height: 426px }
+      .phone {
+        width: 200px;
+        height: 426px
+      }
 
       /* Tech strip — reduce gap so items wrap tidily */
-      .tech-strip-inner { gap: 40px }
+      .tech-strip-inner {
+        gap: 40px
+      }
 
       /* Steps — 2 columns, hide connecting horizontal line */
-      .steps { grid-template-columns: repeat(2, 1fr); gap: 32px }
-      .steps::before { display: none }
+      .steps {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 32px
+      }
+
+      .steps::before {
+        display: none
+      }
 
       /* Features grid — 2 columns */
-      .feat-grid { grid-template-columns: repeat(2, 1fr) }
+      .feat-grid {
+        grid-template-columns: repeat(2, 1fr)
+      }
 
       /* Architecture services — 3 columns instead of 5 */
-      .arch-services { grid-template-columns: repeat(3, 1fr) }
+      .arch-services {
+        grid-template-columns: repeat(3, 1fr)
+      }
 
       /* AI Pipeline — 3 columns instead of 6 */
-      .pipeline { grid-template-columns: repeat(3, 1fr); gap: 12px }
+      .pipeline {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px
+      }
 
       /* Code blocks — single column */
-      .code-wrap { grid-template-columns: 1fr }
+      .code-wrap {
+        grid-template-columns: 1fr
+      }
 
       /* Tech stack — single column */
-      .stack-grid { grid-template-columns: 1fr }
+      .stack-grid {
+        grid-template-columns: 1fr
+      }
 
       /* Footer — stack brand row vertically */
-      .footer-brand-row { flex-direction: column }
-      .footer-socials { padding-top: 20px }
+      .footer-brand-row {
+        flex-direction: column
+      }
+
+      .footer-socials {
+        padding-top: 20px
+      }
+
+      /* Decisions — tighter padding */
+      .decision>summary {
+        padding: 16px 18px;
+        font-size: 14px;
+        gap: 12px
+      }
+
+      .decision .answer {
+        padding: 12px 18px 18px;
+        font-size: 13px
+      }
     }
 
     /* ── MOBILE · max-width 480px ────────────────────────────────── */
     @media (max-width: 480px) {
 
       /* Layout */
-      .wrap { padding: 0 16px }
-      .nav-in { padding: 0 16px }
-      .section { padding: 48px 0 }
+      .wrap {
+        padding: 0 16px
+      }
+
+      .nav-in {
+        padding: 0 16px
+      }
+
+      .section {
+        padding: 48px 0
+      }
 
       /* Nav — hide anchor links, keep wordmark only */
-      .nav-links { display: none }
+      .nav-links {
+        display: none
+      }
 
       /* Typography */
-      .h2 { font-size: 24px; letter-spacing: -.3px }
-      .body-muted { font-size: 14px }
+      .h2 {
+        font-size: 24px;
+        letter-spacing: -.3px
+      }
+
+      .body-muted {
+        font-size: 14px
+      }
 
       /* Hero */
-      .hero { padding: 52px 0 44px }
-      .hero-grid { grid-template-columns: 1fr; gap: 32px }
-      .hero-h1 { font-size: 36px; letter-spacing: -1px; margin-bottom: 16px }
-      .hero-sub { font-size: 15px; margin-bottom: 24px }
-      .hero-badge { margin-bottom: 20px }
+      .hero {
+        padding: 52px 0 44px
+      }
+
+      .hero-grid {
+        grid-template-columns: 1fr;
+        gap: 32px
+      }
+
+      .hero-h1 {
+        font-size: 36px;
+        letter-spacing: -1px;
+        margin-bottom: 16px
+      }
+
+      .hero-sub {
+        font-size: 15px;
+        margin-bottom: 24px
+      }
 
       /* Phone mockup — hide on very small screens */
-      .phone-wrap { display: none }
+      .phone-wrap {
+        display: none
+      }
 
       /* Tech strip — tighten gap so items don't overflow */
-      .tech-strip-inner { gap: 24px }
+      .tech-strip-inner {
+        gap: 24px
+      }
 
       /* Steps — single column, hide connecting line */
-      .steps { grid-template-columns: 1fr; gap: 28px; margin-top: 36px }
-      .steps::before { display: none }
-      .step { padding: 0 8px }
+      .steps {
+        grid-template-columns: 1fr;
+        gap: 28px;
+        margin-top: 36px
+      }
+
+      .steps::before {
+        display: none
+      }
+
+      .step {
+        padding: 0 8px
+      }
 
       /* Features grid — single column */
-      .feat-grid { grid-template-columns: 1fr }
+      .feat-grid {
+        grid-template-columns: 1fr
+      }
 
       /* Screenshots — reduce card height for small screens */
-      .screenshots-scroll { padding: 24px 16px 12px }
-      .screenshot-item img { height: 340px }
+      .screenshots-scroll {
+        padding: 24px 16px 12px
+      }
+
+      .screenshot-item img {
+        height: 340px
+      }
 
       /* Architecture services — 2 columns */
-      .arch-services { grid-template-columns: repeat(2, 1fr) }
+      .arch-services {
+        grid-template-columns: repeat(2, 1fr)
+      }
 
       /* AI Pipeline — convert to horizontal scroll strip */
       .pipeline {
@@ -1127,21 +1289,71 @@
         padding-right: 16px;
         margin-top: 36px
       }
-      .pipe-node { flex-shrink: 0; width: 158px; margin: 0 }
+
+      .pipe-node {
+        flex-shrink: 0;
+        width: 158px;
+        margin: 0
+      }
 
       /* Code blocks — single column, slightly smaller mono font */
-      .code-wrap { grid-template-columns: 1fr }
-      .code-block pre { font-size: 11px; line-height: 1.6 }
+      .code-wrap {
+        grid-template-columns: 1fr
+      }
+
+      .code-block pre {
+        font-size: 11px;
+        line-height: 1.6
+      }
 
       /* Tech stack — single column */
-      .stack-grid { grid-template-columns: 1fr }
+      .stack-grid {
+        grid-template-columns: 1fr
+      }
 
       /* API table — wrap in horizontal scroll without restructuring */
-      .api-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch }
+      .api-table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch
+      }
 
       /* Footer — stack to column, align socials left */
-      .footer-brand-row { flex-direction: column; align-items: flex-start }
-      .footer-socials { padding-top: 20px }
+      .footer-brand-row {
+        flex-direction: column;
+        align-items: flex-start
+      }
+
+      .footer-socials {
+        padding-top: 20px
+      }
+
+      /* Decisions — even tighter padding for small screens */
+      .decisions-list {
+        margin-top: 36px;
+        gap: 8px
+      }
+
+      .decision>summary {
+        padding: 14px 16px;
+        font-size: 13.5px;
+        line-height: 1.5
+      }
+
+      .decision>summary .chev {
+        width: 24px;
+        height: 24px
+      }
+
+      .decision>summary .chev .material-symbols-rounded {
+        font-size: 16px
+      }
+
+      .decision .answer {
+        padding: 10px 16px 16px;
+        font-size: 13px;
+        line-height: 1.7
+      }
     }
   </style>
 </head>
@@ -1158,10 +1370,11 @@
         <li><a href="#features">Features</a></li>
         <li><a href="#screenshots">Screenshots</a></li>
         <li><a href="#architecture">Architecture</a></li>
-        <li><a href="#ai">AI pipeline</a></li>
         <li><a href="#stack">Stack</a></li>
+        <li><a href="#ai">AI pipeline</a></li>
         <li><a href="#api">API</a></li>
         <li><a href="#cicd">CI/CD</a></li>
+        <li><a href="#decisions">Decisions</a></li>
       </ul>
     </div>
   </nav>
@@ -1170,23 +1383,34 @@
   <section class="hero" id="top">
     <div class="wrap hero-grid">
       <div>
-        <div class="hero-badge"><span class="dot"></span><span>In development</span></div>
         <h1 class="hero-h1">Never lose a<br><em>warranty</em><br>again.</h1>
-        <p class="hero-sub">Reclaima digitizes paper and PDF receipts, extracts per-line-item details with OCR + AI,
-          and tracks every warranty and return deadline — so you file claims before they expire.</p>
-        <div class="cta-row">
+        <p class="hero-sub">Scan a receipt and Reclaima handles the rest — per-item extraction, deadline tracking, and a
+          ready-to-submit claim PDF when something goes wrong.</p>
+        <div class="cta-row" style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
           <div
-            style="display:inline-flex;align-items:center;gap:10px;font:700 15px/1 'Space Grotesk',sans-serif;color:var(--c-light);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);height:48px;padding:0 24px;border-radius:100px;user-select:none">
+            style="display:inline-flex;align-items:center;gap:10px;font:700 15px/1 'Space Grotesk',sans-serif;color:var(--c-light);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);height:48px;padding:0 24px;border-radius:100px;user-select:none;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)">
             <i class="ms" style="font-size:20px;color:var(--c-accent);font-variation-settings:'FILL' 1">android</i>
-            Coming to Google Play
+            In development for Google Play
           </div>
+          <a href="https://github.com/sujayamindev/reclaima" target="_blank" rel="noopener"
+            style="display:inline-flex;align-items:center;gap:10px;font:700 15px/1 'Space Grotesk',sans-serif;color:var(--c-dark);background:var(--c-accent);border:2px solid transparent;height:48px;padding:0 24px;border-radius:100px;text-decoration:none;transition:background 220ms ease-in-out, color 220ms ease-in-out, border-color 220ms ease-in-out"
+            onmouseover="this.style.background='var(--c-dark)';this.style.color='var(--c-accent)';this.style.borderColor='var(--c-accent)'"
+            onmouseout="this.style.background='var(--c-accent)';this.style.color='var(--c-dark)';this.style.borderColor='transparent'">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path
+                d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z" />
+            </svg>
+            View on GitHub
+          </a>
         </div>
       </div>
 
 
       <!-- Phone mockup -->
       <div class="phone-wrap">
-        <img src="assets/screenshots/20260328_195451.jpg" alt="Reclaima dashboard" class="phone">
+        <img src="assets/screenshots/20260328_195451@2x.jpg"
+          srcset="assets/screenshots/20260328_195451.jpg 1x, assets/screenshots/20260328_195451@2x.jpg 2x"
+          alt="Reclaima dashboard" class="phone" width="262" height="558" decoding="async" fetchpriority="high">
       </div>
     </div>
   </section>
@@ -1234,7 +1458,7 @@
   <!-- ── THE PROBLEM ───────────────────────────────────── -->
   <section class="section" id="problem">
     <div class="wrap">
-      <div class="eyebrow fade">The problem</div>
+      <div class="eyebrow fade" style="margin-top: -50px;">The problem</div>
       <h2 class="h2 fade">Warranties are built to be forgotten.</h2>
       <p class="body-muted fade" style="max-width:none">Most people have no idea when their warranties expire. Receipts
         get lost, warranty cards go unfiled, and return windows close before anyone notices. When something breaks, the
@@ -1357,7 +1581,7 @@
           <p>Generates a structured, print-ready A4 PDF containing purchase details, warranty dates, store contact
             information, and full receipt images. Up to 10 defect photos can be attached — each included as a full
             page — making the document ready to submit directly to a retailer or manufacturer.</p>
-          <span class="feat-tag">ReportLab · Brave Search</span>
+          <span class="feat-tag">ReportLab</span>
         </div>
 
         <div class="feat-card fade">
@@ -1385,7 +1609,7 @@
           <p>After OCR processing, Reclaima automatically fetches a product image for each line item via Brave Image
             Search, ranked by domain trust — preferring official brand and retailer sources over marketplaces and
             aggregators. Images are stored and displayed on the product detail screen.</p>
-          <span class="feat-tag">Brave Search · auto</span>
+          <span class="feat-tag">Brave Search</span>
         </div>
 
       </div>
@@ -1457,12 +1681,13 @@
         <!-- Mobile layer -->
         <div class="arch-row fade">
           <div class="arch-box neutral">
-            <div class="arch-box-icon"><span class="material-symbols-rounded" style="color:var(--c-muted)">phone_iphone</span>
+            <div class="arch-box-icon"><span class="material-symbols-rounded"
+                style="color:var(--c-muted)">phone_iphone</span>
             </div>
             <div class="arch-box-text">
               <div class="title">Flutter Mobile App — iOS &amp; Android</div>
               <div class="sub">Riverpod state management · Drift/SQLite offline store · Firebase Auth SDK · Firebase
-                Cloud Messaging · Dio HTTP · image_cropper</div>
+                Cloud Messaging · Dio HTTP</div>
             </div>
           </div>
         </div>
@@ -1471,10 +1696,12 @@
         <!-- Gateway layer -->
         <div class="arch-row fade">
           <div class="arch-box neutral">
-            <div class="arch-box-icon"><span class="material-symbols-rounded" style="color:var(--c-muted)">hub</span></div>
+            <div class="arch-box-icon"><span class="material-symbols-rounded" style="color:var(--c-muted)">hub</span>
+            </div>
             <div class="arch-box-text">
               <div class="title">KrakenD API Gateway</div>
-              <div class="sub">port 8080 · rate limiting (qos/ratelimit on all endpoints) · request routing to backend
+              <div class="sub">port 8080 · Firebase JWT validation (auth/validator on protected endpoints, RS256 against
+                Google JWKs) · rate limiting (qos/ratelimit on all endpoints) · request routing to backend
               </div>
             </div>
           </div>
@@ -1484,11 +1711,12 @@
         <!-- API layer -->
         <div class="arch-row fade">
           <div class="arch-box neutral">
-            <div class="arch-box-icon"><span class="material-symbols-rounded" style="color:var(--c-muted)">dns</span></div>
+            <div class="arch-box-icon"><span class="material-symbols-rounded" style="color:var(--c-muted)">dns</span>
+            </div>
             <div class="arch-box-text">
               <div class="title">FastAPI Backend — OCI Compute (Docker)</div>
               <div class="sub">Python 3.11 · SQLAlchemy ORM · Alembic migrations · APScheduler · Pydantic v2 · Firebase
-                Admin JWT verification</div>
+                Admin JWT verification (defence-in-depth behind gateway)</div>
             </div>
           </div>
         </div>
@@ -1519,7 +1747,61 @@
           <div class="arch-svc">
             <span class="material-symbols-rounded">notifications</span>
             <div class="svc-name">FCM</div>
-            <div class="svc-sub">Push reminders · device tokens</div>
+            <div class="svc-sub">Push reminders · Device tokens</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── TECH STACK ─────────────────────────────────────── -->
+  <section class="section" id="stack">
+    <div class="wrap">
+      <div class="eyebrow fade">Tech stack</div>
+      <h2 class="h2 fade">The right tool for each layer.</h2>
+      <div class="stack-grid fade">
+        <div class="stack-card">
+          <div class="stack-hdr">
+            <i class="ms"
+              style="font-size:22px;color:var(--c-accent);font-variation-settings:'FILL' 1,'wght' 700">dns</i>
+            <h3>Backend</h3>
+          </div>
+          <p class="stack-sub">Python 3.11 · deployed as a Dockerised FastAPI service on OCI Compute</p>
+          <div class="tech-list">
+            <span class="tech-pill"><span class="d"></span>FastAPI</span>
+            <span class="tech-pill"><span class="d"></span>PostgreSQL</span>
+            <span class="tech-pill"><span class="d"></span>SQLAlchemy ORM</span>
+            <span class="tech-pill"><span class="d"></span>Alembic</span>
+            <span class="tech-pill"><span class="d"></span>Pydantic v2</span>
+            <span class="tech-pill"><span class="d"></span>Firebase Admin SDK</span>
+            <span class="tech-pill"><span class="d"></span>AWS S3</span>
+            <span class="tech-pill"><span class="d"></span>AWS Textract</span>
+            <span class="tech-pill"><span class="d"></span>AWS Bedrock</span>
+            <span class="tech-pill"><span class="d"></span>Claude Haiku</span>
+            <span class="tech-pill"><span class="d"></span>APScheduler</span>
+            <span class="tech-pill"><span class="d"></span>Sentry</span>
+            <span class="tech-pill"><span class="d"></span>Docker</span>
+            <span class="tech-pill"><span class="d"></span>OCI Compute</span>
+            <span class="tech-pill"><span class="d"></span>KrakenD</span>
+            <span class="tech-pill"><span class="d"></span>Brave Search API</span>
+            <span class="tech-pill"><span class="d"></span>ReportLab</span>
+          </div>
+        </div>
+        <div class="stack-card">
+          <div class="stack-hdr">
+            <i class="ms"
+              style="font-size:22px;color:var(--c-accent);font-variation-settings:'FILL' 1,'wght' 700">phone_iphone</i>
+            <h3>Mobile</h3>
+          </div>
+          <p class="stack-sub">Flutter 3 · cross-platform iOS &amp; Android · offline-first with local SQLite</p>
+          <div class="tech-list">
+            <span class="tech-pill"><span class="d"></span>Flutter 3</span>
+            <span class="tech-pill"><span class="d"></span>Riverpod</span>
+            <span class="tech-pill"><span class="d"></span>Drift / SQLite</span>
+            <span class="tech-pill"><span class="d"></span>Firebase Auth</span>
+            <span class="tech-pill"><span class="d"></span>Firebase Cloud Messaging</span>
+            <span class="tech-pill"><span class="d"></span>Dio</span>
+            <span class="tech-pill"><span class="d"></span>Google Sign-In</span>
           </div>
         </div>
       </div>
@@ -1652,59 +1934,6 @@
     </div>
   </section>
 
-  <!-- ── TECH STACK ─────────────────────────────────────── -->
-  <section class="section" id="stack">
-    <div class="wrap">
-      <div class="eyebrow fade">Tech stack</div>
-      <h2 class="h2 fade">The right tool for each layer.</h2>
-      <div class="stack-grid fade">
-        <div class="stack-card">
-          <div class="stack-hdr">
-            <i class="ms" style="font-size:22px;color:var(--c-accent);font-variation-settings:'FILL' 1,'wght' 700">dns</i>
-            <h3>Backend</h3>
-          </div>
-          <p class="stack-sub">Python 3.11 · deployed as a Dockerised FastAPI service on OCI Compute</p>
-          <div class="tech-list">
-            <span class="tech-pill"><span class="d"></span>FastAPI</span>
-            <span class="tech-pill"><span class="d"></span>PostgreSQL</span>
-            <span class="tech-pill"><span class="d"></span>SQLAlchemy ORM</span>
-            <span class="tech-pill"><span class="d"></span>Alembic</span>
-            <span class="tech-pill"><span class="d"></span>Pydantic v2</span>
-            <span class="tech-pill"><span class="d"></span>Firebase Admin SDK</span>
-            <span class="tech-pill"><span class="d"></span>AWS S3</span>
-            <span class="tech-pill"><span class="d"></span>AWS Textract</span>
-            <span class="tech-pill"><span class="d"></span>AWS Bedrock</span>
-            <span class="tech-pill"><span class="d"></span>Claude Haiku</span>
-            <span class="tech-pill"><span class="d"></span>APScheduler</span>
-            <span class="tech-pill"><span class="d"></span>Sentry</span>
-            <span class="tech-pill"><span class="d"></span>Docker</span>
-            <span class="tech-pill"><span class="d"></span>OCI Compute</span>
-            <span class="tech-pill"><span class="d"></span>KrakenD</span>
-            <span class="tech-pill"><span class="d"></span>Brave Search API</span>
-            <span class="tech-pill"><span class="d"></span>ReportLab</span>
-          </div>
-        </div>
-        <div class="stack-card">
-          <div class="stack-hdr">
-            <i class="ms"
-              style="font-size:22px;color:var(--c-accent);font-variation-settings:'FILL' 1,'wght' 700">phone_iphone</i>
-            <h3>Mobile</h3>
-          </div>
-          <p class="stack-sub">Flutter 3 · cross-platform iOS &amp; Android · offline-first with local SQLite</p>
-          <div class="tech-list">
-            <span class="tech-pill"><span class="d"></span>Flutter 3</span>
-            <span class="tech-pill"><span class="d"></span>Riverpod</span>
-            <span class="tech-pill"><span class="d"></span>Drift / SQLite</span>
-            <span class="tech-pill"><span class="d"></span>Firebase Auth</span>
-            <span class="tech-pill"><span class="d"></span>Firebase Cloud Messaging</span>
-            <span class="tech-pill"><span class="d"></span>Dio</span>
-            <span class="tech-pill"><span class="d"></span>Google Sign-In</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- ── API REFERENCE ──────────────────────────────────── -->
   <section class="section" id="api">
     <div class="wrap">
@@ -1725,7 +1954,7 @@
           <tr>
             <td><span class="method post">POST</span></td>
             <td class="endpoint">/auth/register</td>
-            <td class="api-desc">Register a new user and verify Firebase token</td>
+            <td class="api-desc">Register or retrieve an existing user after Firebase authentication (idempotent)</td>
           </tr>
           <tr>
             <td><span class="method get">GET</span></td>
@@ -1772,7 +2001,7 @@
           <tr>
             <td><span class="method post">POST</span></td>
             <td class="endpoint">/claims/<span class="param">{id}</span>/pdf-access</td>
-            <td class="api-desc">Generate claim PDF via ReportLab and return a pre-signed S3 URL</td>
+            <td class="api-desc">Return a pre-signed S3 URL for the stored claim PDF; regenerates via ReportLab only if the file is missing from S3</td>
           </tr>
           <tr>
             <td><span class="method post">POST</span></td>
@@ -1791,7 +2020,8 @@
           </tr>
         </tbody>
       </table>
-      <p style="margin-top:16px;font-size:13px;color:var(--c-muted)">Selected endpoints only — the full API spans 29 endpoints
+      <p style="margin-top:16px;font-size:13px;color:var(--c-muted)">Selected endpoints only — the full API spans 29
+        endpoints
         across 6 resource domains.</p>
     </div>
   </section>
@@ -1856,6 +2086,344 @@
     </div>
   </section>
 
+  <!-- ── KEY TECHNICAL DECISIONS ───────────────────────── -->
+  <section class="section" id="decisions">
+    <div class="wrap">
+      <div class="eyebrow fade">Decisions log</div>
+      <h2 class="h2 fade">Key technical decisions.</h2>
+      <p class="body-muted fade">The reasoning behind the choices that shaped Reclaima — gateway, scheduler,
+        hosting, secrets, OCR pipeline, framework, and the CI/CD checks that gate every deploy.</p>
+
+      <div class="decisions-list">
+
+        <!-- ── Architecture & Infrastructure ── -->
+        <div class="decision-group">
+          <h3 class="decision-group-label fade">Architecture &amp; Infrastructure</h3>
+
+          <details class="decision fade">
+            <summary>
+              <span>Why a modular monolith over microservices?</span>
+              <span class="chev"><span class="material-symbols-rounded">expand_more</span></span>
+            </summary>
+            <div class="answer">
+              Microservices introduce network calls between services, distributed tracing, separate deployment
+              pipelines, and eventually separate databases — all of which add operational complexity that has to
+              be justified by the scale or team size. The backend has clean internal module boundaries (receipts,
+              warranties, claims, notifications, users) without any of that overhead. A single deployment unit, a
+              single database with proper schema separation, and straightforward debugging. The scheduler runs in
+              a separate container purely for process isolation, not because it needs to be an independent
+              service. Microservices would be the right call if different modules needed to scale independently
+              or if separate teams owned them — neither applies here.
+            </div>
+          </details>
+
+          <details class="decision fade">
+            <summary>
+              <span>Why OCI ARM VM instead of AWS EC2?</span>
+              <span class="chev"><span class="material-symbols-rounded">expand_more</span></span>
+            </summary>
+            <div class="answer">
+              OCI's Always Free tier gives a 4-core ARM Ampere VM with 24 GB RAM and no 12-month expiry. AWS Free
+              Tier expires after a year and the equivalent instance size costs money beyond that. For a
+              pre-revenue app, eliminating infrastructure cost entirely while still running a full production
+              stack — gateway, API, scheduler, database, monitoring — is the obvious call.
+            </div>
+          </details>
+
+          <details class="decision fade">
+            <summary>
+              <span>Why a dedicated secrets manager, and why Infisical specifically?</span>
+              <span class="chev"><span class="material-symbols-rounded">expand_more</span></span>
+            </summary>
+            <div class="answer">
+              Storing credentials in a <code>.env</code> file on the server means they sit on disk permanently, get
+              included in VM snapshots, and require manual SSH access to rotate. AWS Secrets Manager solves the disk
+              problem but charges per secret per month plus per API call — costs that add up quickly when secrets are
+              fetched on every container restart. HashiCorp Vault is powerful but moved from open-source to a
+              source-available licence in 2023, requires running your own server or paying for a managed plan, and has
+              significant engineering overhead to configure workflows and integrations from scratch. Infisical is
+              MIT-licensed, self-hostable, and has a free cloud tier that covers unlimited secrets, environments,
+              machine identity auth, GitHub Actions integration, and a CLI — everything this stack needs at no cost. In
+              practice, the deploy script fetches database credentials from Infisical before containers start, and the
+              application fetches the remaining secrets at startup. No credentials are written to the server filesystem
+              at any point.
+            </div>
+          </details>
+
+          <details class="decision fade">
+            <summary>
+              <span>Why KrakenD instead of a plain reverse proxy like Nginx or Caddy?</span>
+              <span class="chev"><span class="material-symbols-rounded">expand_more</span></span>
+            </summary>
+            <div class="answer">
+              KrakenD validates Firebase JWTs at the gateway using Firebase's public JWK endpoint — FastAPI never
+              sees an unauthenticated request. Rate limits are also enforced per endpoint at this layer, with
+              tighter limits on auth routes and looser limits on read endpoints. With a plain reverse proxy you'd
+              have to reimplement both in every service or add middleware. The backend port is also intentionally
+              not exposed in the production compose file — all traffic must enter through the gateway.
+            </div>
+          </details>
+
+          <details class="decision fade">
+            <summary>
+              <span>Why a separate container for the scheduler instead of running it inside the FastAPI process?</span>
+              <span class="chev"><span class="material-symbols-rounded">expand_more</span></span>
+            </summary>
+            <div class="answer">
+              APScheduler running inside the same uvicorn process means a misbehaving job — a memory leak, an
+              unhandled exception loop, a slow DB query — competes directly with request handling and can bring
+              down the API. A separate container isolates that: the API stays up regardless of what the scheduler
+              does. The alternative would be Celery with Redis, which gives you a proper job queue, distributed
+              workers, and retry visibility — but that's significant infrastructure overhead for three nightly
+              reminder jobs. For the current scale, two containers achieve the failure isolation without the
+              complexity.
+            </div>
+          </details>
+        </div>
+
+        <!-- ── Stack & Tools ── -->
+        <div class="decision-group">
+          <h3 class="decision-group-label fade">Stack &amp; Tools</h3>
+
+          <details class="decision fade">
+            <summary>
+              <span>Why a monorepo?</span>
+              <span class="chev"><span class="material-symbols-rounded">expand_more</span></span>
+            </summary>
+            <div class="answer">
+              The Flutter frontend, FastAPI backend, KrakenD config, and all deployment scripts live in one
+              repository. A feature that touches the backend API and the mobile client can be a single atomic
+              commit and PR — no coordinating changes across multiple repositories. The CI/CD pipeline has one
+              <code>.github/workflows</code> directory that sees the full picture and can run backend and mobile
+              checks in parallel. With polyrepo, you'd be managing separate issue trackers, separate branch
+              protection rules, and the mental overhead of keeping related changes in sync across repos.
+            </div>
+          </details>
+
+          <details class="decision fade">
+            <summary>
+              <span>Why Python for the backend?</span>
+              <span class="chev"><span class="material-symbols-rounded">expand_more</span></span>
+            </summary>
+            <div class="answer">
+              Python requires significantly less boilerplate for this type of API than most alternatives — a
+              FastAPI endpoint with full Pydantic validation and serialization is a fraction of the code that the
+              equivalent Spring Boot controller, DTO, and service classes would require in Java. The OCR cleanup
+              work is fundamentally string manipulation and data transformation across multiple passes; Python's
+              standard library and data processing idioms handle this more concisely than most other languages.
+              APScheduler is a few lines of setup for background jobs. SQLAlchemy, Alembic, and FastAPI are all
+              mature, well-documented, and designed to work together — the ecosystem fit for a data-processing
+              API with AI service integrations is strong.
+            </div>
+          </details>
+
+          <details class="decision fade">
+            <summary>
+              <span>Why FastAPI over Django REST Framework or Flask?</span>
+              <span class="chev"><span class="material-symbols-rounded">expand_more</span></span>
+            </summary>
+            <div class="answer">
+              FastAPI generates OpenAPI documentation automatically from Pydantic models — the <code>/docs</code>
+              endpoint is always accurate with no extra configuration. Pydantic v2 handles request validation,
+              serialization, and settings management consistently across the entire codebase. Native async
+              support matters for non-blocking calls to Textract and Bedrock. Flask requires assembling
+              extensions for every piece of functionality; Django REST Framework is opinionated around Django's
+              ORM, which conflicts with the SQLAlchemy and Alembic setup. FastAPI gives the right defaults
+              without forcing a framework's assumptions onto the data layer.
+            </div>
+          </details>
+
+          <details class="decision fade">
+            <summary>
+              <span>Why Flutter over React Native?</span>
+              <span class="chev"><span class="material-symbols-rounded">expand_more</span></span>
+            </summary>
+            <div class="answer">
+              Flutter compiles to native ARM code rather than bridging to native components at runtime, which
+              eliminates a category of platform-specific rendering quirks and performance inconsistencies. Dart's
+              strong typing catches more bugs at compile time than JavaScript would. Drift, the offline-first
+              SQLite layer, has excellent Flutter integration — the generated Dart code fits naturally into the
+              Riverpod state management pattern used throughout the app. React Native would have worked, but
+              Flutter's consistent rendering model and the Drift ecosystem made it the cleaner choice for an
+              offline-first mobile app.
+            </div>
+          </details>
+
+          <details class="decision fade">
+            <summary>
+              <span>Why Firebase Auth over rolling your own?</span>
+              <span class="chev"><span class="material-symbols-rounded">expand_more</span></span>
+            </summary>
+            <div class="answer">
+              Authentication is easy to implement incorrectly — token rotation, refresh token security, session
+              invalidation, and OAuth flows each have well-documented failure modes. Firebase Auth handles Google
+              Sign-In, token issuance, refresh, and revocation on a free tier that covers the app's scale. Device
+              tokens for push notifications are also managed through Firebase, so auth and FCM stay unified. The
+              custom work needed is minimal: KrakenD validates the JWT at the gateway using Firebase's public JWK
+              endpoint, and FastAPI verifies it as defence-in-depth using Firebase Admin SDK — both are thin
+              integration layers, not custom auth logic.
+            </div>
+          </details>
+
+          <details class="decision fade">
+            <summary>
+              <span>Why AWS Textract with a Claude Haiku cleanup layer instead of a single solution?</span>
+              <span class="chev"><span class="material-symbols-rounded">expand_more</span></span>
+            </summary>
+            <div class="answer">
+              Textract's <code>AnalyzeExpense</code> API is purpose-built for receipts — it returns vendor name,
+              total, individual line items, dates, and tax as structured fields without needing a custom model or
+              training data. Google Document AI and Azure AI Document Intelligence both offer custom model
+              training, which is their primary advantage, but that requires labelled training data and ongoing
+              maintenance that's unnecessary when a prebuilt expense model already covers the use case. The
+              entire stack is also already on AWS, so Textract integrates directly with S3 and Bedrock without
+              cross-cloud authentication or egress costs. Where Textract falls short is bilingual receipts and
+              multi-column layouts where text gets garbled or fields get transposed. Claude Haiku on Bedrock
+              handles that with six targeted cleanup passes — store name, product names, warranty notes, phone,
+              email, address — each with its own prompt. Using only an LLM would be slower and more expensive for
+              structured extraction; using only Textract leaves the cleanup problem unsolved.
+            </div>
+          </details>
+        </div>
+
+        <!-- ── CI/CD ── -->
+        <div class="decision-group">
+          <h3 class="decision-group-label fade">CI/CD</h3>
+
+          <details class="decision fade">
+            <summary>
+              <span>Why does secret scanning gate every other CI job?</span>
+              <span class="chev"><span class="material-symbols-rounded">expand_more</span></span>
+            </summary>
+            <div class="answer">
+              A credential leak in a commit is a more serious problem than a failing test — it's an immediate
+              security incident that requires key rotation regardless of whether the code works. Running backend
+              CI and mobile CI in parallel with the secret scan means those jobs execute against a potentially
+              compromised commit. Gitleaks as the first job, with all other jobs depending on it, ensures nothing
+              else runs until the commit is confirmed clean. Gitleaks also scans the full git history, not just
+              the diff — catching credentials that were added in an earlier commit and "removed" with a follow-up
+              commit, which still exist in the history.
+            </div>
+          </details>
+
+          <details class="decision fade">
+            <summary>
+              <span>Why these backend CI checks (ruff, Black, mypy, pytest, alembic check, Bandit, pip-audit)?</span>
+              <span class="chev"><span class="material-symbols-rounded">expand_more</span></span>
+            </summary>
+            <div class="answer">
+              Ruff replaces flake8 and isort in a single fast pass. Black enforces consistent formatting. Mypy
+              catches type errors at the Pydantic model boundaries before they surface as runtime 422 errors.
+              Pytest with a 70% coverage floor ensures core business logic — OCR processing, warranty
+              calculations, claim generation — is tested before anything reaches production. Alembic check
+              verifies migration files are consistent with the SQLAlchemy models, catching the common mistake of
+              updating a model without generating a corresponding migration. Bandit does static analysis for
+              Python security issues — hardcoded credentials, unsafe deserialization, weak hashing — that code
+              review tends to miss. pip-audit checks every dependency against the CVE database; a well-written
+              application running a vulnerable dependency is still a liability.
+            </div>
+          </details>
+
+          <details class="decision fade">
+            <summary>
+              <span>Why these Flutter CI checks (build_runner, dart format, flutter analyze, test coverage, APK
+                build)?</span>
+              <span class="chev"><span class="material-symbols-rounded">expand_more</span></span>
+            </summary>
+            <div class="answer">
+              build_runner generates Drift database classes, Riverpod providers, and JSON serializers — if the
+              generated files are stale the app won't compile, so regenerating them in CI catches drift between
+              source and generated code early. dart format and flutter analyze enforce style and catch semantic
+              issues. The coverage floor sits at 60% rather than 70% because UI widget testing is significantly
+              harder than unit testing, but 60% covers the data layer and core business logic. The APK build step
+              verifies the release artifact actually compiles — tests can pass while the release build fails due
+              to tree-shaking or build configuration issues.
+            </div>
+          </details>
+
+          <details class="decision fade">
+            <summary>
+              <span>Why validate KrakenD config in CI?</span>
+              <span class="chev"><span class="material-symbols-rounded">expand_more</span></span>
+            </summary>
+            <div class="answer">
+              <code>krakend.tmpl</code> uses flexible config template syntax — a typo or invalid endpoint
+              configuration doesn't produce a compile error, it produces a gateway that fails to start at deploy
+              time. <code>krakend check</code> run against the official KrakenD Docker image catches syntax
+              errors, invalid route configs, and missing required fields before the config reaches production.
+              Without this check, a misconfigured gateway would pass all CI jobs, deploy successfully, and then
+              silently fail to start — taking down the entire API with no code error to point to.
+            </div>
+          </details>
+
+          <details class="decision fade">
+            <summary>
+              <span>Why GHCR over Docker Hub?</span>
+              <span class="chev"><span class="material-symbols-rounded">expand_more</span></span>
+            </summary>
+            <div class="answer">
+              GHCR authenticates using <code>GITHUB_TOKEN</code>, which is automatically available in every
+              GitHub Actions run — no separate registry credentials to create, rotate, or store as secrets.
+              Images are stored in the same GitHub organisation as the code, so access control is unified with
+              repository permissions. Docker Hub's free tier rate-limits unauthenticated pulls, which causes
+              intermittent CI failures when pulling base images during builds. Keeping the built image in GHCR
+              means the full pipeline — source code, CI config, and built images — lives in one place with one
+              access model.
+            </div>
+          </details>
+
+          <details class="decision fade">
+            <summary>
+              <span>Why multi-arch Docker build (arm64 + amd64)?</span>
+              <span class="chev"><span class="material-symbols-rounded">expand_more</span></span>
+            </summary>
+            <div class="answer">
+              The OCI VM runs on ARM Ampere. An amd64-only image would run under emulation on the VM, losing the
+              performance advantage of the ARM architecture entirely. Building both architectures means the same
+              image tag works natively on the OCI ARM VM in production and on amd64 development or CI machines
+              without any emulation overhead. Docker BuildKit handles both architectures in a single build step
+              via <code>--platform linux/arm64,linux/amd64</code>.
+            </div>
+          </details>
+
+          <details class="decision fade">
+            <summary>
+              <span>Why Cosign, SBOM, and Trivy in the build stage?</span>
+              <span class="chev"><span class="material-symbols-rounded">expand_more</span></span>
+            </summary>
+            <div class="answer">
+              Trivy scans the built image for CVEs in OS packages and application dependencies before it's
+              pushed to the registry — catching vulnerabilities introduced by base image layers that pass
+              code-level security scans. The SBOM is a manifest of every package in the image, useful for
+              auditing exactly what's running in production and for responding quickly if a new CVE affects a
+              specific package. Cosign signs the image with a keyless signature tied to the GitHub Actions OIDC
+              identity — proving the image was built by this specific workflow and hasn't been tampered with
+              between the registry and the VM.
+            </div>
+          </details>
+
+          <details class="decision fade">
+            <summary>
+              <span>Why smoke test with auto-rollback on deploy?</span>
+              <span class="chev"><span class="material-symbols-rounded">expand_more</span></span>
+            </summary>
+            <div class="answer">
+              A deployment can pass every CI check, build a valid image, and still fail to start in production —
+              a bad migration, a missing environment variable, or a startup exception would leave the app down.
+              The smoke test polls <code>/api/v1/health</code> twenty times at three-second intervals after the
+              new containers start, giving Infisical time to fetch secrets and the database time to accept
+              connections. If the health check doesn't pass within that window, <code>oci_deploy.sh</code>
+              automatically rolls back to the previous image tag and reverts the Alembic migration. Production
+              is restored without manual intervention, and the failed deploy leaves a clear signal in the CI
+              logs.
+            </div>
+          </details>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
   <!-- ── FOOTER ─────────────────────────────────────────── -->
   <footer>
     <div class="wrap">
@@ -1865,8 +2433,6 @@
         <div>
           <div class="footer-wordmark">Reclaima<em>.</em></div>
           <div class="footer-sub">Smart Receipt &amp; Warranty Manager</div>
-          <div class="footer-status">Receipt scanning, warranty tracking, and claim PDF generation are fully
-            implemented. Currently in pre-launch testing ahead of Google Play submission.</div>
         </div>
         <div class="footer-socials">
           <a href="mailto:sujaya.manith23@gmail.com" title="Email" class="footer-social-link">
@@ -1895,21 +2461,13 @@
 
       <!-- Attribution -->
       <div class="footer-attribution">
-        Reclaima was built to fill a gap no existing consumer app had closed — combining AI receipt scanning, per-item
-        warranty tracking, and claim PDF generation in one place. Designed and built by Sujaya Manith.
+        © 2026 Sujaya Manith Mindev
       </div>
 
     </div>
   </footer>
 
   <script>
-    // ── Scroll fade-in
-    const observer = new IntersectionObserver(
-      entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
-      { threshold: 0.12 }
-    );
-    document.querySelectorAll('.fade').forEach(el => observer.observe(el));
-
     // ── Active nav on scroll
     const sections = document.querySelectorAll('section[id], div[id]');
     const links = document.querySelectorAll('.nav-links a');

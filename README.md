@@ -1,390 +1,161 @@
-# Reclaima
+# [Reclaima](https://sujayamindev.github.io/reclaima)
 
-Reclaima is a Flutter mobile app for digitising receipts, tracking warranties and return windows per line item, and generating warranty claim PDFs with defect photo attachments. The backend handles OCR via AWS Textract, LLM cleanup via AWS Bedrock (Claude Haiku), and push notifications via Firebase Cloud Messaging.
+**Scan receipts. Track warranties. File claims — before deadlines expire.**
+
+![Flutter](https://img.shields.io/badge/Flutter-3.41.4-54C5F8?logo=flutter&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-Python%203.11-009688?logo=fastapi&logoColor=white)
+![AWS](https://img.shields.io/badge/AWS-Textract%20·%20Bedrock%20·%20S3-FF9900?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MDAiIGhlaWdodD0iODAwIiBmaWxsPSIjZmZmIiB2aWV3Qm94PSIwIDAgMzIgMzIiPjxwYXRoIGQ9Ik02LjU4NCA5LjAxYy0xLjM2IDAtMi43NC41My0yLjk3LjgyLS4wNi4xMi0uMiAxLjA5LjEzIDEuMDkuMTEgMCAuMTYuMDIuNDgtLjEzIDEuMi0uNDcgMS45Ni0uNDYgMi4wNy0uNDYgMS4zNS0uMTMgMi4xMy43OSAyLjAxIDEuOTh2LjdjLTEuMTQtLjI3LTEuNzktLjI4LTIuMTEtLjI4LTEuNjYtLjEtMy4xOTQuNzc2LTMuMTk0IDIuNyAwIDIuMTEgMS44ODMgMi41NiAyLjYxMyAyLjUzIDEuMDkuMDEgMi4xMy0uNDggMi44Mi0xLjMzLjU1IDEuMjMuOSAxLjE1LjkxIDEuMTUuMSAwIC4xOC0uMDQuMjYtLjA5bC41Ny0uNGMuMS0uMDYuMTgtLjE2LjE5LS4yOC0uMDEtLjI5LS41My0uNzQtLjQ5LTEuNzV2LTMuMTJhMy4xOCAzLjE4IDAgMCAwLS43OTktMi4zNSAzLjQyIDMuNDIgMCAwIDAtMi40OS0uNzhtMTkuMzczIDBjLTIgMC0zLjE1IDEuMjUtMy4xMiAyLjUyIDAgMS43NCAxLjc2IDIuMjkgMS45NiAyLjM1IDEuNjkuNTMgMS45Mi41NSAyLjM5Ljk1LjQuNDEuMzUgMS4yMS0uMjQgMS41Ni0uMTcuMS0uOS41NC0yLjU1LjItLjU1LS4xMS0uODQtLjI0LTEuMjktLjQzLS4xMi0uMDQtLjQtLjExLS40LjI2di40OWMwIC4yMy4xNC40NC4zNS41NCAxLjA1LjUzIDIuMzEuNTUgMi41OC41NS4wNCAwIDIuMzQuMDAxIDMuMTEtMS41NS4xNTgtLjMyLjU3LTEuNDktLjItMi40OS0uNjQtLjc1LTEuMTktLjgzLTIuODMtMS4zMy0uMTQtLjA0LTEuMzUtLjM1LTEuMzQtMS4yLS4wNi0xLjA5IDEuNDItMS4xNSAxLjczLTEuMTMgMS4yNS0uMDIgMS44Ny40NSAyLjIxLjQ4LjE1IDAgLjIyLS4wOS4yMi0uMjl2LS40NmEuNS41IDAgMCAwLS4wOS0uMzFjLS40LS41Mi0xLjkzLS43MS0yLjQ5LS43MW0tMTUuMTguMjVjLS4xMS4wMi0uMTkuMTMtLjE3LjI0LjAyLjEzLjA0LjI2LjA5LjM5bDIuMjQgNy4zOWMuMDUuMjQuMjEuNS41Ni40NmguODJjLjUuMDUuNTctLjQzLjU4LS40OGwxLjQ3LTYuMTYgMS40OSA2LjE3Yy4wMS4wNS4wOC41My41Ny40OGguODNjLjM2LjA0LjUzLS4yMi41OC0uNDYgMi41Mi04LjExIDIuMzUtNy41NiAyLjM3LTcuNjQuMDQtLjQyLS4yLS4zOS0uMjQtLjM4aC0uODljLS40NS0uMDUtLjU0LjM2LS41Ni40NmwtMS42NiA2LjQxLTEuNS02LjQxYy0uMDctLjQ5LS40Ny0uNDctLjU3LS40NmgtLjc3Yy0uNDQtLjA0LS41NS4zMS0uNTguNDZsLTEuNDkgNi4zMi0xLjYtNi4zMmMtLjA0LS4yLS4xNy0uNTEtLjU2LS40N3ptLTQuMjU0IDQuNjNjLjcyLjAxIDEuMzQyLjEyIDEuNzcyLjIyIDAgLjUuMDE4Ljc4LS4wOTIgMS4yMy0uMTQuNDgtLjc1OSAxLjM1LTIuMjE5IDEuMzctLjg0LjA0LTEuMzktLjYyLTEuMzQtMS4zNy0uMDUtMS4yIDEuMTktMS41IDEuODgtMS40NW0yMi41MTggNi4xMTJjLS45MzMuMDEzLTIuMDM1LjIyMi0yLjg3MS44MDktLjI1OC4xNzktLjIxMy40MjcuMDc0LjM5NC45NC0uMTEzIDMuMDMyLS4zNjcgMy40MDYuMTExcy0uNDE0IDIuNDUtLjc2MyAzLjMzMmMtLjEwOC4yNjMuMTIuMzcyLjM2MS4xNzIgMS41NjQtMS4zMSAxLjk3LTQuMDU2IDEuNjUtNC40NS0uMTYtLjE5OC0uOTI0LS4zODEtMS44NTctLjM2OG0tMjcuODI0IDFjLS4yMTguMDMtLjMxMi4zMDYtLjA4NC41MjVDNS4wNSAyNS4yMDEgMTAuMjI2IDI3IDE1Ljk3MyAyN2M0LjA5OSAwIDguODU3LTEuMzM3IDEyLjE0Mi0zLjg1Ny41NDMtLjQyLjA4LTEuMDQ3LS40NzYtLjgtMy42ODMgMS42MjYtNy42ODQgMi40MDktMTEuMzI1IDIuNDA5LTUuMzk2IDAtMTAuNjItMS4xMjctMTQuODQ1LTMuNjg2YS40LjQgMCAwIDAtLjI1Mi0uMDY0Ii8+PC9zdmc+)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
+![OCI](https://img.shields.io/badge/OCI-ARM%20VM-F80000?logo=oracle&logoColor=white)
+![CI/CD](https://github.com/sujayamindev/reclaima/actions/workflows/ci-cd.yml/badge.svg)
+
+[🔗 Project Page](https://sujayamindev.github.io/reclaima)
+
+---
+
+## What is Reclaima?
+
+Most people lose warranties because nothing tracks them. Expense apps treat receipts as financial records. Warranty trackers rely on manual entry and stop at the reminder. No consumer app handles the complete lifecycle — scan, extract per-item details, track deadlines, and produce a claim document.
+
+Reclaima fills that gap. Scan a paper or PDF receipt and Reclaima extracts every line item individually using AWS Textract with a Claude Haiku cleanup layer. Each item gets its own warranty period, return window, and push notification schedule. When something fails, one tap generates a structured PDF claim — purchase details, defect photos, retailer contact — ready to submit.
 
 ---
 
 ## Architecture
 
 ```
-Flutter Mobile (Drift/SQLite, offline-first)
-    │  Firebase Auth JWT
-    ▼
-KrakenD API Gateway  :8080   (public-facing; rate-limited)
-    │  proxies to backend by service name "backend:8000"
-    ▼
-FastAPI Backend  :8000        (never exposed directly)
-    ├── /api/v1/auth          — Firebase token verification
-    ├── /api/v1/receipts      — upload, OCR pipeline, line-item CRUD
-    ├── /api/v1/warranties    — expiry calculations per line item
-    ├── /api/v1/claims        — PDF generation + S3 pre-signed URLs
-    ├── /api/v1/products      — Brave Search product image lookup
-    ├── /api/v1/notifications — preferences + APScheduler reminders
-    └── /api/v1/health        — liveness probe
-    ▼
-PostgreSQL 15 · AWS S3 · AWS Textract · AWS Bedrock · Firebase FCM
+                                 ┌─────────────────────────────────────────────────────────────────┐
+                                 │               Flutter Mobile App  ·  iOS & Android              │
+                                 │   Riverpod · Drift/SQLite offline · Firebase Auth SDK · FCM     │
+                                 │                    Dio HTTP · image_cropper                     │
+                                 └──────────────────────────────┬──────────────────────────────────┘
+                                                                │  ↕  Firebase JWT · HTTPS
+                                 ┌──────────────────────────────┴──────────────────────────────────┐
+                                 │                     KrakenD API Gateway                         │
+                                 │       port 8080 · JWT validation · rate limiting · routing      │
+                                 └──────────────────────────────┬──────────────────────────────────┘
+                                                                │  ↕  proxied requests · port 8000
+                                 ┌──────────────────────────────┴──────────────────────────────────┐
+                                 │             FastAPI Backend  ·  OCI Compute (Docker)            │
+                                 │       Python 3.11 · SQLAlchemy ORM · Alembic · APScheduler      │
+                                 │           Pydantic v2 · Firebase Admin JWT verification         │
+                                 └─────┬────────────┬─────────────┬──────────────┬────────────┬────┘
+                                       │            │             │              │            │
+                                       ▼            ▼             ▼              ▼            ▼
+                                   PostgreSQL     AWS S3     AWS Textract    AWS Bedrock     FCM
+                                   ──────────     ──────     ────────────    ──────────      ───
+                                   Receipts       Receipt    AnalyzeExp.     Claude Haiku   Push
+                                   Items          images     Structured      OCR cleanup    reminders
+                                   Claims         PDFs       expense                        Device
+                                   Users          Cascade    fields                         tokens
+                                                  deletion   Line items
 ```
 
-The mobile app must only communicate with the KrakenD gateway. The FastAPI port is intentionally commented out in both `docker-compose.yml` and `deploy/docker-compose.prod.yml`.
+Flutter authenticates with Firebase and passes JWTs to KrakenD. KrakenD validates the token using Firebase's public JWK endpoint and proxies to FastAPI — the backend port is intentionally never exposed directly. FastAPI handles all request-response logic and runs APScheduler jobs for warranty and return deadline reminders.
 
 ---
 
-## Repository Structure
+## Tech Stack
 
-```
-.
-├── backend/                  FastAPI application (Python 3.11)
-│   ├── app/
-│   │   ├── api/v1/           Route handlers (one file per domain)
-│   │   ├── core/             Config, security, LLM prompts
-│   │   ├── db/               SQLAlchemy session and Alembic base
-│   │   ├── models/           ORM models
-│   │   ├── schemas/          Pydantic v2 request/response schemas
-│   │   └── services/         Business logic layer
-│   ├── alembic/              Database migration scripts
-│   ├── tests/                Pytest test suite
-│   ├── Dockerfile            Multi-stage build (python:3.11-slim)
-│   ├── requirements.txt
-│   └── .env.example          Template for backend environment variables
-├── mobile/                   Flutter application (Dart)
-│   ├── lib/
-│   │   ├── core/             Constants and utilities
-│   │   ├── data/             Drift database, models, repositories
-│   │   ├── providers/        Riverpod 2 providers
-│   │   ├── screens/          Feature screens (auth, home, receipt, claims, vault, settings)
-│   │   ├── services/         Dio API client and local logic
-│   │   └── widgets/          Shared UI components
-│   └── pubspec.yaml
-├── deploy/
-│   ├── docker-compose.prod.yml        Production compose (api, scheduler, migrate, krakend, postgres)
-│   ├── docker-compose.monitoring.yml  Prometheus, Loki, Promtail, cAdvisor, Grafana
-│   ├── scripts/oci_deploy.sh          Deploy + health-check + rollback script
-│   ├── monitoring/                    Prometheus and Promtail configs
-│   └── .env.prod.example             Template for production environment variables
-├── scripts/ci/               No-regression gate scripts called by the CI workflow
-├── docs/                     GitHub Pages showcase site
-├── krakend.json              KrakenD gateway configuration (v3, port 8080)
-├── docker-compose.yml        Local development stack
-└── .github/workflows/ci-cd.yml
-```
-
----
-
-## Prerequisites
-
-| Tool | Required version |
+| Layer | Technology |
 |---|---|
-| Flutter | 3.41.4, stable channel |
-| Dart SDK | ^3.10.0 (bundled with Flutter) |
-| Python | 3.11 |
-| Docker + Docker Compose | any recent stable release |
-| AWS CLI | for real S3/Textract/Bedrock access (not needed in mock mode) |
-| Firebase project | service account JSON + `google-services.json` / `GoogleService-Info.plist` |
-| Infisical | for production secret management (`infisicalsdk>=1.0.3`) |
-
-Firebase config files (`firebase-service-account.json`, `google-services.json`, `GoogleService-Info.plist`) are not in the repository and must be obtained from the Firebase console.
-
----
-
-## Environment Variables
-
-Copy `backend/.env.example` to `backend/.env`. All variables below are read by `backend/app/core/config.py`.
-
-### Required
-
-| Variable | Description |
-|---|---|
-| `SECRET_KEY` | Random string for JWT signing |
-| `DATABASE_URL` | PostgreSQL DSN, e.g. `postgresql://user:pass@host:5432/db` |
-| `AWS_ACCESS_KEY_ID` | AWS credential |
-| `AWS_SECRET_ACCESS_KEY` | AWS credential |
-| `FIREBASE_SERVICE_ACCOUNT_PATH` | Path to the Firebase Admin SDK JSON (default: `./firebase-service-account.json`) |
-
-### AWS / OCR / LLM
-
-| Variable | Default | Description |
-|---|---|---|
-| `AWS_REGION` | `us-east-1` | AWS region |
-| `AWS_S3_BUCKET` | `smart-receipt-storage` | S3 bucket for receipt images and claim PDFs |
-| `USE_MOCK_AWS` | `false` | Set `true` to skip real AWS calls in development |
-| `BEDROCK_MODEL_ID` | `us.anthropic.claude-haiku-4-5-20251001-v1:0` | Bedrock model used for OCR cleanup |
-| `LLM_CLEANUP_ENABLED` | `true` | Toggle Bedrock LLM cleanup step |
-| `OCR_MAX_RETRIES` | `3` | Textract retry attempts |
-| `OCR_RETRY_DELAY_SECONDS` | `5` | Delay between Textract retries |
-
-### Application
-
-| Variable | Default | Description |
-|---|---|---|
-| `DEBUG` | `false` | Enables `/docs`, `/redoc`, `/openapi.json` and verbose errors |
-| `ENVIRONMENT` | `production` | Passed to Sentry |
-| `ALLOWED_ORIGINS` | `http://localhost:8000` | Comma-separated CORS origins |
-| `LOG_LEVEL` | `INFO` | Python logging level |
-| `MAX_FILE_SIZE_MB` | `20` | Upload size cap |
-| `ALLOWED_FILE_TYPES` | `image/jpeg,image/png,application/pdf` | Accepted MIME types |
-
-### Scheduler / Notifications
-
-| Variable | Default | Description |
-|---|---|---|
-| `ENABLE_SCHEDULER` | `true` | Enable APScheduler (set `false` on API replicas; only one process should run jobs) |
-| `REMINDER_CHECK_HOUR` | `3` | Hour (UTC) for warranty and return reminder jobs |
-| `CLEANUP_HOUR` | `2` | Hour (UTC) for hard-delete cleanup job |
-| `WARRANTY_REMINDER_DAYS` | `30` | Lead-time for warranty expiry notifications |
-| `RETURN_REMINDER_DAYS` | `3` | Lead-time for return window notifications |
-
-### Optional
-
-| Variable | Default | Description |
-|---|---|---|
-| `SENTRY_DSN` | _(none)_ | Sentry error tracking DSN |
-| `BRAVE_SEARCH_API_KEY` | _(empty)_ | Brave Search API key for product image lookup |
-
-### Production only (Infisical)
-
-In production the backend fetches secrets from Infisical at startup before Pydantic parses the environment. The remaining variables (`SECRET_KEY`, AWS credentials, etc.) are pulled from Infisical and do not need to appear in `.env.prod`.
-
-| Variable | Description |
-|---|---|
-| `INFISICAL_MACHINE_IDENTITY_CLIENT_ID` | Infisical machine identity client ID |
-| `INFISICAL_MACHINE_IDENTITY_CLIENT_SECRET` | Infisical machine identity client secret |
-| `INFISICAL_PROJECT_ID` | Infisical project ID |
-
-### Docker Compose (local dev only)
-
-Read by `docker-compose.yml` from the shell environment or a `.env` file at the repo root:
-
-| Variable | Description |
-|---|---|
-| `DEV_POSTGRES_PASSWORD` | **Required.** Postgres password |
-| `DEV_PGADMIN_PASSWORD` | Required only when using the `tools` profile |
-| `DEV_POSTGRES_USER` | Default: `postgres` |
-| `DEV_POSTGRES_DB` | Default: `smart_receipt_db` |
+| **Mobile** | Flutter 3.41.4 · Dart · Riverpod 2 · Drift/SQLite · Dio |
+| **API Gateway** | KrakenD 2.6.0 |
+| **Backend** | FastAPI · Python 3.11 · SQLAlchemy · Alembic · Pydantic v2 |
+| **Database** | PostgreSQL 15 |
+| **OCR & AI** | AWS Textract (AnalyzeExpense) · AWS Bedrock (Claude Haiku) |
+| **Storage** | AWS S3 — receipt images and generated PDFs |
+| **Auth** | Firebase Auth · Google Sign-In |
+| **Notifications** | Firebase Cloud Messaging (FCM) |
+| **Infrastructure** | OCI ARM Ampere VM (Always Free) · Docker Compose |
+| **Secrets** | Infisical |
+| **CI/CD** | GitHub Actions · GHCR · Gitleaks |
+| **Monitoring** | Prometheus · Loki · Promtail · cAdvisor · Grafana |
 
 ---
 
-## Local Development Setup
+## Key Technical Decisions
 
-### 1. Clone and configure
+<details>
+<summary><strong>Why a dedicated secrets manager, and why Infisical specifically?</strong></summary>
 
-```bash
-git clone <repo-url>
-cd smart-receipt-and-warranty-manager
+Storing credentials in a `.env` file on the server means they sit on disk permanently, get included in VM snapshots, and require manual SSH access to rotate. AWS Secrets Manager solves the disk problem but charges per secret per month plus per API call — costs that add up quickly when secrets are fetched on every container restart. HashiCorp Vault is powerful but moved from open-source to a source-available licence in 2023, requires running your own server or paying for a managed plan, and has significant engineering overhead to configure workflows and integrations from scratch. Infisical is MIT-licensed, self-hostable, and has a free cloud tier that covers unlimited secrets, environments, machine identity auth, GitHub Actions integration, and a CLI — everything this stack needs at no cost. In practice, the deploy script fetches database credentials from Infisical before containers start, and the application fetches the remaining secrets at startup. No credentials are written to the server filesystem at any point.
 
-# Backend environment
-cp backend/.env.example backend/.env
-# Edit backend/.env — at minimum set SECRET_KEY; leave USE_MOCK_AWS=true for local dev
+</details>
 
-# Place firebase-service-account.json in backend/
-# Obtain from: Firebase console → Project settings → Service accounts → Generate new private key
-```
+<details>
+<summary><strong>Why KrakenD instead of a plain reverse proxy like Nginx or Caddy?</strong></summary>
 
-### 2. Set Docker Compose variables
+KrakenD validates Firebase JWTs at the gateway using Firebase's public JWK endpoint — FastAPI never sees an unauthenticated request. Rate limits are also enforced per endpoint at this layer, with tighter limits on auth routes and looser limits on read endpoints. With a plain reverse proxy you'd have to reimplement both in every service or add middleware. The backend port is also intentionally not exposed in the production compose file — all traffic must enter through the gateway.
 
-Create a `.env` file at the repo root (same directory as `docker-compose.yml`):
+</details>
 
-```env
-DEV_POSTGRES_PASSWORD=localdevpassword
-```
+<details>
+<summary><strong>Why a separate container for the scheduler instead of running it inside the FastAPI process?</strong></summary>
 
-### 3. Start the local stack
+APScheduler running inside the same uvicorn process means a misbehaving job — a memory leak, an unhandled exception loop, a slow DB query — competes directly with request handling and can bring down the API. A separate container isolates that: the API stays up regardless of what the scheduler does. The alternative would be Celery with Redis, which gives you a proper job queue, distributed workers, and retry visibility — but that's significant infrastructure overhead for three nightly reminder jobs. For the current scale, two containers achieve the failure isolation without the complexity.
 
-```bash
-# Start PostgreSQL, FastAPI backend (runs migrations automatically), and KrakenD
-docker-compose up -d
+</details>
 
-# Optional: include pgAdmin at http://localhost:5050
-docker-compose --profile tools up -d
-```
+<details>
+<summary><strong>Why OCI ARM VM instead of AWS EC2?</strong></summary>
 
-The backend container runs `alembic upgrade head` before starting uvicorn. The backend is only reachable via KrakenD at `http://localhost:8080`.
+OCI's Always Free tier gives a 4-core ARM Ampere VM with 24 GB RAM and no 12-month expiry. AWS Free Tier expires after a year and the equivalent instance size costs money beyond that. For a pre-revenue app, eliminating infrastructure cost entirely while still running a full production stack — gateway, API, scheduler, database, monitoring — is the obvious call.
 
-### 4. Running Alembic manually
+</details>
 
-```bash
-cd backend
+<details>
+<summary><strong>Why a modular monolith over microservices?</strong></summary>
 
-# Apply all pending migrations
-alembic upgrade head
+Microservices introduce network calls between services, distributed tracing, separate deployment pipelines, and eventually separate databases — all of which add operational complexity that has to be justified by the scale or team size. The backend has clean internal module boundaries (receipts, warranties, claims, notifications, users) without any of that overhead. A single deployment unit, a single database with proper schema separation, and straightforward debugging. Microservices would be the right call if different modules needed to scale independently or if separate teams owned them — neither applies here.
 
-# Generate a migration after model changes
-alembic revision --autogenerate -m "description"
+</details>
 
-# Verify no unapplied migrations exist
-alembic check
-```
+<details>
+<summary><strong>Why AWS Textract with a Claude Haiku cleanup layer instead of a single solution?</strong></summary>
 
-### 5. Running the backend directly (no Docker)
+Textract's `AnalyzeExpense` API is purpose-built for receipts — it returns vendor name, total, individual line items, dates, and tax as structured fields without needing a custom model or training data. Google Document AI and Azure AI Document Intelligence both offer custom model training, but that requires labelled training data and ongoing maintenance that's unnecessary when a prebuilt expense model already covers the use case. The stack is also already on AWS, so Textract integrates directly with S3 and Bedrock without cross-cloud authentication or egress costs. Where Textract falls short is bilingual receipts and multi-column layouts where text gets garbled. Claude Haiku handles that with six targeted cleanup passes — each with its own prompt. Using only an LLM would be slower and more expensive for structured extraction; using only Textract leaves the cleanup problem unsolved.
 
-```bash
-cd backend
-python -m venv .venv
-source .venv/bin/activate    # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload
-```
+</details>
 
-With `DEBUG=true` in `backend/.env`, OpenAPI docs are at `http://localhost:8000/docs`.
+<details>
+<summary><strong>Why does secret scanning gate every other CI job?</strong></summary>
 
-### 6. Running the mobile app
+A credential leak in a commit is a more serious problem than a failing test — it's an immediate security incident that requires key rotation regardless of whether the code works. Running backend CI and mobile CI in parallel with the secret scan means those jobs execute against a potentially compromised commit. Gitleaks as the first job, with all other jobs depending on it, ensures nothing else runs until the commit is confirmed clean. Gitleaks also scans the full git history, not just the diff — catching credentials that were added in an earlier commit and "removed" with a follow-up commit, which still exist in the history.
 
-```bash
-cd mobile
-flutter pub get
+</details>
 
-# Regenerate after modifying Drift schemas, Riverpod @riverpod providers, or @JsonSerializable models
-flutter pub run build_runner build --delete-conflicting-outputs
-dart format lib test   # normalise generated file formatting
+<details>
+<summary><strong>Why smoke test with auto-rollback on deploy?</strong></summary>
 
-flutter run
-```
+A deployment can pass every CI check, build a valid image, and still fail to start in production — a bad migration, a missing environment variable, or a startup exception would leave the app down. The smoke test polls the health endpoint after the new containers start, giving the app time to fetch secrets and the database time to accept connections. If the health check doesn't pass within that window, the deploy script automatically rolls back to the previous image and reverts the database migration. Production is restored without manual intervention.
 
----
-
-## Running Tests
-
-### Backend
-
-```bash
-cd backend
-
-# Run all tests with coverage
-pytest tests --cov=app --cov-config=.coveragerc --cov-report=term-missing
-
-# Minimum environment needed to run without real AWS or Firebase
-USE_MOCK_AWS=true ENABLE_SCHEDULER=false \
-  SECRET_KEY=test-secret \
-  DATABASE_URL=postgresql://user:pass@localhost:5432/testdb \
-  pytest tests --cov=app --cov-report=term-missing
-
-# Static analysis
-ruff check app tests
-black --check app tests
-mypy app
-bandit -r app -ll
-pip-audit
-```
-
-The CI enforces a **70% coverage floor** and a **no-regression gate**: coverage on HEAD must not drop below coverage on the base commit.
-
-### Mobile
-
-```bash
-cd mobile
-
-flutter test --coverage
-flutter analyze
-dart format --set-exit-if-changed lib test
-```
-
-The CI enforces a **60% coverage floor** with the same no-regression gate.
+</details>
 
 ---
 
 ## CI/CD Pipeline
 
-Single workflow: `.github/workflows/ci-cd.yml`. Triggers: pull requests to `main`, pushes to `main`, manual `workflow_dispatch` (with optional `deploy: true` input).
-
-### Job dependency graph
-
 ```
-secret_scan
-    ├── backend_ci      (Python 3.11; postgres:15-alpine service container)
-    ├── mobile_ci       (Flutter 3.41.4 stable)
-    └── krakend_check   (validates krakend.json via devopsfaith/krakend:2 check)
-              │
-              └─── backend_image   ← needs all four above; main branch only
-                        │
-                        └─── deploy_backend_oci   ← needs backend_image; main branch only
+             ┌──────────┐  ┌──────────────┐  ┌─── PARALLEL ──────────────────┐  ┌─────────────────┐  ┌─────────────────┐
+             │ TRIGGER  │  │   SECURITY   │  │  Backend CI                   │  │  BUILD · main   │  │  DEPLOY · main  │
+             │          │  │              │  │  ruff · black · mypy          │  │                 │  │                 │
+             │ Push/PR  ├─>│ Secret Scan  ├─>│  pytest ≥70% · alembic        ├─>│ Docker Build    ├─>│ OCI Deploy      │
+             │ main     │  │ Gitleaks     │  │  bandit · pip-audit           │  │ arm64 + amd64   │  │ SCP assets      │
+             │ open PRs │  │ gates all    │  ├───────────────────────────────┤  │ Trivy · SBOM    │  │ deploy script   │
+             │ manual   │  │ downstream   │  │  Mobile CI                    │  │ Cosign · GHCR   │  │ smoke test      │
+             └──────────┘  └──────────────┘  │  build_runner · dart format   │  │ sha+latest-prod │  │ Slack on fail   │
+                                             │  flutter analyze · test ≥60%  │  └─────────────────┘  └─────────────────┘
+                                             │  Android APK                  │
+                                             ├───────────────────────────────┤
+                                             │  KrakenD Config               │
+                                             │  krakend check                │
+                                             │  official Docker image        │
+                                             └───────────────────────────────┘
 ```
 
-### Job details
-
-**`secret_scan`** — Runs Gitleaks across the full git history. Blocks all other jobs on failure.
-
-**`backend_ci`** — Spins up a `postgres:15-alpine` service container, then runs in order:
-1. Ruff lint (`ruff check app tests`)
-2. Black format check (changed files only on PRs; full `app tests` scan when SHA is unavailable)
-3. Mypy type check — no-regression gate (`scripts/ci/check_mypy.sh`)
-4. Pytest + coverage — no-regression gate, 70% floor (`scripts/ci/check_pytest.sh`)
-5. Alembic migration check (`alembic upgrade head && alembic check`)
-6. Bandit security scan — no-regression gate (`scripts/ci/check_bandit.sh`)
-7. pip-audit dependency vulnerability scan — no-regression gate (`scripts/ci/check_pip_audit.sh`)
-
-Uploads `backend/coverage.xml` as a workflow artifact.
-
-**`mobile_ci`** — Runs:
-1. `flutter pub get`
-2. `build_runner build` followed by `dart format lib test` — fails if generated outputs differ from committed files
-3. `dart format --set-exit-if-changed lib test`
-4. Flutter analyze — no-regression gate (`scripts/ci/check_flutter_analyze.sh`)
-5. `flutter test --coverage` — no-regression gate, 60% floor (`scripts/ci/check_mobile_coverage.sh`)
-6. Android debug APK build — skipped if `google-services.json` is absent and `ANDROID_GOOGLE_SERVICES_JSON` secret is not set
-
-Uploads `mobile/coverage/lcov.info` and the debug APK as workflow artifacts.
-
-**`krakend_check`** — Validates `krakend.json` using `devopsfaith/krakend:2 check`.
-
-**`backend_image`** — Runs only on pushes to `main` (or `workflow_dispatch` with `deploy: true`) after all CI jobs pass:
-1. Multi-arch build (`linux/amd64`, `linux/arm64`) from `backend/Dockerfile`
-2. Push to `ghcr.io/<owner>/smart-receipt-backend` with tags `sha-<SHA>` and `latest-prod`
-3. Trivy vulnerability scan (CRITICAL/HIGH severity; exits 1 on findings)
-4. SPDX SBOM generation via Anchore
-5. Keyless image signing with Cosign
-
-**`deploy_backend_oci`** — Runs only after `backend_image` succeeds, in the `production` GitHub environment (requires approval):
-1. Configures SSH to the OCI VM (`OCI_SSH_PRIVATE_KEY`, `OCI_KNOWN_HOST` secrets; supports raw key text or base64-encoded)
-2. Syncs compose files, `krakend.json`, monitoring configs, and `oci_deploy.sh` to the VM via SCP
-3. Executes `oci_deploy.sh` over SSH with image tag and Infisical credentials passed as env vars
-4. Sends a Slack notification to `SLACK_DEPLOY_WEBHOOK` on failure
+Secret Scan gates all downstream jobs — if Gitleaks finds a credential anywhere in the commit or history, nothing else runs. The three parallel quality gates must all pass before Docker Build starts. Build and deploy only trigger on pushes to `main`.
 
 ---
 
-## Deployment
-
-The backend runs on an OCI Compute VM. The production compose file is `deploy/docker-compose.prod.yml`.
-
-### Production containers
-
-| Container | Image | Purpose |
-|---|---|---|
-| `postgres` | `postgres:15-alpine` | Database |
-| `migrate` | backend image | One-shot Alembic migration runner; exits after `alembic upgrade head` |
-| `api` | backend image | FastAPI workers (`ENABLE_SCHEDULER=false`) |
-| `scheduler` | backend image | Single worker with `ENABLE_SCHEDULER=true` running APScheduler jobs on port 8010 |
-| `krakend` | `devopsfaith/krakend:2.6.0` | API gateway; mapped to host port `API_PORT` (default 8000) |
-
-The monitoring stack (`deploy/docker-compose.monitoring.yml`) is a separate compose project with Prometheus, node-exporter, cAdvisor, Loki, Promtail, and Grafana (port 3000). It is started automatically by the deploy script if `docker-compose.monitoring.yml` exists on the VM.
-
-### Deploy script (`deploy/scripts/oci_deploy.sh`)
-
-The script is called by CI but can also be run manually on the VM. It:
-
-1. Logs in to GHCR and records the current Alembic revision for rollback
-2. Runs the `migrate` container against the target image
-3. Brings up `api`, `scheduler`, and `krakend`
-4. Polls `GET /api/v1/health` and checks container states (20 attempts, 3 s apart)
-5. Runs an authenticated smoke test if `SMOKE_TEST_TOKEN` is set
-6. On failure: downgrades the database to the pre-deploy revision and restarts the previous image
-
-### Manual production setup
-
-```bash
-# On the OCI VM — one-time setup
-cp deploy/.env.prod.example /mnt/data/smart-receipt-and-warranty-manager/.env.prod
-# Edit .env.prod with real values
-
-# Place the Firebase service account on the VM
-mkdir -p /mnt/data/smart-receipt-and-warranty-manager/secrets
-# Copy firebase-service-account.json to that secrets/ directory
-```
-
-Then trigger the workflow manually in GitHub Actions with `deploy: true`, or execute `oci_deploy.sh` directly.
-
----
-
-## Project Status
-
-Core features are implemented: receipt scanning with the Textract + Bedrock OCR pipeline, per-line-item warranty and return window tracking, claim PDF generation with defect photo attachments, FCM push notifications, and offline-first sync via Drift/SQLite. The app is targeting Google Play launch.
-
-Showcase page: https://sujayamindev.github.io/reclaima
+© 2026 [Sujaya Manith Mindev](https://www.linkedin.com/in/sujayamindev) · [🔗 Project Page](https://sujayamindev.github.io/reclaima)

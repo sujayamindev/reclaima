@@ -16,7 +16,7 @@
   --c-blue:    #3B82F6;   /* info, URL params */
   --c-white:   #FFFFFF;   /* cards, pills, inputs */
   --c-light:   #F1F5F9;   /* text on dark backgrounds */
-  --c-surface: #F6F8F7;   /* page bg, section bg, stack cards */
+  --c-surface: #ffffff;   /* page bg, section bg, stack cards */
   --c-hover:   #F8FAFA;   /* table row hover */
   --c-border:  #E2E8F0;   /* borders, dividers */
   --c-dim:     #CBD5E1;   /* arrows, scrollbar thumb */
