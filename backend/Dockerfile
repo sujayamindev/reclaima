@@ -29,6 +29,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     VIRTUAL_ENV="/venv" \
     PATH="/venv/bin:$PATH"
 
+# Bump SECURITY_REFRESH to bust the GHA layer cache and force a fresh apt-get upgrade
+# when OS-level CVEs land in Debian's mirrors after a cached layer was written.
+ARG SECURITY_REFRESH=2026-05-26
 RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     postgresql-client \
     && rm -rf /var/lib/apt/lists/*
