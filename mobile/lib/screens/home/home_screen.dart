@@ -280,7 +280,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Receipta.',
+                              'Reclaima.',
                               style: AppTextStyles.appName.copyWith(
                                 color: textPrimary,
                               ),

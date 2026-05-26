@@ -74,10 +74,10 @@ ReceiptModel _receipt({String id = 'r-1', List<ReceiptLineItemModel>? items}) {
 
 void main() {
   group('HomeScreen', () {
-    testWidgets('renders Receipta. app title', (tester) async {
+    testWidgets('renders Reclaima. app title', (tester) async {
       await tester.pumpWidget(_wrap());
       await tester.pumpAndSettle();
-      expect(find.text('Receipta.'), findsOneWidget);
+      expect(find.text('Reclaima.'), findsOneWidget);
     });
 
     testWidgets('renders greeting from provider', (tester) async {

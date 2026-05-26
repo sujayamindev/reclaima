@@ -97,7 +97,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Receipta.',
+                    'Reclaima.',
                     style: AppTextStyles.appName.copyWith(
                       color: AppColors.textPrimary(isDark),
                     ),

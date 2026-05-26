@@ -30,7 +30,7 @@ class ApiConstants {
 
 /// App configuration constants
 class AppConstants {
-  static const String appName = 'Smart Receipt Manager';
+  static const String appName = 'Reclaima';
   static const String appVersion = '1.0.0';
 
   // File upload limits
