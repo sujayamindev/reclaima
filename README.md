@@ -1,6 +1,9 @@
-# [Reclaima](https://sujayamindev.github.io/reclaima)
+<div align="center">
 
-**Scan receipts. Track warranties. File claims — before deadlines expire.**
+# Reclaima
+
+Scan receipts. Track warranties. File claims — before deadlines expire.<br/>
+Receipt OCR with per-item warranty tracking and one-tap claim generation.
 
 ![Flutter](https://img.shields.io/badge/Flutter-3.41.4-54C5F8?logo=flutter&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-Python%203.11-009688?logo=fastapi&logoColor=white)
@@ -9,7 +12,19 @@
 ![OCI](https://img.shields.io/badge/OCI-ARM%20VM-F80000?logo=oracle&logoColor=white)
 ![CI/CD](https://github.com/sujayamindev/reclaima/actions/workflows/ci-cd.yml/badge.svg)
 
-[🔗 Project Page](https://sujayamindev.github.io/reclaima)
+<a href="https://sujaya.dev/reclaima/"> <img alt="Static Badge" src="https://img.shields.io/badge/%F0%9F%94%97%20Project%20Page-brightgreen?style=for-the-badge"> </a>
+
+</div>
+
+---
+
+## Table of Contents
+
+- [What is Reclaima?](#what-is-reclaima)
+- [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
+- [Key Technical Decisions](#key-technical-decisions)
+- [CI/CD Pipeline](#cicd-pipeline)
 
 ---
 
@@ -24,31 +39,31 @@ Reclaima fills that gap. Scan a paper or PDF receipt and Reclaima extracts every
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│               Flutter Mobile App  ·  iOS & Android              │
-│   Riverpod · Drift/SQLite offline · Firebase Auth SDK · FCM     │
-│                    Dio HTTP · image_cropper                     │
-└──────────────────────────────┬──────────────────────────────────┘
-                               │  ↕  Firebase JWT · HTTPS
-┌──────────────────────────────┴──────────────────────────────────┐
-│                     KrakenD API Gateway                         │
-│       port 8080 · JWT validation · rate limiting · routing      │
-└──────────────────────────────┬──────────────────────────────────┘
-                               │  ↕  proxied requests · port 8000
-┌──────────────────────────────┴──────────────────────────────────┐
-│             FastAPI Backend  ·  OCI Compute (Docker)            │
-│       Python 3.11 · SQLAlchemy ORM · Alembic · APScheduler      │
-│           Pydantic v2 · Firebase Admin JWT verification         │
-└─────┬────────────┬─────────────┬──────────────┬────────────┬────┘
-      │            │             │              │            │
-      ▼            ▼             ▼              ▼            ▼
-  PostgreSQL     AWS S3     AWS Textract    AWS Bedrock     FCM
-  ──────────     ──────     ────────────    ──────────      ───
-  Receipts       Receipt    AnalyzeExp.     Claude Haiku   Push
-  Items          images     Structured      OCR cleanup    reminders
-  Claims         PDFs       expense                        Device
-  Users          Cascade    fields                         tokens
-                 deletion   Line items
+                              ┌─────────────────────────────────────────────────────────────────┐
+                              │               Flutter Mobile App  ·  iOS & Android              │
+                              │   Riverpod · Drift/SQLite offline · Firebase Auth SDK · FCM     │
+                              │                    Dio HTTP · image_cropper                     │
+                              └──────────────────────────────┬──────────────────────────────────┘
+                                                             │  ↕  Firebase JWT · HTTPS
+                              ┌──────────────────────────────┴──────────────────────────────────┐
+                              │                     KrakenD API Gateway                         │
+                              │       port 8080 · JWT validation · rate limiting · routing      │
+                              └──────────────────────────────┬──────────────────────────────────┘
+                                                             │  ↕  proxied requests · port 8000
+                              ┌──────────────────────────────┴──────────────────────────────────┐
+                              │             FastAPI Backend  ·  OCI Compute (Docker)            │
+                              │       Python 3.11 · SQLAlchemy ORM · Alembic · APScheduler      │
+                              │           Pydantic v2 · Firebase Admin JWT verification         │
+                              └─────┬────────────┬─────────────┬──────────────┬────────────┬────┘
+                                    │            │             │              │            │
+                                    ▼            ▼             ▼              ▼            ▼
+                                PostgreSQL     AWS S3     AWS Textract    AWS Bedrock     FCM
+                                ──────────     ──────     ────────────    ──────────      ───
+                                Receipts       Receipt    AnalyzeExp.     Claude Haiku   Push
+                                Items          images     Structured      OCR cleanup    reminders
+                                Claims         PDFs       expense                        Device
+                                Users          Cascade    fields                         tokens
+                                               deletion   Line items
 ```
 
 Flutter authenticates with Firebase and passes JWTs to KrakenD. KrakenD validates the token using Firebase's public JWK endpoint and proxies to FastAPI — the backend port is intentionally never exposed directly. FastAPI handles all request-response logic and runs APScheduler jobs for warranty and return deadline reminders.
@@ -137,25 +152,31 @@ A deployment can pass every CI check, build a valid image, and still fail to sta
 ## CI/CD Pipeline
 
 ```
-┌──────────┐  ┌──────────────┐  ┌─── PARALLEL ──────────────────┐  ┌─────────────────┐  ┌─────────────────┐
-│ TRIGGER  │  │   SECURITY   │  │  Backend CI                   │  │  BUILD · main   │  │  DEPLOY · main  │
-│          │  │              │  │  ruff · black · mypy          │  │                 │  │                 │
-│ Push/PR  ├─>│ Secret Scan  ├─>│  pytest ≥70% · alembic        ├─>│ Docker Build    ├─>│ OCI Deploy      │
-│ main     │  │ Gitleaks     │  │  bandit · pip-audit           │  │ arm64 + amd64   │  │ SCP assets      │
-│ open PRs │  │ gates all    │  ├───────────────────────────────┤  │ Trivy · SBOM    │  │ deploy script   │
-│ manual   │  │ downstream   │  │  Mobile CI                    │  │ Cosign · GHCR   │  │ smoke test      │
-└──────────┘  └──────────────┘  │  build_runner · dart format   │  │ sha+latest-prod │  │ Slack on fail   │
-                                │  flutter analyze · test ≥60%  │  └─────────────────┘  └─────────────────┘
-                                │  Android APK                  │
-                                ├───────────────────────────────┤
-                                │  KrakenD Config               │
-                                │  krakend check                │
-                                │  official Docker image        │
-                                └───────────────────────────────┘
+            ┌──────────┐  ┌──────────────┐  ┌─── PARALLEL ──────────────────┐  ┌─────────────────┐  ┌─────────────────┐
+            │ TRIGGER  │  │   SECURITY   │  │  Backend CI                   │  │  BUILD · main   │  │  DEPLOY · main  │
+            │          │  │              │  │  ruff · black · mypy          │  │                 │  │                 │
+            │ Push/PR  ├─>│ Secret Scan  ├─>│  pytest ≥70% · alembic        ├─>│ Docker Build    ├─>│ OCI Deploy      │
+            │ main     │  │ Gitleaks     │  │  bandit · pip-audit           │  │ arm64 + amd64   │  │ SCP assets      │
+            │ open PRs │  │ gates all    │  ├───────────────────────────────┤  │ Trivy · SBOM    │  │ deploy script   │
+            │ manual   │  │ downstream   │  │  Mobile CI                    │  │ Cosign · GHCR   │  │ smoke test      │
+            └──────────┘  └──────────────┘  │  build_runner · dart format   │  │ sha+latest-prod │  │ Slack on fail   │
+                                            │  flutter analyze · test ≥60%  │  └─────────────────┘  └─────────────────┘
+                                            │  Android APK                  │
+                                            ├───────────────────────────────┤
+                                            │  KrakenD Config               │
+                                            │  krakend check                │
+                                            │  official Docker image        │
+                                            └───────────────────────────────┘
 ```
 
 Secret Scan gates all downstream jobs — if Gitleaks finds a credential anywhere in the commit or history, nothing else runs. The three parallel quality gates must all pass before Docker Build starts. Build and deploy only trigger on pushes to `main`.
 
 ---
 
-© 2026 [Sujaya Manith Mindev](https://www.linkedin.com/in/sujayamindev) · [Project Page](https://sujayamindev.github.io/reclaima)
+<div align="center">
+
+<a href="https://sujaya.dev/reclaima/"> <img alt="Static Badge" src="https://img.shields.io/badge/%F0%9F%94%97%20Project%20Page-brightgreen?style=for-the-badge"> </a>
+
+<sub>Built with Flutter & FastAPI · Deployed on OCI · Powered by AWS · © 2026 Sujaya Mindev</sub>
+
+</div>
