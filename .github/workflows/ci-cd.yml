@@ -377,7 +377,7 @@ jobs:
 
       - name: Scan image for vulnerabilities
         # Pinned to SHA of v0.36.0 (2026-04-22): first clean release after the March 2026 tag-poisoning attack.
-        uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
         with:
           image-ref: ${{ env.BACKEND_IMAGE_REPOSITORY }}:${{ steps.meta.outputs.image_tag }}
           format: table
