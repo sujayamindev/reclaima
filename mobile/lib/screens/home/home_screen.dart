@@ -141,12 +141,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         if (receipt != null) {
           // Find matching line item or fallback to the first one available
           final lineItem =
-              (claim.lineItemId != null && claim.lineItemId!.isNotEmpty)
-              ? (receipt.lineItems
-                        .where((i) => i.id == claim.lineItemId)
-                        .firstOrNull ??
-                    receipt.lineItems.firstOrNull)
-              : receipt.lineItems.firstOrNull;
+              receipt.lineItems
+                  .where((i) => i.id == claim.lineItemId)
+                  .firstOrNull ??
+              receipt.lineItems.firstOrNull;
 
           // Even if line item is archived, we still show the claim because it's active.
           alertItems.add(

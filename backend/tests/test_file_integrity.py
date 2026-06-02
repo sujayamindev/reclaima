@@ -20,7 +20,6 @@ from app.api.v1 import claims as claims_api
 from app.api.v1 import receipts as receipts_api
 from app.models import Receipt, ReceiptLineItem, ReceiptStatus, User
 
-
 # ── Magic byte constants ──────────────────────────────────────────────────────
 
 JPEG_MAGIC = b"\xff\xd8\xff"
@@ -227,7 +226,6 @@ class TestOcrExtractMagicBytes:
         assert "does not match" in exc.value.detail
 
 
-
 # ── POST /claims (defect_images) ──────────────────────────────────────────────
 
 
@@ -400,5 +398,3 @@ class TestAssertMagicBytesUnit:
         with pytest.raises(HTTPException) as exc:
             receipts_api._assert_magic_bytes(PNG_MAGIC + b"rest", "image/jpeg")
         assert "does not match" in exc.value.detail
-
-

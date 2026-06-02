@@ -656,14 +656,12 @@ class _ClaimCard extends StatelessWidget {
     try {
       final receipt = allReceipts.firstWhere((r) => r.id == claim.receiptId);
 
-      if (claim.lineItemId != null) {
-        try {
-          final item = receipt.lineItems.firstWhere(
-            (i) => i.id == claim.lineItemId,
-          );
-          return item.displayName;
-        } catch (_) {}
-      }
+      try {
+        final item = receipt.lineItems.firstWhere(
+          (i) => i.id == claim.lineItemId,
+        );
+        return item.displayName;
+      } catch (_) {}
 
       final productNames = receipt.lineItems
           .map((item) => item.displayName)
@@ -679,14 +677,12 @@ class _ClaimCard extends StatelessWidget {
   String? get _productImageUrl {
     try {
       final receipt = allReceipts.firstWhere((r) => r.id == claim.receiptId);
-      if (claim.lineItemId != null) {
-        try {
-          final item = receipt.lineItems.firstWhere(
-            (i) => i.id == claim.lineItemId,
-          );
-          if (item.productImageUrl != null) return item.productImageUrl;
-        } catch (_) {}
-      }
+      try {
+        final item = receipt.lineItems.firstWhere(
+          (i) => i.id == claim.lineItemId,
+        );
+        if (item.productImageUrl != null) return item.productImageUrl;
+      } catch (_) {}
       return receipt.productImageUrl;
     } catch (e) {
       return null;

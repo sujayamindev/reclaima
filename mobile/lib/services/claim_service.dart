@@ -37,7 +37,7 @@ class ClaimDefectImageResponse {
 class ClaimDocumentResponse {
   final String id;
   final String receiptId;
-  final String? lineItemId;
+  final String lineItemId;
   final String issueDescription;
   final String? claimType;
   final String status;
@@ -51,7 +51,7 @@ class ClaimDocumentResponse {
   ClaimDocumentResponse({
     required this.id,
     required this.receiptId,
-    this.lineItemId,
+    required this.lineItemId,
     required this.issueDescription,
     this.claimType,
     required this.status,
@@ -69,7 +69,7 @@ class ClaimDocumentResponse {
     return ClaimDocumentResponse(
       id: json['id'] as String,
       receiptId: json['receiptId'] ?? json['receipt_id'] as String,
-      lineItemId: json['lineItemId'] ?? json['line_item_id'] as String?,
+      lineItemId: (json['lineItemId'] ?? json['line_item_id']) as String,
       issueDescription:
           json['issueDescription'] ?? json['issue_description'] as String,
       claimType: json['claimType'] ?? json['claim_type'] as String?,
@@ -143,12 +143,12 @@ class ClaimService {
     required String receiptId,
     required String issueDescription,
     required String claimType,
-    String? lineItemId,
+    required String lineItemId,
     List<File>? defectImages,
   }) async {
     try {
       logger.i(
-        'Generating claim PDF for receipt $receiptId, product ${lineItemId ?? "all"}, defect images: ${defectImages?.length ?? 0}',
+        'Generating claim PDF for receipt $receiptId, product $lineItemId, defect images: ${defectImages?.length ?? 0}',
       );
 
       // Create multipart form data
@@ -156,10 +156,8 @@ class ClaimService {
         'receipt_id': receiptId,
         'issue_description': issueDescription,
         'claim_type': claimType,
+        'line_item_id': lineItemId,
       };
-      if (lineItemId != null) {
-        formDataMap['line_item_id'] = lineItemId;
-      }
       final formData = FormData.fromMap(formDataMap);
 
       // Add defect images if provided

@@ -88,7 +88,7 @@ class UploadQueue extends Table {
 class ClaimDocuments extends Table {
   TextColumn get id => text()();
   TextColumn get receiptId => text()();
-  TextColumn get lineItemId => text().nullable()();
+  TextColumn get lineItemId => text()();
   TextColumn get issueDescription => text()();
   TextColumn get claimType => text().nullable()();
   TextColumn get status => text().withDefault(const Constant('SUBMITTED'))();
@@ -131,7 +131,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting() : super(NativeDatabase.memory());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -161,6 +161,14 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 4) {
         // v3 → v4: Claim documents and defect images added for offline support.
+        await m.createTable(claimDocuments);
+        await m.createTable(claimDefectImages);
+      }
+      if (from < 5) {
+        // v4 → v5: lineItemId made NOT NULL. Drop and recreate both tables
+        // (local cache only — data is re-synced from the server on next load).
+        await m.drop(claimDefectImages);
+        await m.drop(claimDocuments);
         await m.createTable(claimDocuments);
         await m.createTable(claimDefectImages);
       }

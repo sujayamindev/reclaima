@@ -24,13 +24,13 @@ import '../../data/models/receipt_line_item_model.dart';
 /// Screen for generating and managing warranty claim PDFs
 class ClaimPdfScreen extends ConsumerStatefulWidget {
   final String receiptId;
-  final String? lineItemId; // Product/line item ID - optional
+  final String lineItemId;
   final String receiptStoreName;
 
   const ClaimPdfScreen({
     super.key,
     required this.receiptId,
-    this.lineItemId,
+    required this.lineItemId,
     required this.receiptStoreName,
   });
 
@@ -853,8 +853,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
         await pdfDir.create(recursive: true);
       }
 
-      final filePath =
-          '${pdfDir.path}/claim_${_generatedClaim!.id}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+      final filePath = '${pdfDir.path}/claim_${_generatedClaim!.id}.pdf';
       await Dio().download(url, filePath);
 
       if (showSuccessMessage && mounted) {
@@ -882,8 +881,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
 
     try {
       if (Platform.isAndroid) {
-        final fileName =
-            'claim_${_generatedClaim!.id}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+        final fileName = 'claim_${_generatedClaim!.id}.pdf';
         await AndroidDownloadManagerService.enqueuePdfDownload(
           url: url,
           fileName: fileName,
@@ -905,7 +903,7 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
         }
 
         final filePath =
-            '${downloadsDir.path}/claim_${_generatedClaim!.id}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+            '${downloadsDir.path}/claim_${_generatedClaim!.id}.pdf';
         await Dio().download(url, filePath);
 
         if (mounted) {
@@ -1011,12 +1009,10 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
     final warrantyExpiryDate = receiptAsync.maybeWhen(
       data: (receipt) {
         ReceiptLineItemModel? lineItem;
-        if (widget.lineItemId != null) {
-          for (var item in receipt.lineItems) {
-            if (item.id == widget.lineItemId) {
-              lineItem = item;
-              break;
-            }
+        for (var item in receipt.lineItems) {
+          if (item.id == widget.lineItemId) {
+            lineItem = item;
+            break;
           }
         }
         lineItem ??= receipt.lineItems.isNotEmpty
@@ -1034,12 +1030,10 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
     final returnExpiryDate = receiptAsync.maybeWhen(
       data: (receipt) {
         ReceiptLineItemModel? lineItem;
-        if (widget.lineItemId != null) {
-          for (var item in receipt.lineItems) {
-            if (item.id == widget.lineItemId) {
-              lineItem = item;
-              break;
-            }
+        for (var item in receipt.lineItems) {
+          if (item.id == widget.lineItemId) {
+            lineItem = item;
+            break;
           }
         }
         lineItem ??= receipt.lineItems.isNotEmpty

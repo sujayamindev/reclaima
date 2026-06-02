@@ -28,6 +28,7 @@ class MockS3Service:
         file_content: bytes,
         object_key: str,
         content_type: str = "application/octet-stream",
+        tags: dict[str, str] | None = None,
     ) -> str:
         """
         Mock upload file to S3.
@@ -36,6 +37,7 @@ class MockS3Service:
             file_content: File content as bytes
             object_key: S3 object key (path)
             content_type: MIME type of the file
+            tags: Optional object tags (ignored in mock)
 
         Returns:
             Object key of uploaded file
@@ -176,6 +178,7 @@ class RealS3Service:
         file_content: bytes,
         object_key: str,
         content_type: str = "application/octet-stream",
+        tags: dict[str, str] | None = None,
     ) -> str:
         """
         Upload file to real S3.
@@ -184,17 +187,21 @@ class RealS3Service:
             file_content: File content as bytes
             object_key: S3 object key (path)
             content_type: MIME type of the file
+            tags: Optional object tags (used for S3 lifecycle rule targeting)
 
         Returns:
             Object key of uploaded file
         """
         try:
-            self.s3_client.put_object(
-                Bucket=self.bucket_name,
-                Key=object_key,
-                Body=file_content,
-                ContentType=content_type,
-            )
+            kwargs: dict = {
+                "Bucket": self.bucket_name,
+                "Key": object_key,
+                "Body": file_content,
+                "ContentType": content_type,
+            }
+            if tags:
+                kwargs["Tagging"] = "&".join(f"{k}={v}" for k, v in tags.items())
+            self.s3_client.put_object(**kwargs)
             logger.info(
                 f"Uploaded file to S3: {object_key} ({len(file_content)} bytes)"
             )

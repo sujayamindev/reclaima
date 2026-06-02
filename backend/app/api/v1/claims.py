@@ -70,7 +70,7 @@ async def create_claim(
     receipt_id: str = Form(..., max_length=36),
     issue_description: str = Form(..., max_length=2000),
     claim_type: str = Form("warranty", max_length=20),
-    line_item_id: Optional[str] = Form(None, max_length=36),
+    line_item_id: str = Form(..., max_length=36),
     defect_images: List[UploadFile] = File(default=[]),
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -198,6 +198,7 @@ async def create_claim(
                 file_content=img_content,
                 object_key=s3_key,
                 content_type=img.content_type,
+                tags={"Type": "DefectImage"},
             )
             defect_image_s3_keys.append(s3_key)
             logger.info(f"Uploaded defect image {idx + 1} to S3: {s3_key}")
@@ -660,29 +661,14 @@ async def access_claim_pdf(
         )
 
         if not s3_service.file_exists(generated_pdf_s3_key):
-            logger.info(
-                f"Claim PDF missing in storage for claim {_as_str(claim.id)}; regenerating"
-            )
-            pdf_service = get_pdf_service()
-            pdf_bytes = pdf_service.generate_claim_pdf(
-                receipt=receipt,
-                user=db_user,
-                issue_description=_as_str(claim.issue_description),
-                claim_type=_as_optional_str(claim.claim_type) or "warranty",
-                created_at=_as_optional_datetime(claim.created_at),
-                s3_service=s3_service,
-                claim_id=_as_str(claim.id),
-                line_item_id=_as_optional_str(claim.line_item_id),
-            )
-            s3_service.upload_file(
-                file_content=pdf_bytes,
-                object_key=generated_pdf_s3_key,
-                content_type="application/pdf",
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Claim PDF is no longer available.",
             )
 
         response = ClaimDocumentResponse.model_validate(claim)
         response.url = s3_service.generate_presigned_url(
-            generated_pdf_s3_key, expiration=3600, operation="get_object"
+            generated_pdf_s3_key, expiration=86400, operation="get_object"
         )
         return response
 

@@ -79,7 +79,7 @@ class ClaimRepository {
     required String receiptId,
     required String issueDescription,
     required String claimType,
-    String? lineItemId,
+    required String lineItemId,
     List<File>? defectImages,
   }) async {
     final result = await _remoteService.generateClaimPdf(

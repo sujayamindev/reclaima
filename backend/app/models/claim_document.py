@@ -28,14 +28,14 @@ class ClaimDocument(Base):
     line_item_id = Column(
         String(36),
         ForeignKey("receipt_line_items.id", ondelete="CASCADE"),
-        nullable=True,
+        nullable=False,
         index=True,
     )
 
     # Claim information
     issue_description = Column(Text, nullable=False)
     claim_type = Column(String(64), nullable=True)  # e.g., "warranty", "return"
-    status = Column(String(32), default="SUBMITTED", nullable=False)
+    status = Column(String(32), default="DRAFT", nullable=False)
     notes = Column(Text, nullable=True)
 
     # Generated PDF reference

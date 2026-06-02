@@ -413,7 +413,7 @@ async def test_claim_routes_success_and_errors(db_session, monkeypatch) -> None:
         def __init__(self) -> None:
             self.files: dict[str, bytes] = {}
 
-        def upload_file(self, file_content, object_key, content_type):
+        def upload_file(self, file_content, object_key, content_type, tags=None):
             self.files[object_key] = file_content
             return object_key
 
@@ -477,7 +477,13 @@ async def test_claim_routes_success_and_errors(db_session, monkeypatch) -> None:
     )
     assert fetched.id == claim_id
 
-    # Force regeneration path for PDF access.
+    # Happy path: PDF exists in S3, presigned URL returned.
+    accessed = await claims_api.access_claim_pdf(
+        claim_id, current_user=current_user, db=db_session
+    )
+    assert accessed.url is not None
+
+    # When PDF key points to a missing object, expect 404 (no regeneration).
     claim_row = (
         db_session.query(ClaimDocument).filter(ClaimDocument.id == claim_id).first()
     )
@@ -485,10 +491,11 @@ async def test_claim_routes_success_and_errors(db_session, monkeypatch) -> None:
     claim_row.generated_pdf_s3_key = "missing.pdf"
     db_session.commit()
 
-    accessed = await claims_api.access_claim_pdf(
-        claim_id, current_user=current_user, db=db_session
-    )
-    assert accessed.url is not None
+    with pytest.raises(HTTPException) as exc_info:
+        await claims_api.access_claim_pdf(
+            claim_id, current_user=current_user, db=db_session
+        )
+    assert exc_info.value.status_code == 404
 
     await claims_api.delete_claim(claim_id, current_user=current_user, db=db_session)
     deleted = (
@@ -521,7 +528,7 @@ async def test_claim_routes_cross_user_access(db_session, monkeypatch) -> None:
         def __init__(self) -> None:
             self.files: dict[str, bytes] = {}
 
-        def upload_file(self, file_content, object_key, content_type):
+        def upload_file(self, file_content, object_key, content_type, tags=None):
             self.files[object_key] = file_content
             return object_key
 

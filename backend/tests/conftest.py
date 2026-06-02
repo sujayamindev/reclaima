@@ -20,7 +20,9 @@ from app.models.receipt_line_item import ReceiptLineItem  # noqa: F401, E402
 from app.models.receipt_image import ReceiptImage  # noqa: F401, E402
 from app.models.claim_document import ClaimDocument  # noqa: F401, E402
 from app.models.claim_defect_image import ClaimDefectImage  # noqa: F401, E402
-from app.models.notification_preference import UserNotificationPreferences  # noqa: F401, E402
+from app.models.notification_preference import (  # noqa: E402
+    UserNotificationPreferences,  # noqa: F401
+)
 from app.main import app  # noqa: E402
 from app.db.session import get_db  # noqa: E402
 

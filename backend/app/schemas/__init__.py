@@ -343,7 +343,7 @@ class ClaimDocumentCreate(ClaimDocumentBase):
     """Claim document creation schema."""
 
     receipt_id: str
-    line_item_id: Optional[str] = None
+    line_item_id: str
     claim_type: Literal["warranty", "return"] = "warranty"
 
 
@@ -361,7 +361,7 @@ class ClaimDocumentResponse(ClaimDocumentBase):
 
     id: str
     receipt_id: str
-    line_item_id: Optional[str] = None
+    line_item_id: str
     status: ClaimStatusEnum
     notes: Optional[str] = None
     generated_pdf_s3_key: Optional[str]

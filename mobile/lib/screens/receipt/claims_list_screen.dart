@@ -13,13 +13,13 @@ import 'claim_pdf_screen.dart';
 /// Screen that displays claims for a specific product (line item)
 class ClaimsListScreen extends ConsumerStatefulWidget {
   final String receiptId;
-  final String? lineItemId; // Product/line item ID - optional for filtering
+  final String lineItemId;
   final String receiptStoreName;
 
   const ClaimsListScreen({
     super.key,
     required this.receiptId,
-    this.lineItemId,
+    required this.lineItemId,
     required this.receiptStoreName,
   });
 
@@ -46,7 +46,7 @@ class _ClaimsListScreenState extends ConsumerState<ClaimsListScreen> {
 
     try {
       logger.i(
-        'Loading claims for product ${widget.lineItemId ?? "all"} in receipt ${widget.receiptId}',
+        'Loading claims for product ${widget.lineItemId} in receipt ${widget.receiptId}',
       );
       final claimRepository = ref.read(claimRepositoryProvider);
       final claims = await claimRepository.getClaims(

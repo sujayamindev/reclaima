@@ -751,7 +751,7 @@ class ProductDetailScreen extends ConsumerWidget {
                 MaterialPageRoute(
                   builder: (context) => ClaimsListScreen(
                     receiptId: product.receiptId,
-                    lineItemId: product.lineItemId,
+                    lineItemId: product.lineItemId!,
                     receiptStoreName: product.receipt.storeName ?? 'Store',
                   ),
                 ),

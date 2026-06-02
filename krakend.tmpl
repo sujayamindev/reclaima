@@ -211,74 +211,6 @@
       ]
     },
     {
-      "endpoint": "/api/v1/claims/{claim_id}/documents",
-      "method": "POST",
-      "output_encoding": "no-op",
-      "input_headers": [
-        "*"
-      ],
-      "extra_config": {
-        "qos/ratelimit/router": {
-          "client_max_rate": 0.166,
-          "client_capacity": 1,
-          "strategy": "ip"
-        },
-        "auth/validator": {
-          "alg": "RS256",
-          "jwk_url": "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com",
-          "issuer": "https://securetoken.google.com/{{ env "FIREBASE_PROJECT_ID" }}",
-          "audience": ["{{ env "FIREBASE_PROJECT_ID" }}"],
-          "cache": true
-        }
-      },
-      "backend": [
-        {
-          "url_pattern": "/api/v1/claims/{claim_id}/documents",
-          "encoding": "no-op",
-          "sd": "static",
-          "method": "POST",
-          "host": [
-            "http://backend:8000"
-          ],
-          "disable_host_sanitize": false
-        }
-      ]
-    },
-    {
-      "endpoint": "/api/v1/claims/{claim_id}/defect-images",
-      "method": "POST",
-      "output_encoding": "no-op",
-      "input_headers": [
-        "*"
-      ],
-      "extra_config": {
-        "qos/ratelimit/router": {
-          "client_max_rate": 0.166,
-          "client_capacity": 1,
-          "strategy": "ip"
-        },
-        "auth/validator": {
-          "alg": "RS256",
-          "jwk_url": "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com",
-          "issuer": "https://securetoken.google.com/{{ env "FIREBASE_PROJECT_ID" }}",
-          "audience": ["{{ env "FIREBASE_PROJECT_ID" }}"],
-          "cache": true
-        }
-      },
-      "backend": [
-        {
-          "url_pattern": "/api/v1/claims/{claim_id}/defect-images",
-          "encoding": "no-op",
-          "sd": "static",
-          "method": "POST",
-          "host": [
-            "http://backend:8000"
-          ],
-          "disable_host_sanitize": false
-        }
-      ]
-    },
-    {
       "endpoint": "/api/v1/receipts",
       "method": "GET",
       "output_encoding": "no-op",
@@ -831,8 +763,8 @@
       ],
       "extra_config": {
         "qos/ratelimit/router": {
-          "client_max_rate": 1.66,
-          "client_capacity": 8,
+          "client_max_rate": 0.166,
+          "client_capacity": 1,
           "strategy": "ip"
         },
         "auth/validator": {
@@ -1019,142 +951,6 @@
           "encoding": "no-op",
           "sd": "static",
           "method": "POST",
-          "host": [
-            "http://backend:8000"
-          ],
-          "disable_host_sanitize": false
-        }
-      ]
-    },
-    {
-      "endpoint": "/api/v1/claims/{claim_id}/documents",
-      "method": "GET",
-      "output_encoding": "no-op",
-      "input_headers": [
-        "*"
-      ],
-      "extra_config": {
-        "qos/ratelimit/router": {
-          "client_max_rate": 1.66,
-          "client_capacity": 8,
-          "strategy": "ip"
-        },
-        "auth/validator": {
-          "alg": "RS256",
-          "jwk_url": "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com",
-          "issuer": "https://securetoken.google.com/{{ env "FIREBASE_PROJECT_ID" }}",
-          "audience": ["{{ env "FIREBASE_PROJECT_ID" }}"],
-          "cache": true
-        }
-      },
-      "backend": [
-        {
-          "url_pattern": "/api/v1/claims/{claim_id}/documents",
-          "encoding": "no-op",
-          "sd": "static",
-          "method": "GET",
-          "host": [
-            "http://backend:8000"
-          ],
-          "disable_host_sanitize": false
-        }
-      ]
-    },
-    {
-      "endpoint": "/api/v1/claims/{claim_id}/documents/{document_id}/url",
-      "method": "GET",
-      "output_encoding": "no-op",
-      "input_headers": [
-        "*"
-      ],
-      "extra_config": {
-        "qos/ratelimit/router": {
-          "client_max_rate": 1.66,
-          "client_capacity": 8,
-          "strategy": "ip"
-        },
-        "auth/validator": {
-          "alg": "RS256",
-          "jwk_url": "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com",
-          "issuer": "https://securetoken.google.com/{{ env "FIREBASE_PROJECT_ID" }}",
-          "audience": ["{{ env "FIREBASE_PROJECT_ID" }}"],
-          "cache": true
-        }
-      },
-      "backend": [
-        {
-          "url_pattern": "/api/v1/claims/{claim_id}/documents/{document_id}/url",
-          "encoding": "no-op",
-          "sd": "static",
-          "method": "GET",
-          "host": [
-            "http://backend:8000"
-          ],
-          "disable_host_sanitize": false
-        }
-      ]
-    },
-    {
-      "endpoint": "/api/v1/claims/{claim_id}/defect-images",
-      "method": "GET",
-      "output_encoding": "no-op",
-      "input_headers": [
-        "*"
-      ],
-      "extra_config": {
-        "qos/ratelimit/router": {
-          "client_max_rate": 1.66,
-          "client_capacity": 8,
-          "strategy": "ip"
-        },
-        "auth/validator": {
-          "alg": "RS256",
-          "jwk_url": "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com",
-          "issuer": "https://securetoken.google.com/{{ env "FIREBASE_PROJECT_ID" }}",
-          "audience": ["{{ env "FIREBASE_PROJECT_ID" }}"],
-          "cache": true
-        }
-      },
-      "backend": [
-        {
-          "url_pattern": "/api/v1/claims/{claim_id}/defect-images",
-          "encoding": "no-op",
-          "sd": "static",
-          "method": "GET",
-          "host": [
-            "http://backend:8000"
-          ],
-          "disable_host_sanitize": false
-        }
-      ]
-    },
-    {
-      "endpoint": "/api/v1/claims/{claim_id}/defect-images/{image_id}/url",
-      "method": "GET",
-      "output_encoding": "no-op",
-      "input_headers": [
-        "*"
-      ],
-      "extra_config": {
-        "qos/ratelimit/router": {
-          "client_max_rate": 1.66,
-          "client_capacity": 8,
-          "strategy": "ip"
-        },
-        "auth/validator": {
-          "alg": "RS256",
-          "jwk_url": "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com",
-          "issuer": "https://securetoken.google.com/{{ env "FIREBASE_PROJECT_ID" }}",
-          "audience": ["{{ env "FIREBASE_PROJECT_ID" }}"],
-          "cache": true
-        }
-      },
-      "backend": [
-        {
-          "url_pattern": "/api/v1/claims/{claim_id}/defect-images/{image_id}/url",
-          "encoding": "no-op",
-          "sd": "static",
-          "method": "GET",
           "host": [
             "http://backend:8000"
           ],

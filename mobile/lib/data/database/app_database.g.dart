@@ -3122,9 +3122,9 @@ class $ClaimDocumentsTable extends ClaimDocuments
   late final GeneratedColumn<String> lineItemId = GeneratedColumn<String>(
     'line_item_id',
     aliasedName,
-    true,
+    false,
     type: DriftSqlType.string,
-    requiredDuringInsert: false,
+    requiredDuringInsert: true,
   );
   static const VerificationMeta _issueDescriptionMeta = const VerificationMeta(
     'issueDescription',
@@ -3259,6 +3259,8 @@ class $ClaimDocumentsTable extends ClaimDocuments
           _lineItemIdMeta,
         ),
       );
+    } else if (isInserting) {
+      context.missing(_lineItemIdMeta);
     }
     if (data.containsKey('issue_description')) {
       context.handle(
@@ -3340,7 +3342,7 @@ class $ClaimDocumentsTable extends ClaimDocuments
       lineItemId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}line_item_id'],
-      ),
+      )!,
       issueDescription: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}issue_description'],
@@ -3385,7 +3387,7 @@ class $ClaimDocumentsTable extends ClaimDocuments
 class ClaimDocument extends DataClass implements Insertable<ClaimDocument> {
   final String id;
   final String receiptId;
-  final String? lineItemId;
+  final String lineItemId;
   final String issueDescription;
   final String? claimType;
   final String status;
@@ -3397,7 +3399,7 @@ class ClaimDocument extends DataClass implements Insertable<ClaimDocument> {
   const ClaimDocument({
     required this.id,
     required this.receiptId,
-    this.lineItemId,
+    required this.lineItemId,
     required this.issueDescription,
     this.claimType,
     required this.status,
@@ -3412,9 +3414,7 @@ class ClaimDocument extends DataClass implements Insertable<ClaimDocument> {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['receipt_id'] = Variable<String>(receiptId);
-    if (!nullToAbsent || lineItemId != null) {
-      map['line_item_id'] = Variable<String>(lineItemId);
-    }
+    map['line_item_id'] = Variable<String>(lineItemId);
     map['issue_description'] = Variable<String>(issueDescription);
     if (!nullToAbsent || claimType != null) {
       map['claim_type'] = Variable<String>(claimType);
@@ -3438,9 +3438,7 @@ class ClaimDocument extends DataClass implements Insertable<ClaimDocument> {
     return ClaimDocumentsCompanion(
       id: Value(id),
       receiptId: Value(receiptId),
-      lineItemId: lineItemId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(lineItemId),
+      lineItemId: Value(lineItemId),
       issueDescription: Value(issueDescription),
       claimType: claimType == null && nullToAbsent
           ? const Value.absent()
@@ -3468,7 +3466,7 @@ class ClaimDocument extends DataClass implements Insertable<ClaimDocument> {
     return ClaimDocument(
       id: serializer.fromJson<String>(json['id']),
       receiptId: serializer.fromJson<String>(json['receiptId']),
-      lineItemId: serializer.fromJson<String?>(json['lineItemId']),
+      lineItemId: serializer.fromJson<String>(json['lineItemId']),
       issueDescription: serializer.fromJson<String>(json['issueDescription']),
       claimType: serializer.fromJson<String?>(json['claimType']),
       status: serializer.fromJson<String>(json['status']),
@@ -3487,7 +3485,7 @@ class ClaimDocument extends DataClass implements Insertable<ClaimDocument> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'receiptId': serializer.toJson<String>(receiptId),
-      'lineItemId': serializer.toJson<String?>(lineItemId),
+      'lineItemId': serializer.toJson<String>(lineItemId),
       'issueDescription': serializer.toJson<String>(issueDescription),
       'claimType': serializer.toJson<String?>(claimType),
       'status': serializer.toJson<String>(status),
@@ -3502,7 +3500,7 @@ class ClaimDocument extends DataClass implements Insertable<ClaimDocument> {
   ClaimDocument copyWith({
     String? id,
     String? receiptId,
-    Value<String?> lineItemId = const Value.absent(),
+    String? lineItemId,
     String? issueDescription,
     Value<String?> claimType = const Value.absent(),
     String? status,
@@ -3514,7 +3512,7 @@ class ClaimDocument extends DataClass implements Insertable<ClaimDocument> {
   }) => ClaimDocument(
     id: id ?? this.id,
     receiptId: receiptId ?? this.receiptId,
-    lineItemId: lineItemId.present ? lineItemId.value : this.lineItemId,
+    lineItemId: lineItemId ?? this.lineItemId,
     issueDescription: issueDescription ?? this.issueDescription,
     claimType: claimType.present ? claimType.value : this.claimType,
     status: status ?? this.status,
@@ -3600,7 +3598,7 @@ class ClaimDocument extends DataClass implements Insertable<ClaimDocument> {
 class ClaimDocumentsCompanion extends UpdateCompanion<ClaimDocument> {
   final Value<String> id;
   final Value<String> receiptId;
-  final Value<String?> lineItemId;
+  final Value<String> lineItemId;
   final Value<String> issueDescription;
   final Value<String?> claimType;
   final Value<String> status;
@@ -3627,7 +3625,7 @@ class ClaimDocumentsCompanion extends UpdateCompanion<ClaimDocument> {
   ClaimDocumentsCompanion.insert({
     required String id,
     required String receiptId,
-    this.lineItemId = const Value.absent(),
+    required String lineItemId,
     required String issueDescription,
     this.claimType = const Value.absent(),
     this.status = const Value.absent(),
@@ -3639,6 +3637,7 @@ class ClaimDocumentsCompanion extends UpdateCompanion<ClaimDocument> {
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        receiptId = Value(receiptId),
+       lineItemId = Value(lineItemId),
        issueDescription = Value(issueDescription),
        createdAt = Value(createdAt),
        updatedAt = Value(updatedAt);
@@ -3675,7 +3674,7 @@ class ClaimDocumentsCompanion extends UpdateCompanion<ClaimDocument> {
   ClaimDocumentsCompanion copyWith({
     Value<String>? id,
     Value<String>? receiptId,
-    Value<String?>? lineItemId,
+    Value<String>? lineItemId,
     Value<String>? issueDescription,
     Value<String?>? claimType,
     Value<String>? status,
@@ -5316,7 +5315,7 @@ typedef $$ClaimDocumentsTableCreateCompanionBuilder =
     ClaimDocumentsCompanion Function({
       required String id,
       required String receiptId,
-      Value<String?> lineItemId,
+      required String lineItemId,
       required String issueDescription,
       Value<String?> claimType,
       Value<String> status,
@@ -5331,7 +5330,7 @@ typedef $$ClaimDocumentsTableUpdateCompanionBuilder =
     ClaimDocumentsCompanion Function({
       Value<String> id,
       Value<String> receiptId,
-      Value<String?> lineItemId,
+      Value<String> lineItemId,
       Value<String> issueDescription,
       Value<String?> claimType,
       Value<String> status,
@@ -5371,7 +5370,7 @@ class $$ClaimDocumentsTableTableManager
               ({
                 Value<String> id = const Value.absent(),
                 Value<String> receiptId = const Value.absent(),
-                Value<String?> lineItemId = const Value.absent(),
+                Value<String> lineItemId = const Value.absent(),
                 Value<String> issueDescription = const Value.absent(),
                 Value<String?> claimType = const Value.absent(),
                 Value<String> status = const Value.absent(),
@@ -5399,7 +5398,7 @@ class $$ClaimDocumentsTableTableManager
               ({
                 required String id,
                 required String receiptId,
-                Value<String?> lineItemId = const Value.absent(),
+                required String lineItemId,
                 required String issueDescription,
                 Value<String?> claimType = const Value.absent(),
                 Value<String> status = const Value.absent(),
