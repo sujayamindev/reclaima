@@ -73,7 +73,7 @@ dependencies:
   json_annotation: ^4.9.0
   figma_squircle: ^0.6.3
   google_sign_in: ^7.2.0
-  sign_in_with_apple: ^6.1.0
+  sign_in_with_apple: ^8.1.0
   open_filex: ^4.7.0
   permission_handler: ^12.0.2
   flutter_native_splash: ^2.4.7
