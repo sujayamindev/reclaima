@@ -32,7 +32,7 @@ dependencies:
   # UI
   cupertino_icons: ^1.0.9
   material_symbols_icons: ^4.2928.1
-  google_fonts: ^6.2.1
+  google_fonts: ^8.1.0
 
   # State Management
   flutter_riverpod: ^2.5.1
