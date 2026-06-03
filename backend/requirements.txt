@@ -56,5 +56,5 @@ sentry-sdk[fastapi]==2.61.0
 
 # Security overrides
 wheel>=0.46.2
-jaraco.context>=6.1.0
+jaraco.context>=6.1.2
 pyjwt>=2.13.0
