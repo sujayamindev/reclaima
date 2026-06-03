@@ -76,7 +76,7 @@ dependencies:
   sign_in_with_apple: ^6.1.0
   open_filex: ^4.7.0
   permission_handler: ^12.0.2
-  flutter_native_splash: ^2.4.8
+  flutter_native_splash: ^2.4.7
   sentry_flutter: ^8.14.2
 
 dev_dependencies:
