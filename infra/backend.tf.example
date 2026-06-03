@@ -1,0 +1,24 @@
+# Remote state backend using OCI Object Storage (native OCI backend).
+# See state_bucket.tf for the bootstrap sequence before using this file.
+#
+# Setup steps:
+#   1. Copy this file to backend.tf (it is gitignored — safe to include credentials).
+#   2. Fill in the four <PLACEHOLDER> values from your terraform.tfvars.
+#      namespace is your OCI Object Storage namespace: run `terraform output oci_namespace`
+#      or find it in OCI Console → Object Storage → bucket → Namespace field.
+#   3. Run: terraform init -migrate-state
+
+terraform {
+  backend "oci" {
+    bucket    = "reclaima-terraform-state"
+    namespace = "<OCI_NAMESPACE>"
+    region    = "ap-singapore-1"
+    key       = "reclaima/terraform.tfstate"
+
+    auth             = "APIKey"
+    tenancy_ocid     = "<TENANCY_OCID>"
+    user_ocid        = "<OCI_USER_OCID>"
+    fingerprint      = "<OCI_API_FINGERPRINT>"
+    private_key_path = "<ABSOLUTE_PATH_TO_OCI_API_KEY.pem>"
+  }
+}

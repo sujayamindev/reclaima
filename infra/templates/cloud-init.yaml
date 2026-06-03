@@ -1,0 +1,27 @@
+#cloud-config
+
+# Runs once on first boot of a fresh Oracle Linux 9 ARM instance.
+# Not re-executed on the existing VM (cloud-init runs only at first boot).
+# Kept here for reprovisioning or disaster recovery scenarios.
+
+package_update: true
+package_upgrade: false
+
+runcmd:
+  # OS firewall — mirror the NSG inbound rules in oci_nsg.tf
+  # firewalld is the default on Oracle Linux 9 and runs alongside NSG rules.
+  - firewall-cmd --permanent --add-port=22/tcp
+  - firewall-cmd --permanent --add-port=8000/tcp
+  - firewall-cmd --permanent --add-port=3000/tcp
+  - firewall-cmd --reload
+
+  # Docker (convenience script detects ARM64 and targets RHEL-compatible repos)
+  - dnf install -y dnf-plugins-core
+  - dnf config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
+  - dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  - usermod -aG docker opc
+  - systemctl enable --now docker
+
+  # Infisical CLI
+  - curl -1sLf 'https://dl.cloudsmith.io/public/infisical/infisical-cli/setup.rpm.sh' | bash
+  - dnf install -y infisical
