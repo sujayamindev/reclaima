@@ -4233,6 +4233,422 @@ typedef $$ReceiptsTableUpdateCompanionBuilder =
       Value<int> rowid,
     });
 
+final class $$ReceiptsTableReferences
+    extends BaseReferences<_$AppDatabase, $ReceiptsTable, Receipt> {
+  $$ReceiptsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$ReceiptLineItemsTable, List<ReceiptLineItem>>
+  _receiptLineItemsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.receiptLineItems,
+    aliasName: $_aliasNameGenerator(
+      db.receipts.id,
+      db.receiptLineItems.receiptId,
+    ),
+  );
+
+  $$ReceiptLineItemsTableProcessedTableManager get receiptLineItemsRefs {
+    final manager = $$ReceiptLineItemsTableTableManager(
+      $_db,
+      $_db.receiptLineItems,
+    ).filter((f) => f.receiptId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _receiptLineItemsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$ReceiptsTableFilterComposer
+    extends Composer<_$AppDatabase, $ReceiptsTable> {
+  $$ReceiptsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get s3ObjectKey => $composableBuilder(
+    column: $table.s3ObjectKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get storeName => $composableBuilder(
+    column: $table.storeName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get purchaseDate => $composableBuilder(
+    column: $table.purchaseDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get totalAmount => $composableBuilder(
+    column: $table.totalAmount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get currency => $composableBuilder(
+    column: $table.currency,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get ocrRetryCount => $composableBuilder(
+    column: $table.ocrRetryCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastOcrAttemptAt => $composableBuilder(
+    column: $table.lastOcrAttemptAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get invoiceNumber => $composableBuilder(
+    column: $table.invoiceNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get vendorAddress => $composableBuilder(
+    column: $table.vendorAddress,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get vendorPhone => $composableBuilder(
+    column: $table.vendorPhone,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get vendorEmail => $composableBuilder(
+    column: $table.vendorEmail,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get vendorUrl => $composableBuilder(
+    column: $table.vendorUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get warrantyNotes => $composableBuilder(
+    column: $table.warrantyNotes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get remarks => $composableBuilder(
+    column: $table.remarks,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get syncedAt => $composableBuilder(
+    column: $table.syncedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get localImagePath => $composableBuilder(
+    column: $table.localImagePath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> receiptLineItemsRefs(
+    Expression<bool> Function($$ReceiptLineItemsTableFilterComposer f) f,
+  ) {
+    final $$ReceiptLineItemsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.receiptLineItems,
+      getReferencedColumn: (t) => t.receiptId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ReceiptLineItemsTableFilterComposer(
+            $db: $db,
+            $table: $db.receiptLineItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$ReceiptsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ReceiptsTable> {
+  $$ReceiptsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get s3ObjectKey => $composableBuilder(
+    column: $table.s3ObjectKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get storeName => $composableBuilder(
+    column: $table.storeName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get purchaseDate => $composableBuilder(
+    column: $table.purchaseDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get totalAmount => $composableBuilder(
+    column: $table.totalAmount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get currency => $composableBuilder(
+    column: $table.currency,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get ocrRetryCount => $composableBuilder(
+    column: $table.ocrRetryCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastOcrAttemptAt => $composableBuilder(
+    column: $table.lastOcrAttemptAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get invoiceNumber => $composableBuilder(
+    column: $table.invoiceNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get vendorAddress => $composableBuilder(
+    column: $table.vendorAddress,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get vendorPhone => $composableBuilder(
+    column: $table.vendorPhone,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get vendorEmail => $composableBuilder(
+    column: $table.vendorEmail,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get vendorUrl => $composableBuilder(
+    column: $table.vendorUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get warrantyNotes => $composableBuilder(
+    column: $table.warrantyNotes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get remarks => $composableBuilder(
+    column: $table.remarks,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get syncedAt => $composableBuilder(
+    column: $table.syncedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get localImagePath => $composableBuilder(
+    column: $table.localImagePath,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ReceiptsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ReceiptsTable> {
+  $$ReceiptsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get s3ObjectKey => $composableBuilder(
+    column: $table.s3ObjectKey,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get storeName =>
+      $composableBuilder(column: $table.storeName, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get purchaseDate => $composableBuilder(
+    column: $table.purchaseDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get totalAmount => $composableBuilder(
+    column: $table.totalAmount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get currency =>
+      $composableBuilder(column: $table.currency, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<int> get ocrRetryCount => $composableBuilder(
+    column: $table.ocrRetryCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get lastOcrAttemptAt => $composableBuilder(
+    column: $table.lastOcrAttemptAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<String> get invoiceNumber => $composableBuilder(
+    column: $table.invoiceNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get vendorAddress => $composableBuilder(
+    column: $table.vendorAddress,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get vendorPhone => $composableBuilder(
+    column: $table.vendorPhone,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get vendorEmail => $composableBuilder(
+    column: $table.vendorEmail,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get vendorUrl =>
+      $composableBuilder(column: $table.vendorUrl, builder: (column) => column);
+
+  GeneratedColumn<String> get warrantyNotes => $composableBuilder(
+    column: $table.warrantyNotes,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get remarks =>
+      $composableBuilder(column: $table.remarks, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get syncedAt =>
+      $composableBuilder(column: $table.syncedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get localImagePath => $composableBuilder(
+    column: $table.localImagePath,
+    builder: (column) => column,
+  );
+
+  Expression<T> receiptLineItemsRefs<T extends Object>(
+    Expression<T> Function($$ReceiptLineItemsTableAnnotationComposer a) f,
+  ) {
+    final $$ReceiptLineItemsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.receiptLineItems,
+      getReferencedColumn: (t) => t.receiptId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ReceiptLineItemsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.receiptLineItems,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
 class $$ReceiptsTableTableManager
     extends
         RootTableManager<
@@ -4241,20 +4657,24 @@ class $$ReceiptsTableTableManager
           Receipt,
           $$ReceiptsTableFilterComposer,
           $$ReceiptsTableOrderingComposer,
+          $$ReceiptsTableAnnotationComposer,
           $$ReceiptsTableCreateCompanionBuilder,
-          $$ReceiptsTableUpdateCompanionBuilder
+          $$ReceiptsTableUpdateCompanionBuilder,
+          (Receipt, $$ReceiptsTableReferences),
+          Receipt,
+          PrefetchHooks Function({bool receiptLineItemsRefs})
         > {
   $$ReceiptsTableTableManager(_$AppDatabase db, $ReceiptsTable table)
     : super(
         TableManagerState(
           db: db,
           table: table,
-          filteringComposer: $$ReceiptsTableFilterComposer(
-            ComposerState(db, table),
-          ),
-          orderingComposer: $$ReceiptsTableOrderingComposer(
-            ComposerState(db, table),
-          ),
+          createFilteringComposer: () =>
+              $$ReceiptsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ReceiptsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ReceiptsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
@@ -4355,304 +4775,63 @@ class $$ReceiptsTableTableManager
                 localImagePath: localImagePath,
                 rowid: rowid,
               ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ReceiptsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({receiptLineItemsRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (receiptLineItemsRefs) db.receiptLineItems,
+              ],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (receiptLineItemsRefs)
+                    await $_getPrefetchedData<
+                      Receipt,
+                      $ReceiptsTable,
+                      ReceiptLineItem
+                    >(
+                      currentTable: table,
+                      referencedTable: $$ReceiptsTableReferences
+                          ._receiptLineItemsRefsTable(db),
+                      managerFromTypedResult: (p0) => $$ReceiptsTableReferences(
+                        db,
+                        table,
+                        p0,
+                      ).receiptLineItemsRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.receiptId == item.id),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
         ),
       );
 }
 
-class $$ReceiptsTableFilterComposer
-    extends FilterComposer<_$AppDatabase, $ReceiptsTable> {
-  $$ReceiptsTableFilterComposer(super.$state);
-  ColumnFilters<String> get id => $state.composableBuilder(
-    column: $state.table.id,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<String> get userId => $state.composableBuilder(
-    column: $state.table.userId,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<String> get s3ObjectKey => $state.composableBuilder(
-    column: $state.table.s3ObjectKey,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<String> get storeName => $state.composableBuilder(
-    column: $state.table.storeName,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<DateTime> get purchaseDate => $state.composableBuilder(
-    column: $state.table.purchaseDate,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<double> get totalAmount => $state.composableBuilder(
-    column: $state.table.totalAmount,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<String> get currency => $state.composableBuilder(
-    column: $state.table.currency,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<String> get status => $state.composableBuilder(
-    column: $state.table.status,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<int> get ocrRetryCount => $state.composableBuilder(
-    column: $state.table.ocrRetryCount,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<DateTime> get lastOcrAttemptAt => $state.composableBuilder(
-    column: $state.table.lastOcrAttemptAt,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<String> get notes => $state.composableBuilder(
-    column: $state.table.notes,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<String> get invoiceNumber => $state.composableBuilder(
-    column: $state.table.invoiceNumber,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<String> get vendorAddress => $state.composableBuilder(
-    column: $state.table.vendorAddress,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<String> get vendorPhone => $state.composableBuilder(
-    column: $state.table.vendorPhone,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<String> get vendorEmail => $state.composableBuilder(
-    column: $state.table.vendorEmail,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<String> get vendorUrl => $state.composableBuilder(
-    column: $state.table.vendorUrl,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<String> get warrantyNotes => $state.composableBuilder(
-    column: $state.table.warrantyNotes,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<String> get remarks => $state.composableBuilder(
-    column: $state.table.remarks,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<DateTime> get createdAt => $state.composableBuilder(
-    column: $state.table.createdAt,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<DateTime> get updatedAt => $state.composableBuilder(
-    column: $state.table.updatedAt,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<DateTime> get syncedAt => $state.composableBuilder(
-    column: $state.table.syncedAt,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<String> get localImagePath => $state.composableBuilder(
-    column: $state.table.localImagePath,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ComposableFilter receiptLineItemsRefs(
-    ComposableFilter Function($$ReceiptLineItemsTableFilterComposer f) f,
-  ) {
-    final $$ReceiptLineItemsTableFilterComposer composer = $state
-        .composerBuilder(
-          composer: this,
-          getCurrentColumn: (t) => t.id,
-          referencedTable: $state.db.receiptLineItems,
-          getReferencedColumn: (t) => t.receiptId,
-          builder: (joinBuilder, parentComposers) =>
-              $$ReceiptLineItemsTableFilterComposer(
-                ComposerState(
-                  $state.db,
-                  $state.db.receiptLineItems,
-                  joinBuilder,
-                  parentComposers,
-                ),
-              ),
-        );
-    return f(composer);
-  }
-}
-
-class $$ReceiptsTableOrderingComposer
-    extends OrderingComposer<_$AppDatabase, $ReceiptsTable> {
-  $$ReceiptsTableOrderingComposer(super.$state);
-  ColumnOrderings<String> get id => $state.composableBuilder(
-    column: $state.table.id,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<String> get userId => $state.composableBuilder(
-    column: $state.table.userId,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<String> get s3ObjectKey => $state.composableBuilder(
-    column: $state.table.s3ObjectKey,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<String> get storeName => $state.composableBuilder(
-    column: $state.table.storeName,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<DateTime> get purchaseDate => $state.composableBuilder(
-    column: $state.table.purchaseDate,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<double> get totalAmount => $state.composableBuilder(
-    column: $state.table.totalAmount,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<String> get currency => $state.composableBuilder(
-    column: $state.table.currency,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<String> get status => $state.composableBuilder(
-    column: $state.table.status,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<int> get ocrRetryCount => $state.composableBuilder(
-    column: $state.table.ocrRetryCount,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<DateTime> get lastOcrAttemptAt => $state.composableBuilder(
-    column: $state.table.lastOcrAttemptAt,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<String> get notes => $state.composableBuilder(
-    column: $state.table.notes,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<String> get invoiceNumber => $state.composableBuilder(
-    column: $state.table.invoiceNumber,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<String> get vendorAddress => $state.composableBuilder(
-    column: $state.table.vendorAddress,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<String> get vendorPhone => $state.composableBuilder(
-    column: $state.table.vendorPhone,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<String> get vendorEmail => $state.composableBuilder(
-    column: $state.table.vendorEmail,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<String> get vendorUrl => $state.composableBuilder(
-    column: $state.table.vendorUrl,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<String> get warrantyNotes => $state.composableBuilder(
-    column: $state.table.warrantyNotes,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<String> get remarks => $state.composableBuilder(
-    column: $state.table.remarks,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<DateTime> get createdAt => $state.composableBuilder(
-    column: $state.table.createdAt,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<DateTime> get updatedAt => $state.composableBuilder(
-    column: $state.table.updatedAt,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<DateTime> get syncedAt => $state.composableBuilder(
-    column: $state.table.syncedAt,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<String> get localImagePath => $state.composableBuilder(
-    column: $state.table.localImagePath,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-}
-
+typedef $$ReceiptsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ReceiptsTable,
+      Receipt,
+      $$ReceiptsTableFilterComposer,
+      $$ReceiptsTableOrderingComposer,
+      $$ReceiptsTableAnnotationComposer,
+      $$ReceiptsTableCreateCompanionBuilder,
+      $$ReceiptsTableUpdateCompanionBuilder,
+      (Receipt, $$ReceiptsTableReferences),
+      Receipt,
+      PrefetchHooks Function({bool receiptLineItemsRefs})
+    >;
 typedef $$ReceiptLineItemsTableCreateCompanionBuilder =
     ReceiptLineItemsCompanion Function({
       required String id,
@@ -4706,6 +4885,437 @@ typedef $$ReceiptLineItemsTableUpdateCompanionBuilder =
       Value<int> rowid,
     });
 
+final class $$ReceiptLineItemsTableReferences
+    extends
+        BaseReferences<_$AppDatabase, $ReceiptLineItemsTable, ReceiptLineItem> {
+  $$ReceiptLineItemsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $ReceiptsTable _receiptIdTable(_$AppDatabase db) =>
+      db.receipts.createAlias(
+        $_aliasNameGenerator(db.receiptLineItems.receiptId, db.receipts.id),
+      );
+
+  $$ReceiptsTableProcessedTableManager get receiptId {
+    final $_column = $_itemColumn<String>('receipt_id')!;
+
+    final manager = $$ReceiptsTableTableManager(
+      $_db,
+      $_db.receipts,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_receiptIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$ReceiptLineItemsTableFilterComposer
+    extends Composer<_$AppDatabase, $ReceiptLineItemsTable> {
+  $$ReceiptLineItemsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get rowIndex => $composableBuilder(
+    column: $table.rowIndex,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get productCode => $composableBuilder(
+    column: $table.productCode,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get itemDescription => $composableBuilder(
+    column: $table.itemDescription,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get unitPrice => $composableBuilder(
+    column: $table.unitPrice,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get productName => $composableBuilder(
+    column: $table.productName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get productCategory => $composableBuilder(
+    column: $table.productCategory,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get productImageUrl => $composableBuilder(
+    column: $table.productImageUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get warrantyPeriodMonths => $composableBuilder(
+    column: $table.warrantyPeriodMonths,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get warrantyExpiryDate => $composableBuilder(
+    column: $table.warrantyExpiryDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get returnPeriodDays => $composableBuilder(
+    column: $table.returnPeriodDays,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get returnExpiryDate => $composableBuilder(
+    column: $table.returnExpiryDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get warrantyLeadDaysOverride => $composableBuilder(
+    column: $table.warrantyLeadDaysOverride,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get returnLeadDaysOverride => $composableBuilder(
+    column: $table.returnLeadDaysOverride,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get warrantyReminderEnabled => $composableBuilder(
+    column: $table.warrantyReminderEnabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get returnReminderEnabled => $composableBuilder(
+    column: $table.returnReminderEnabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get replacementForId => $composableBuilder(
+    column: $table.replacementForId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get replacedById => $composableBuilder(
+    column: $table.replacedById,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$ReceiptsTableFilterComposer get receiptId {
+    final $$ReceiptsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.receiptId,
+      referencedTable: $db.receipts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ReceiptsTableFilterComposer(
+            $db: $db,
+            $table: $db.receipts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ReceiptLineItemsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ReceiptLineItemsTable> {
+  $$ReceiptLineItemsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get rowIndex => $composableBuilder(
+    column: $table.rowIndex,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get productCode => $composableBuilder(
+    column: $table.productCode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get itemDescription => $composableBuilder(
+    column: $table.itemDescription,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get unitPrice => $composableBuilder(
+    column: $table.unitPrice,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get productName => $composableBuilder(
+    column: $table.productName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get productCategory => $composableBuilder(
+    column: $table.productCategory,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get productImageUrl => $composableBuilder(
+    column: $table.productImageUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get warrantyPeriodMonths => $composableBuilder(
+    column: $table.warrantyPeriodMonths,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get warrantyExpiryDate => $composableBuilder(
+    column: $table.warrantyExpiryDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get returnPeriodDays => $composableBuilder(
+    column: $table.returnPeriodDays,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get returnExpiryDate => $composableBuilder(
+    column: $table.returnExpiryDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get warrantyLeadDaysOverride => $composableBuilder(
+    column: $table.warrantyLeadDaysOverride,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get returnLeadDaysOverride => $composableBuilder(
+    column: $table.returnLeadDaysOverride,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get warrantyReminderEnabled => $composableBuilder(
+    column: $table.warrantyReminderEnabled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get returnReminderEnabled => $composableBuilder(
+    column: $table.returnReminderEnabled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get replacementForId => $composableBuilder(
+    column: $table.replacementForId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get replacedById => $composableBuilder(
+    column: $table.replacedById,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$ReceiptsTableOrderingComposer get receiptId {
+    final $$ReceiptsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.receiptId,
+      referencedTable: $db.receipts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ReceiptsTableOrderingComposer(
+            $db: $db,
+            $table: $db.receipts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ReceiptLineItemsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ReceiptLineItemsTable> {
+  $$ReceiptLineItemsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get rowIndex =>
+      $composableBuilder(column: $table.rowIndex, builder: (column) => column);
+
+  GeneratedColumn<String> get productCode => $composableBuilder(
+    column: $table.productCode,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get itemDescription => $composableBuilder(
+    column: $table.itemDescription,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get unitPrice =>
+      $composableBuilder(column: $table.unitPrice, builder: (column) => column);
+
+  GeneratedColumn<String> get productName => $composableBuilder(
+    column: $table.productName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get productCategory => $composableBuilder(
+    column: $table.productCategory,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get productImageUrl => $composableBuilder(
+    column: $table.productImageUrl,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get warrantyPeriodMonths => $composableBuilder(
+    column: $table.warrantyPeriodMonths,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get warrantyExpiryDate => $composableBuilder(
+    column: $table.warrantyExpiryDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get returnPeriodDays => $composableBuilder(
+    column: $table.returnPeriodDays,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get returnExpiryDate => $composableBuilder(
+    column: $table.returnExpiryDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get warrantyLeadDaysOverride => $composableBuilder(
+    column: $table.warrantyLeadDaysOverride,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get returnLeadDaysOverride => $composableBuilder(
+    column: $table.returnLeadDaysOverride,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get warrantyReminderEnabled => $composableBuilder(
+    column: $table.warrantyReminderEnabled,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get returnReminderEnabled => $composableBuilder(
+    column: $table.returnReminderEnabled,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get replacementForId => $composableBuilder(
+    column: $table.replacementForId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get replacedById => $composableBuilder(
+    column: $table.replacedById,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$ReceiptsTableAnnotationComposer get receiptId {
+    final $$ReceiptsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.receiptId,
+      referencedTable: $db.receipts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ReceiptsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.receipts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
 class $$ReceiptLineItemsTableTableManager
     extends
         RootTableManager<
@@ -4714,8 +5324,12 @@ class $$ReceiptLineItemsTableTableManager
           ReceiptLineItem,
           $$ReceiptLineItemsTableFilterComposer,
           $$ReceiptLineItemsTableOrderingComposer,
+          $$ReceiptLineItemsTableAnnotationComposer,
           $$ReceiptLineItemsTableCreateCompanionBuilder,
-          $$ReceiptLineItemsTableUpdateCompanionBuilder
+          $$ReceiptLineItemsTableUpdateCompanionBuilder,
+          (ReceiptLineItem, $$ReceiptLineItemsTableReferences),
+          ReceiptLineItem,
+          PrefetchHooks Function({bool receiptId})
         > {
   $$ReceiptLineItemsTableTableManager(
     _$AppDatabase db,
@@ -4724,12 +5338,12 @@ class $$ReceiptLineItemsTableTableManager
         TableManagerState(
           db: db,
           table: table,
-          filteringComposer: $$ReceiptLineItemsTableFilterComposer(
-            ComposerState(db, table),
-          ),
-          orderingComposer: $$ReceiptLineItemsTableOrderingComposer(
-            ComposerState(db, table),
-          ),
+          createFilteringComposer: () =>
+              $$ReceiptLineItemsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ReceiptLineItemsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ReceiptLineItemsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
@@ -4830,307 +5444,75 @@ class $$ReceiptLineItemsTableTableManager
                 updatedAt: updatedAt,
                 rowid: rowid,
               ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ReceiptLineItemsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({receiptId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (receiptId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.receiptId,
+                                referencedTable:
+                                    $$ReceiptLineItemsTableReferences
+                                        ._receiptIdTable(db),
+                                referencedColumn:
+                                    $$ReceiptLineItemsTableReferences
+                                        ._receiptIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
         ),
       );
 }
 
-class $$ReceiptLineItemsTableFilterComposer
-    extends FilterComposer<_$AppDatabase, $ReceiptLineItemsTable> {
-  $$ReceiptLineItemsTableFilterComposer(super.$state);
-  ColumnFilters<String> get id => $state.composableBuilder(
-    column: $state.table.id,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<int> get rowIndex => $state.composableBuilder(
-    column: $state.table.rowIndex,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<String> get productCode => $state.composableBuilder(
-    column: $state.table.productCode,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<String> get itemDescription => $state.composableBuilder(
-    column: $state.table.itemDescription,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<double> get unitPrice => $state.composableBuilder(
-    column: $state.table.unitPrice,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<String> get productName => $state.composableBuilder(
-    column: $state.table.productName,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<String> get productCategory => $state.composableBuilder(
-    column: $state.table.productCategory,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<String> get productImageUrl => $state.composableBuilder(
-    column: $state.table.productImageUrl,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<int> get warrantyPeriodMonths => $state.composableBuilder(
-    column: $state.table.warrantyPeriodMonths,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<DateTime> get warrantyExpiryDate => $state.composableBuilder(
-    column: $state.table.warrantyExpiryDate,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<int> get returnPeriodDays => $state.composableBuilder(
-    column: $state.table.returnPeriodDays,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<DateTime> get returnExpiryDate => $state.composableBuilder(
-    column: $state.table.returnExpiryDate,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<int> get warrantyLeadDaysOverride => $state.composableBuilder(
-    column: $state.table.warrantyLeadDaysOverride,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<int> get returnLeadDaysOverride => $state.composableBuilder(
-    column: $state.table.returnLeadDaysOverride,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<bool> get warrantyReminderEnabled => $state.composableBuilder(
-    column: $state.table.warrantyReminderEnabled,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<bool> get returnReminderEnabled => $state.composableBuilder(
-    column: $state.table.returnReminderEnabled,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<String> get status => $state.composableBuilder(
-    column: $state.table.status,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<String> get replacementForId => $state.composableBuilder(
-    column: $state.table.replacementForId,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<String> get replacedById => $state.composableBuilder(
-    column: $state.table.replacedById,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<DateTime> get createdAt => $state.composableBuilder(
-    column: $state.table.createdAt,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<DateTime> get updatedAt => $state.composableBuilder(
-    column: $state.table.updatedAt,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  $$ReceiptsTableFilterComposer get receiptId {
-    final $$ReceiptsTableFilterComposer composer = $state.composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.receiptId,
-      referencedTable: $state.db.receipts,
-      getReferencedColumn: (t) => t.id,
-      builder: (joinBuilder, parentComposers) => $$ReceiptsTableFilterComposer(
-        ComposerState(
-          $state.db,
-          $state.db.receipts,
-          joinBuilder,
-          parentComposers,
-        ),
-      ),
-    );
-    return composer;
-  }
-}
-
-class $$ReceiptLineItemsTableOrderingComposer
-    extends OrderingComposer<_$AppDatabase, $ReceiptLineItemsTable> {
-  $$ReceiptLineItemsTableOrderingComposer(super.$state);
-  ColumnOrderings<String> get id => $state.composableBuilder(
-    column: $state.table.id,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<int> get rowIndex => $state.composableBuilder(
-    column: $state.table.rowIndex,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<String> get productCode => $state.composableBuilder(
-    column: $state.table.productCode,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<String> get itemDescription => $state.composableBuilder(
-    column: $state.table.itemDescription,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<double> get unitPrice => $state.composableBuilder(
-    column: $state.table.unitPrice,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<String> get productName => $state.composableBuilder(
-    column: $state.table.productName,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<String> get productCategory => $state.composableBuilder(
-    column: $state.table.productCategory,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<String> get productImageUrl => $state.composableBuilder(
-    column: $state.table.productImageUrl,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<int> get warrantyPeriodMonths => $state.composableBuilder(
-    column: $state.table.warrantyPeriodMonths,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<DateTime> get warrantyExpiryDate => $state.composableBuilder(
-    column: $state.table.warrantyExpiryDate,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<int> get returnPeriodDays => $state.composableBuilder(
-    column: $state.table.returnPeriodDays,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<DateTime> get returnExpiryDate => $state.composableBuilder(
-    column: $state.table.returnExpiryDate,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<int> get warrantyLeadDaysOverride => $state.composableBuilder(
-    column: $state.table.warrantyLeadDaysOverride,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<int> get returnLeadDaysOverride => $state.composableBuilder(
-    column: $state.table.returnLeadDaysOverride,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<bool> get warrantyReminderEnabled => $state.composableBuilder(
-    column: $state.table.warrantyReminderEnabled,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<bool> get returnReminderEnabled => $state.composableBuilder(
-    column: $state.table.returnReminderEnabled,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<String> get status => $state.composableBuilder(
-    column: $state.table.status,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<String> get replacementForId => $state.composableBuilder(
-    column: $state.table.replacementForId,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<String> get replacedById => $state.composableBuilder(
-    column: $state.table.replacedById,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<DateTime> get createdAt => $state.composableBuilder(
-    column: $state.table.createdAt,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<DateTime> get updatedAt => $state.composableBuilder(
-    column: $state.table.updatedAt,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  $$ReceiptsTableOrderingComposer get receiptId {
-    final $$ReceiptsTableOrderingComposer composer = $state.composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.receiptId,
-      referencedTable: $state.db.receipts,
-      getReferencedColumn: (t) => t.id,
-      builder: (joinBuilder, parentComposers) =>
-          $$ReceiptsTableOrderingComposer(
-            ComposerState(
-              $state.db,
-              $state.db.receipts,
-              joinBuilder,
-              parentComposers,
-            ),
-          ),
-    );
-    return composer;
-  }
-}
-
+typedef $$ReceiptLineItemsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ReceiptLineItemsTable,
+      ReceiptLineItem,
+      $$ReceiptLineItemsTableFilterComposer,
+      $$ReceiptLineItemsTableOrderingComposer,
+      $$ReceiptLineItemsTableAnnotationComposer,
+      $$ReceiptLineItemsTableCreateCompanionBuilder,
+      $$ReceiptLineItemsTableUpdateCompanionBuilder,
+      (ReceiptLineItem, $$ReceiptLineItemsTableReferences),
+      ReceiptLineItem,
+      PrefetchHooks Function({bool receiptId})
+    >;
 typedef $$UploadQueueTableCreateCompanionBuilder =
     UploadQueueCompanion Function({
       required String id,
@@ -5154,6 +5536,135 @@ typedef $$UploadQueueTableUpdateCompanionBuilder =
       Value<int> rowid,
     });
 
+class $$UploadQueueTableFilterComposer
+    extends Composer<_$AppDatabase, $UploadQueueTable> {
+  $$UploadQueueTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get receiptId => $composableBuilder(
+    column: $table.receiptId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get localImagePath => $composableBuilder(
+    column: $table.localImagePath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get retryCount => $composableBuilder(
+    column: $table.retryCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastAttemptAt => $composableBuilder(
+    column: $table.lastAttemptAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get errorMessage => $composableBuilder(
+    column: $table.errorMessage,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$UploadQueueTableOrderingComposer
+    extends Composer<_$AppDatabase, $UploadQueueTable> {
+  $$UploadQueueTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get receiptId => $composableBuilder(
+    column: $table.receiptId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get localImagePath => $composableBuilder(
+    column: $table.localImagePath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get retryCount => $composableBuilder(
+    column: $table.retryCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastAttemptAt => $composableBuilder(
+    column: $table.lastAttemptAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get errorMessage => $composableBuilder(
+    column: $table.errorMessage,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$UploadQueueTableAnnotationComposer
+    extends Composer<_$AppDatabase, $UploadQueueTable> {
+  $$UploadQueueTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get receiptId =>
+      $composableBuilder(column: $table.receiptId, builder: (column) => column);
+
+  GeneratedColumn<String> get localImagePath => $composableBuilder(
+    column: $table.localImagePath,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get retryCount => $composableBuilder(
+    column: $table.retryCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lastAttemptAt => $composableBuilder(
+    column: $table.lastAttemptAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get errorMessage => $composableBuilder(
+    column: $table.errorMessage,
+    builder: (column) => column,
+  );
+}
+
 class $$UploadQueueTableTableManager
     extends
         RootTableManager<
@@ -5162,20 +5673,27 @@ class $$UploadQueueTableTableManager
           UploadQueueData,
           $$UploadQueueTableFilterComposer,
           $$UploadQueueTableOrderingComposer,
+          $$UploadQueueTableAnnotationComposer,
           $$UploadQueueTableCreateCompanionBuilder,
-          $$UploadQueueTableUpdateCompanionBuilder
+          $$UploadQueueTableUpdateCompanionBuilder,
+          (
+            UploadQueueData,
+            BaseReferences<_$AppDatabase, $UploadQueueTable, UploadQueueData>,
+          ),
+          UploadQueueData,
+          PrefetchHooks Function()
         > {
   $$UploadQueueTableTableManager(_$AppDatabase db, $UploadQueueTable table)
     : super(
         TableManagerState(
           db: db,
           table: table,
-          filteringComposer: $$UploadQueueTableFilterComposer(
-            ComposerState(db, table),
-          ),
-          orderingComposer: $$UploadQueueTableOrderingComposer(
-            ComposerState(db, table),
-          ),
+          createFilteringComposer: () =>
+              $$UploadQueueTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$UploadQueueTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$UploadQueueTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
@@ -5216,102 +5734,31 @@ class $$UploadQueueTableTableManager
                 errorMessage: errorMessage,
                 rowid: rowid,
               ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
         ),
       );
 }
 
-class $$UploadQueueTableFilterComposer
-    extends FilterComposer<_$AppDatabase, $UploadQueueTable> {
-  $$UploadQueueTableFilterComposer(super.$state);
-  ColumnFilters<String> get id => $state.composableBuilder(
-    column: $state.table.id,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<String> get receiptId => $state.composableBuilder(
-    column: $state.table.receiptId,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<String> get localImagePath => $state.composableBuilder(
-    column: $state.table.localImagePath,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<int> get retryCount => $state.composableBuilder(
-    column: $state.table.retryCount,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<DateTime> get createdAt => $state.composableBuilder(
-    column: $state.table.createdAt,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<DateTime> get lastAttemptAt => $state.composableBuilder(
-    column: $state.table.lastAttemptAt,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<String> get errorMessage => $state.composableBuilder(
-    column: $state.table.errorMessage,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-}
-
-class $$UploadQueueTableOrderingComposer
-    extends OrderingComposer<_$AppDatabase, $UploadQueueTable> {
-  $$UploadQueueTableOrderingComposer(super.$state);
-  ColumnOrderings<String> get id => $state.composableBuilder(
-    column: $state.table.id,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<String> get receiptId => $state.composableBuilder(
-    column: $state.table.receiptId,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<String> get localImagePath => $state.composableBuilder(
-    column: $state.table.localImagePath,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<int> get retryCount => $state.composableBuilder(
-    column: $state.table.retryCount,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<DateTime> get createdAt => $state.composableBuilder(
-    column: $state.table.createdAt,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<DateTime> get lastAttemptAt => $state.composableBuilder(
-    column: $state.table.lastAttemptAt,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<String> get errorMessage => $state.composableBuilder(
-    column: $state.table.errorMessage,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-}
-
+typedef $$UploadQueueTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $UploadQueueTable,
+      UploadQueueData,
+      $$UploadQueueTableFilterComposer,
+      $$UploadQueueTableOrderingComposer,
+      $$UploadQueueTableAnnotationComposer,
+      $$UploadQueueTableCreateCompanionBuilder,
+      $$UploadQueueTableUpdateCompanionBuilder,
+      (
+        UploadQueueData,
+        BaseReferences<_$AppDatabase, $UploadQueueTable, UploadQueueData>,
+      ),
+      UploadQueueData,
+      PrefetchHooks Function()
+    >;
 typedef $$ClaimDocumentsTableCreateCompanionBuilder =
     ClaimDocumentsCompanion Function({
       required String id,
@@ -5343,6 +5790,269 @@ typedef $$ClaimDocumentsTableUpdateCompanionBuilder =
       Value<int> rowid,
     });
 
+final class $$ClaimDocumentsTableReferences
+    extends BaseReferences<_$AppDatabase, $ClaimDocumentsTable, ClaimDocument> {
+  $$ClaimDocumentsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static MultiTypedResultKey<$ClaimDefectImagesTable, List<ClaimDefectImage>>
+  _claimDefectImagesRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.claimDefectImages,
+        aliasName: $_aliasNameGenerator(
+          db.claimDocuments.id,
+          db.claimDefectImages.claimId,
+        ),
+      );
+
+  $$ClaimDefectImagesTableProcessedTableManager get claimDefectImagesRefs {
+    final manager = $$ClaimDefectImagesTableTableManager(
+      $_db,
+      $_db.claimDefectImages,
+    ).filter((f) => f.claimId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _claimDefectImagesRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$ClaimDocumentsTableFilterComposer
+    extends Composer<_$AppDatabase, $ClaimDocumentsTable> {
+  $$ClaimDocumentsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get receiptId => $composableBuilder(
+    column: $table.receiptId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get lineItemId => $composableBuilder(
+    column: $table.lineItemId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get issueDescription => $composableBuilder(
+    column: $table.issueDescription,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get claimType => $composableBuilder(
+    column: $table.claimType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get generatedPdfS3Key => $composableBuilder(
+    column: $table.generatedPdfS3Key,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get syncedAt => $composableBuilder(
+    column: $table.syncedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> claimDefectImagesRefs(
+    Expression<bool> Function($$ClaimDefectImagesTableFilterComposer f) f,
+  ) {
+    final $$ClaimDefectImagesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.claimDefectImages,
+      getReferencedColumn: (t) => t.claimId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ClaimDefectImagesTableFilterComposer(
+            $db: $db,
+            $table: $db.claimDefectImages,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$ClaimDocumentsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ClaimDocumentsTable> {
+  $$ClaimDocumentsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get receiptId => $composableBuilder(
+    column: $table.receiptId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get lineItemId => $composableBuilder(
+    column: $table.lineItemId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get issueDescription => $composableBuilder(
+    column: $table.issueDescription,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get claimType => $composableBuilder(
+    column: $table.claimType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get generatedPdfS3Key => $composableBuilder(
+    column: $table.generatedPdfS3Key,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get syncedAt => $composableBuilder(
+    column: $table.syncedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ClaimDocumentsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ClaimDocumentsTable> {
+  $$ClaimDocumentsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get receiptId =>
+      $composableBuilder(column: $table.receiptId, builder: (column) => column);
+
+  GeneratedColumn<String> get lineItemId => $composableBuilder(
+    column: $table.lineItemId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get issueDescription => $composableBuilder(
+    column: $table.issueDescription,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get claimType =>
+      $composableBuilder(column: $table.claimType, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<String> get generatedPdfS3Key => $composableBuilder(
+    column: $table.generatedPdfS3Key,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get syncedAt =>
+      $composableBuilder(column: $table.syncedAt, builder: (column) => column);
+
+  Expression<T> claimDefectImagesRefs<T extends Object>(
+    Expression<T> Function($$ClaimDefectImagesTableAnnotationComposer a) f,
+  ) {
+    final $$ClaimDefectImagesTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.claimDefectImages,
+          getReferencedColumn: (t) => t.claimId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ClaimDefectImagesTableAnnotationComposer(
+                $db: $db,
+                $table: $db.claimDefectImages,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
 class $$ClaimDocumentsTableTableManager
     extends
         RootTableManager<
@@ -5351,8 +6061,12 @@ class $$ClaimDocumentsTableTableManager
           ClaimDocument,
           $$ClaimDocumentsTableFilterComposer,
           $$ClaimDocumentsTableOrderingComposer,
+          $$ClaimDocumentsTableAnnotationComposer,
           $$ClaimDocumentsTableCreateCompanionBuilder,
-          $$ClaimDocumentsTableUpdateCompanionBuilder
+          $$ClaimDocumentsTableUpdateCompanionBuilder,
+          (ClaimDocument, $$ClaimDocumentsTableReferences),
+          ClaimDocument,
+          PrefetchHooks Function({bool claimDefectImagesRefs})
         > {
   $$ClaimDocumentsTableTableManager(
     _$AppDatabase db,
@@ -5361,12 +6075,12 @@ class $$ClaimDocumentsTableTableManager
         TableManagerState(
           db: db,
           table: table,
-          filteringComposer: $$ClaimDocumentsTableFilterComposer(
-            ComposerState(db, table),
-          ),
-          orderingComposer: $$ClaimDocumentsTableOrderingComposer(
-            ComposerState(db, table),
-          ),
+          createFilteringComposer: () =>
+              $$ClaimDocumentsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ClaimDocumentsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ClaimDocumentsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
@@ -5423,172 +6137,64 @@ class $$ClaimDocumentsTableTableManager
                 syncedAt: syncedAt,
                 rowid: rowid,
               ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ClaimDocumentsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({claimDefectImagesRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (claimDefectImagesRefs) db.claimDefectImages,
+              ],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (claimDefectImagesRefs)
+                    await $_getPrefetchedData<
+                      ClaimDocument,
+                      $ClaimDocumentsTable,
+                      ClaimDefectImage
+                    >(
+                      currentTable: table,
+                      referencedTable: $$ClaimDocumentsTableReferences
+                          ._claimDefectImagesRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$ClaimDocumentsTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).claimDefectImagesRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.claimId == item.id),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
         ),
       );
 }
 
-class $$ClaimDocumentsTableFilterComposer
-    extends FilterComposer<_$AppDatabase, $ClaimDocumentsTable> {
-  $$ClaimDocumentsTableFilterComposer(super.$state);
-  ColumnFilters<String> get id => $state.composableBuilder(
-    column: $state.table.id,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<String> get receiptId => $state.composableBuilder(
-    column: $state.table.receiptId,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<String> get lineItemId => $state.composableBuilder(
-    column: $state.table.lineItemId,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<String> get issueDescription => $state.composableBuilder(
-    column: $state.table.issueDescription,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<String> get claimType => $state.composableBuilder(
-    column: $state.table.claimType,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<String> get status => $state.composableBuilder(
-    column: $state.table.status,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<String> get notes => $state.composableBuilder(
-    column: $state.table.notes,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<String> get generatedPdfS3Key => $state.composableBuilder(
-    column: $state.table.generatedPdfS3Key,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<DateTime> get createdAt => $state.composableBuilder(
-    column: $state.table.createdAt,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<DateTime> get updatedAt => $state.composableBuilder(
-    column: $state.table.updatedAt,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<DateTime> get syncedAt => $state.composableBuilder(
-    column: $state.table.syncedAt,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ComposableFilter claimDefectImagesRefs(
-    ComposableFilter Function($$ClaimDefectImagesTableFilterComposer f) f,
-  ) {
-    final $$ClaimDefectImagesTableFilterComposer composer = $state
-        .composerBuilder(
-          composer: this,
-          getCurrentColumn: (t) => t.id,
-          referencedTable: $state.db.claimDefectImages,
-          getReferencedColumn: (t) => t.claimId,
-          builder: (joinBuilder, parentComposers) =>
-              $$ClaimDefectImagesTableFilterComposer(
-                ComposerState(
-                  $state.db,
-                  $state.db.claimDefectImages,
-                  joinBuilder,
-                  parentComposers,
-                ),
-              ),
-        );
-    return f(composer);
-  }
-}
-
-class $$ClaimDocumentsTableOrderingComposer
-    extends OrderingComposer<_$AppDatabase, $ClaimDocumentsTable> {
-  $$ClaimDocumentsTableOrderingComposer(super.$state);
-  ColumnOrderings<String> get id => $state.composableBuilder(
-    column: $state.table.id,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<String> get receiptId => $state.composableBuilder(
-    column: $state.table.receiptId,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<String> get lineItemId => $state.composableBuilder(
-    column: $state.table.lineItemId,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<String> get issueDescription => $state.composableBuilder(
-    column: $state.table.issueDescription,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<String> get claimType => $state.composableBuilder(
-    column: $state.table.claimType,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<String> get status => $state.composableBuilder(
-    column: $state.table.status,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<String> get notes => $state.composableBuilder(
-    column: $state.table.notes,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<String> get generatedPdfS3Key => $state.composableBuilder(
-    column: $state.table.generatedPdfS3Key,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<DateTime> get createdAt => $state.composableBuilder(
-    column: $state.table.createdAt,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<DateTime> get updatedAt => $state.composableBuilder(
-    column: $state.table.updatedAt,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<DateTime> get syncedAt => $state.composableBuilder(
-    column: $state.table.syncedAt,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-}
-
+typedef $$ClaimDocumentsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ClaimDocumentsTable,
+      ClaimDocument,
+      $$ClaimDocumentsTableFilterComposer,
+      $$ClaimDocumentsTableOrderingComposer,
+      $$ClaimDocumentsTableAnnotationComposer,
+      $$ClaimDocumentsTableCreateCompanionBuilder,
+      $$ClaimDocumentsTableUpdateCompanionBuilder,
+      (ClaimDocument, $$ClaimDocumentsTableReferences),
+      ClaimDocument,
+      PrefetchHooks Function({bool claimDefectImagesRefs})
+    >;
 typedef $$ClaimDefectImagesTableCreateCompanionBuilder =
     ClaimDefectImagesCompanion Function({
       required String id,
@@ -5608,6 +6214,197 @@ typedef $$ClaimDefectImagesTableUpdateCompanionBuilder =
       Value<int> rowid,
     });
 
+final class $$ClaimDefectImagesTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $ClaimDefectImagesTable,
+          ClaimDefectImage
+        > {
+  $$ClaimDefectImagesTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $ClaimDocumentsTable _claimIdTable(_$AppDatabase db) =>
+      db.claimDocuments.createAlias(
+        $_aliasNameGenerator(
+          db.claimDefectImages.claimId,
+          db.claimDocuments.id,
+        ),
+      );
+
+  $$ClaimDocumentsTableProcessedTableManager get claimId {
+    final $_column = $_itemColumn<String>('claim_id')!;
+
+    final manager = $$ClaimDocumentsTableTableManager(
+      $_db,
+      $_db.claimDocuments,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_claimIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$ClaimDefectImagesTableFilterComposer
+    extends Composer<_$AppDatabase, $ClaimDefectImagesTable> {
+  $$ClaimDefectImagesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get s3ObjectKey => $composableBuilder(
+    column: $table.s3ObjectKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get displayOrder => $composableBuilder(
+    column: $table.displayOrder,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$ClaimDocumentsTableFilterComposer get claimId {
+    final $$ClaimDocumentsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.claimId,
+      referencedTable: $db.claimDocuments,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ClaimDocumentsTableFilterComposer(
+            $db: $db,
+            $table: $db.claimDocuments,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ClaimDefectImagesTableOrderingComposer
+    extends Composer<_$AppDatabase, $ClaimDefectImagesTable> {
+  $$ClaimDefectImagesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get s3ObjectKey => $composableBuilder(
+    column: $table.s3ObjectKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get displayOrder => $composableBuilder(
+    column: $table.displayOrder,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$ClaimDocumentsTableOrderingComposer get claimId {
+    final $$ClaimDocumentsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.claimId,
+      referencedTable: $db.claimDocuments,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ClaimDocumentsTableOrderingComposer(
+            $db: $db,
+            $table: $db.claimDocuments,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ClaimDefectImagesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ClaimDefectImagesTable> {
+  $$ClaimDefectImagesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get s3ObjectKey => $composableBuilder(
+    column: $table.s3ObjectKey,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get displayOrder => $composableBuilder(
+    column: $table.displayOrder,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$ClaimDocumentsTableAnnotationComposer get claimId {
+    final $$ClaimDocumentsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.claimId,
+      referencedTable: $db.claimDocuments,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ClaimDocumentsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.claimDocuments,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
 class $$ClaimDefectImagesTableTableManager
     extends
         RootTableManager<
@@ -5616,8 +6413,12 @@ class $$ClaimDefectImagesTableTableManager
           ClaimDefectImage,
           $$ClaimDefectImagesTableFilterComposer,
           $$ClaimDefectImagesTableOrderingComposer,
+          $$ClaimDefectImagesTableAnnotationComposer,
           $$ClaimDefectImagesTableCreateCompanionBuilder,
-          $$ClaimDefectImagesTableUpdateCompanionBuilder
+          $$ClaimDefectImagesTableUpdateCompanionBuilder,
+          (ClaimDefectImage, $$ClaimDefectImagesTableReferences),
+          ClaimDefectImage,
+          PrefetchHooks Function({bool claimId})
         > {
   $$ClaimDefectImagesTableTableManager(
     _$AppDatabase db,
@@ -5626,12 +6427,15 @@ class $$ClaimDefectImagesTableTableManager
         TableManagerState(
           db: db,
           table: table,
-          filteringComposer: $$ClaimDefectImagesTableFilterComposer(
-            ComposerState(db, table),
-          ),
-          orderingComposer: $$ClaimDefectImagesTableOrderingComposer(
-            ComposerState(db, table),
-          ),
+          createFilteringComposer: () =>
+              $$ClaimDefectImagesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ClaimDefectImagesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ClaimDefectImagesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
@@ -5664,104 +6468,75 @@ class $$ClaimDefectImagesTableTableManager
                 createdAt: createdAt,
                 rowid: rowid,
               ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ClaimDefectImagesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({claimId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (claimId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.claimId,
+                                referencedTable:
+                                    $$ClaimDefectImagesTableReferences
+                                        ._claimIdTable(db),
+                                referencedColumn:
+                                    $$ClaimDefectImagesTableReferences
+                                        ._claimIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
         ),
       );
 }
 
-class $$ClaimDefectImagesTableFilterComposer
-    extends FilterComposer<_$AppDatabase, $ClaimDefectImagesTable> {
-  $$ClaimDefectImagesTableFilterComposer(super.$state);
-  ColumnFilters<String> get id => $state.composableBuilder(
-    column: $state.table.id,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<String> get s3ObjectKey => $state.composableBuilder(
-    column: $state.table.s3ObjectKey,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<int> get displayOrder => $state.composableBuilder(
-    column: $state.table.displayOrder,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnFilters<DateTime> get createdAt => $state.composableBuilder(
-    column: $state.table.createdAt,
-    builder: (column, joinBuilders) =>
-        ColumnFilters(column, joinBuilders: joinBuilders),
-  );
-
-  $$ClaimDocumentsTableFilterComposer get claimId {
-    final $$ClaimDocumentsTableFilterComposer composer = $state.composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.claimId,
-      referencedTable: $state.db.claimDocuments,
-      getReferencedColumn: (t) => t.id,
-      builder: (joinBuilder, parentComposers) =>
-          $$ClaimDocumentsTableFilterComposer(
-            ComposerState(
-              $state.db,
-              $state.db.claimDocuments,
-              joinBuilder,
-              parentComposers,
-            ),
-          ),
-    );
-    return composer;
-  }
-}
-
-class $$ClaimDefectImagesTableOrderingComposer
-    extends OrderingComposer<_$AppDatabase, $ClaimDefectImagesTable> {
-  $$ClaimDefectImagesTableOrderingComposer(super.$state);
-  ColumnOrderings<String> get id => $state.composableBuilder(
-    column: $state.table.id,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<String> get s3ObjectKey => $state.composableBuilder(
-    column: $state.table.s3ObjectKey,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<int> get displayOrder => $state.composableBuilder(
-    column: $state.table.displayOrder,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  ColumnOrderings<DateTime> get createdAt => $state.composableBuilder(
-    column: $state.table.createdAt,
-    builder: (column, joinBuilders) =>
-        ColumnOrderings(column, joinBuilders: joinBuilders),
-  );
-
-  $$ClaimDocumentsTableOrderingComposer get claimId {
-    final $$ClaimDocumentsTableOrderingComposer composer = $state
-        .composerBuilder(
-          composer: this,
-          getCurrentColumn: (t) => t.claimId,
-          referencedTable: $state.db.claimDocuments,
-          getReferencedColumn: (t) => t.id,
-          builder: (joinBuilder, parentComposers) =>
-              $$ClaimDocumentsTableOrderingComposer(
-                ComposerState(
-                  $state.db,
-                  $state.db.claimDocuments,
-                  joinBuilder,
-                  parentComposers,
-                ),
-              ),
-        );
-    return composer;
-  }
-}
+typedef $$ClaimDefectImagesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ClaimDefectImagesTable,
+      ClaimDefectImage,
+      $$ClaimDefectImagesTableFilterComposer,
+      $$ClaimDefectImagesTableOrderingComposer,
+      $$ClaimDefectImagesTableAnnotationComposer,
+      $$ClaimDefectImagesTableCreateCompanionBuilder,
+      $$ClaimDefectImagesTableUpdateCompanionBuilder,
+      (ClaimDefectImage, $$ClaimDefectImagesTableReferences),
+      ClaimDefectImage,
+      PrefetchHooks Function({bool claimId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
