@@ -26,7 +26,7 @@ concurrency:
 env:
   PYTHON_VERSION: "3.11"
   FLUTTER_CHANNEL: stable
-  FLUTTER_VERSION: "3.41.4"
+  FLUTTER_VERSION: "3.41.7"
   BACKEND_IMAGE_REPOSITORY: ghcr.io/${{ github.repository_owner }}/smart-receipt-backend
   BACKEND_COVERAGE_FLOOR: "70.0"
   MOBILE_COVERAGE_FLOOR: "60.0"
