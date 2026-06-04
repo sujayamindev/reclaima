@@ -58,9 +58,9 @@
 
     /* ── Layout */
     .wrap {
-      max-width: 1200px;
+      max-width: 1000px;
       margin: 0 auto;
-      padding: 0 56px
+      padding: 0 40px
     }
 
     .section {
@@ -84,7 +84,7 @@
     .h2 {
       font-family: 'Space Grotesk', sans-serif;
       font-weight: 700;
-      font-size: 38px;
+      font-size: 32px;
       letter-spacing: -.5px;
       line-height: 1.1;
       color: var(--c-dark)
@@ -108,7 +108,7 @@
       align-items: center;
       background: color-mix(in srgb, var(--hero-bg) 95%, transparent);
       backdrop-filter: blur(18px);
-      border-bottom: 1px solid rgba(255, 255, 255, .07)
+      border-bottom: 1px solid rgba(0, 0, 0, .08)
     }
 
     .nav-in {
@@ -116,9 +116,9 @@
       align-items: center;
       justify-content: space-between;
       width: 100%;
-      max-width: 1200px;
+      max-width: 1000px;
       margin: 0 auto;
-      padding: 0 56px
+      padding: 0 40px
     }
 
     .wordmark {
@@ -126,7 +126,7 @@
       font-weight: 700;
       font-size: 20px;
       letter-spacing: -.5px;
-      color: var(--c-light)
+      color: var(--c-dark)
     }
 
     .wordmark em {
@@ -141,15 +141,15 @@
     }
 
     .nav-links a {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 500;
-      color: rgba(241, 245, 249, .5);
+      color: var(--c-subtle);
       transition: color 150ms
     }
 
     .nav-links a:hover,
     .nav-links a.active {
-      color: var(--c-light)
+      color: var(--c-dark)
     }
 
     .btn-nav-cta {
@@ -165,7 +165,7 @@
     /* ── Hero */
     .hero {
       background-color: var(--hero-bg);
-      background-image: radial-gradient(circle, rgba(255, 255, 255, .05) 1px, transparent 1.5px);
+      background-image: radial-gradient(circle, rgba(0, 0, 0, .07) 1px, transparent 1.5px);
       background-size: 14px 14px;
       background-position: 0 0;
       padding: 108px 0 88px;
@@ -181,7 +181,7 @@
       transform: translateY(-50%);
       width: 720px;
       height: 720px;
-      background: radial-gradient(circle, rgba(18, 226, 140, .06) 0%, transparent 65%);
+      background: radial-gradient(circle, rgba(0, 0, 0, .03) 0%, transparent 65%);
       pointer-events: none
     }
 
@@ -198,7 +198,7 @@
       font-size: 60px;
       line-height: 1.03;
       letter-spacing: -1.5px;
-      color: var(--c-light);
+      color: var(--c-dark);
       margin-bottom: 22px
     }
 
@@ -210,7 +210,7 @@
     .hero-sub {
       font-size: 17px;
       line-height: 1.65;
-      color: rgba(241, 245, 249, .58);
+      color: var(--c-text);
       max-width: 512px;
       margin-bottom: 34px
     }
@@ -223,9 +223,9 @@
     }
 
     .tag {
-      background: rgba(255, 255, 255, .06);
-      border: 1px solid rgba(255, 255, 255, .1);
-      color: rgba(241, 245, 249, .65);
+      background: rgba(0, 0, 0, .04);
+      border: 1px solid rgba(0, 0, 0, .1);
+      color: var(--c-subtle);
       padding: 5px 12px;
       border-radius: 100px;
       font: 500 12px/1 'Inter', sans-serif
@@ -244,7 +244,7 @@
       border-radius: 32px;
       position: relative;
       overflow: hidden;
-      box-shadow: 0 52px 96px rgba(0, 0, 0, .6), 0 0 0 1px rgba(255, 255, 255, .08), inset 0 0 0 1px rgba(255, 255, 255, .04);
+      box-shadow: 0 24px 48px rgba(0, 0, 0, .08), 0 0 0 1px rgba(0, 0, 0, .08), inset 0 0 0 1px rgba(255, 255, 255, .1);
       object-fit: cover;
       display: block
     }
@@ -257,9 +257,9 @@
 
     .tech-strip-inner {
       display: flex;
-      justify-content: center;
+      justify-content: space-between;
       align-items: flex-start;
-      gap: 100px;
+      width: 100%;
       flex-wrap: wrap
     }
 
@@ -272,15 +272,15 @@
     }
 
     .tech-strip-item img {
-      width: 32px;
-      height: 32px;
+      width: 24px;
+      height: 24px;
       display: block;
-      filter: grayscale(1) opacity(.55)
+      filter: grayscale(1) opacity(.5)
     }
 
     .tech-strip-item span {
       font: 500 11px/1 'Inter', sans-serif;
-      color: var(--c-muted);
+      color: rgba(0, 0, 0, 0.8);
       letter-spacing: .2px;
       text-align: center
     }
@@ -289,47 +289,35 @@
     .steps {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 0;
+      gap: 16px;
       position: relative;
       margin-top: 56px
-    }
-
-    .steps::before {
-      content: '';
-      position: absolute;
-      top: 27px;
-      left: 14%;
-      right: 14%;
-      height: 3px;
-      background: var(--c-accent);
-      z-index: 0
     }
 
     .step {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      text-align: center;
-      padding: 0 24px;
+      align-items: flex-start;
+      text-align: left;
+      background: transparent;
+      border: 1px solid rgba(0, 0, 0, .09);
+      border-radius: 14px;
+      padding: 24px 20px;
       position: relative;
       z-index: 1
     }
 
     .step-num {
-      width: 58px;
-      height: 58px;
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 24px;
+      height: 24px;
       border-radius: 100px;
-      border: 5px solid var(--c-white);
-      background: var(--c-accent);
-      color: var(--c-dark);
-      font-family: 'Space Grotesk', sans-serif;
-      font-weight: 700;
-      font-size: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 20px;
-      box-shadow: 0 0 0 10px rgba(18, 226, 140, .0)
+      background: rgba(0, 0, 0, .06);
+      font: 700 12px/24px 'Space Grotesk', sans-serif;
+      color: var(--c-text);
+      text-align: center
     }
 
     .step h3 {
@@ -362,20 +350,13 @@
     }
 
     .feat-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      background: rgba(71, 85, 105, .07);
-      display: flex;
-      align-items: center;
-      justify-content: center;
       margin-bottom: 18px
     }
 
     .feat-icon .material-symbols-rounded {
-      font-size: 22px;
+      font-size: 28px;
       color: var(--c-text);
-      font-variation-settings: 'FILL' 0, 'wght' 700
+      font-variation-settings: 'FILL' 0, 'wght' 400
     }
 
     .feat-card h3 {
@@ -393,15 +374,7 @@
     }
 
     .feat-tag {
-      display: inline-block;
-      margin-top: 14px;
-      font: 600 10px/1 'Inter', sans-serif;
-      letter-spacing: .5px;
-      text-transform: uppercase;
-      color: var(--c-subtle);
-      background: rgba(71, 85, 105, .08);
-      padding: 4px 10px;
-      border-radius: 100px
+      display: none
     }
 
     /* ── Architecture diagram */
@@ -431,8 +404,8 @@
     }
 
     .arch-box.neutral {
-      background: rgba(15, 23, 42, .04);
-      border: 1px solid rgba(15, 23, 42, .1);
+      background: transparent;
+      border: 1px solid rgba(0, 0, 0, .1);
       flex: 1;
       max-width: 700px
     }
@@ -480,8 +453,8 @@
     }
 
     .arch-svc {
-      background: rgba(15, 23, 42, .04);
-      border: 1px solid rgba(15, 23, 42, .1);
+      background: transparent;
+      border: 1px solid rgba(0, 0, 0, .1);
       border-radius: 14px;
       padding: 16px 12px;
       text-align: center
@@ -521,8 +494,8 @@
     }
 
     .pipe-node {
-      background: rgba(15, 23, 42, .04);
-      border: 1px solid rgba(15, 23, 42, .09);
+      background: transparent;
+      border: 1px solid rgba(0, 0, 0, .09);
       border-radius: 14px;
       padding: 16px 14px;
       position: relative;
@@ -545,7 +518,7 @@
       width: 22px;
       height: 22px;
       border-radius: 100px;
-      background: rgba(15, 23, 42, .06);
+      background: rgba(0, 0, 0, .06);
       font: 700 11px/22px 'Space Grotesk', sans-serif;
       color: var(--c-muted);
       text-align: center
@@ -574,7 +547,7 @@
     }
 
     .code-block {
-      background: var(--code-bg);
+      background: transparent;
       border: 1px solid var(--c-border);
       border-radius: 14px;
       overflow: hidden
@@ -688,11 +661,7 @@
     }
 
     .tech-pill .d {
-      width: 6px;
-      height: 6px;
-      border-radius: 100px;
-      background: var(--c-accent);
-      flex-shrink: 0
+      display: none
     }
 
     /* ── API table */
@@ -772,28 +741,14 @@
     /* ── Screenshots */
     .screenshots-scroll {
       overflow-x: auto;
-      max-width: 1100px;
+      max-width: 1000px;
       margin: 0 auto;
-      padding: 40px 0px 16px;
-      scrollbar-width: thin;
-      scrollbar-color: var(--c-dim) transparent
+      padding: 40px 40px 16px;
+      scrollbar-width: none;
     }
 
     .screenshots-scroll::-webkit-scrollbar {
-      height: 5px
-    }
-
-    .screenshots-scroll::-webkit-scrollbar-track {
-      background: transparent
-    }
-
-    .screenshots-scroll::-webkit-scrollbar-thumb {
-      background: var(--c-dim);
-      border-radius: 100px
-    }
-
-    .screenshots-scroll::-webkit-scrollbar-thumb:hover {
-      background: var(--c-muted)
+      display: none;
     }
 
     .screenshots-track {
@@ -847,7 +802,7 @@
       align-items: center;
       overflow-x: auto;
       gap: 0;
-      padding-bottom: 2px
+      padding-bottom: 16px
     }
 
     .ci-stage {
@@ -936,21 +891,21 @@
 
     .decision {
       background: var(--c-white);
-      border: 1px solid var(--c-border);
-      border-radius: 14px;
+      border-bottom: 1px solid var(--c-border);
+      border-radius: 0;
       overflow: hidden
     }
 
     .decision>summary {
       list-style: none;
       cursor: pointer;
-      padding: 18px 22px;
+      padding: 18px 0;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
       font-family: 'Inter', system-ui, sans-serif;
-      font-weight: 600;
+      font-weight: 500;
       font-size: 15px;
       letter-spacing: -.1px;
       line-height: 1.45;
@@ -986,7 +941,7 @@
     }
 
     .decision .answer {
-      padding: 14px 22px 20px;
+      padding: 14px 0 20px;
       font-size: 14px;
       line-height: 1.75;
       color: var(--c-text);
@@ -1003,7 +958,7 @@
       font-family: 'Space Grotesk', sans-serif;
       font-weight: 700;
       font-size: 22px;
-      color: var(--c-light);
+      color: var(--c-dark);
       letter-spacing: -.5px
     }
 
@@ -1022,13 +977,13 @@
     .footer-sub {
       margin-top: 6px;
       font-size: 13px;
-      color: rgba(241, 245, 249, .38)
+      color: rgba(0, 0, 0, .5)
     }
 
     .footer-status {
       margin-top: 10px;
       font-size: 13px;
-      color: rgba(241, 245, 249, .28);
+      color: rgba(0, 0, 0, .4);
       line-height: 1.6;
       max-width: 520px
     }
@@ -1042,7 +997,7 @@
     }
 
     .footer-social-link {
-      color: rgba(241, 245, 249, .35);
+      color: rgba(0, 0, 0, .5);
       transition: color 150ms
     }
 
@@ -1054,9 +1009,9 @@
     .footer-attribution {
       margin-top: 24px;
       padding-top: 20px;
-      border-top: 1px solid rgba(241, 245, 249, .08);
-      font-size: 12px;
-      color: rgba(241, 245, 249, .22);
+      border-top: 1px solid rgba(0, 0, 0, .08);
+      font-size: 13px;
+      color: rgba(0, 0, 0, .5);
       line-height: 1.6
     }
 
@@ -1092,7 +1047,7 @@
 
       /* Typography */
       .h2 {
-        font-size: 30px
+        font-size: 28px
       }
 
       /* Hero */
@@ -1167,13 +1122,13 @@
 
       /* Decisions — tighter padding */
       .decision>summary {
-        padding: 16px 18px;
+        padding: 16px 0;
         font-size: 14px;
         gap: 12px
       }
 
       .decision .answer {
-        padding: 12px 18px 18px;
+        padding: 12px 0 18px;
         font-size: 13px
       }
     }
@@ -1201,7 +1156,7 @@
 
       /* Typography */
       .h2 {
-        font-size: 24px;
+        font-size: 22px;
         letter-spacing: -.3px
       }
 
@@ -1335,7 +1290,7 @@
       }
 
       .decision>summary {
-        padding: 14px 16px;
+        padding: 14px 0;
         font-size: 13.5px;
         line-height: 1.5
       }
@@ -1354,6 +1309,26 @@
         font-size: 13px;
         line-height: 1.7
       }
+    }
+
+    /* ── Scroll Animations ───────────────────────────────────────── */
+    .fade {
+      opacity: 0;
+      transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: opacity, transform;
+    }
+
+    .fade.below {
+      transform: translateY(24px);
+    }
+
+    .fade.above {
+      transform: translateY(-24px);
+    }
+    
+    .fade.in-view {
+      opacity: 1;
+      transform: translateY(0);
     }
   </style>
 </head>
@@ -1383,25 +1358,25 @@
   <section class="hero" id="top">
     <div class="wrap hero-grid">
       <div>
-        <h1 class="hero-h1">Never lose a<br><em>warranty</em><br>again.</h1>
+        <h1 class="hero-h1">Never lose a<br>warranty<br>again<em>.</em></h1>
         <p class="hero-sub">Scan a receipt and Reclaima handles the rest — per-item extraction, deadline tracking, and a
           ready-to-submit claim PDF when something goes wrong.</p>
         <div class="cta-row" style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
-          <div
-            style="display:inline-flex;align-items:center;gap:10px;font:700 15px/1 'Space Grotesk',sans-serif;color:var(--c-light);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);height:48px;padding:0 24px;border-radius:100px;user-select:none;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)">
-            <i class="ms" style="font-size:20px;color:var(--c-accent);font-variation-settings:'FILL' 1">android</i>
-            In development for Google Play
-          </div>
           <a href="https://github.com/sujayamindev/reclaima" target="_blank" rel="noopener"
-            style="display:inline-flex;align-items:center;gap:10px;font:700 15px/1 'Space Grotesk',sans-serif;color:var(--c-dark);background:var(--c-accent);border:2px solid transparent;height:48px;padding:0 24px;border-radius:100px;text-decoration:none;transition:background 220ms ease-in-out, color 220ms ease-in-out, border-color 220ms ease-in-out"
-            onmouseover="this.style.background='var(--c-dark)';this.style.color='var(--c-accent)';this.style.borderColor='var(--c-accent)'"
-            onmouseout="this.style.background='var(--c-accent)';this.style.color='var(--c-dark)';this.style.borderColor='transparent'">
+            style="display:inline-flex;align-items:center;gap:10px;font:700 15px/1 'Space Grotesk',sans-serif;color:#fff;background:#000;border:2px solid transparent;height:48px;padding:0 24px;border-radius:100px;text-decoration:none;transition:background 220ms ease-in-out, color 220ms ease-in-out, border-color 220ms ease-in-out"
+            onmouseover="this.style.background='#fff';this.style.color='#000';this.style.borderColor='#000'"
+            onmouseout="this.style.background='#000';this.style.color='#fff';this.style.borderColor='transparent'">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <path
                 d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z" />
             </svg>
             View on GitHub
           </a>
+          <div
+            style="display:inline-flex;align-items:center;gap:10px;font:700 15px/1 'Space Grotesk',sans-serif;color:var(--c-dark);background:#fff;border:1px solid rgba(0,0,0,.1);height:48px;padding:0 24px;border-radius:100px;user-select:none;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)">
+            <i class="ms" style="font-size:20px;color:var(--c-accent);font-variation-settings:'FILL' 1">android</i>
+            In development for Google Play
+          </div>
         </div>
       </div>
 
@@ -1458,7 +1433,7 @@
   <!-- ── THE PROBLEM ───────────────────────────────────── -->
   <section class="section" id="problem">
     <div class="wrap">
-      <div class="eyebrow fade" style="margin-top: -50px;">The problem</div>
+      <div class="eyebrow fade">The problem</div>
       <h2 class="h2 fade">Warranties are built to be forgotten.</h2>
       <p class="body-muted fade" style="max-width:none">Most people have no idea when their warranties expire. Receipts
         get lost, warranty cards go unfiled, and return windows close before anyone notices. When something breaks, the
@@ -1472,8 +1447,13 @@
       <p class="body-muted fade" style="max-width:none">No consumer app handles the complete lifecycle: scan a receipt,
         track every item on it, get reminded before deadlines, and produce a claim document when something goes wrong.
       </p>
+    </div>
+  </section>
 
-      <div style="margin-top:96px" class="fade">
+  <!-- ── THE SOLUTION ──────────────────────────────────── -->
+  <section class="section" id="solution">
+    <div class="wrap">
+      <div class="fade">
         <div class="eyebrow fade">The Solution</div>
         <h2 class="h2 fade" style="margin-bottom:12px">What Reclaima does differently</h2>
         <p class="body-muted" style="max-width:none;margin-top:0">Reclaima covers the full purchase-to-claim lifecycle
@@ -1812,7 +1792,7 @@
   <section class="section" id="ai">
     <div class="wrap">
       <div class="eyebrow fade">AI pipeline</div>
-      <h2 class="h2 fade" style="font-size:30px">From photo to structured data.</h2>
+      <h2 class="h2 fade">From photo to structured data.</h2>
       <p class="body-muted fade" style="margin-top:10px">Typically under ~10s — varies by image size,
         PDF complexity, and network latency.</p>
 
@@ -2476,6 +2456,30 @@
       sections.forEach(s => { if (window.scrollY >= s.offsetTop - 130) current = s.id; });
       links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current));
     }, { passive: true });
+
+    // ── Float in/out on scroll
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in-view');
+          entry.target.classList.remove('above', 'below');
+        } else {
+          entry.target.classList.remove('in-view');
+          if (entry.boundingClientRect.top < window.innerHeight / 2) {
+            entry.target.classList.add('above');
+            entry.target.classList.remove('below');
+          } else {
+            entry.target.classList.add('below');
+            entry.target.classList.remove('above');
+          }
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.fade').forEach(el => {
+      el.classList.add('below');
+      observer.observe(el);
+    });
   </script>
 </body>
 

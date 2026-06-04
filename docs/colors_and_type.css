@@ -11,23 +11,23 @@
 
 :root {
   /* ── Palette ──────────────────────────────────────────────────────── */
-  --c-dark:    #0F172A;   /* headings, body text, hero/nav/footer bg */
+  --c-dark:    #000000;   /* headings, body text, hero/nav/footer bg */
   --c-accent:  #12E28C;   /* brand green */
-  --c-blue:    #3B82F6;   /* info, URL params */
+  --c-blue:    #000000;   /* info, URL params */
   --c-white:   #FFFFFF;   /* cards, pills, inputs */
-  --c-light:   #F1F5F9;   /* text on dark backgrounds */
-  --c-surface: #ffffff;   /* page bg, section bg, stack cards */
-  --c-hover:   #F8FAFA;   /* table row hover */
-  --c-border:  #E2E8F0;   /* borders, dividers */
-  --c-dim:     #CBD5E1;   /* arrows, scrollbar thumb */
-  --c-muted:   #94A3B8;   /* muted labels, captions */
-  --c-subtle:  #64748B;   /* secondary labels */
-  --c-text:    #475569;   /* body paragraphs */
-  --c-deep:    #334155;   /* tech pill text */
-  --c-phone:   #0A0A0A;   /* phone mockup bg */
+  --c-light:   #F5F5F5;   /* text on dark backgrounds */
+  --c-surface: #FFFFFF;   /* page bg, section bg, stack cards */
+  --c-hover:   #FAFAFA;   /* table row hover */
+  --c-border:  #E5E5E5;   /* borders, dividers */
+  --c-dim:     #CCCCCC;   /* arrows, scrollbar thumb */
+  --c-muted:   #999999;   /* muted labels, captions */
+  --c-subtle:  #666666;   /* secondary labels */
+  --c-text:    #4D4D4D;   /* body paragraphs */
+  --c-deep:    #333333;   /* tech pill text */
+  --c-phone:   #000000;   /* phone mockup bg */
 
   /* ── Semantic aliases ─────────────────────────────────────────────── */
-  --hero-bg:    var(--c-dark);
+  --hero-bg:    #ffffff;
   --section-bg: var(--c-surface);
   --font-display: 'Space Grotesk', system-ui, sans-serif;
   --font-body:    'Inter', system-ui, sans-serif;
@@ -43,14 +43,14 @@
   --code-em:  #e36209;
 
   /* ── HTTP method badges ───────────────────────────────────────────── */
-  --method-post-bg:  rgba(18, 226, 140, .12);
-  --method-post-fg:  #047a4a;
-  --method-get-bg:   rgba(59, 130, 246, .12);
-  --method-get-fg:   #1d4ed8;
-  --method-del-bg:   rgba(239, 68, 68, .12);
-  --method-del-fg:   #b91c1c;
-  --method-patch-bg: rgba(245, 158, 11, .12);
-  --method-patch-fg: #b45309
+  --method-post-bg:  rgba(45, 150, 100, .08);
+  --method-post-fg:  #2c7a51;
+  --method-get-bg:   rgba(60, 110, 180, .08);
+  --method-get-fg:   #355f9c;
+  --method-del-bg:   rgba(180, 70, 70, .08);
+  --method-del-fg:   #a83c3c;
+  --method-patch-bg: rgba(180, 120, 40, .08);
+  --method-patch-fg: #9c6d23
 }
 
 html, body {
