@@ -566,10 +566,12 @@ class _ClaimDetailScreenState extends ConsumerState<ClaimDetailScreen> {
     if (filePath == null) return;
 
     try {
-      await Share.shareXFiles(
-        [XFile(filePath)],
-        text: 'Warranty claim PDF',
-        subject: 'Warranty Claim PDF - ${_claim!.id}',
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(filePath)],
+          text: 'Warranty claim PDF',
+          subject: 'Warranty Claim PDF - ${_claim!.id}',
+        ),
       );
     } catch (e) {
       logger.e('Error sharing PDF: $e');

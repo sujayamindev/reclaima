@@ -830,10 +830,12 @@ class _ClaimPdfScreenState extends ConsumerState<ClaimPdfScreen> {
     }
 
     try {
-      await Share.shareXFiles(
-        [XFile(filePath)],
-        text: 'Warranty claim PDF from ${widget.receiptStoreName}',
-        subject: 'Warranty Claim PDF',
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(filePath)],
+          text: 'Warranty claim PDF from ${widget.receiptStoreName}',
+          subject: 'Warranty Claim PDF',
+        ),
       );
     } catch (e) {
       logger.e('Error sharing PDF: $e');
