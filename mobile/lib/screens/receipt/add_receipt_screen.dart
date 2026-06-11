@@ -116,7 +116,7 @@ class _AddReceiptScreenState extends ConsumerState<AddReceiptScreen> {
     if (mode == null) return;
 
     if (mode == _PickMode.pdf) {
-      final result = await FilePicker.platform.pickFiles(
+      final result = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['pdf'],
       );
