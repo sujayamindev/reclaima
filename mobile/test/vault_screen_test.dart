@@ -49,17 +49,18 @@ ReceiptModel _receipt({
   );
 }
 
-Widget _wrap({required Future<List<ReceiptModel>> Function() receipts}) =>
-    ProviderScope(
-      overrides: [
-        receiptsProvider.overrideWith((ref) => receipts()),
-        vaultSearchFocusTriggerProvider.overrideWith(VaultSearchFocusTrigger.new),
-        // authStateProvider needed by any provider that transitively reads it
-        authStateProvider.overrideWith((ref) => const Stream.empty()),
-        currentUserProvider.overrideWith((ref) => null),
-      ],
-      child: MaterialApp(theme: AppTheme.lightTheme, home: const VaultScreen()),
-    );
+Widget _wrap({
+  required Future<List<ReceiptModel>> Function() receipts,
+}) => ProviderScope(
+  overrides: [
+    receiptsProvider.overrideWith((ref) => receipts()),
+    vaultSearchFocusTriggerProvider.overrideWith(VaultSearchFocusTrigger.new),
+    // authStateProvider needed by any provider that transitively reads it
+    authStateProvider.overrideWith((ref) => const Stream.empty()),
+    currentUserProvider.overrideWith((ref) => null),
+  ],
+  child: MaterialApp(theme: AppTheme.lightTheme, home: const VaultScreen()),
+);
 
 void main() {
   group('VaultScreen', () {
