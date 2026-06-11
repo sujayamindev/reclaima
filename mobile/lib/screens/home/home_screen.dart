@@ -292,16 +292,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   borderColor: border,
                                   onPressed: () {
                                     ref
-                                            .read(mainNavIndexProvider.notifier)
-                                            .state =
-                                        1;
+                                        .read(mainNavIndexProvider.notifier)
+                                        .setIndex(1);
                                     ref
-                                            .read(
-                                              vaultSearchFocusTriggerProvider
-                                                  .notifier,
-                                            )
-                                            .state =
-                                        true;
+                                        .read(
+                                          vaultSearchFocusTriggerProvider
+                                              .notifier,
+                                        )
+                                        .trigger();
                                   },
                                 ),
                               ],
@@ -471,7 +469,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     child: GestureDetector(
                       onTap: () {
                         final receipts =
-                            ref.read(receiptsProvider).valueOrNull ?? [];
+                            ref.read(receiptsProvider).asData?.value ?? [];
                         final hasProducts = receipts.any(
                           (r) => r.lineItems.any((i) => i.status != 'ARCHIVED'),
                         );

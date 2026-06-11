@@ -263,7 +263,7 @@ class _ClaimsHubScreenState extends ConsumerState<ClaimsHubScreen> {
         child: FloatingActionButton(
           heroTag: 'fab_claims',
           onPressed: () {
-            final receipts = ref.read(receiptsProvider).valueOrNull;
+            final receipts = ref.read(receiptsProvider).asData?.value;
             if (receipts != null) {
               showModalBottomSheet(
                 context: context,

@@ -199,7 +199,7 @@ class _ReceiptConfirmationScreenState
             linkedItemId: newLineItemId,
           );
           // Clear the pending state
-          ref.read(pendingReplacementClaimIdProvider.notifier).state = null;
+          ref.read(pendingReplacementClaimIdProvider.notifier).set(null);
         }
       } catch (e) {
         // We log but don't block navigation if linking fails

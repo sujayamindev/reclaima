@@ -1,10 +1,12 @@
 // coverage:ignore-file
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../data/models/receipt_model.dart';
 import '../data/models/receipt_line_item_model.dart';
-import '../data/repositories/receipt_repository.dart';
 import 'auth_provider.dart';
 import 'service_providers.dart';
+
+part 'receipt_provider.g.dart';
 
 /// Receipts list provider
 final receiptsProvider = FutureProvider<List<ReceiptModel>>((ref) async {
@@ -36,17 +38,19 @@ final receiptImageUrlProvider = FutureProvider.family<String?, String>((
 });
 
 /// Receipt Controller
-class ReceiptController extends StateNotifier<AsyncValue<void>> {
-  final ReceiptRepository _repository;
-
-  ReceiptController(this._repository) : super(const AsyncValue.data(null));
+@riverpod
+class ReceiptController extends AsyncNotifier<void> {
+  @override
+  Future<void> build() async {}
 
   /// Create a new receipt
   Future<ReceiptModel?> createReceipt(Map<String, dynamic> data) async {
     state = const AsyncValue.loading();
     try {
-      final receipt = await _repository.createReceipt(data);
-      await _repository.syncReceipts();
+      final receipt = await ref
+          .read(receiptRepositoryProvider)
+          .createReceipt(data);
+      await ref.read(receiptRepositoryProvider).syncReceipts();
       state = const AsyncValue.data(null);
       return receipt;
     } catch (e, st) {
@@ -62,8 +66,10 @@ class ReceiptController extends StateNotifier<AsyncValue<void>> {
   ) async {
     state = const AsyncValue.loading();
     try {
-      final receipt = await _repository.updateReceipt(id, data);
-      await _repository.syncReceipts();
+      final receipt = await ref
+          .read(receiptRepositoryProvider)
+          .updateReceipt(id, data);
+      await ref.read(receiptRepositoryProvider).syncReceipts();
       state = const AsyncValue.data(null);
       return receipt;
     } catch (e, st) {
@@ -73,11 +79,11 @@ class ReceiptController extends StateNotifier<AsyncValue<void>> {
   }
 
   /// Delete receipt
-  Future<bool> deleteReceipt(String id, WidgetRef ref) async {
+  Future<bool> deleteReceipt(String id) async {
     state = const AsyncValue.loading();
     try {
-      await _repository.deleteReceipt(id);
-      await _repository.syncReceipts();
+      await ref.read(receiptRepositoryProvider).deleteReceipt(id);
+      await ref.read(receiptRepositoryProvider).syncReceipts();
       ref.invalidate(receiptsProvider);
       ref.invalidate(receiptProvider(id));
       state = const AsyncValue.data(null);
@@ -89,15 +95,13 @@ class ReceiptController extends StateNotifier<AsyncValue<void>> {
   }
 
   /// Delete a single line item
-  Future<bool> deleteLineItem(
-    String receiptId,
-    String itemId,
-    WidgetRef ref,
-  ) async {
+  Future<bool> deleteLineItem(String receiptId, String itemId) async {
     state = const AsyncValue.loading();
     try {
-      await _repository.deleteLineItem(receiptId, itemId);
-      await _repository.syncReceipts();
+      await ref
+          .read(receiptRepositoryProvider)
+          .deleteLineItem(receiptId, itemId);
+      await ref.read(receiptRepositoryProvider).syncReceipts();
       ref.invalidate(receiptsProvider);
       ref.invalidate(receiptProvider(receiptId));
       state = const AsyncValue.data(null);
@@ -112,8 +116,10 @@ class ReceiptController extends StateNotifier<AsyncValue<void>> {
   Future<ReceiptModel?> uploadReceipt(String receiptId, String filePath) async {
     state = const AsyncValue.loading();
     try {
-      final receipt = await _repository.uploadReceipt(receiptId, filePath);
-      await _repository.syncReceipts();
+      final receipt = await ref
+          .read(receiptRepositoryProvider)
+          .uploadReceipt(receiptId, filePath);
+      await ref.read(receiptRepositoryProvider).syncReceipts();
       state = const AsyncValue.data(null);
       return receipt;
     } catch (e, st) {
@@ -129,8 +135,10 @@ class ReceiptController extends StateNotifier<AsyncValue<void>> {
   ) async {
     state = const AsyncValue.loading();
     try {
-      final lineItem = await _repository.createLineItem(receiptId, data);
-      await _repository.syncReceipts();
+      final lineItem = await ref
+          .read(receiptRepositoryProvider)
+          .createLineItem(receiptId, data);
+      await ref.read(receiptRepositoryProvider).syncReceipts();
       state = const AsyncValue.data(null);
       return lineItem;
     } catch (e, st) {
@@ -147,12 +155,10 @@ class ReceiptController extends StateNotifier<AsyncValue<void>> {
   ) async {
     state = const AsyncValue.loading();
     try {
-      final lineItem = await _repository.updateLineItem(
-        receiptId,
-        itemId,
-        data,
-      );
-      await _repository.syncReceipts();
+      final lineItem = await ref
+          .read(receiptRepositoryProvider)
+          .updateLineItem(receiptId, itemId, data);
+      await ref.read(receiptRepositoryProvider).syncReceipts();
       state = const AsyncValue.data(null);
       return lineItem;
     } catch (e, st) {
@@ -169,11 +175,9 @@ class ReceiptController extends StateNotifier<AsyncValue<void>> {
   }) async {
     state = const AsyncValue.loading();
     try {
-      final result = await _repository.extractOcr(
-        frontImagePath,
-        backImagePath,
-        pdfPath: pdfPath,
-      );
+      final result = await ref
+          .read(receiptRepositoryProvider)
+          .extractOcr(frontImagePath, backImagePath, pdfPath: pdfPath);
       state = const AsyncValue.data(null);
       return result;
     } catch (e, st) {
@@ -182,10 +186,3 @@ class ReceiptController extends StateNotifier<AsyncValue<void>> {
     }
   }
 }
-
-/// Receipt controller provider
-final receiptControllerProvider =
-    StateNotifierProvider<ReceiptController, AsyncValue<void>>((ref) {
-      final repository = ref.watch(receiptRepositoryProvider);
-      return ReceiptController(repository);
-    });

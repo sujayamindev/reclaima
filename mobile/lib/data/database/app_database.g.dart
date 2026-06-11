@@ -4239,10 +4239,7 @@ final class $$ReceiptsTableReferences
   static MultiTypedResultKey<$ReceiptLineItemsTable, List<ReceiptLineItem>>
   _receiptLineItemsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.receiptLineItems,
-    aliasName: $_aliasNameGenerator(
-      db.receipts.id,
-      db.receiptLineItems.receiptId,
-    ),
+    aliasName: 'receipts__id__receipt_line_items__receipt_id',
   );
 
   $$ReceiptLineItemsTableProcessedTableManager get receiptLineItemsRefs {
@@ -4894,9 +4891,7 @@ final class $$ReceiptLineItemsTableReferences
   );
 
   static $ReceiptsTable _receiptIdTable(_$AppDatabase db) =>
-      db.receipts.createAlias(
-        $_aliasNameGenerator(db.receiptLineItems.receiptId, db.receipts.id),
-      );
+      db.receipts.createAlias('receipt_line_items__receipt_id__receipts__id');
 
   $$ReceiptsTableProcessedTableManager get receiptId {
     final $_column = $_itemColumn<String>('receipt_id')!;
@@ -5801,10 +5796,7 @@ final class $$ClaimDocumentsTableReferences
   _claimDefectImagesRefsTable(_$AppDatabase db) =>
       MultiTypedResultKey.fromTable(
         db.claimDefectImages,
-        aliasName: $_aliasNameGenerator(
-          db.claimDocuments.id,
-          db.claimDefectImages.claimId,
-        ),
+        aliasName: 'claim_documents__id__claim_defect_images__claim_id',
       );
 
   $$ClaimDefectImagesTableProcessedTableManager get claimDefectImagesRefs {
@@ -6226,13 +6218,9 @@ final class $$ClaimDefectImagesTableReferences
     super.$_typedResult,
   );
 
-  static $ClaimDocumentsTable _claimIdTable(_$AppDatabase db) =>
-      db.claimDocuments.createAlias(
-        $_aliasNameGenerator(
-          db.claimDefectImages.claimId,
-          db.claimDocuments.id,
-        ),
-      );
+  static $ClaimDocumentsTable _claimIdTable(_$AppDatabase db) => db
+      .claimDocuments
+      .createAlias('claim_defect_images__claim_id__claim_documents__id');
 
   $$ClaimDocumentsTableProcessedTableManager get claimId {
     final $_column = $_itemColumn<String>('claim_id')!;

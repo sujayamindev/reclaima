@@ -1,7 +1,10 @@
 // coverage:ignore-file
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../data/models/notification_preferences_model.dart';
 import 'service_providers.dart';
+
+part 'notification_provider.g.dart';
 
 // ── Fetch preferences ──────────────────────────────────────────────────────
 
@@ -15,25 +18,12 @@ final notificationPreferencesProvider =
 
 // ── Preferences controller ─────────────────────────────────────────────────
 
+@riverpod
 class NotificationPreferencesController
-    extends StateNotifier<AsyncValue<NotificationPreferencesModel?>> {
-  final Ref _ref;
-
-  NotificationPreferencesController(this._ref)
-    : super(const AsyncValue.loading()) {
-    _load();
-  }
-
-  Future<void> _load() async {
-    state = const AsyncValue.loading();
-    try {
-      final prefs = await _ref
-          .read(notificationServiceProvider)
-          .getPreferences();
-      state = AsyncValue.data(prefs);
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
-    }
+    extends AsyncNotifier<NotificationPreferencesModel?> {
+  @override
+  Future<NotificationPreferencesModel?> build() async {
+    return ref.read(notificationServiceProvider).getPreferences();
   }
 
   /// Persist updated preferences and update local state optimistically.
@@ -41,7 +31,7 @@ class NotificationPreferencesController
     // Optimistic update
     state = AsyncValue.data(updated);
     try {
-      final saved = await _ref
+      final saved = await ref
           .read(notificationServiceProvider)
           .savePreferences(updated);
       if (saved != null) state = AsyncValue.data(saved);
@@ -50,11 +40,15 @@ class NotificationPreferencesController
     }
   }
 
-  Future<void> reload() => _load();
+  Future<void> reload() async {
+    state = const AsyncValue.loading();
+    try {
+      final prefs = await ref
+          .read(notificationServiceProvider)
+          .getPreferences();
+      state = AsyncValue.data(prefs);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
 }
-
-final notificationPreferencesControllerProvider =
-    StateNotifierProvider<
-      NotificationPreferencesController,
-      AsyncValue<NotificationPreferencesModel?>
-    >((ref) => NotificationPreferencesController(ref));

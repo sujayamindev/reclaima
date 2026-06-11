@@ -74,7 +74,7 @@ class _NotificationSettingsScreenState
 
   Future<void> _savePreferences() async {
     final prefsAsync = ref.read(notificationPreferencesControllerProvider);
-    final basePrefs = prefsAsync.valueOrNull;
+    final basePrefs = prefsAsync.asData?.value;
     if (basePrefs == null) return;
 
     final updated = _buildUpdatedPreferences(basePrefs);

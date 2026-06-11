@@ -380,14 +380,13 @@ class ProductDetailScreen extends ConsumerWidget {
                   if (deleteReceiptLevel) {
                     ok = await ref
                         .read(receiptControllerProvider.notifier)
-                        .deleteReceipt(product.receiptId, ref);
+                        .deleteReceipt(product.receiptId);
                   } else {
                     ok = await ref
                         .read(receiptControllerProvider.notifier)
                         .deleteLineItem(
                           product.receiptId,
                           product.lineItem!.id,
-                          ref,
                         );
                   }
                   if (ok && context.mounted) Navigator.pop(context);
@@ -575,7 +574,7 @@ class ProductDetailScreen extends ConsumerWidget {
     }
 
     final allReceiptsVal = ref.read(receiptsProvider);
-    if (allReceiptsVal.valueOrNull == null) {
+    if (allReceiptsVal.asData?.value == null) {
       return const SizedBox.shrink();
     }
 
