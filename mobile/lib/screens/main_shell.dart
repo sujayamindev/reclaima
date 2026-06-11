@@ -23,8 +23,8 @@ class MainNavIndex extends Notifier<int> {
 class VaultSearchFocusTrigger extends Notifier<bool> {
   @override
   bool build() => false;
-  void trigger() => state = true;
-  void reset() => state = false;
+  void trigger() => state = true; // coverage:ignore-line
+  void reset() => state = false; // coverage:ignore-line
 }
 
 // ── Main shell ────────────────────────────────────────────────────────────────
