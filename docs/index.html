@@ -2000,7 +2000,7 @@
           </tr>
         </tbody>
       </table>
-      <p style="margin-top:16px;font-size:13px;color:var(--c-muted)">Selected endpoints only — the full API spans 29
+      <p style="margin-top:16px;font-size:13px;color:var(--c-muted)">Selected endpoints only — the full API spans 30
         endpoints
         across 6 resource domains.</p>
     </div>
@@ -2154,8 +2154,8 @@
               unhandled exception loop, a slow DB query — competes directly with request handling and can bring
               down the API. A separate container isolates that: the API stays up regardless of what the scheduler
               does. The alternative would be Celery with Redis, which gives you a proper job queue, distributed
-              workers, and retry visibility — but that's significant infrastructure overhead for three nightly
-              reminder jobs. For the current scale, two containers achieve the failure isolation without the
+              workers, and retry visibility — but that's significant infrastructure overhead for two nightly reminder jobs and one
+              cleanup job. For the current scale, two containers achieve the failure isolation without the
               complexity.
             </div>
           </details>
