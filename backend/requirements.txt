@@ -51,7 +51,7 @@ ruff==0.15.15
 mypy==2.1.0
 
 # Logging & Monitoring
-structlog==25.5.0
+structlog==26.1.0
 sentry-sdk[fastapi]==2.61.0
 
 # Security overrides
