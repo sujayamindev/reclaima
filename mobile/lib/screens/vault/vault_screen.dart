@@ -171,8 +171,7 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
       if (next) {
         _searchFocusNode.requestFocus();
         Future.microtask(
-          () =>
-              ref.read(vaultSearchFocusTriggerProvider.notifier).state = false,
+          () => ref.read(vaultSearchFocusTriggerProvider.notifier).reset(),
         );
       }
     });

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:mobile/screens/receipt/product_detail_screen.dart';
 import 'package:mobile/providers/receipt_provider.dart';
 import 'package:mobile/data/database/app_database.dart';

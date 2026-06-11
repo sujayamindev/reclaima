@@ -1,16 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../core/constants/app_constants.dart';
 import 'home/home_screen.dart';
 import 'vault/vault_screen.dart';
 import 'claims/claims_hub_screen.dart';
 import 'settings/settings_screen.dart';
 
+part 'main_shell.g.dart';
+
 // ── Nav index provider ────────────────────────────────────────────────────────
 
-final mainNavIndexProvider = StateProvider<int>((ref) => 0);
-final vaultSearchFocusTriggerProvider = StateProvider<bool>((ref) => false);
+@riverpod
+class MainNavIndex extends Notifier<int> {
+  @override
+  int build() => 0;
+  void setIndex(int index) => state = index;
+}
+
+@riverpod
+class VaultSearchFocusTrigger extends Notifier<bool> {
+  @override
+  bool build() => false;
+  void trigger() => state = true;
+  void reset() => state = false;
+}
 
 // ── Main shell ────────────────────────────────────────────────────────────────
 
@@ -35,7 +50,7 @@ class MainShell extends ConsumerWidget {
       bottomNavigationBar: _BottomNavBar(
         currentIndex: index,
         isDark: isDark,
-        onTap: (i) => ref.read(mainNavIndexProvider.notifier).state = i,
+        onTap: (i) => ref.read(mainNavIndexProvider.notifier).setIndex(i),
       ),
     );
   }

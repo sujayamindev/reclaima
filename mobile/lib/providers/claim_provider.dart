@@ -1,8 +1,11 @@
 // coverage:ignore-file
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../services/claim_service.dart';
 import 'auth_provider.dart';
 import 'service_providers.dart';
+
+part 'claim_provider.g.dart';
 
 /// User claims list provider — offline first.
 ///
@@ -20,4 +23,9 @@ final userClaimsProvider = FutureProvider<List<ClaimDocumentResponse>>((
 });
 
 /// Provider for tracking a pending replacement claim ID when the user chooses "Add New Receipt"
-final pendingReplacementClaimIdProvider = StateProvider<String?>((ref) => null);
+@riverpod
+class PendingReplacementClaimId extends Notifier<String?> {
+  @override
+  String? build() => null;
+  void set(String? id) => state = id;
+}

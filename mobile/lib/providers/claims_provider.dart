@@ -1,17 +1,11 @@
 // coverage:ignore-file
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../services/claim_service.dart';
-import '../data/repositories/claim_repository.dart';
 import '../core/utils/logger.dart';
 import 'service_providers.dart';
 
-/// Provider for managing claim documents
-///
-/// Provides reactive state management for claims including:
-/// - Fetching claims by receipt
-/// - Getting individual claims
-/// - Managing claim updates
-/// - Deleting claims
+part 'claims_provider.g.dart';
 
 /// State class for claims
 class ClaimsState {
@@ -39,13 +33,12 @@ class ClaimsState {
 }
 
 /// Notifier for managing claims for a specific receipt
-class ClaimsNotifier extends StateNotifier<ClaimsState> {
-  final ClaimRepository _repository;
-  final String receiptId;
-
-  ClaimsNotifier(this._repository, this.receiptId)
-    : super(const ClaimsState()) {
-    loadClaims();
+@riverpod
+class Claims extends _$Claims {
+  @override
+  ClaimsState build(String receiptId) {
+    Future.microtask(loadClaims);
+    return const ClaimsState();
   }
 
   /// Load all claims for the receipt — offline first.
@@ -53,7 +46,9 @@ class ClaimsNotifier extends StateNotifier<ClaimsState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       logger.i('Loading claims for receipt $receiptId');
-      final claims = await _repository.getClaims(receiptId: receiptId);
+      final claims = await ref
+          .read(claimRepositoryProvider)
+          .getClaims(receiptId: receiptId);
       state = state.copyWith(claims: claims, isLoading: false);
       logger.i('Loaded ${claims.length} claims');
     } catch (e) {
@@ -70,11 +65,9 @@ class ClaimsNotifier extends StateNotifier<ClaimsState> {
   }) async {
     try {
       logger.i('Updating claim $claimId');
-      final updatedClaim = await _repository.updateClaim(
-        claimId,
-        status: status,
-        notes: notes,
-      );
+      final updatedClaim = await ref
+          .read(claimRepositoryProvider)
+          .updateClaim(claimId, status: status, notes: notes);
 
       final updatedClaims = state.claims.map((claim) {
         return claim.id == claimId ? updatedClaim : claim;
@@ -92,7 +85,7 @@ class ClaimsNotifier extends StateNotifier<ClaimsState> {
   Future<void> deleteClaim(String claimId) async {
     try {
       logger.i('Deleting claim $claimId');
-      await _repository.deleteClaim(claimId);
+      await ref.read(claimRepositoryProvider).deleteClaim(claimId);
 
       final updatedClaims = state.claims
           .where((claim) => claim.id != claimId)
@@ -114,12 +107,14 @@ class ClaimsNotifier extends StateNotifier<ClaimsState> {
   }) async {
     try {
       logger.i('Resolving claim $claimId with outcome $outcome');
-      final updatedClaim = await _repository.resolveClaim(
-        claimId,
-        outcome,
-        linkedItemId: linkedItemId,
-        duplicateDetails: duplicateDetails,
-      );
+      final updatedClaim = await ref
+          .read(claimRepositoryProvider)
+          .resolveClaim(
+            claimId,
+            outcome,
+            linkedItemId: linkedItemId,
+            duplicateDetails: duplicateDetails,
+          );
 
       final updatedClaims = state.claims.map((claim) {
         return claim.id == claimId ? updatedClaim : claim;
@@ -133,16 +128,6 @@ class ClaimsNotifier extends StateNotifier<ClaimsState> {
     }
   }
 }
-
-/// Provider family for claims by receipt ID
-final claimsProvider =
-    StateNotifierProvider.family<ClaimsNotifier, ClaimsState, String>((
-      ref,
-      receiptId,
-    ) {
-      final repository = ref.watch(claimRepositoryProvider);
-      return ClaimsNotifier(repository, receiptId);
-    });
 
 /// Provider for getting a single claim by ID — offline first via repository.
 final claimProvider = FutureProvider.family<ClaimDocumentResponse, String>((

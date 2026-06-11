@@ -53,7 +53,7 @@ Widget _wrap({required Future<List<ReceiptModel>> Function() receipts}) =>
     ProviderScope(
       overrides: [
         receiptsProvider.overrideWith((ref) => receipts()),
-        vaultSearchFocusTriggerProvider.overrideWith((ref) => false),
+        vaultSearchFocusTriggerProvider.overrideWith(VaultSearchFocusTrigger.new),
         // authStateProvider needed by any provider that transitively reads it
         authStateProvider.overrideWith((ref) => const Stream.empty()),
         currentUserProvider.overrideWith((ref) => null),

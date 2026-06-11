@@ -1,10 +1,11 @@
 // coverage:ignore-file
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../data/models/user_model.dart';
-import '../services/auth_service.dart';
-import '../services/notification_service.dart';
 import 'service_providers.dart';
+
+part 'auth_provider.g.dart';
 
 /// Auth state provider - listen to Firebase auth changes
 final authStateProvider = StreamProvider<User?>((ref) {
@@ -43,12 +44,10 @@ final userProfileProvider = FutureProvider<UserModel?>((ref) async {
 });
 
 /// Auth Controller
-class AuthController extends StateNotifier<AsyncValue<void>> {
-  final AuthService _authService;
-  final NotificationService _notifService;
-
-  AuthController(this._authService, this._notifService)
-    : super(const AsyncValue.data(null));
+@riverpod
+class AuthController extends AsyncNotifier<void> {
+  @override
+  Future<void> build() async {}
 
   /// Sign up with email and password
   Future<void> signUp({
@@ -57,13 +56,10 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
     String? fullName,
   }) async {
     state = const AsyncValue.loading();
-
     try {
-      await _authService.signUp(
-        email: email,
-        password: password,
-        fullName: fullName,
-      );
+      await ref
+          .read(authServiceProvider)
+          .signUp(email: email, password: password, fullName: fullName);
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -73,9 +69,10 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
   /// Sign in with email and password
   Future<void> signIn({required String email, required String password}) async {
     state = const AsyncValue.loading();
-
     try {
-      await _authService.signIn(email: email, password: password);
+      await ref
+          .read(authServiceProvider)
+          .signIn(email: email, password: password);
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -86,7 +83,7 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
   Future<void> signInWithGoogle() async {
     state = const AsyncValue.loading();
     try {
-      await _authService.signInWithGoogle();
+      await ref.read(authServiceProvider).signInWithGoogle();
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -97,19 +94,18 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
   Future<void> signInWithApple() async {
     state = const AsyncValue.loading();
     try {
-      await _authService.signInWithApple();
+      await ref.read(authServiceProvider).signInWithApple();
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
   }
 
-  /// Sign out
   /// Send email verification
   Future<void> sendEmailVerification() async {
     state = const AsyncValue.loading();
     try {
-      await _authService.sendEmailVerification();
+      await ref.read(authServiceProvider).sendEmailVerification();
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -118,7 +114,7 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
 
   /// Check if email is verified
   Future<bool> checkEmailVerified() async {
-    return await _authService.isEmailVerified();
+    return await ref.read(authServiceProvider).isEmailVerified();
   }
 
   /// Update current user profile
@@ -128,10 +124,12 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
   }) async {
     state = const AsyncValue.loading();
     try {
-      await _authService.updateProfile(
-        displayName: displayName,
-        contactNumber: contactNumber,
-      );
+      await ref
+          .read(authServiceProvider)
+          .updateProfile(
+            displayName: displayName,
+            contactNumber: contactNumber,
+          );
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -145,11 +143,11 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
     try {
       // Best effort deregister of FCM tokens before deletion
       try {
-        await _notifService.deregisterToken();
+        await ref.read(notificationServiceProvider).deregisterToken();
       } catch (_) {
         // Ignore errors, we are deleting the account anyway
       }
-      await _authService.deleteAccount();
+      await ref.read(authServiceProvider).deleteAccount();
       // Clearing state and resetting happens via the authState stream yielding null,
       // but we set this manually just in case
       state = const AsyncValue.data(null);
@@ -163,8 +161,8 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
   Future<void> signOut() async {
     state = const AsyncValue.loading();
     try {
-      await _notifService.deregisterToken();
-      await _authService.signOut();
+      await ref.read(notificationServiceProvider).deregisterToken();
+      await ref.read(authServiceProvider).signOut();
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -177,12 +175,13 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
     required String newPassword,
   }) async {
     state = const AsyncValue.loading();
-
     try {
-      await _authService.changePassword(
-        currentPassword: currentPassword,
-        newPassword: newPassword,
-      );
+      await ref
+          .read(authServiceProvider)
+          .changePassword(
+            currentPassword: currentPassword,
+            newPassword: newPassword,
+          );
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -193,9 +192,8 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
   /// Reset password
   Future<void> resetPassword(String email) async {
     state = const AsyncValue.loading();
-
     try {
-      await _authService.resetPassword(email);
+      await ref.read(authServiceProvider).resetPassword(email);
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -238,12 +236,3 @@ final greetingProvider = Provider<String>((_) {
   if (hour < 17) return 'Good afternoon,';
   return 'Good evening,';
 });
-
-/// Auth controller provider
-final authControllerProvider =
-    StateNotifierProvider<AuthController, AsyncValue<void>>((ref) {
-      return AuthController(
-        ref.watch(authServiceProvider),
-        ref.watch(notificationServiceProvider),
-      );
-    });
