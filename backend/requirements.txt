@@ -3,7 +3,7 @@ fastapi==0.136.3
 uvicorn[standard]==0.48.0
 pydantic==2.13.4
 pydantic-settings==2.14.1
-python-multipart>=0.0.30
+python-multipart>=0.0.32
 
 # Database
 sqlalchemy==2.0.50
@@ -14,7 +14,7 @@ psycopg2-binary==2.9.12
 firebase-admin==6.4.0
 
 # AWS SDK (for S3 and Textract)
-boto3>=1.43.20
+boto3>=1.43.24
 
 # Background Jobs
 apscheduler==3.11.2
@@ -51,7 +51,7 @@ ruff==0.15.15
 mypy==2.1.0
 
 # Logging & Monitoring
-structlog==25.5.0
+structlog==26.1.0
 sentry-sdk[fastapi]==2.61.0
 
 # Security overrides
