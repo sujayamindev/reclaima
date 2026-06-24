@@ -39,7 +39,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -73,7 +73,7 @@ jobs:
         working-directory: backend
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -195,7 +195,7 @@ jobs:
     timeout-minutes: 35
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -305,7 +305,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Validate krakend.tmpl
         run: >-
@@ -339,7 +339,7 @@ jobs:
       image_tag: ${{ steps.meta.outputs.image_tag }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v4
@@ -416,7 +416,7 @@ jobs:
       SLACK_DEPLOY_WEBHOOK: ${{ secrets.SLACK_DEPLOY_WEBHOOK }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Configure SSH
         env:
