@@ -6,7 +6,7 @@
 /// Example:
 ///   patrol test \
 ///     --dart-define=E2E_EMAIL=e2e-test@yourdomain.com \
-///     --dart-define=E2E_PASSWORD='SuperSecret123!' \
+///     --dart-define=E2E_PASSWORD='YourTestPassword1!' \
 ///     --dart-define=E2E_HELPER_URL=http://10.0.2.2:8765
 class TestConfig {
   /// Test account email. The suite creates this account via sign-up and
