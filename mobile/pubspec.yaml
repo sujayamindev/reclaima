@@ -83,14 +83,27 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
+  # E2E / integration testing
+  integration_test:
+    sdk: flutter
+  patrol: ^3.13.0
+
   flutter_lints: ^6.0.0
-  
+
   # Code Generation
   build_runner: ^2.15.0
   drift_dev: ^2.28.3
   riverpod_generator: ^4.0.0+1
   json_serializable: ^6.11.2
   flutter_launcher_icons: ^0.14.4
+
+# Patrol E2E test configuration. The Android package_name must match
+# `applicationId` in android/app/build.gradle.kts.
+patrol:
+  app_name: Reclaima
+  test_directory: integration_test
+  android:
+    package_name: com.example.mobile
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

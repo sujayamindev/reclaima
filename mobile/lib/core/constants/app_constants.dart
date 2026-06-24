@@ -7,8 +7,12 @@ export 'app_theme.dart';
 
 /// API configuration constants
 class ApiConstants {
-  // Base URL - Change this to your backend URL
-  static const String baseUrl = 'http://168.138.170.92:8000/api/v1';
+  // Base URL - Change this to your backend URL.
+  // Override at build time with --dart-define=API_BASE_URL=... (used by E2E tests).
+  static const String baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'http://168.138.170.92:8000/api/v1',
+  );
 
   // For Android emulator to access host machine
   static const String androidEmulatorBaseUrl = 'http://10.0.2.2:8000/api/v1';

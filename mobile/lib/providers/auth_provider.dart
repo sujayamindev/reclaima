@@ -44,7 +44,12 @@ final userProfileProvider = FutureProvider<UserModel?>((ref) async {
 });
 
 /// Auth Controller
-@riverpod
+///
+/// keepAlive so long-running async methods (deleteAccount, signOut) that
+/// `ref.read` services across `await` points aren't disposed mid-flight when
+/// the only caller `ref.read`s the notifier without watching it — disposal
+/// would make the post-await `ref.read` throw "Ref ... already disposed".
+@Riverpod(keepAlive: true)
 class AuthController extends AsyncNotifier<void> {
   @override
   Future<void> build() async {}
@@ -60,9 +65,11 @@ class AuthController extends AsyncNotifier<void> {
       await ref
           .read(authServiceProvider)
           .signUp(email: email, password: password, fullName: fullName);
-      state = const AsyncValue.data(null);
+      // Guard: the auth-state stream can fire and unmount this provider before
+      // the await returns (especially with a local emulator that responds in ms).
+      if (ref.mounted) state = const AsyncValue.data(null);
     } catch (e, st) {
-      state = AsyncValue.error(e, st);
+      if (ref.mounted) state = AsyncValue.error(e, st);
     }
   }
 
@@ -73,9 +80,9 @@ class AuthController extends AsyncNotifier<void> {
       await ref
           .read(authServiceProvider)
           .signIn(email: email, password: password);
-      state = const AsyncValue.data(null);
+      if (ref.mounted) state = const AsyncValue.data(null);
     } catch (e, st) {
-      state = AsyncValue.error(e, st);
+      if (ref.mounted) state = AsyncValue.error(e, st);
     }
   }
 
@@ -84,9 +91,9 @@ class AuthController extends AsyncNotifier<void> {
     state = const AsyncValue.loading();
     try {
       await ref.read(authServiceProvider).signInWithGoogle();
-      state = const AsyncValue.data(null);
+      if (ref.mounted) state = const AsyncValue.data(null);
     } catch (e, st) {
-      state = AsyncValue.error(e, st);
+      if (ref.mounted) state = AsyncValue.error(e, st);
     }
   }
 
@@ -95,9 +102,9 @@ class AuthController extends AsyncNotifier<void> {
     state = const AsyncValue.loading();
     try {
       await ref.read(authServiceProvider).signInWithApple();
-      state = const AsyncValue.data(null);
+      if (ref.mounted) state = const AsyncValue.data(null);
     } catch (e, st) {
-      state = AsyncValue.error(e, st);
+      if (ref.mounted) state = AsyncValue.error(e, st);
     }
   }
 
@@ -106,9 +113,9 @@ class AuthController extends AsyncNotifier<void> {
     state = const AsyncValue.loading();
     try {
       await ref.read(authServiceProvider).sendEmailVerification();
-      state = const AsyncValue.data(null);
+      if (ref.mounted) state = const AsyncValue.data(null);
     } catch (e, st) {
-      state = AsyncValue.error(e, st);
+      if (ref.mounted) state = AsyncValue.error(e, st);
     }
   }
 
@@ -130,9 +137,9 @@ class AuthController extends AsyncNotifier<void> {
             displayName: displayName,
             contactNumber: contactNumber,
           );
-      state = const AsyncValue.data(null);
+      if (ref.mounted) state = const AsyncValue.data(null);
     } catch (e, st) {
-      state = AsyncValue.error(e, st);
+      if (ref.mounted) state = AsyncValue.error(e, st);
       rethrow;
     }
   }
@@ -150,9 +157,9 @@ class AuthController extends AsyncNotifier<void> {
       await ref.read(authServiceProvider).deleteAccount();
       // Clearing state and resetting happens via the authState stream yielding null,
       // but we set this manually just in case
-      state = const AsyncValue.data(null);
+      if (ref.mounted) state = const AsyncValue.data(null);
     } catch (e, st) {
-      state = AsyncValue.error(e, st);
+      if (ref.mounted) state = AsyncValue.error(e, st);
       rethrow;
     }
   }
@@ -163,9 +170,9 @@ class AuthController extends AsyncNotifier<void> {
     try {
       await ref.read(notificationServiceProvider).deregisterToken();
       await ref.read(authServiceProvider).signOut();
-      state = const AsyncValue.data(null);
+      if (ref.mounted) state = const AsyncValue.data(null);
     } catch (e, st) {
-      state = AsyncValue.error(e, st);
+      if (ref.mounted) state = AsyncValue.error(e, st);
     }
   }
 
@@ -182,9 +189,9 @@ class AuthController extends AsyncNotifier<void> {
             currentPassword: currentPassword,
             newPassword: newPassword,
           );
-      state = const AsyncValue.data(null);
+      if (ref.mounted) state = const AsyncValue.data(null);
     } catch (e, st) {
-      state = AsyncValue.error(e, st);
+      if (ref.mounted) state = AsyncValue.error(e, st);
       rethrow;
     }
   }
@@ -194,9 +201,9 @@ class AuthController extends AsyncNotifier<void> {
     state = const AsyncValue.loading();
     try {
       await ref.read(authServiceProvider).resetPassword(email);
-      state = const AsyncValue.data(null);
+      if (ref.mounted) state = const AsyncValue.data(null);
     } catch (e, st) {
-      state = AsyncValue.error(e, st);
+      if (ref.mounted) state = AsyncValue.error(e, st);
     }
   }
 }
