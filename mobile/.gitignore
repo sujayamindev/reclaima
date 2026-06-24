@@ -43,3 +43,9 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Patrol generates this on every `patrol test` run from the test entrypoints
+integration_test/test_bundle.dart
+
+# Transient gradlew backup created by scripts/run_e2e.ps1 while running Patrol
+android/gradlew_orig.bat

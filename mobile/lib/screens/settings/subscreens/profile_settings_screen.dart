@@ -396,7 +396,16 @@ class _ProfileSettingsScreenState extends ConsumerState<ProfileSettingsScreen> {
             ],
           ),
           const SizedBox(height: 14),
-          ...children,
+          // Material ancestor below the Container's DecoratedBox so ListTile
+          // children paint their background/ink splashes (transparent: no
+          // visual change to the card).
+          Material(
+            type: MaterialType.transparency,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: children,
+            ),
+          ),
         ],
       ),
     );

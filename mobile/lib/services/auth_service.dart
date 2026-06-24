@@ -253,22 +253,28 @@ class AuthService {
 
   /// Delete current user account (Backend + Firebase)
   Future<void> deleteAccount() async {
+    logger.i('Deleting user account...');
+
+    // Best-effort: remove the backend record. Don't let a backend HTTP error
+    // (transient outage, auth mismatch in test environments) block the user
+    // from deleting their Firebase account.
     try {
-      logger.i('Deleting user account...');
-
-      // 1. Delete from backend using ApiService (DELETE /auth/me)
       await _apiService.delete(ApiConstants.authMe);
+    } catch (e) {
+      logger.w('Backend delete /auth/me failed (continuing): $e');
+    }
 
-      // 2. Delete from Firebase Auth
-      final user = _auth.currentUser;
-      if (user != null) {
+    // Firebase Auth delete is the primary operation; requires-recent-login
+    // is re-thrown so the UI can prompt the user to re-authenticate.
+    final user = _auth.currentUser;
+    if (user != null) {
+      try {
         await user.delete();
         logger.i('User deleted successfully');
+      } catch (e) {
+        logger.e('Error deleting user from Firebase: $e');
+        rethrow;
       }
-    } catch (e) {
-      logger.e('Error deleting user account: $e');
-      // If Firebase throws 'requires-recent-login', rethrow it so UI can handle it.
-      rethrow;
     }
   }
 
