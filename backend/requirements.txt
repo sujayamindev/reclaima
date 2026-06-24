@@ -29,7 +29,7 @@ python-dateutil==2.9.0.post0
 httpx==0.28.1
 
 # PDF Generation (for claim documents)
-reportlab==4.5.1
+reportlab==5.0.0
 
 # Templating (required for Sentry/Starlette auto-instrumentation)
 jinja2==3.1.6
