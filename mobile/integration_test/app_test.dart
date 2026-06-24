@@ -25,16 +25,6 @@ Future<void> _bgHandler(RemoteMessage message) async {
 /// spinner animates forever and would time out a settle.
 Future<void> _bootApp(PatrolIntegrationTester $) async {
   await Firebase.initializeApp();
-  // Redirect all auth traffic to the local Firebase Auth emulator so that
-  // email/password sign-up never hits Play Integrity / reCAPTCHA (which hangs
-  // indefinitely in automated tests). automaticHostMapping must be false on
-  // physical devices — true would remap 127.0.0.1 → 10.0.2.2, which only
-  // works on Android Studio emulators, not real hardware.
-  await FirebaseAuth.instance.useAuthEmulator(
-    '127.0.0.1',
-    9099,
-    automaticHostMapping: false,
-  );
   FirebaseMessaging.onBackgroundMessage(_bgHandler);
   await $.tester.pumpWidget(const ProviderScope(child: MyApp()));
 }
@@ -148,11 +138,10 @@ void main() {
       );
 
       // Happy: sign in via custom token to bypass RecaptchaCallWrapper, which
-      // hangs indefinitely on successful email/password sign-ins in automated
-      // test environments (Play Integrity cannot complete on physical devices
-      // without a live Play Services connection). Custom token sign-in skips
-      // that layer entirely while still satisfying requires-recent-login for
-      // the subsequent account deletion.
+      // hangs indefinitely on successful email/password sign-ins on physical
+      // Android devices in automated tests (Play Integrity cannot complete
+      // without an interactive session). Custom token sign-in skips that layer
+      // while still satisfying requires-recent-login for account deletion.
       final signInToken = await helper.customToken(TestConfig.email);
       await FirebaseAuth.instance.signInWithCustomToken(signInToken);
       expect(

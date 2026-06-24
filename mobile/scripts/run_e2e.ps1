@@ -5,16 +5,17 @@
 .DESCRIPTION
   Starts the local Firebase Admin helper (integration_test/tools/test_admin_helper.py),
   waits for it to become healthy, runs `patrol test`, then stops the helper.
+  Uses real Firebase (no local emulator).
 
   Prerequisites:
-    - An Android emulator running (`flutter devices` shows it).
+    - A physical Android device connected via USB with USB debugging enabled.
     - Patrol CLI installed:  dart pub global activate patrol_cli
     - Python deps installed:  pip install -r integration_test/tools/requirements.txt
     - firebase-service-account.json available (pass its path via -ServiceAccount).
 
 .EXAMPLE
   ./scripts/run_e2e.ps1 -ServiceAccount ../backend/firebase-service-account.json `
-      -Email e2e-test@yourdomain.com -Password 'SuperSecret123!'
+      -Email e2e-test@yourdomain.com -Password 'YourTestPassword1!'
 #>
 param(
     [Parameter(Mandatory = $true)]
@@ -70,59 +71,10 @@ if ($_earlyAdb) {
 $helperUrl = "http://${HelperHost}:$HelperPort"
 Write-Host "Helper URL for device: $helperUrl (via adb reverse tunnel)." -ForegroundColor Cyan
 
-# ─── Firebase Auth Emulator ───────────────────────────────────────────────────
-# Firebase Auth SDK v22+ hangs email/password sign-up when Play Integrity
-# returns an empty reCAPTCHA token; the SDK waits for an interactive challenge
-# that never resolves in automated tests. Route all auth traffic through a
-# local Firebase Auth emulator instead.
-$firebaseBin = "$env:APPDATA\npm\firebase.cmd"
-if (-not (Test-Path $firebaseBin)) {
-    throw 'firebase-tools not found. Run: npm install -g firebase-tools'
-}
-$emulatorProc = $null
-$emulatorLog = Join-Path $env:TEMP 'e2e_emulator.txt'
-$emulatorErr = Join-Path $env:TEMP 'e2e_emulator_err.txt'
-
-# Reuse if a previous run left the emulator running (clean start still happens
-# because the pre-flight delete-user wipes the emulator's in-memory user store).
-$emulatorAlreadyUp = $false
-$tcpCheck = New-Object System.Net.Sockets.TcpClient
-try { $tcpCheck.Connect('127.0.0.1', 9099); $emulatorAlreadyUp = $true; $tcpCheck.Close() }
-catch { } finally { $tcpCheck.Dispose() }
-
-if ($emulatorAlreadyUp) {
-    Write-Host 'Firebase Auth emulator already up on port 9099 — reusing.' -ForegroundColor Green
-} else {
-    Write-Host 'Starting Firebase Auth emulator on port 9099 ...' -ForegroundColor Cyan
-    $emulatorProc = Start-Process -FilePath $firebaseBin `
-        -ArgumentList @('emulators:start', '--only', 'auth', '--project', 'smart-receipt-warranty-manager') `
-        -WorkingDirectory $mobileDir `
-        -RedirectStandardOutput $emulatorLog `
-        -RedirectStandardError $emulatorErr `
-        -PassThru -NoNewWindow
-
-    $emulatorReady = $false
-    for ($i = 0; $i -lt 60; $i++) {
-        Start-Sleep -Milliseconds 1000
-        if ($emulatorProc.HasExited) {
-            Write-Host 'Emulator stdout:' -ForegroundColor Yellow
-            if (Test-Path $emulatorLog) { Get-Content $emulatorLog | Write-Host }
-            Write-Host 'Emulator stderr:' -ForegroundColor Yellow
-            if (Test-Path $emulatorErr) { Get-Content $emulatorErr | Write-Host }
-            throw "Firebase Auth emulator exited early (code $($emulatorProc.ExitCode))."
-        }
-        $tcp = New-Object System.Net.Sockets.TcpClient
-        try { $tcp.Connect('127.0.0.1', 9099); $emulatorReady = $true; $tcp.Close(); break }
-        catch { } finally { $tcp.Dispose() }
-    }
-    if (-not $emulatorReady) { throw 'Firebase Auth emulator did not become ready in 60 seconds.' }
-    Write-Host 'Firebase Auth emulator ready on port 9099.' -ForegroundColor Green
-}
-
 Write-Host "Starting Firebase Admin helper on port $HelperPort ..." -ForegroundColor Cyan
 $env:FIREBASE_SERVICE_ACCOUNT = $ServiceAccount
 $helper = Start-Process -FilePath $Python `
-    -ArgumentList @($helperScript, '--port', "$HelperPort", '--auth-emulator-host', '127.0.0.1:9099') `
+    -ArgumentList @($helperScript, '--port', "$HelperPort") `
     -PassThru -NoNewWindow
 
 try {
@@ -200,11 +152,52 @@ try {
         # to the PC via the reverse tunnel).  No-op on emulators (10.0.2.2 already works).
         & $adb @adbArgs reverse "tcp:$HelperPort" "tcp:$HelperPort" 2>$null
         Write-Host "adb reverse tcp:$HelperPort established." -ForegroundColor Cyan
-        & $adb @adbArgs reverse 'tcp:9099' 'tcp:9099' 2>$null
-        Write-Host 'adb reverse tcp:9099 established (Firebase Auth emulator).' -ForegroundColor Cyan
+
+        # Samsung devices silently reset USB during long Gradle builds, dropping the
+        # reverse tunnel.  Re-establish it every 10 s so the device can always reach
+        # the helper once tests start running (the brief re-establish gap is safe).
+        $tunnelAdb  = $adb
+        $tunnelArgs = $adbArgs + @("reverse", "tcp:$HelperPort", "tcp:$HelperPort")
+        $tunnelJob  = Start-Job -ScriptBlock {
+            param($exe, $args)
+            while ($true) {
+                & $exe @args 2>$null | Out-Null
+                Start-Sleep -Seconds 10
+            }
+        } -ArgumentList $tunnelAdb, $tunnelArgs
     } else {
         Write-Warning 'adb not found — screen may sleep during tests. Enable Stay Awake in Developer Options.'
     }
+
+    # ── Flutter wrapper (pipe-handle fix for buildApkConfigOnly) ─────────────
+    # patrol's buildApkConfigOnly calls Process.start() then awaits exitCode
+    # without draining stdout/stderr. On Windows, java subprocesses spawned by
+    # flutter inherit the pipe write handle; exitCode waits for all handles to
+    # close and blocks forever. Fix: prepend a smart flutter.bat to PATH that
+    # redirects stdout/stderr to a temp file ONLY for "--config-only" calls so
+    # the java children write to a file (never blocking) instead of the pipe.
+    # All other flutter calls (devices, doctor, pub deps) pass through unchanged.
+    $flutterRealExe  = (Get-Command flutter -ErrorAction SilentlyContinue).Source
+    if (-not $flutterRealExe) {
+        $flutterRealExe = "$env:USERPROFILE\Documents\Projects\smart-receipt-and-warranty-manager\.tools\flutter\bin\flutter.bat"
+    }
+    $flutterWrapDir  = Join-Path $env:TEMP 'patrol_flutter_wrap'
+    New-Item -ItemType Directory -Force -Path $flutterWrapDir | Out-Null
+    $flutterWrapBat  = Join-Path $flutterWrapDir 'flutter.bat'
+    # Embed the real flutter path; escape any % signs in the path (unlikely but safe).
+    $flutterRealEscaped = $flutterRealExe -replace '%', '%%'
+    Set-Content -Path $flutterWrapBat -Encoding ASCII -Value (@"
+@echo off
+echo.%*| findstr /C:"config-only" >NUL 2>&1
+if %ERRORLEVEL% EQU 0 goto config_only
+"$flutterRealEscaped" %*
+exit /b %ERRORLEVEL%
+:config_only
+"$flutterRealEscaped" %* >"%TEMP%\flutter_config_only_out.txt" 2>&1
+exit /b %ERRORLEVEL%
+"@)
+    $savedPath = $env:PATH
+    $env:PATH = "$flutterWrapDir;$env:PATH"
 
     # Swap in a gradlew.bat wrapper that silences the :app:dependencies task.
     # patrol calls `gradlew :app:dependencies` via a Dart subprocess whose pipe
@@ -330,6 +323,9 @@ if "%OS%"=="Windows_NT" endlocal
         }
         Write-Host 'E2E suite passed.' -ForegroundColor Green
     } finally {
+        # Restore PATH and remove the flutter wrapper directory.
+        if ($savedPath) { $env:PATH = $savedPath }
+        Remove-Item $flutterWrapDir -Recurse -Force -ErrorAction SilentlyContinue
         # Always restore the original gradlew.bat.
         if (Test-Path $gradlewOrig) {
             Copy-Item $gradlewOrig $gradlewBat -Force
@@ -341,10 +337,9 @@ if "%OS%"=="Windows_NT" endlocal
     if ($helper -and -not $helper.HasExited) {
         Stop-Process -Id $helper.Id -Force -ErrorAction SilentlyContinue
     }
-    if ($emulatorProc -and -not $emulatorProc.HasExited) {
-        # /T kills the full process tree (firebase.cmd → node.js children).
-        taskkill /F /T /PID "$($emulatorProc.Id)" 2>&1 | Out-Null
-        Write-Host 'Firebase Auth emulator stopped.' -ForegroundColor Cyan
+    if ($tunnelJob) {
+        Stop-Job  $tunnelJob -ErrorAction SilentlyContinue
+        Remove-Job $tunnelJob -ErrorAction SilentlyContinue
     }
     # Restore Do Not Disturb to off (zen_mode=0). Silently ignore if device gone.
     if ($adb) {

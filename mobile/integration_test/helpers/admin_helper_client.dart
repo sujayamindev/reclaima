@@ -15,8 +15,8 @@ class AdminHelperClient {
             BaseOptions(
               baseUrl: TestConfig.helperBaseUrl,
               connectTimeout: const Duration(seconds: 5),
-              // The helper's first Firebase Admin SDK call cold-starts its
-              // connection to the Auth emulator, which can take well over 10s.
+              // The helper's first call initialises the Firebase Admin SDK
+              // credentials, which can take several seconds on a cold start.
               receiveTimeout: const Duration(seconds: 30),
             ),
           );
