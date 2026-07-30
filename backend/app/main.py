@@ -6,24 +6,25 @@ Smart Receipt & Warranty Manager Backend API.
 import logging
 import os
 import sys
-import sentry_sdk
 from contextlib import asynccontextmanager
+
+import sentry_sdk
 from fastapi import FastAPI, Request, status
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from fastapi.exceptions import RequestValidationError
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.core.config import settings
 from app.api.v1 import (
     auth,
+    claims,
+    health,
+    notifications,
+    products,
     receipts,
     warranties,
-    health,
-    products,
-    notifications,
-    claims,
 )
+from app.core.config import settings
 
 # Configure logging
 logging.basicConfig(
@@ -66,9 +67,12 @@ async def lifespan(app: FastAPI):
     scheduler = None
     if settings.ENABLE_SCHEDULER:
         try:
-            from apscheduler.schedulers.background import BackgroundScheduler  # type: ignore[import-untyped]
-            from app.services.notification_service import notification_service
+            from apscheduler.schedulers.background import (
+                BackgroundScheduler,  # type: ignore[import-untyped]
+            )
+
             from app.services.deletion_service import run_hard_delete_cleanup
+            from app.services.notification_service import notification_service
 
             scheduler = BackgroundScheduler(timezone="UTC")
             # Warranty reminders — daily at 3:00 AM UTC
@@ -101,7 +105,7 @@ async def lifespan(app: FastAPI):
                 f"cleanup at {settings.CLEANUP_HOUR:02d}:00 UTC"
             )
         except Exception as exc:
-            logger.error(f"Failed to start APScheduler: {exc}", exc_info=True)
+            logger.exception(f"Failed to start APScheduler: {exc}")
 
     yield
 
@@ -171,7 +175,7 @@ async def database_exception_handler(request: Request, exc: SQLAlchemyError):
 @app.exception_handler(Exception)
 async def general_exception_handler(request: Request, exc: Exception):
     """Handle all other exceptions."""
-    logger.error(f"Unhandled exception on {request.url}: {exc}", exc_info=True)
+    logger.exception(f"Unhandled exception on {request.url}: {exc}")
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={

@@ -6,15 +6,16 @@ Includes S3 file cleanup to ensure complete data removal.
 """
 
 import logging
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict
-from sqlalchemy.orm import Session
-from sqlalchemy import and_
 
-from app.models.user import User
+from sqlalchemy import and_
+from sqlalchemy.orm import Session
+
+from app.models.claim_document import ClaimDocument
 from app.models.receipt import Receipt
 from app.models.receipt_line_item import ReceiptLineItem
-from app.models.claim_document import ClaimDocument
+from app.models.user import User
 
 logger = logging.getLogger(__name__)
 
@@ -321,9 +322,9 @@ def run_hard_delete_cleanup() -> None:
     Daily scheduler job — permanently delete records soft-deleted 30+ days ago.
     Includes S3 file cleanup for GDPR compliance.
     """
+    from app.core.config import settings
     from app.db.session import SessionLocal
     from app.services.s3_service import get_s3_service
-    from app.core.config import settings
 
     db = SessionLocal()
     try:
@@ -345,6 +346,6 @@ def run_hard_delete_cleanup() -> None:
         )
     except Exception as exc:
         db.rollback()
-        logger.error(f"Hard-delete cleanup failed: {exc}", exc_info=True)
+        logger.exception(f"Hard-delete cleanup failed: {exc}")
     finally:
         db.close()

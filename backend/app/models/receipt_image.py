@@ -3,9 +3,9 @@ Receipt Image model for database.
 Represents individual images (front/back) uploaded for a receipt.
 """
 
-from sqlalchemy import Column, String, DateTime, ForeignKey
-from sqlalchemy.sql import func
+from sqlalchemy import Column, DateTime, ForeignKey, String
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
 from app.db.base import Base
 

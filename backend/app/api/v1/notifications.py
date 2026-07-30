@@ -3,15 +3,16 @@ Notification routes — user notification preferences and FCM token management.
 """
 
 import logging
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.core.security import get_current_user
 from app.db.session import get_db
 from app.schemas import (
+    UserFcmTokenUpdate,
     UserNotificationPreferencesResponse,
     UserNotificationPreferencesUpdate,
-    UserFcmTokenUpdate,
 )
 from app.services.notification_service import notification_service
 from app.services.user_service import user_service

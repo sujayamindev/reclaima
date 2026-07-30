@@ -2,10 +2,11 @@
 Pydantic schemas for API request/response validation.
 """
 
-from pydantic import BaseModel, EmailStr, ConfigDict, Field
-from typing import Optional, List, Literal
 from datetime import datetime
 from enum import Enum
+from typing import List, Literal, Optional
+
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 def to_camel(string: str) -> str:

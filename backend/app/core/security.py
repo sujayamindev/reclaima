@@ -4,12 +4,13 @@ Handles Firebase JWT verification and user authentication.
 """
 
 import logging
+import os
 from typing import Any, Optional
+
+import firebase_admin  # type: ignore[import-untyped]
 from fastapi import HTTPException, Security, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-import firebase_admin  # type: ignore[import-untyped]
 from firebase_admin import auth, credentials  # type: ignore[import-untyped]
-import os
 
 from app.core.config import settings
 

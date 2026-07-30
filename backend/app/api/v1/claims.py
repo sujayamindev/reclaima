@@ -5,33 +5,34 @@ Claims routes - Generate and manage warranty claim PDFs.
 import logging
 import os
 import uuid
-from typing import Optional, List, cast
+from datetime import datetime, timezone
+from typing import List, Optional, cast
+
 from fastapi import (
     APIRouter,
     Depends,
-    HTTPException,
-    status,
-    Query,
     File,
-    UploadFile,
     Form,
+    HTTPException,
+    Query,
+    UploadFile,
+    status,
 )
-from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import and_
-from datetime import datetime, timezone
+from sqlalchemy.orm import Session, selectinload
 
-from app.core.security import get_current_user
-from app.services.user_service import user_service
-from app.services.pdf_service import get_pdf_service
-from app.services.s3_service import get_s3_service
 from app.core.config import settings
+from app.core.security import get_current_user
 from app.db.session import get_db
-from app.models import ClaimDocument, Receipt, ReceiptLineItem, ClaimDefectImage
+from app.models import ClaimDefectImage, ClaimDocument, Receipt, ReceiptLineItem
 from app.schemas import (
     ClaimDocumentResponse,
     ClaimDocumentUpdate,
     ClaimResolutionRequest,
 )
+from app.services.pdf_service import get_pdf_service
+from app.services.s3_service import get_s3_service
+from app.services.user_service import user_service
 
 logger = logging.getLogger(__name__)
 
@@ -268,7 +269,7 @@ async def create_claim(
     except HTTPException:
         raise
     except Exception as exc:
-        logger.error(f"Error creating claim: {exc}", exc_info=True)
+        logger.exception(f"Error creating claim: {exc}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to generate claim PDF",
@@ -526,7 +527,7 @@ async def list_claims(
     except HTTPException:
         raise
     except Exception as exc:
-        logger.error(f"Error listing claims: {exc}", exc_info=True)
+        logger.exception(f"Error listing claims: {exc}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve claims",
@@ -596,7 +597,7 @@ async def get_claim(
     except HTTPException:
         raise
     except Exception as exc:
-        logger.error(f"Error retrieving claim: {exc}", exc_info=True)
+        logger.exception(f"Error retrieving claim: {exc}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve claim",
@@ -675,7 +676,7 @@ async def access_claim_pdf(
     except HTTPException:
         raise
     except Exception as exc:
-        logger.error(f"Error accessing claim PDF: {exc}", exc_info=True)
+        logger.exception(f"Error accessing claim PDF: {exc}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to access claim PDF",
@@ -742,7 +743,7 @@ async def delete_claim(
     except HTTPException:
         raise
     except Exception as exc:
-        logger.error(f"Error deleting claim: {exc}", exc_info=True)
+        logger.exception(f"Error deleting claim: {exc}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to delete claim",

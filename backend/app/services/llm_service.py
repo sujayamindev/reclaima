@@ -20,10 +20,20 @@ from abc import ABC, abstractmethod
 
 from app.core.prompts import (
     ADDRESS_PROMPT as _ADDRESS_PROMPT,
+)
+from app.core.prompts import (
     CLEANUP_PROMPT as _CLEANUP_PROMPT,
+)
+from app.core.prompts import (
     EMAIL_PROMPT as _EMAIL_PROMPT,
+)
+from app.core.prompts import (
     PHONE_NUMBER_PROMPT as _PHONE_NUMBER_PROMPT,
+)
+from app.core.prompts import (
     PRODUCT_NAME_PROMPT as _PRODUCT_NAME_PROMPT,
+)
+from app.core.prompts import (
     STORE_NAME_PROMPT as _STORE_NAME_PROMPT,
 )
 
@@ -332,10 +342,9 @@ class BedrockLLMService(BaseLLMService):
         except Exception as exc:
             # Non-critical: log the full error so we can diagnose IAM /
             # model-access issues, then fall back to the original text.
-            logger.error(
+            logger.exception(
                 f"Bedrock LLM cleanup failed (model={self._model_id}): "
-                f"{type(exc).__name__}: {exc}",
-                exc_info=True,
+                f"{type(exc).__name__}: {exc}"
             )
             return text
 
@@ -385,10 +394,9 @@ class BedrockLLMService(BaseLLMService):
             return product_name
 
         except Exception as exc:
-            logger.error(
+            logger.exception(
                 f"Bedrock product name extraction failed (model={self._model_id}): "
-                f"{type(exc).__name__}: {exc}",
-                exc_info=True,
+                f"{type(exc).__name__}: {exc}"
             )
             return text
 
@@ -430,9 +438,8 @@ class BedrockLLMService(BaseLLMService):
             return cleaned
 
         except Exception as exc:
-            logger.error(
-                f"Bedrock store name cleanup failed: {type(exc).__name__}: {exc}",
-                exc_info=True,
+            logger.exception(
+                f"Bedrock store name cleanup failed: {type(exc).__name__}: {exc}"
             )
             return text
 
@@ -474,9 +481,8 @@ class BedrockLLMService(BaseLLMService):
             return cleaned
 
         except Exception as exc:
-            logger.error(
-                f"Bedrock phone cleanup failed: {type(exc).__name__}: {exc}",
-                exc_info=True,
+            logger.exception(
+                f"Bedrock phone cleanup failed: {type(exc).__name__}: {exc}"
             )
             return text
 
@@ -518,9 +524,8 @@ class BedrockLLMService(BaseLLMService):
             return cleaned
 
         except Exception as exc:
-            logger.error(
-                f"Bedrock email cleanup failed: {type(exc).__name__}: {exc}",
-                exc_info=True,
+            logger.exception(
+                f"Bedrock email cleanup failed: {type(exc).__name__}: {exc}"
             )
             return text
 
@@ -562,9 +567,8 @@ class BedrockLLMService(BaseLLMService):
             return cleaned
 
         except Exception as exc:
-            logger.error(
-                f"Bedrock address cleanup failed: {type(exc).__name__}: {exc}",
-                exc_info=True,
+            logger.exception(
+                f"Bedrock address cleanup failed: {type(exc).__name__}: {exc}"
             )
             return text
 

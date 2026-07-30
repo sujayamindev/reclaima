@@ -5,15 +5,15 @@ APScheduler job functions for warranty/return deadline reminders.
 
 import logging
 import uuid
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from sqlalchemy.orm import Session
 
 from app.models.notification_preference import UserNotificationPreferences
-from app.models.user import User
 from app.models.receipt import Receipt
 from app.models.receipt_line_item import ReceiptLineItem
+from app.models.user import User
 
 logger = logging.getLogger(__name__)
 
@@ -161,7 +161,7 @@ class NotificationService:
         try:
             self._send_expiry_reminders(db, kind="warranty")
         except Exception as exc:
-            logger.error(f"Warranty reminder job failed: {exc}", exc_info=True)
+            logger.exception(f"Warranty reminder job failed: {exc}")
         finally:
             db.close()
 
@@ -175,7 +175,7 @@ class NotificationService:
         try:
             self._send_expiry_reminders(db, kind="return")
         except Exception as exc:
-            logger.error(f"Return reminder job failed: {exc}", exc_info=True)
+            logger.exception(f"Return reminder job failed: {exc}")
         finally:
             db.close()
 

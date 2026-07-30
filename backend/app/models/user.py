@@ -3,9 +3,9 @@ User model for database.
 Represents users authenticated via Firebase.
 """
 
-from sqlalchemy import Column, String, DateTime
-from sqlalchemy.sql import func
+from sqlalchemy import Column, DateTime, String
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
 from app.db.base import Base
 

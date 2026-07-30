@@ -1,10 +1,10 @@
+from fastapi import HTTPException
 from fastapi.testclient import TestClient
 from sqlalchemy.exc import SQLAlchemyError
-from fastapi import HTTPException
 
-from app.main import app
-from app.db.session import get_db
 from app.core.config import settings
+from app.db.session import get_db
+from app.main import app
 
 client = TestClient(app, raise_server_exceptions=False)
 

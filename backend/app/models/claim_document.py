@@ -3,9 +3,9 @@ Claim Document model for database.
 Represents warranty claim documents generated for users.
 """
 
-from sqlalchemy import Column, String, DateTime, ForeignKey, Text
-from sqlalchemy.sql import func
+from sqlalchemy import Column, DateTime, ForeignKey, String, Text
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
 from app.db.base import Base
 

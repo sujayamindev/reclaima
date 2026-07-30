@@ -1,4 +1,5 @@
 import os
+
 import pytest
 
 # Mock environment variables before any app imports
@@ -14,17 +15,17 @@ from sqlalchemy.orm import sessionmaker  # noqa: E402
 from sqlalchemy.pool import StaticPool  # noqa: E402
 
 from app.db.base import Base  # noqa: E402
-from app.models.user import User  # noqa: F401, E402
-from app.models.receipt import Receipt  # noqa: F401, E402
-from app.models.receipt_line_item import ReceiptLineItem  # noqa: F401, E402
-from app.models.receipt_image import ReceiptImage  # noqa: F401, E402
-from app.models.claim_document import ClaimDocument  # noqa: F401, E402
+from app.db.session import get_db  # noqa: E402
+from app.main import app  # noqa: E402
 from app.models.claim_defect_image import ClaimDefectImage  # noqa: F401, E402
+from app.models.claim_document import ClaimDocument  # noqa: F401, E402
 from app.models.notification_preference import (  # noqa: E402
     UserNotificationPreferences,  # noqa: F401
 )
-from app.main import app  # noqa: E402
-from app.db.session import get_db  # noqa: E402
+from app.models.receipt import Receipt  # noqa: F401, E402
+from app.models.receipt_image import ReceiptImage  # noqa: F401, E402
+from app.models.receipt_line_item import ReceiptLineItem  # noqa: F401, E402
+from app.models.user import User  # noqa: F401, E402
 
 
 @pytest.fixture()

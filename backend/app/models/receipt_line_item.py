@@ -5,17 +5,17 @@ Supports multi-item receipts and invoices.
 """
 
 from sqlalchemy import (
-    Column,
-    String,
-    DateTime,
-    Numeric,
-    ForeignKey,
-    Integer,
     Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
     Index,
+    Integer,
+    Numeric,
+    String,
 )
-from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
 from app.db.base import Base
 

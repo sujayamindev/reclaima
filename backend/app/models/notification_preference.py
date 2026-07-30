@@ -3,9 +3,9 @@ UserNotificationPreferences model.
 Stores per-user push notification settings (one row per user).
 """
 
-from sqlalchemy import Column, String, Boolean, Integer, DateTime, ForeignKey
-from sqlalchemy.sql import func
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
 from app.db.base import Base
 

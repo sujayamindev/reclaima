@@ -1,15 +1,15 @@
 """Focused unit tests for pure helper functions and derived settings values."""
 
 import uuid
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 
-from app.models import User, Receipt, ReceiptStatus, ReceiptLineItem
 from app.api.v1.warranties import (
     _to_optional_datetime,
     _to_optional_int,
     _to_optional_str,
 )
 from app.core.config import settings
+from app.models import Receipt, ReceiptLineItem, ReceiptStatus, User
 from app.services.notification_service import _is_quiet_hour
 
 
