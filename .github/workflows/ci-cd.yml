@@ -280,9 +280,14 @@ jobs:
         working-directory: mobile
         run: flutter build apk --debug
 
-      - name: Skip Android debug artifact build
+      - name: Build Android release artifact
+        if: steps.android_firebase.outputs.available == 'true'
+        working-directory: mobile
+        run: flutter build apk --release
+
+      - name: Skip Android artifact builds
         if: steps.android_firebase.outputs.available != 'true'
-        run: echo "Android debug APK build skipped because Firebase config is unavailable in CI context."
+        run: echo "Android APK builds skipped because Firebase config is unavailable in CI context."
 
       - name: Upload mobile coverage report
         uses: actions/upload-artifact@v7
@@ -296,6 +301,13 @@ jobs:
         with:
           name: mobile-android-debug-apk
           path: mobile/build/app/outputs/flutter-apk/app-debug.apk
+
+      - name: Upload Android release artifact
+        if: steps.android_firebase.outputs.available == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: mobile-android-release-apk
+          path: mobile/build/app/outputs/flutter-apk/app-release.apk
 
   krakend_check:
     name: KrakenD Config Check
