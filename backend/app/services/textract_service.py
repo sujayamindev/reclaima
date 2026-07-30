@@ -224,7 +224,7 @@ class RealTextractService:
             return ""
 
         # Detect two-column layout via the largest gap between sorted left edges
-        left_vals = sorted(set(round(ln["left"], 3) for ln in lines))
+        left_vals = sorted({round(ln["left"], 3) for ln in lines})
         if len(left_vals) > 1:
             gaps = [
                 (
