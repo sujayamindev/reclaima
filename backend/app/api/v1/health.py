@@ -3,14 +3,15 @@ Health check and system status routes.
 """
 
 from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, Response, status
-from sqlalchemy.orm import Session
 from sqlalchemy import text
+from sqlalchemy.orm import Session
 
 from app.core.config import settings
+from app.core.security import firebase_auth
 from app.db.session import get_db
 from app.schemas import HealthCheckResponse
-from app.core.security import firebase_auth
 
 router = APIRouter(tags=["Health"])
 

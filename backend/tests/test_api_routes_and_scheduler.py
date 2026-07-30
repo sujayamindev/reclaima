@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import io
 import uuid
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 from fastapi import HTTPException, UploadFile
@@ -24,8 +24,8 @@ from app.schemas import (
     ReceiptLineItemUpdate,
     ReceiptUpdate,
     UserFcmTokenUpdate,
-    UserUpdate,
     UserNotificationPreferencesUpdate,
+    UserUpdate,
 )
 from app.services.user_service import UserService
 
@@ -630,9 +630,8 @@ async def test_claim_routes_cross_user_access(db_session, monkeypatch) -> None:
 
 
 def test_run_hard_delete_cleanup(monkeypatch) -> None:
-    from app.services import deletion_service
     from app.db import session as db_session_module
-    from app.services import s3_service
+    from app.services import deletion_service, s3_service
 
     class _DummyS3:
         pass

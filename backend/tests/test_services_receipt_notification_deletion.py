@@ -3,17 +3,16 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone, timedelta
-
+from datetime import datetime, timedelta, timezone
 
 from app.models import (
+    ClaimDefectImage,
     ClaimDocument,
     Receipt,
+    ReceiptImage,
     ReceiptLineItem,
     ReceiptStatus,
     User,
-    ReceiptImage,
-    ClaimDefectImage,
 )
 from app.schemas import ReceiptCreate, ReceiptLineItemUpdate, ReceiptUpdate
 from app.services.deletion_service import DeletionService

@@ -6,11 +6,14 @@ Loads environment variables and provides application settings.
 import os
 from functools import lru_cache
 from typing import List, Optional
+
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 try:
-    from infisical_sdk import InfisicalSDKClient  # type: ignore[import-untyped, import-not-found]
+    from infisical_sdk import (
+        InfisicalSDKClient,  # type: ignore[import-untyped, import-not-found]
+    )
 except ImportError:  # pragma: no cover
     InfisicalSDKClient = None
 

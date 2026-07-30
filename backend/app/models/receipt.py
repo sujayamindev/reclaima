@@ -3,20 +3,23 @@ Receipt model for database.
 Represents digitized receipts with OCR data and warranty information.
 """
 
+import enum
+
 from sqlalchemy import (
     Column,
-    String,
     DateTime,
     ForeignKey,
-    Integer,
-    Text,
-    Numeric,
     Index,
+    Integer,
+    Numeric,
+    String,
+    Text,
+)
+from sqlalchemy import (
     Enum as SQLEnum,
 )
-from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
-import enum
+from sqlalchemy.sql import func
 
 from app.db.base import Base
 

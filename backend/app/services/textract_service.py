@@ -6,9 +6,9 @@ Mock implementation for development without AWS credentials.
 
 import logging
 import re
-from random import SystemRandom
-from typing import Dict, Any, Optional, List
 from datetime import datetime, timedelta
+from random import SystemRandom
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -110,7 +110,9 @@ class RealTextractService:
             llm_service: LLM service for cleaning extracted text (optional)
         """
         import boto3  # type: ignore[import-not-found,import-untyped]
-        from botocore.exceptions import ClientError  # type: ignore[import-not-found,import-untyped]
+        from botocore.exceptions import (
+            ClientError,  # type: ignore[import-not-found,import-untyped]
+        )
 
         self.s3_bucket = s3_bucket
         self.llm_service = llm_service

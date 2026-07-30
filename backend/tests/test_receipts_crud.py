@@ -1,8 +1,8 @@
 import pytest
 from fastapi.testclient import TestClient
 
+from app.core.security import get_current_user, get_current_user_id
 from app.main import app
-from app.core.security import get_current_user_id, get_current_user
 from tests.test_helpers import _create_user, _make_receipt
 
 client = TestClient(app, raise_server_exceptions=False)

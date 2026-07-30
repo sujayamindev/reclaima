@@ -9,10 +9,9 @@ Docs: https://api.search.brave.com/app#/documentation/image-search
 """
 
 import logging
-from abc import ABC, abstractmethod
-from typing import Optional, Dict
-
 import re
+from abc import ABC, abstractmethod
+from typing import Dict, Optional
 
 import httpx
 
@@ -262,10 +261,7 @@ class BraveProductImageService(BaseProductImageService):
             )
             return None
         except Exception as exc:
-            logger.error(
-                f"Brave Search failed: {type(exc).__name__}: {exc}",
-                exc_info=True,
-            )
+            logger.exception(f"Brave Search failed: {type(exc).__name__}: {exc}")
             return None
 
     def search_product_image_sync(self, query: str) -> Optional[Dict[str, str]]:
@@ -329,10 +325,7 @@ class BraveProductImageService(BaseProductImageService):
             )
             return None
         except Exception as exc:
-            logger.error(
-                f"Brave Search (sync) failed: {type(exc).__name__}: {exc}",
-                exc_info=True,
-            )
+            logger.exception(f"Brave Search (sync) failed: {type(exc).__name__}: {exc}")
             return None
 
     @staticmethod

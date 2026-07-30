@@ -3,9 +3,9 @@ Claim Defect Image model for database.
 Represents defect images uploaded by users as evidence for warranty/return claims.
 """
 
-from sqlalchemy import Column, String, DateTime, ForeignKey, Integer
-from sqlalchemy.sql import func
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
 from app.db.base import Base
 

@@ -4,27 +4,31 @@ Creates professional PDFs with receipt details, warranty information, and user d
 """
 
 import logging
-from io import BytesIO
 from datetime import datetime, timezone
-from typing import Optional, List, Protocol
+from io import BytesIO
+from typing import List, Optional, Protocol
 
+from PIL import Image as PILImage
 from reportlab.lib import colors  # type: ignore[import-untyped]
+from reportlab.lib.enums import TA_CENTER  # type: ignore[import-untyped]
 from reportlab.lib.pagesizes import A4  # type: ignore[import-untyped]
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle  # type: ignore[import-untyped]
+from reportlab.lib.styles import (  # type: ignore[import-untyped]
+    ParagraphStyle,
+    getSampleStyleSheet,
+)
 from reportlab.lib.units import inch  # type: ignore[import-untyped]
+from reportlab.platypus import (
+    Image as RLImage,
+)
 from reportlab.platypus import (  # type: ignore[import-untyped]
+    KeepTogether,
+    PageBreak,
+    Paragraph,
     SimpleDocTemplate,
+    Spacer,
     Table,
     TableStyle,
-    Paragraph,
-    Spacer,
-    PageBreak,
-    Image as RLImage,
-    KeepTogether,
 )
-from reportlab.lib.enums import TA_CENTER  # type: ignore[import-untyped]
-from PIL import Image as PILImage
-
 
 from app.models import Receipt, User
 

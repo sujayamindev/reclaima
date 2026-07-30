@@ -6,17 +6,18 @@ with multiple products display one entry per product rather than one per receipt
 """
 
 import logging
-from typing import List, Optional
 from datetime import datetime, timezone
+from typing import List, Optional
+
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import and_
+from sqlalchemy.orm import Session, joinedload
 
 from app.core.security import get_current_user_id
 from app.db.session import get_db
 from app.models import Receipt
 from app.models.receipt_line_item import ReceiptLineItem
-from app.schemas import WarrantyInfo, ReturnInfo
+from app.schemas import ReturnInfo, WarrantyInfo
 
 logger = logging.getLogger(__name__)
 

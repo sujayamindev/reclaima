@@ -4,6 +4,7 @@ Product routes - Product image search via Google Custom Search.
 
 import logging
 from typing import Optional
+
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 

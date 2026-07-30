@@ -3,25 +3,26 @@ Receipt service - Business logic for receipt operations.
 Handles CRUD operations, file upload, OCR processing, and warranty calculations.
 """
 
-import logging
 import json
+import logging
 import os
 import uuid
-from typing import Optional, List, cast
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
+from typing import List, Optional, cast
+
 from dateutil import parser as dateutil_parser  # type: ignore[import-untyped]
 from dateutil.relativedelta import relativedelta  # type: ignore[import-untyped]
-from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import and_
+from sqlalchemy.orm import Session, selectinload
 
-from app.models import Receipt, ReceiptStatus, ReceiptImage
-from app.models.receipt_line_item import ReceiptLineItem
+from app.core.config import settings
+from app.models import Receipt, ReceiptImage, ReceiptStatus
 from app.models.claim_document import ClaimDocument
-from app.schemas import ReceiptCreate, ReceiptUpdate, ReceiptLineItemUpdate
+from app.models.receipt_line_item import ReceiptLineItem
+from app.schemas import ReceiptCreate, ReceiptLineItemUpdate, ReceiptUpdate
+from app.services.llm_service import create_llm_service
 from app.services.s3_service import get_s3_service
 from app.services.textract_service import get_textract_service
-from app.services.llm_service import create_llm_service
-from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 

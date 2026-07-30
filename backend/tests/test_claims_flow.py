@@ -1,9 +1,10 @@
-import pytest
 import uuid
+
+import pytest
 from fastapi.testclient import TestClient
 
-from app.main import app
 from app.core.security import get_current_user, get_current_user_id
+from app.main import app
 from app.models import ClaimDocument, ReceiptLineItem
 from tests.test_helpers import _create_user, _make_receipt
 
