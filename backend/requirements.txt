@@ -58,3 +58,5 @@ sentry-sdk[fastapi]==2.66.1
 wheel>=0.47.0
 jaraco.context>=6.1.2
 pyjwt>=2.13.0
+msgpack>=1.2.1
+setuptools>=78.1.1
