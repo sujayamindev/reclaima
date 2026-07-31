@@ -152,3 +152,7 @@ infra/terraform.tfstate.backup
 infra/terraform.tfvars
 # backend.tf contains plaintext OCI Customer Secret Keys — keep it local
 infra/backend.tf
+
+# Android release signing key — private, provisioned in CI via secrets
+*.keystore
+key.properties

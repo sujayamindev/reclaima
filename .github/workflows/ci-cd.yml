@@ -280,6 +280,29 @@ jobs:
         working-directory: mobile
         run: flutter build apk --debug
 
+      - name: Provision release signing config (optional)
+        id: android_signing
+        working-directory: mobile
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$ANDROID_KEYSTORE_BASE64" ]; then
+            echo "ANDROID_KEYSTORE_BASE64 not set; release APK will be debug-signed."
+            exit 0
+          fi
+
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > release.keystore
+          cat > android/key.properties <<EOF
+          storeFile=../../release.keystore
+          storePassword=$ANDROID_KEYSTORE_PASSWORD
+          keyAlias=$ANDROID_KEY_ALIAS
+          keyPassword=$ANDROID_KEY_PASSWORD
+          EOF
+          echo "Release keystore provisioned from secrets."
+
       - name: Build Android release artifact
         if: steps.android_firebase.outputs.available == 'true'
         working-directory: mobile
