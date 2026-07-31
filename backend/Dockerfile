@@ -15,8 +15,13 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
 RUN python -m venv /venv
 ENV PATH="/venv/bin:$PATH"
 
+# Bump PIP_REFRESH whenever requirements.txt changes a pin but the GHA build
+# cache (cache-from: type=gha) doesn't invalidate this layer on its own —
+# observed with the msgpack/setuptools CVE pins landing stale in CI (2026-07-31).
+ARG PIP_REFRESH=2026-07-31
 COPY requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
+RUN echo "pip-refresh:${PIP_REFRESH}" && \
+    pip install --no-cache-dir --upgrade pip setuptools wheel && \
     pip install --no-cache-dir -r requirements.txt
 
 # ── Stage 2: runtime image ───────────────────────────────────────────────────
