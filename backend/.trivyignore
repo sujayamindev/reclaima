@@ -1,0 +1,13 @@
+# False positives confirmed 2026-07-31: Trivy's summary vulnerability table
+# reports these as installed at the pre-fix versions (msgpack 1.1.2,
+# setuptools 70.3.0), but the same scan's own per-file dist-info listing
+# shows only msgpack-1.2.1 and setuptools-83.0.0 in the image (both clean).
+# Reproduced identically across Trivy v0.70.0 and v0.72.0, so it isn't a
+# scanner-version bug -- looks like a DB/matcher issue specific to these two
+# advisories. requirements.txt pins msgpack>=1.2.1 / setuptools>=78.1.1
+# (see 05d8748), and the Dockerfile build logs confirm those versions
+# actually install. Revisit and remove this ignore if it's still needed
+# after 2026-09-30 -- by then either the DB issue should be fixed upstream
+# or this needs a fresh look.
+GHSA-6v7p-g79w-8964 exp:2026-09-30
+CVE-2025-47273 exp:2026-09-30

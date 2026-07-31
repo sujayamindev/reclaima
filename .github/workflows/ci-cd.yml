@@ -389,9 +389,8 @@ jobs:
 
       - name: Scan image for vulnerabilities
         # Pinned to SHA of v0.36.0 (2026-04-22): first clean release after the March 2026 tag-poisoning attack.
-        # version override: this SHA defaults to Trivy CLI v0.70.0, which produced a self-contradictory
-        # report for python-pkg findings (summary table disagreed with its own per-file scan) on 2026-07-31.
-        # v0.72.0 is a verified stable Trivy release; only the scanner binary changes, not the pinned action.
+        # version override: this SHA defaults to Trivy CLI v0.70.0. Bumping to v0.72.0 didn't change the
+        # outcome below, but there's no reason to run an older scanner once we know a newer one exists.
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
         with:
           image-ref: ${{ env.BACKEND_IMAGE_REPOSITORY }}:${{ steps.meta.outputs.image_tag }}
@@ -401,6 +400,11 @@ jobs:
           severity: CRITICAL,HIGH
           vuln-type: os,library
           exit-code: "1"
+          # backend/.trivyignore: two confirmed false positives (GHSA-6v7p-g79w-8964,
+          # CVE-2025-47273) where the summary table reports pre-fix versions that
+          # contradict this same scan's own per-file dist-info listing. See that
+          # file for the full investigation notes. Expires 2026-09-30.
+          trivyignores: backend/.trivyignore
 
       - name: Generate SBOM
         uses: anchore/sbom-action@v0
