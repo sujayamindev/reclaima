@@ -389,9 +389,13 @@ jobs:
 
       - name: Scan image for vulnerabilities
         # Pinned to SHA of v0.36.0 (2026-04-22): first clean release after the March 2026 tag-poisoning attack.
+        # version override: this SHA defaults to Trivy CLI v0.70.0, which produced a self-contradictory
+        # report for python-pkg findings (summary table disagreed with its own per-file scan) on 2026-07-31.
+        # v0.72.0 is a verified stable Trivy release; only the scanner binary changes, not the pinned action.
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
         with:
           image-ref: ${{ env.BACKEND_IMAGE_REPOSITORY }}:${{ steps.meta.outputs.image_tag }}
+          version: v0.72.0
           format: table
           ignore-unfixed: true
           severity: CRITICAL,HIGH
