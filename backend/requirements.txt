@@ -47,7 +47,7 @@ httpx==0.28.1
 
 # Code Quality
 black==26.5.1
-ruff==0.16.0
+ruff==0.16.1
 mypy==2.3.0
 
 # Logging & Monitoring
