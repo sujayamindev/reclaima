@@ -31,7 +31,7 @@ dependencies:
 
   # UI
   cupertino_icons: ^1.0.9
-  material_symbols_icons: ^4.2951.0
+  material_symbols_icons: ^4.2960.0
   google_fonts: ^8.2.0
 
   # State Management
@@ -44,24 +44,24 @@ dependencies:
   firebase_messaging: ^16.3.0
   
   # Local Database
-  drift: ^2.34.2
+  drift: ^2.34.3
   sqlite3_flutter_libs: ^0.6.0+eol
   path_provider: ^2.1.6
   path: ^1.9.0
   
   # HTTP Client
-  dio: ^5.10.0
+  dio: ^5.11.0
   
   # Image Handling
   image_picker: ^1.2.3
-  flutter_image_compress: ^2.5.0
+  flutter_image_compress: ^2.5.1
   image_cropper: ^12.2.1
   cached_network_image: ^3.4.1
   flutter_svg: ^2.3.0
   file_picker: ^12.0.0-beta.7
 
   # Share & External URLs
-  share_plus: ^13.2.1
+  share_plus: ^13.3.0
   url_launcher: ^6.2.4
 
   # Utilities
@@ -94,7 +94,7 @@ dev_dependencies:
   build_runner: ^2.15.1
   drift_dev: ^2.28.3
   riverpod_generator: ^4.0.0+1
-  json_serializable: ^6.11.2
+  json_serializable: ^6.14.1
   flutter_launcher_icons: ^0.14.4
 
 # Patrol E2E test configuration. The Android package_name must match
