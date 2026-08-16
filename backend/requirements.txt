@@ -1,13 +1,13 @@
 # FastAPI Core
 fastapi==0.141.1
-uvicorn[standard]==0.52.0
+uvicorn[standard]==0.52.3
 pydantic==2.13.4
-pydantic-settings==2.14.2
+pydantic-settings==2.15.0
 python-multipart>=0.0.32
 
 # Database
-sqlalchemy==2.0.51
-alembic==1.18.5
+sqlalchemy==2.0.52
+alembic==1.19.1
 psycopg2-binary==2.9.12
 
 # Firebase Authentication
@@ -47,12 +47,12 @@ httpx==0.28.1
 
 # Code Quality
 black==26.5.1
-ruff==0.16.0
+ruff==0.16.3
 mypy==2.3.0
 
 # Logging & Monitoring
 structlog==26.1.0
-sentry-sdk[fastapi]==2.66.1
+sentry-sdk[fastapi]==2.68.0
 
 # Security overrides
 wheel>=0.47.0
