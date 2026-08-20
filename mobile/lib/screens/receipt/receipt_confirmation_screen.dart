@@ -748,7 +748,7 @@ class _ReceiptConfirmationScreenState
             ),
             const SizedBox(width: 5),
             Text(
-              'Expires ${_displayDate(expiryDate)}',
+              '${isExpired ? 'Expired' : 'Expires'} ${_displayDate(expiryDate)}',
               style: TextStyle(fontSize: 13, color: labelColor),
             ),
             if (periodLabel != null) ...[
