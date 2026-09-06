@@ -1,13 +1,13 @@
 # FastAPI Core
 fastapi==0.141.1
-uvicorn[standard]==0.52.0
-pydantic==2.13.4
-pydantic-settings==2.14.2
+uvicorn[standard]==0.52.4
+pydantic==2.13.5
+pydantic-settings==2.15.0
 python-multipart>=0.0.32
 
 # Database
-sqlalchemy==2.0.51
-alembic==1.18.5
+sqlalchemy==2.0.52
+alembic==1.19.1
 psycopg2-binary==2.9.12
 
 # Firebase Authentication
@@ -20,7 +20,7 @@ boto3>=1.43.34
 apscheduler==3.11.3
 
 # Utilities
-python-dotenv==1.2.2
+python-dotenv==1.2.3
 infisicalsdk>=1.0.16
 passlib[bcrypt]==1.7.4
 python-dateutil==2.9.0.post0
@@ -29,7 +29,7 @@ python-dateutil==2.9.0.post0
 httpx==0.28.1
 
 # PDF Generation (for claim documents)
-reportlab==5.0.0
+reportlab==5.0.1
 
 # Templating (required for Sentry/Starlette auto-instrumentation)
 jinja2==3.1.6
@@ -47,12 +47,12 @@ httpx==0.28.1
 
 # Code Quality
 black==26.5.1
-ruff==0.16.0
-mypy==2.3.0
+ruff==0.16.6
+mypy==2.3.1
 
 # Logging & Monitoring
 structlog==26.1.0
-sentry-sdk[fastapi]==2.66.1
+sentry-sdk[fastapi]==2.68.1
 
 # Security overrides
 wheel>=0.47.0
