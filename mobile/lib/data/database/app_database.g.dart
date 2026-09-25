@@ -4774,7 +4774,7 @@ class $$ReceiptsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$ReceiptsTable, Receipt>(table),
                   $$ReceiptsTableReferences(db, table, e),
                 ),
               )
@@ -5441,7 +5441,7 @@ class $$ReceiptLineItemsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$ReceiptLineItemsTable, ReceiptLineItem>(table),
                   $$ReceiptLineItemsTableReferences(db, table, e),
                 ),
               )
@@ -5729,7 +5729,16 @@ class $$UploadQueueTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable<$UploadQueueTable, UploadQueueData>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $UploadQueueTable,
+                    UploadQueueData
+                  >(db, table, e),
+                ),
+              )
               .toList(),
           prefetchHooksCallback: null,
         ),
@@ -6131,7 +6140,7 @@ class $$ClaimDocumentsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$ClaimDocumentsTable, ClaimDocument>(table),
                   $$ClaimDocumentsTableReferences(db, table, e),
                 ),
               )
@@ -6458,7 +6467,7 @@ class $$ClaimDefectImagesTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable(table),
+                  e.readTable<$ClaimDefectImagesTable, ClaimDefectImage>(table),
                   $$ClaimDefectImagesTableReferences(db, table, e),
                 ),
               )
