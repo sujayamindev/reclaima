@@ -64,6 +64,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   static const int _warrantyAlertDays = 90;
   static const int _returnAlertDays = 14;
 
+  // Guard against concurrent permission requests (e.g. when authStateProvider
+  // invalidation causes a brief double-mount of the home screen).
+  static bool _requestingPermissions = false;
+
   @override
   void initState() {
     super.initState();
@@ -73,13 +77,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Future<void> _requestPermissions() async {
-    // Request notification and camera permissions on app load
-    await [
-      Permission.notification,
-      Permission.camera,
-      Permission
-          .storage, // Storage is often needed along with camera for attachments
-    ].request();
+    if (_requestingPermissions) return;
+    _requestingPermissions = true;
+    try {
+      await [
+        Permission.notification,
+        Permission.camera,
+        Permission.storage,
+      ].request();
+    } finally {
+      _requestingPermissions = false;
+    }
   }
 
   List<_AttentionItem> _buildAttentionItems(
