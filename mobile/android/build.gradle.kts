@@ -3,6 +3,15 @@ allprojects {
         google()
         mavenCentral()
     }
+    // Pin dynamic androidx.test versions so Gradle offline mode doesn't need a
+    // version-listing network request.  1.5.2 is the highest version already
+    // present in the local Gradle cache from previous auth-suite builds.
+    configurations.all {
+        resolutionStrategy {
+            force("androidx.test:runner:1.5.1")
+            force("androidx.test:rules:1.2.0")
+        }
+    }
 }
 
 val newBuildDir: Directory =
