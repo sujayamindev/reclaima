@@ -22,6 +22,7 @@ def test_readiness_db_failure(monkeypatch):
     else:
         app.dependency_overrides.pop(get_db, None)
     assert response.status_code == 503
+    assert response.json() == {"status": "not ready", "error": "database unavailable"}
 
 
 def test_health_check_db_failure(monkeypatch):
