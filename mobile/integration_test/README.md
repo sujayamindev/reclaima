@@ -93,7 +93,7 @@ Credentials are injected via `--dart-define` (never committed) and read in
   (mock `ImagePicker` or pre-stage device files) — future slice.
 - **CI**: this suite is local-only by design; it is not wired into GitHub
   Actions.
-- Patrol's native API (`$.native.*`) can differ slightly across versions; if
-  `patrol test` reports an unknown method on first run, align the call in
-  `helpers/auth_robot.dart` with your resolved Patrol version.
+- Patrol's platform API (`$.platform.mobile.*`) can differ slightly across
+  versions; if `patrol test` reports an unknown method on first run, align the
+  call in `helpers/auth_robot.dart` with your resolved Patrol version.
 ```
