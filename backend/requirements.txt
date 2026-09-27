@@ -55,7 +55,7 @@ structlog==26.1.0
 sentry-sdk[fastapi]==2.69.1
 
 # Security overrides
-wheel>=0.47.0
+wheel>=0.48.0
 jaraco.context>=6.1.2
 pyjwt>=2.13.0
 msgpack>=1.2.1
