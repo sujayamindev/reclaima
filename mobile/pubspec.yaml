@@ -75,7 +75,7 @@ dependencies:
   google_sign_in: ^7.2.0
   sign_in_with_apple: ^8.2.0
   open_filex: ^4.7.0
-  permission_handler: ^12.0.3
+  permission_handler: ^13.0.2
   flutter_native_splash: ^2.4.8
   sentry_flutter: ^8.14.2
 
