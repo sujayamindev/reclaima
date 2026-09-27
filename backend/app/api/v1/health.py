@@ -2,6 +2,7 @@
 Health check and system status routes.
 """
 
+import logging
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, Response, status
@@ -12,6 +13,8 @@ from app.core.config import settings
 from app.core.security import firebase_auth
 from app.db.session import get_db
 from app.schemas import HealthCheckResponse
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Health"])
 
@@ -55,6 +58,8 @@ async def readiness_check(response: Response, db: Session = Depends(get_db)):
     try:
         db.execute(text("SELECT 1"))
         return {"status": "ready"}
-    except Exception as e:
+    except Exception:
+        # Log details server-side only; DB errors can leak hosts and credentials.
+        logger.exception("Readiness check failed: database unreachable")
         response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
-        return {"status": "not ready", "error": str(e)}
+        return {"status": "not ready", "error": "database unavailable"}

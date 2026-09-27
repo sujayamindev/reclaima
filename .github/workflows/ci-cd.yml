@@ -187,10 +187,43 @@ jobs:
           name: backend-coverage-xml
           path: backend/coverage.xml
 
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      mobile: ${{ steps.filter.outputs.mobile }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Detect mobile-affecting changes
+        id: filter
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
+        run: |
+          # Pushes and manual runs always run Mobile CI (main deploys depend on it).
+          if [ "$EVENT_NAME" != "pull_request" ]; then
+            echo "mobile=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if git diff --name-only "$PR_BASE_SHA" HEAD | grep -qE '^(mobile/|scripts/ci/|\.github/workflows/)'; then
+            echo "mobile=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No mobile-affecting changes; Mobile CI will be skipped."
+            echo "mobile=false" >> "$GITHUB_OUTPUT"
+          fi
+
   mobile_ci:
     name: Mobile CI
     needs:
       - secret_scan
+      - changes
+    if: needs.changes.outputs.mobile == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
@@ -275,13 +308,19 @@ jobs:
           echo "google-services.json not available; skipping Android debug APK build for this CI run."
           echo "available=false" >> "$GITHUB_OUTPUT"
 
+      - name: Setup Gradle cache
+        if: steps.android_firebase.outputs.available == 'true'
+        uses: gradle/actions/setup-gradle@v6
+
       - name: Build Android debug artifact
         if: steps.android_firebase.outputs.available == 'true'
         working-directory: mobile
         run: flutter build apk --debug
 
+      # Release APKs are only built on main; PRs get the debug build only.
       - name: Provision release signing config (optional)
         id: android_signing
+        if: github.event_name != 'pull_request'
         working-directory: mobile
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
@@ -304,7 +343,7 @@ jobs:
           echo "Release keystore provisioned from secrets."
 
       - name: Build Android release artifact
-        if: steps.android_firebase.outputs.available == 'true'
+        if: steps.android_firebase.outputs.available == 'true' && github.event_name != 'pull_request'
         working-directory: mobile
         run: flutter build apk --release
 
@@ -326,7 +365,7 @@ jobs:
           path: mobile/build/app/outputs/flutter-apk/app-debug.apk
 
       - name: Upload Android release artifact
-        if: steps.android_firebase.outputs.available == 'true'
+        if: steps.android_firebase.outputs.available == 'true' && github.event_name != 'pull_request'
         uses: actions/upload-artifact@v7
         with:
           name: mobile-android-release-apk

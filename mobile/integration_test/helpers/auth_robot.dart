@@ -66,8 +66,8 @@ class AuthRobot {
   /// so it doesn't block subsequent interactions.
   Future<void> grantPermissionsIfPrompted() async {
     for (var i = 0; i < 3; i++) {
-      if (await $.native.isPermissionDialogVisible()) {
-        await $.native.grantPermissionWhenInUse();
+      if (await $.platform.mobile.isPermissionDialogVisible()) {
+        await $.platform.mobile.grantPermissionWhenInUse();
         await $.pump(const Duration(milliseconds: 500));
       } else {
         break;
