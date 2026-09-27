@@ -12,7 +12,7 @@ Receipt OCR with per-item warranty tracking and one-tap claim generation.
 ![OCI](https://img.shields.io/badge/OCI-ARM%20VM-F80000?logo=oracle&logoColor=white)
 ![CI/CD](https://github.com/sujayamindev/reclaima/actions/workflows/ci-cd.yml/badge.svg)
 
-<a href="https://sujaya.dev/reclaima/"> <img alt="Static Badge" src="https://img.shields.io/badge/%F0%9F%94%97%20Project%20Page-brightgreen?style=for-the-badge"> </a>
+<a href="https://reclaima.sujaya.dev/"> <img alt="Static Badge" src="https://img.shields.io/badge/%F0%9F%94%97%20Project%20Page-brightgreen?style=for-the-badge"> </a>
 
 </div>
 
@@ -201,7 +201,7 @@ Firebase configs (`google-services.json`, `GoogleService-Info.plist`) are not in
 
 <div align="center">
 
-<a href="https://sujaya.dev/reclaima/"> <img alt="Static Badge" src="https://img.shields.io/badge/%F0%9F%94%97%20Project%20Page-brightgreen?style=for-the-badge"> </a>
+<a href="https://reclaima.sujaya.dev/"> <img alt="Static Badge" src="https://img.shields.io/badge/%F0%9F%94%97%20Project%20Page-brightgreen?style=for-the-badge"> </a>
 
 <sub>Built with Flutter & FastAPI · Deployed on OCI · Powered by AWS · © 2026 Sujaya Mindev</sub>
 
