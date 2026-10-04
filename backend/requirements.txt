@@ -14,7 +14,7 @@ psycopg2-binary==2.9.13
 firebase-admin==7.7.0
 
 # AWS SDK (for S3 and Textract)
-boto3>=1.43.102
+boto3>=1.43.107
 
 # Background Jobs
 apscheduler==3.11.3
