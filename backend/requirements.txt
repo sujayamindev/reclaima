@@ -59,4 +59,4 @@ wheel>=0.48.0
 jaraco.context>=6.1.2
 pyjwt>=2.13.0
 msgpack>=1.2.2
-setuptools>=83.0.0
+setuptools>=84.0.0
