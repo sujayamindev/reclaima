@@ -14,3 +14,16 @@ select = [
     "G201",           # logger.exception() over logger.error(..., exc_info=True)
     "C401",           # unnecessary generator (rewrite as set comprehension)
 ]
+
+[tool.mypy]
+# These libraries ship no type stubs / py.typed marker. Without overrides a
+# manual workflow_dispatch run (no base SHA to diff against) fails the
+# no-regression gate on these import-untyped errors.
+[[tool.mypy.overrides]]
+module = [
+    "botocore.*",
+    "reportlab.*",
+    "infisical_sdk.*",
+    "apscheduler.*",
+]
+ignore_missing_imports = true
