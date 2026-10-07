@@ -24,6 +24,11 @@ RUN echo "pip-refresh:${PIP_REFRESH}" && \
     pip install --no-cache-dir --upgrade pip setuptools wheel && \
     pip install --no-cache-dir -r requirements.txt
 
+# pip is only a build tool. Its vendored msgpack/setuptools/urllib3 copies (and the
+# bom.cdx.json SBOM it ships) trip Trivy HIGH findings, and nothing in the runtime
+# image invokes pip (alembic/uvicorn are console scripts in /venv/bin). Remove it.
+RUN pip uninstall -y pip
+
 # ── Stage 2: runtime image ───────────────────────────────────────────────────
 FROM python:3.11-slim AS runtime
 
