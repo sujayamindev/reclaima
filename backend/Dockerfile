@@ -18,7 +18,7 @@ ENV PATH="/venv/bin:$PATH"
 # Bump PIP_REFRESH whenever requirements.txt changes a pin but the GHA build
 # cache (cache-from: type=gha) doesn't invalidate this layer on its own —
 # observed with the msgpack/setuptools CVE pins landing stale in CI (2026-07-31).
-ARG PIP_REFRESH=2026-07-31
+ARG PIP_REFRESH=2026-10-07
 COPY requirements.txt .
 RUN echo "pip-refresh:${PIP_REFRESH}" && \
     pip install --no-cache-dir --upgrade pip setuptools wheel && \
