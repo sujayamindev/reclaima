@@ -79,6 +79,8 @@ services:
     container_name: promtail
     volumes:
       - ./monitoring/promtail-config.yml:/etc/promtail/config.yml
+      # Persist read positions so a recreate/reboot doesn't replay all container logs.
+      - promtail-positions:/positions
     command: -config.file=/etc/promtail/config.yml
     depends_on:
       - docker-socket-proxy
@@ -108,6 +110,7 @@ volumes:
   prometheus-data:
   loki-data:
   grafana-data:
+  promtail-positions:
 
 networks:
   monitoring-network:
