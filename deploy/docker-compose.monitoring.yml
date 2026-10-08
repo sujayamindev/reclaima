@@ -17,6 +17,10 @@ services:
   node-exporter:
     image: prom/node-exporter:v1.8.1
     container_name: node-exporter
+    # Needs host-wide read access (/, /sys, /proc or docker.sock), which SELinux
+    # container_t forbids once Docker's selinux-enabled is on. spc_t via label=disable.
+    security_opt:
+      - label=disable
     restart: unless-stopped
     volumes:
       - /proc:/host/proc:ro
@@ -36,6 +40,10 @@ services:
   docker-socket-proxy:
     image: tecnativa/docker-socket-proxy:0.3.0
     container_name: docker-socket-proxy
+    # Needs host-wide read access (/, /sys, /proc or docker.sock), which SELinux
+    # container_t forbids once Docker's selinux-enabled is on. spc_t via label=disable.
+    security_opt:
+      - label=disable
     environment:
       CONTAINERS: 1
       NETWORKS: 1
@@ -49,6 +57,10 @@ services:
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.49.1
     container_name: cadvisor
+    # Needs host-wide read access (/, /sys, /proc or docker.sock), which SELinux
+    # container_t forbids once Docker's selinux-enabled is on. spc_t via label=disable.
+    security_opt:
+      - label=disable
     command:
       - '--docker=tcp://docker-socket-proxy:2375'
     devices:
