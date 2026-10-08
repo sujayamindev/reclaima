@@ -30,18 +30,36 @@ services:
     networks:
       - monitoring-network
 
+  # Read-only Docker API for cadvisor and promtail. Neither needs to hold the
+  # raw docker.sock (root on the host); POST is off by default, so nothing can
+  # be created or changed through this. No ports published.
+  docker-socket-proxy:
+    image: tecnativa/docker-socket-proxy:0.3.0
+    container_name: docker-socket-proxy
+    environment:
+      CONTAINERS: 1
+      NETWORKS: 1
+      INFO: 1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: unless-stopped
+    networks:
+      - monitoring-network
+
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.49.1
     container_name: cadvisor
-    privileged: true
+    command:
+      - '--docker=tcp://docker-socket-proxy:2375'
     devices:
       - /dev/kmsg:/dev/kmsg
     volumes:
       - /:/rootfs:ro
-      - /var/run:/var/run:ro
       - /sys:/sys:ro
       - /var/lib/docker:/var/lib/docker:ro
       - /dev/disk/:/dev/disk:ro
+    depends_on:
+      - docker-socket-proxy
     restart: unless-stopped
     networks:
       - monitoring-network
@@ -60,10 +78,10 @@ services:
     image: grafana/promtail:3.1.0
     container_name: promtail
     volumes:
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./monitoring/promtail-config.yml:/etc/promtail/config.yml
     command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - docker-socket-proxy
     restart: unless-stopped
     networks:
       - monitoring-network
