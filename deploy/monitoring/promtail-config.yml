@@ -3,7 +3,7 @@ server:
   grpc_listen_port: 0
 
 positions:
-  filename: /tmp/positions.yaml
+  filename: /positions/positions.yaml
 
 clients:
   - url: http://loki:3100/loki/api/v1/push
@@ -11,8 +11,14 @@ clients:
 scrape_configs:
   - job_name: system
     docker_sd_configs:
-      - host: unix:///var/run/docker.sock
+      - host: tcp://docker-socket-proxy:2375
         refresh_interval: 5s
+    # Loki rejects entries older than its 7-day window (HTTP 400); drop them here
+    # instead of re-sending history every time promtail starts from scratch.
+    pipeline_stages:
+      - drop:
+          older_than: 160h
+          drop_counter_reason: too_old_for_loki
     relabel_configs:
       - source_labels: ['__meta_docker_container_name']
         regex: '/(.*)'
