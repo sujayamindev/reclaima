@@ -46,7 +46,7 @@ pytest-env==1.7.1
 httpx==0.28.1
 
 # Code Quality
-black==26.5.1
+black==26.10.1
 ruff==0.16.8
 mypy==2.3.1
 
